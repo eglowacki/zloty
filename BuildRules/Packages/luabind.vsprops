@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="luabind"
+	InheritedPropertySheets=".\lua.vsprops"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(YAGET_ROOT_FOLDER)\Packages\luabind&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="libluabind.lib"
+		AdditionalLibraryDirectories="&quot;$(YAGET_ROOT_FOLDER)\Packages\luabind\src\bin\msvc-9.0\$(ConfigurationName)\link-static\threading-multi&quot;"
+	/>
+	<Tool
+		Name="VCPreBuildEventTool"
+		CommandLine=""
+	/>
+</VisualStudioPropertySheet>

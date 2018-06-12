@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="xsdCompiler"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;C:\Program Files (x86)\Tools\CodeSynthesis XSD 3.2\include&quot;;&quot;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\generated\$(ProjectName)&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="xerces-c_3$(PACKAGE_DEBUG_SUFFIX).lib"
+		AdditionalLibraryDirectories="&quot;C:\Program Files (x86)\Tools\CodeSynthesis XSD 3.2\lib\vc-9.0&quot;"
+	/>
+</VisualStudioPropertySheet>

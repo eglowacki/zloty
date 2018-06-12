@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+    ProjectType="Visual C++"
+    Version="8.00"
+    Name="Shiny"
+    >
+    <Tool
+        Name="VCCLCompilerTool"
+        AdditionalIncludeDirectories="&quot;$(YAGET_ROOT_FOLDER)\Packages\Shiny\include&quot;"
+    />
+    <Tool
+        Name="VCLinkerTool"
+        AdditionalDependencies="Shiny$(PACKAGE_DEBUG_SUFFIX).lib"
+        AdditionalLibraryDirectories="&quot;$(YAGET_ROOT_FOLDER)\Packages\Shiny\lib&quot;"
+    />
+    <Tool
+        Name="VCPreBuildEventTool"
+        CommandLine=""
+    />
+</VisualStudioPropertySheet>

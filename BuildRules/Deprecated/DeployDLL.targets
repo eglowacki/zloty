@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="Packages">
+      <Targets>_Packages</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="Packages"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_Packages"
+    BeforeTargets="$(PackagesBeforeTargets)"
+    AfterTargets="$(PackagesAfterTargets)"
+    Condition="'@(Packages)' != ''"
+    DependsOnTargets="$(PackagesDependsOn);ComputePackagesOutput"
+    Outputs="%(Packages.Outputs)"
+    Inputs="%(Packages.Identity);%(Packages.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <Packages
+        Remove="@(Packages)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <Packages_tlog
+        Include="%(Packages.Outputs)"
+        Condition="'%(Packages.Outputs)' != '' and '%(Packages.ExcludedFromBuild)' != 'true'">
+        <Source>@(Packages, '|')</Source>
+      </Packages_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(Packages.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(Packages_tlog)' != '' and '%(Packages_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(Packages_tlog.Source);@(Packages_tlog-&gt;'%(Fullpath)')" />
+    <Packages
+      Condition="'@(Packages)' != '' and '%(Packages.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(Packages.CommandLineTemplate)"
+      AdditionalOptions="%(Packages.AdditionalOptions)"
+      Inputs="%(Packages.Identity)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputePackagesOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputePackagesOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputePackagesOutput"
+    Condition="'@(Packages)' != ''">
+    <ItemGroup>
+      <PackagesDirsToMake
+        Condition="'@(Packages)' != '' and '%(Packages.ExcludedFromBuild)' != 'true'"
+        Include="%(Packages.Outputs)" />
+      <Link
+        Include="%(PackagesDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(PackagesDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(PackagesDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(PackagesDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>

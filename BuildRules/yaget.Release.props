@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="UserMacros">
+    <YAGET_ROOT_FOLDER>c:\Development\yaget</YAGET_ROOT_FOLDER>
+    <YAGET_DEBUG_SUFFIX />
+    <PACKAGE_DEBUG_SUFFIX />
+  </PropertyGroup>
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <LinkIncremental>false</LinkIncremental>
+    <_PropertySheetDisplayName>yaget.Release</_PropertySheetDisplayName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalUsingDirectories>
+      </AdditionalUsingDirectories>
+      <PreprocessorDefinitions>NDEBUG;YAGET_RELEASE;YAGET_METRICS_USE_CONC</PreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link />
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="YAGET_ROOT_FOLDER">
+      <Value>$(YAGET_ROOT_FOLDER)</Value>
+    </BuildMacro>
+    <BuildMacro Include="YAGET_DEBUG_SUFFIX">
+      <Value>$(YAGET_DEBUG_SUFFIX)</Value>
+    </BuildMacro>
+    <BuildMacro Include="PACKAGE_DEBUG_SUFFIX">
+      <Value>$(PACKAGE_DEBUG_SUFFIX)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

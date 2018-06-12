@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(YAGET_ROOT_FOLDER)\Packages\boost\stage\lib;$(YAGET_ROOT_FOLDER)\Packages\tinyxml\$(Configuration)_STL;$(YAGET_ROOT_FOLDER)\Packages\CxImage\CxImage\$(Configuration);$(YAGET_ROOT_FOLDER)\Packages\CxImage\zlib\$(Configuration);$(YAGET_ROOT_FOLDER)\Packages\CxImage\tiff\$(Configuration);$(YAGET_ROOT_FOLDER)\Packages\CxImage\png\$(Configuration);$(YAGET_ROOT_FOLDER)\Packages\CxImage\mng\$(Configuration);$(YAGET_ROOT_FOLDER)\Packages\CxImage\jpeg\$(Configuration);$(YAGET_ROOT_FOLDER)\Packages\CxImage\jbig\$(Configuration);$(YAGET_ROOT_FOLDER)\Packages\CxImage\jasper\$(Configuration);$(YAGET_ROOT_FOLDER)\Packages\CxImage\raw\$(Configuration);$(YAGET_ROOT_FOLDER)\Packages\vld\src\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>

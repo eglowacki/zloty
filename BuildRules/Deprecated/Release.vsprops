@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="Release"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		Optimization="3"
+		EnableIntrinsicFunctions="true"
+		RuntimeLibrary="2"
+		DebugInformationFormat="3"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		GenerateDebugInformation="true"
+	/>
+	<UserMacro
+		Name="YAGET_ROOT_FOLDER"
+		Value="p:\Yaget"
+	/>
+	<UserMacro
+		Name="YAGET_DEBUG_SUFFIX"
+		Value=""
+	/>
+	<UserMacro
+		Name="PACKAGE_DEBUG_SUFFIX"
+		Value=""
+	/>
+</VisualStudioPropertySheet>

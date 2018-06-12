@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+        Name="Omega IDL"
+        Version="8.00"
+        >
+        <Rules>
+                <CustomBuildRule
+                        Name="Omega IDL"
+                        DisplayName="Omega IDL"
+                        CommandLine="[OidlExe] &quot;$(InputPath)&quot; -I$(InputDir) -I$(YAGET_ROOT_FOLDER)\Packages\Omega\include\omega -I$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Network\Protocols\include\ -m&#x0D;&#x0A;echo move /Y &quot;$(InputDir)$(InputName).*&quot; &quot;$(ProjectDir)../source/generated/$(InputName).*&quot;&#x0D;&#x0A;move /Y &quot;$(InputDir)$(InputName).cpp&quot; &quot;$(ProjectDir)../source/generated/$(InputName).cpp&quot;&#x0D;&#x0A;move /Y &quot;$(InputDir)$(InputName).h&quot; &quot;$(ProjectDir)../source/generated/$(InputName).h&quot;&#x0D;&#x0A;move /Y &quot;$(InputDir)$(InputName).map&quot; &quot;$(ProjectDir)../source/generated/$(InputName).map&quot;&#x0D;&#x0A;&#x0D;&#x0A;&#x0D;&#x0A;"
+                        Outputs="$(ProjectDir)..\source\generated\$(InputName).cpp; $(ProjectDir)..\source\generated\$(InputName).h; $(ProjectDir)..\source\generated\$(InputName).map"
+                        FileExtensions="*.idl"
+                        ExecutionDescription="Building $(InputName).cpp $(InputName).h"
+                        ShowOnlyRuleProperties="false"
+                        >
+                        <Properties>
+                                <StringProperty
+                                        Name="OidlExe"
+                                        DisplayName="OIDL exe"
+                                        PropertyPageName="Parameters"
+                                        Description="OIDL executable to compile the file"
+                                        Switch="[value]"
+                                        DefaultValue="$(YAGET_ROOT_FOLDER)\Packages\Omega\bin\oidl.exe"
+                                />
+                        </Properties>
+                </CustomBuildRule>
+        </Rules>
+</VisualStudioToolFile>

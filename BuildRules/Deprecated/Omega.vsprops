@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+    ProjectType="Visual C++"
+    Version="8.00"
+    Name="Omega"
+    >
+    <Tool
+        Name="VCCLCompilerTool"
+        AdditionalIncludeDirectories="&quot;$(YAGET_ROOT_FOLDER)\Packages\Omega\include\omega&quot;"
+    />
+    <Tool
+        Name="VCLinkerTool"
+        AdditionalDependencies="libomega$(PACKAGE_DEBUG_SUFFIX).lib"
+        AdditionalLibraryDirectories="$(YAGET_ROOT_FOLDER)\Packages\Omega\lib"
+    />
+</VisualStudioPropertySheet>

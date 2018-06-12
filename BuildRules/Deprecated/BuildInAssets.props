@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(BuildIn_AssetsBeforeTargets)' == '' and '$(BuildIn_AssetsAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <BuildIn_AssetsBeforeTargets>Midl</BuildIn_AssetsBeforeTargets>
+    <BuildIn_AssetsAfterTargets>CustomBuild</BuildIn_AssetsAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <BuildIn_AssetsDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(BuildIn_AssetsDependsOn)</BuildIn_AssetsDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <BuildIn_Assets>
+      <CommandLineTemplate>$(YAGET_ROOT_FOLDER)\Tools\sfk\sfk.exe bin-to-src -hex %(FullPath) $(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\generated\$(ProjectName)\%(Filename).h %(Filename)</CommandLineTemplate>
+      <Outputs>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\generated\$(ProjectName)\%(Filename).h</Outputs>
+      <ExecutionDescription>Generated $(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\generated\$(ProjectName)\%(Filename).h from %(FullPath)</ExecutionDescription>
+    </BuildIn_Assets>
+  </ItemDefinitionGroup>
+</Project>

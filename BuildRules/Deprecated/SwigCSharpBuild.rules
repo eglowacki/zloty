@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="Swig CSharp"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="Swig CSharp"
+			DisplayName="Swig C#"
+			CommandLine="[SWIG] -I$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Math\include -I$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\include -c++  -csharp -o $(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\generated\$(ProjectName)\$(InputName)_wrap.cpp $(InputPath)"
+			Outputs="&quot;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\generated\$(ProjectName)\$(InputName)_wrap.cpp"
+			FileExtensions="*.i"
+			ExecutionDescription="Generate C# bindings"
+			>
+			<Properties>
+				<StringProperty
+					Name="SWIG"
+					IsReadOnly="true"
+					DisplayName="SWIG"
+					PropertyPageName="Properties"
+					Switch="[value]"
+					DefaultValue="$(YAGET_ROOT_FOLDER)\Packages\swigwin\swig.exe"
+				/>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

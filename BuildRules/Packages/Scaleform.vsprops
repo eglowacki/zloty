@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="Scaleform"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(YAGET_ROOT_FOLDER)\Packages\Scaleform\GFx SDK 3.0\Src\GRenderer&quot;;&quot;$(YAGET_ROOT_FOLDER)\Packages\Scaleform\GFx SDK 3.0\Src\GKernal&quot;;&quot;$(YAGET_ROOT_FOLDER)\Packages\Scaleform\GFx SDK 3.0\Src\GFxXML&quot;;&quot;$(YAGET_ROOT_FOLDER)\Packages\Scaleform\GFx SDK 3.0\Include&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="libgfx.lib libjpeg.lib zlib.lib imm32.lib winmm.lib libgrenderer_d3d9.lib"
+		AdditionalLibraryDirectories="&quot;$(YAGET_ROOT_FOLDER)\Packages\Scaleform\GFx SDK 3.0\3rdParty\expat-2.0.1\lib&quot;;&quot;$(YAGET_ROOT_FOLDER)\Packages\Scaleform\GFx SDK 3.0\Lib\$PlatformName)\Msvc90\$(ConfigurationName)&quot;;&quot;$(YAGET_ROOT_FOLDER)\Packages\Scaleform\GFx SDK 3.0\3rdParty\zlib-1.2.3\Lib\$(PlatformName)\Msvc90\$(ConfigurationName)&quot;;&quot;$(YAGET_ROOT_FOLDER)\Packages\Scaleform\GFx SDK 3.0\3rdParty\jpeg-6b\Lib\$(PlatformName)\Msvc90\$(ConfigurationName)&quot;;&quot;$(YAGET_ROOT_FOLDER)\Packages\Scaleform\GFx SDK 3.0\Lib\$(PlatformName)\Msvc90\$(ConfigurationName)&quot;"
+	/>
+	<Tool
+		Name="VCPreBuildEventTool"
+		CommandLine=""
+	/>
+</VisualStudioPropertySheet>

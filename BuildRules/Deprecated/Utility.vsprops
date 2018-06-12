@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="Utility"
+	InheritedPropertySheets=".\Math.vsprops;.\Packages\luabind.vsprops"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\include&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="Utility$(YAGET_DEBUG_SUFFIX).lib"
+		AdditionalLibraryDirectories=""
+	/>
+	<Tool
+		Name="VCPreBuildEventTool"
+		CommandLine=""
+	/>
+	<UserMacro
+		Name="YAGET_GENERATED"
+		Value="$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\generated\$(ProjectName)"
+	/>
+</VisualStudioPropertySheet>

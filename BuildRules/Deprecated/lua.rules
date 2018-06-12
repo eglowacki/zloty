@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+        Name="Lua"
+        Version="8.00"
+        >
+        <Rules>
+                <CustomBuildRule
+                        Name="Compile Lua"
+                        DisplayName="Lua"
+                        CommandLine="luacVS.bat [StripDebugInfo] -o $(InputDir)\$(InputName).[FileExtension]  [inputs] "
+                        Outputs="$(InputDir)\$(InputName).[FileExtension]"
+                        FileExtensions="*.lua"
+                        ExecutionDescription="Compiling [inputs]"
+                        >
+                        <Properties>
+                                <BooleanProperty
+                                        Name="StripDebugInfo"
+                                        DisplayName="Strip Debug Info"
+                                        Description="Strips the Debug Information from compiled lua file"
+                                        Switch="-s"
+                                />
+                                <StringProperty
+                                        Name="FileExtension"
+                                        DisplayName="File Extension"
+                                        Description="Extension of the compiled files"
+                                        Switch="[value]"
+                                        DefaultValue="o"
+                                        Delimited="true"
+                                />
+                        </Properties>
+                </CustomBuildRule>
+        </Rules>
+</VisualStudioToolFile>
+
