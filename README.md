@@ -1,4 +1,4 @@
 # zloty
 YAGET development
 
-* [Home](Home)
+* [Home](https://github.com/eglowacki/zloty/wiki)
