@@ -1,0 +1,549 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="PCH">
+      <UniqueIdentifier>{ec52efe6-ab49-4f7e-af58-158ff0cb964d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config Files">
+      <UniqueIdentifier>{a5a1117c-23ba-4c0d-ba4a-dc6711d7161b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hash Files">
+      <UniqueIdentifier>{753aa3a9-2eee-4683-813e-c2f16ba953fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math Helper Files">
+      <UniqueIdentifier>{f2497632-fda9-49dc-84f6-6bb8cf6db3fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File Files">
+      <UniqueIdentifier>{a0b3985a-812a-4306-a97d-a0211dd072f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Message Files">
+      <UniqueIdentifier>{45e484c2-fbc2-40fe-b0b2-31ce4684fa42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Plugin Files">
+      <UniqueIdentifier>{b432bc75-9112-47ce-8a2a-84d9762839db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Synchronization Files">
+      <UniqueIdentifier>{e71a04ac-4bbd-4684-ab9e-12a3f01b02f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FSM Files">
+      <UniqueIdentifier>{44e70547-2594-4df5-b52e-d1f3ee2d0a48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Watcher Files">
+      <UniqueIdentifier>{eaf5d232-5562-4b54-9960-78315c8b26b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Timer Files">
+      <UniqueIdentifier>{94e667ea-5b26-467c-90c2-c65501603b75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Property Files">
+      <UniqueIdentifier>{1eccfcf0-85d8-4840-8cc3-d56991e27276}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Asset Files">
+      <UniqueIdentifier>{9cf05b11-c9b6-4f55-a6cc-a9dc125c33ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="String Files">
+      <UniqueIdentifier>{1e4296e8-269b-42b0-b8e1-e779d554fd2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="App Files">
+      <UniqueIdentifier>{e7358438-0d28-4399-b8e6-cfc94d64731d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interface Files">
+      <UniqueIdentifier>{9b4e4013-b8c1-476f-92a4-fd81246dd414}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input Files">
+      <UniqueIdentifier>{c3105b3e-81a5-47cd-92d1-d43ae2e6583b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Compression Files">
+      <UniqueIdentifier>{30bd1c00-6ee8-4c9e-a964-acfe5668ecb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Undo Files">
+      <UniqueIdentifier>{c6a5e8ea-2fd7-4f7a-99a0-d23edee2836c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MemoryMananger Files">
+      <UniqueIdentifier>{45ed3719-2dd0-492e-a8fe-0ca05e5e6f1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network Files">
+      <UniqueIdentifier>{edfeeb66-c2a0-427c-9110-16d3890b3034}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IdCache Files">
+      <UniqueIdentifier>{35aee758-30e0-4363-8ced-60321acb0103}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widget Files">
+      <UniqueIdentifier>{f0d13102-58dc-4658-a7e9-cf29d1a1bcb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Profiler Files">
+      <UniqueIdentifier>{d6ad05ae-ece3-4fb0-b9be-cbab8a737ef9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Logger Files">
+      <UniqueIdentifier>{8a76db01-9863-48b3-9655-7aa3192694cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Exception Files">
+      <UniqueIdentifier>{0121c3f3-04f4-4f88-a0fe-b45f983d53e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script Files">
+      <UniqueIdentifier>{101c5985-b083-4933-bfbd-379be817b31d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\Base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ObjectId.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\safe_bool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\STLHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\YagetVersion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Precompiled.h">
+      <Filter>PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Config\ConfigHelper.h">
+      <Filter>Config Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Config\Console.h">
+      <Filter>Config Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Hash\Hash.h">
+      <Filter>Hash Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Hash\ReverseHashLookup.h">
+      <Filter>Hash Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Math\InterpolationType.h">
+      <Filter>Math Helper Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Math\MathHelpers.h">
+      <Filter>Math Helper Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\File\ArchiveHelpers.h">
+      <Filter>File Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\File\AssetLoadSystem.h">
+      <Filter>File Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\File\DiskFileFactory.h">
+      <Filter>File Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\File\file_util.h">
+      <Filter>File Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\File\FileWatcher.h">
+      <Filter>File Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\File\MemoryFileFactory.h">
+      <Filter>File Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\File\PackFileFactory.h">
+      <Filter>File Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\File\VirtualFileFactory.h">
+      <Filter>File Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\File\VirtualFileSystem.h">
+      <Filter>File Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\File\XmlHelpers.h">
+      <Filter>File Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Message\Dispatcher.h">
+      <Filter>Message Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\MessageInterface.h">
+      <Filter>Message Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Plugin\IPluginObject.h">
+      <Filter>Plugin Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Plugin\Loader.h">
+      <Filter>Plugin Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Plugin\ModuleHelper.h">
+      <Filter>Plugin Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Plugin\PluginManager.h">
+      <Filter>Plugin Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Registrate.h">
+      <Filter>Plugin Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Synchronization\AtomicValue.h">
+      <Filter>Synchronization Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Synchronization\ConditionObject.h">
+      <Filter>Synchronization Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Synchronization\JobQueue.h">
+      <Filter>Synchronization Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\FSM\FSM.h">
+      <Filter>FSM Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\FSM\FSMState.h">
+      <Filter>FSM Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Watcher\AssetWatcher.h">
+      <Filter>Watcher Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Timer\Clock.h">
+      <Filter>Timer Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Timer\ClockManager.h">
+      <Filter>Timer Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Timer\ClockUtilities.h">
+      <Filter>Timer Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Timer\ITimeSource.h">
+      <Filter>Timer Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Timer\Timer.h">
+      <Filter>Timer Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Win32\TimeSourceHRWin32.h">
+      <Filter>Timer Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Property\IProperty.h">
+      <Filter>Property Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Property\PropertyData.h">
+      <Filter>Property Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Property\PropertyDataConversion.h">
+      <Filter>Property Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Property\PropertyDataImpl.h">
+      <Filter>Property Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Asset\Asset.h">
+      <Filter>Asset Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Asset\AssetHandle.h">
+      <Filter>Asset Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Asset\AssetHandleImpl.h">
+      <Filter>Asset Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Asset\AssetHelpers.h">
+      <Filter>Asset Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Asset\AssetImpl.h">
+      <Filter>Asset Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Asset\BitmapAsset.h">
+      <Filter>Asset Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Asset\IAsset.h">
+      <Filter>Asset Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Asset\MediaAsset.h">
+      <Filter>Asset Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Asset\MediaAssetImpl.h">
+      <Filter>Asset Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Asset\TextureAsset.h">
+      <Filter>Asset Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\StringHelper.h">
+      <Filter>String Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\AppContext.h">
+      <Filter>App Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\AppTraits.h">
+      <Filter>App Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\AppUtilities.h">
+      <Filter>App Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\AppWindow.h">
+      <Filter>App Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\MainConsole.h">
+      <Filter>App Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\MainDLL.h">
+      <Filter>App Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\MainFrame.h">
+      <Filter>App Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Interface\ICollision.h">
+      <Filter>Interface Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\IEditorFrame.h">
+      <Filter>Interface Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\IEditorMessages.h">
+      <Filter>Interface Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\IMetPlugin.h">
+      <Filter>Interface Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\INetwork.h">
+      <Filter>Interface Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Interface\IRenderContext.h">
+      <Filter>Interface Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\IRenderer.h">
+      <Filter>Interface Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Interface\IRendererTypes.h">
+      <Filter>Interface Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Input\InputManager.h">
+      <Filter>Input Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Input\InputManagerImpl.h">
+      <Filter>Input Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Compression\unzip.h">
+      <Filter>Compression Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Compression\zip.h">
+      <Filter>Compression Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Network\MessageFactory.h">
+      <Filter>Network Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\IdGameCache.h">
+      <Filter>IdCache Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Widget\WidgetAsset.h">
+      <Filter>Widget Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Profiler\prof.h">
+      <Filter>Profiler Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Profiler\prof_gather.h">
+      <Filter>Profiler Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Profiler\prof_internal.h">
+      <Filter>Profiler Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Profiler\prof_win32.h">
+      <Filter>Profiler Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Profiler\Profiler.h">
+      <Filter>Profiler Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Logger\Log.h">
+      <Filter>Logger Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Exception\Exception.h">
+      <Filter>Exception Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Script\luacpp.h">
+      <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Script\ref_iterator_policy.hpp">
+      <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Script\Script.h">
+      <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Script\ScriptAsset.h">
+      <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Script\ScriptErrorHandler.h">
+      <Filter>Script Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\Precompiled.cpp">
+      <Filter>PCH</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ConfigHelper.cpp">
+      <Filter>Config Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Console.cpp">
+      <Filter>Config Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Hash.cpp">
+      <Filter>Hash Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\InterpolationType.cpp">
+      <Filter>Math Helper Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MathHelpers.cpp">
+      <Filter>Math Helper Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\AssetLoadSystem.cpp">
+      <Filter>File Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DiskFileFactory.cpp">
+      <Filter>File Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\FileWatcher.cpp">
+      <Filter>File Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryFileFactory.cpp">
+      <Filter>File Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\PackFileFactory.cpp">
+      <Filter>File Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\VirtualFileFactory.cpp">
+      <Filter>File Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\VirtualFileSystem.cpp">
+      <Filter>File Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Dispatcher.cpp">
+      <Filter>Message Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Loader.cpp">
+      <Filter>Plugin Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ModuleHelper.cpp">
+      <Filter>Plugin Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\PluginManager.cpp">
+      <Filter>Plugin Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ConditionObject.cpp">
+      <Filter>Synchronization Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\FSM.cpp">
+      <Filter>FSM Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\FSMState.cpp">
+      <Filter>FSM Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\AssetWatcher.cpp">
+      <Filter>Watcher Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ClockManager.cpp">
+      <Filter>Timer Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Win32\TimeSourceHRWin32.cpp">
+      <Filter>Timer Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\BitmapAsset.cpp">
+      <Filter>Asset Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TextureAsset.cpp">
+      <Filter>Asset Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\StringHelper.cpp">
+      <Filter>String Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Win32\AppUtilities.cpp">
+      <Filter>App Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MainConsole.cpp">
+      <Filter>App Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MainFrame.cpp">
+      <Filter>App Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\InputManager.cpp">
+      <Filter>Input Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\unzip.cpp">
+      <Filter>Compression Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\zip.cpp">
+      <Filter>Compression Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryMgr.cpp">
+      <Filter>MemoryMananger Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryManager\mmgr.cpp">
+      <Filter>MemoryMananger Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryManager\Stackwalker.cpp">
+      <Filter>MemoryMananger Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryManager\tracealloc.cpp">
+      <Filter>MemoryMananger Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MessageFactory.cpp">
+      <Filter>Network Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\IdGameCache.cpp">
+      <Filter>IdCache Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\prof_draw.c">
+      <Filter>Profiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\prof_draw_console.cpp">
+      <Filter>Profiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\prof_draw_dx.cpp">
+      <Filter>Profiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\prof_gather.c">
+      <Filter>Profiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\prof_process.c">
+      <Filter>Profiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\prof_win32.c">
+      <Filter>Profiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\Profiler.cpp">
+      <Filter>Profiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Log.cpp">
+      <Filter>Logger Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\bind_action.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\bind_app.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\bind_connection.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\bind_math.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\bind_timer.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\lb_dispatcher.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\lb_input.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\lb_log.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\Script.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\ScriptAsset.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="..\include\MemoryManager\MemoryMgr.h">
+      <Filter>MemoryMananger Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\include\MemoryManager\MemoryMgr_Private.h">
+      <Filter>MemoryMananger Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\include\MemoryManager\mmgr.h">
+      <Filter>MemoryMananger Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\include\MemoryManager\nommgr.h">
+      <Filter>MemoryMananger Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\include\MemoryManager\Stackwalker.h">
+      <Filter>MemoryMananger Files</Filter>
+    </CustomBuildStep>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,554 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="PCH Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Application Files">
+      <UniqueIdentifier>{aebfbda6-634d-423f-9517-e5ca7b0cd1f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input Files">
+      <UniqueIdentifier>{783506be-611e-4bf0-b23a-8bf3b0f27163}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Debugging Files">
+      <UniqueIdentifier>{368b7caa-ddb2-4b4f-85e4-58f8d6396e6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{c396864e-5fbe-4dc0-906c-ee9767560825}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Logger Files">
+      <UniqueIdentifier>{d91089c3-641d-44a8-b43b-4cf28ce1229d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Logger Files\LoggerCpp Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="vld Files">
+      <UniqueIdentifier>{76493fa1-838b-4386-b5a1-fc9dc2850152}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform Files">
+      <UniqueIdentifier>{25caebce-122e-4ad4-9ddb-141e5fede2b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThreadModel Files">
+      <UniqueIdentifier>{9eec8fe8-d198-49e8-b5c2-9fec81fa05b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Time Files">
+      <UniqueIdentifier>{b106f0c4-7121-4878-bf1d-f9111e009551}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Stream Files">
+      <UniqueIdentifier>{d6ee2bed-5975-4134-aa15-d35655c04a36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component Files">
+      <UniqueIdentifier>{a5d7645d-a289-4a42-aa1e-1c4c0460b57f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sqlite Files">
+      <UniqueIdentifier>{6f81faa5-23cd-47db-8600-96c057b9abbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Items Files">
+      <UniqueIdentifier>{7dc13aac-861f-4282-aeaa-212b64a39505}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TinyXml Files">
+      <UniqueIdentifier>{fa358dce-f262-4a15-bc88-60bc941d2ec1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MemoryManager Files">
+      <UniqueIdentifier>{79e0f5b6-af1d-4f98-b22f-7ceabc9701c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UnitTest Files">
+      <UniqueIdentifier>{d52affba-c86c-42a3-ac64-f091fe71b848}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Database Files">
+      <UniqueIdentifier>{37cfb0f2-f662-4a8d-bd1a-a10148d6a459}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VTS Files">
+      <UniqueIdentifier>{74f8bca2-1bf8-45e4-ba1a-895a10cc5605}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Metric Files">
+      <UniqueIdentifier>{3b1d8fab-c945-4a26-b127-f8d1f87dd6a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImageLoader Files">
+      <UniqueIdentifier>{ca703232-99e5-42c0-8640-7aa9ca7150d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Json Files">
+      <UniqueIdentifier>{6a7d6c12-3118-434c-a07e-e38786e47846}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Parsers">
+      <UniqueIdentifier>{5a65b948-72cc-4029-8053-268b0405ce70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Meta Files">
+      <UniqueIdentifier>{46b8d91f-5322-469b-9462-327dcb885647}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Test Utilities Files">
+      <UniqueIdentifier>{1cf3d3db-a4da-49d2-b51f-bc53cbeac509}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\LoggerCpp\Config.cpp">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LoggerCpp\DateTime.cpp">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LoggerCpp\Log.cpp">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LoggerCpp\Logger.cpp">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LoggerCpp\Manager.cpp">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LoggerCpp\OutputConsole.cpp">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LoggerCpp\OutputDebug.cpp">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LoggerCpp\OutputFile.cpp">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Debugging\Assert.cpp">
+      <Filter>Debugging Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Logger\YLog.cpp">
+      <Filter>Logger Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Win32\AppUtilities.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Win32\Platform.cpp">
+      <Filter>Platform Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ThreadModel\JobPool.cpp">
+      <Filter>ThreadModel Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ThreadModel\JobProcessor.cpp">
+      <Filter>ThreadModel Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\InputDevice.cpp">
+      <Filter>Input Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Application\WindowApplication.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Application\Application.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Application\ConsoleApplication.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Time\GameClock.cpp">
+      <Filter>Time Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\Component.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\LocationComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\PhysicsComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\IdGameCache.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sqlite\shell.c">
+      <Filter>sqlite Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sqlite\sqlite3.c">
+      <Filter>sqlite Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\sqlite\SQLite.cpp">
+      <Filter>sqlite Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Debugging\DevConfiguration.cpp">
+      <Filter>Debugging Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TinyXml\tinystr.cpp">
+      <Filter>TinyXml Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TinyXml\tinyxml.cpp">
+      <Filter>TinyXml Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TinyXml\tinyxmlerror.cpp">
+      <Filter>TinyXml Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TinyXml\tinyxmlparser.cpp">
+      <Filter>TinyXml Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TinyXml\xmltest.cpp">
+      <Filter>TinyXml Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\ThreadModel\FileLoader.cpp">
+      <Filter>ThreadModel Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryManager\PoolAllocator.cpp">
+      <Filter>MemoryManager Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Database\Database.cpp">
+      <Filter>Database Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Streams\Guid.cpp">
+      <Filter>Stream Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\StringHelpers.cpp">
+      <Filter>Platform Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Application\Splash.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\VTS\VirtualTransportSystem.cpp">
+      <Filter>VTS Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\VTS\BlobLoader.cpp">
+      <Filter>VTS Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Application\FileUtilities.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Metrics\Concurrency.cpp">
+      <Filter>Metric Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ImageLoaders\lodepng.cpp">
+      <Filter>ImageLoader Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ImageLoaders\ImageProcessor.cpp">
+      <Filter>ImageLoader Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Metrics\Gather.cpp">
+      <Filter>Metric Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Parsers\Parser.cpp">
+      <Filter>Parsers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\CollisionShape.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\GameCoordinator.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\Collectors.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\Coordinator.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\ComponentTypes.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\GameSystem.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\PayloadStager.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Streams\Watcher.cpp">
+      <Filter>Stream Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Items\ItemsDirector.cpp">
+      <Filter>Items Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\ScriptComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Application\YagetVersion.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryManager\NewAllocator.cpp">
+      <Filter>MemoryManager Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TestHelpers\TestHelpers.cpp">
+      <Filter>Test Utilities Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\LoggerCpp\Channel.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\Config.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\DateTime.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\Exception.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\Formatter.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\Log.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\Logger.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\LoggerCpp.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\Manager.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\Output.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\OutputConsole.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\OutputDebug.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\OutputFile.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LoggerCpp\Utils.h">
+      <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\targetver.h">
+      <Filter>PCH Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Input\InputManagerImpl.h">
+      <Filter>Input Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Debugging\Assert.h">
+      <Filter>Debugging Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Logger\YLog.h">
+      <Filter>Logger Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\AppUtilities.h">
+      <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\BitArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\STLHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\YagetVersion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\Args.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\StringHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\vld\vld.h">
+      <Filter>vld Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\vld\vld_def.h">
+      <Filter>vld Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Platform\WindowsLean.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Platform\Support.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ThreadModel\JobPool.h">
+      <Filter>ThreadModel Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ThreadModel\JobProcessor.h">
+      <Filter>ThreadModel Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Input\InputDevice.h">
+      <Filter>Input Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\WindowApplication.h">
+      <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\Application.h">
+      <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Exception\Exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\ConsoleApplication.h">
+      <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Time\GameClock.h">
+      <Filter>Time Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\Component.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\LocationComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\MathFacade.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\PhysicsComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\IdGameCache.h">
+      <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sqlite\sqlite3ext.h">
+      <Filter>sqlite Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sqlite\sqlite3.h">
+      <Filter>sqlite Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sqlite\SQLite.h">
+      <Filter>sqlite Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sqlite\AccessHelpers.h">
+      <Filter>sqlite Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Debugging\DevConfiguration.h">
+      <Filter>Debugging Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\tinystr.h">
+      <Filter>TinyXml Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\tinyxml.h">
+      <Filter>TinyXml Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ThreadModel\FileLoader.h">
+      <Filter>ThreadModel Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\MemoryManager\PoolAllocator.h">
+      <Filter>MemoryManager Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\UnitTest\catch.hpp">
+      <Filter>UnitTest Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Database\Database.h">
+      <Filter>Database Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\UnitTest\TestReporterOutputDebug.h">
+      <Filter>UnitTest Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\include\ThreadModel\Variables.h">
+      <Filter>ThreadModel Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\StringCRC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Streams\Buffers.h">
+      <Filter>Stream Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Streams\Guid.h">
+      <Filter>Stream Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\Splash.h">
+      <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\VTS\VirtualTransportSystem.h">
+      <Filter>VTS Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\VTS\BlobLoader.h">
+      <Filter>VTS Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\FileUtilities.h">
+      <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\YagetCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Metrics\Concurrency.h">
+      <Filter>Metric Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ThreadModel\Condition.h">
+      <Filter>ThreadModel Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\VTS\ResolvedAssets.h">
+      <Filter>VTS Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\lodepng.h">
+      <Filter>ImageLoader Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ImageLoaders\ImageProcessor.h">
+      <Filter>ImageLoader Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Json\JsonHelpers.h">
+      <Filter>Json Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Metrics\Gather.h">
+      <Filter>Metric Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Parsers\Parser.h">
+      <Filter>Parsers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Metrics\Performance.h">
+      <Filter>Metric Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\Coordinator.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\GameSystem.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\CollisionShape.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\AppHarness.h">
+      <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Meta\CompilerAlgo.h">
+      <Filter>Meta Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\ComponentTypes.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\PayloadStager.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\GameCoordinator.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\Collectors.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Application\AppHarness.cpp">
+      <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Streams\Watcher.h">
+      <Filter>Stream Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Items\ItemsDirector.h">
+      <Filter>Items Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\ScriptComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\HashUtilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Logger\OutputMemory.cpp">
+      <Filter>Logger Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Logger\LogTags.h">
+      <Filter>Logger Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\TestHelpers\TestHelpers.h">
+      <Filter>Test Utilities Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Debugging\DevConfigurationParsers.h">
+      <Filter>Debugging Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\source\Win32\CommandLineArgs.inl">
+      <Filter>Platform Files</Filter>
+    </None>
+    <None Include="..\include\VTS\VirtualTransportSystemSchema.sqlite">
+      <Filter>VTS Files</Filter>
+    </None>
+    <None Include="cpp.hint" />
+    <None Include="..\source\Items\ItemsSchema.sqlite">
+      <Filter>Items Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>PCH Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

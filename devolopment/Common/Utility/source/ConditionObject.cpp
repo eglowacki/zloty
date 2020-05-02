@@ -1,0 +1,3 @@
+#include "Synchronization/ConditionObject.h"
+
+DISREGARD_LINKER_4221(COMPILER_VERIFICATION_ConditionObject_h)

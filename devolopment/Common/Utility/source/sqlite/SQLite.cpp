@@ -1,0 +1,280 @@
+#include "sqlite/SQLite.h"
+#include "sqlite/sqlite3.h"
+#include "App/AppUtilities.h"
+#include "App/FileUtilities.h"
+#include "Fmt/format.h"
+#include "Logger/YLog.h"
+#include "Streams/Guid.h"
+
+namespace
+{
+    int SqlQueryCallback(void *userData, int argc, char **argv, char **columnNames)
+    {
+        if (userData)
+        {
+            yaget::SQLite::QueryCallback *callback = static_cast<yaget::SQLite::QueryCallback*>(userData);
+
+            return (*callback)(argc, argv, columnNames);
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+} // namespace
+
+yaget::SQLite::SQLite()
+    : mDatabase(nullptr)
+{
+}
+
+yaget::SQLite::~SQLite()
+{
+    Close();
+}
+
+bool yaget::SQLite::Open(const char* fileName, DatabaseType openDatabaseAsType, InitializeSchema_t initializeSchemaCallback)
+{
+    const bool serializedModel = false;
+
+    m_errorMsg = "";
+    Close();
+
+    int dbFlags = serializedModel ? SQLITE_OPEN_FULLMUTEX : 0;
+    if (openDatabaseAsType == DatabaseType::DT_NEW)
+    {
+        dbFlags |= SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+
+        if (io::file::IsFileExists(fileName) && std::remove(fileName) != 0)
+        {
+            m_errorMsg = fmt::format("Could not delete SQLite Database: '{}'.", fileName);
+            return false;
+        }
+    }
+    else if (openDatabaseAsType == DatabaseType::DT_APPEND || openDatabaseAsType == DatabaseType::DT_IN_MEMORY)
+    {
+        dbFlags |= SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+    }
+    else
+    {
+        dbFlags |= SQLITE_OPEN_READONLY;
+    }
+
+    int result = sqlite3_open_v2(fileName, &mDatabase, dbFlags, NULL);
+    if (result == SQLITE_OK)
+    {
+        ExecuteStatement("PRAGMA foreign_keys = ON;", nullptr);
+
+        Batcher batcher(*this);
+        if (initializeSchemaCallback && initializeSchemaCallback(*this, mDatabase))
+        {
+            YLOG_INFO("SQL", "SQLite Database '%s' created. Version: '%s'", fileName, SQLITE_VERSION);
+        }
+        else
+        {
+            result = SQLITE_ERROR;
+            if (m_errorMsg.empty())
+            {
+                m_errorMsg = fmt::format("Could not initialize Database Schema: '{}'. {}", fileName, sqlite3_errmsg(mDatabase));
+            }
+            Close();
+        }
+    }
+    else
+    {
+        m_errorMsg = fmt::format("Could not open/create SQLite Database: '{}'. Error: '{}'.", fileName, sqlite3_errmsg(mDatabase));
+        Close();
+    }
+
+    return result == SQLITE_OK;
+}
+
+void yaget::SQLite::Close()
+{
+    for (auto&& it : m_statements)
+    {
+        Statement& statement = it.second;
+        sqlite3_finalize(statement.m_stm);
+        statement.m_stm = nullptr;
+    }
+
+    m_statements.clear();
+    sqlite3_close(mDatabase);
+    mDatabase = nullptr;
+}
+
+bool yaget::SQLite::ExecuteStatement(const std::string& command, QueryCallback *callback)
+{
+    YAGET_ASSERT(mDatabase, ("SQLite::ExecuteStatement: '%s' called, but sqlite db is not created yet.", command.c_str()));
+
+    m_errorMsg = "";
+    bool result = false;
+
+    if (mDatabase)
+    {
+        if (command.size() < SQLite::MAX_COMMAND_LEN)
+        {
+            char* errorTest = nullptr;
+            int execResult = sqlite3_exec(mDatabase, command.c_str(), (callback ? SqlQueryCallback : nullptr), callback, &errorTest);
+            if (execResult == SQLITE_OK || execResult == SQLITE_ABORT)
+            {
+                sqlite3_free(errorTest);
+                result = true;
+            }
+            else
+            {
+                m_errorMsg = fmt::format("Last command: {}. Error: {}", command.c_str(), errorTest ? errorTest : "");
+                sqlite3_free(errorTest);
+                result = false;
+            }
+        }
+        else
+        {
+            m_errorMsg = fmt::format("Command '%s' with len: '{}' exceeded size limit. Maximum length of command is '{}'.", command.c_str(), command.size(), SQLite::MAX_COMMAND_LEN);
+            result = false;
+        }
+    }
+    else
+    {
+        m_errorMsg = fmt::format("Error executing command {}. There is no Database created.", command.c_str());
+        result = false;
+    }
+
+    return result;
+}
+
+void yaget::SQLite::StatementBinder<yaget::null_marker_t>::Bind(sqlite3* database, sqlite3_stmt* statement, yaget::null_marker_t /*value*/, int index)
+{
+    int result = sqlite3_bind_null(statement, index);
+    const char* errorMessage = sqlite3_errmsg(database); errorMessage;
+    YAGET_ASSERT(result == SQLITE_OK, "Bind null statement failed: %s.", errorMessage ? errorMessage : "");
+}
+
+void yaget::SQLite::StatementBinder<int>::Bind(sqlite3* database, sqlite3_stmt* statement, int value, int index)
+{
+    int result = sqlite3_bind_int(statement, index, value);
+    const char* errorMessage = sqlite3_errmsg(database); errorMessage;
+    YAGET_ASSERT(result == SQLITE_OK, "Bind int statement failed: %s.", errorMessage ? errorMessage : "");
+}
+
+void yaget::SQLite::StatementBinder<bool>::Bind(sqlite3* database, sqlite3_stmt* statement, bool value, int index)
+{
+    int result = sqlite3_bind_int(statement, index, value);
+    const char* errorMessage = sqlite3_errmsg(database); errorMessage;
+    YAGET_ASSERT(result == SQLITE_OK, "Bind bool (int) statement failed: %s.", errorMessage ? errorMessage : "");
+}
+
+void yaget::SQLite::StatementBinder<float>::Bind(sqlite3* database, sqlite3_stmt* statement, float value, int index)
+{
+    int result = sqlite3_bind_double(statement, index, value);
+    const char* errorMessage = sqlite3_errmsg(database); errorMessage;
+    YAGET_ASSERT(result == SQLITE_OK, "Bind float statement failed: %s.", errorMessage ? errorMessage : "");
+}
+
+void yaget::SQLite::StatementBinder<yaget::Guid>::Bind(sqlite3* database, sqlite3_stmt* statement, yaget::Guid value, int index)
+{
+    StatementBinder<std::string>::Bind(database, statement, value.str(), index);
+}
+
+void yaget::SQLite::StatementBinder<std::vector<std::string>>::Bind(sqlite3* database, sqlite3_stmt* statement, const std::vector<std::string>& value, int index)
+{
+    StatementBinder<std::string>::Bind(database, statement, conv::Convertor<std::vector<std::string>>::ToString(value), index);
+}
+
+void yaget::SQLite::StatementBinder<std::string>::Bind(sqlite3* database, sqlite3_stmt* statement, const std::string& value, int index)
+{
+    int result = sqlite3_bind_text(statement, index, value.c_str(), -1, SQLITE_TRANSIENT);
+    const char* errorMessage = sqlite3_errmsg(database); errorMessage;
+    YAGET_ASSERT(result == SQLITE_OK, "Bind string statement failed: %s.", errorMessage ? errorMessage : "");
+}
+
+yaget::SQLite::Statement::Statement(sqlite3* database, const std::string& command) : mDatabase(database)
+{
+    int result = sqlite3_prepare_v2(mDatabase, command.c_str(), static_cast<int>(command.size()), &m_stm, 0);
+    const char* errorMessage = sqlite3_errmsg(mDatabase); errorMessage;
+    YAGET_ASSERT(result == SQLITE_OK, "SQLite Statement prepare failed: %s.", errorMessage ? errorMessage : "");
+}
+
+void yaget::SQLite::Statement::ResetBindings()
+{
+    sqlite3_reset(m_stm);
+    sqlite3_clear_bindings(m_stm);
+}
+
+bool yaget::SQLite::ExecuteStatement(Statement* statement)
+{
+    int result = sqlite3_step(statement->m_stm);
+    if (result == SQLITE_OK || result == SQLITE_DONE)
+    {
+        return true;
+    }
+
+    m_errorMsg = fmt::format("Execute prepared statement error: {}", sqlite3_errmsg(mDatabase));
+    return false;
+}
+
+std::vector<std::string> yaget::SQLite::GetErrors() const
+{
+    std::vector<std::string> errors;
+    if (m_errorMsg.size())
+    {
+        errors.push_back(m_errorMsg);
+    }
+
+    return errors;
+}
+
+bool yaget::SQLite::Backup(const char *fileName) const
+{
+    sqlite3* pFile = nullptr;;
+    int rc = sqlite3_open(fileName, &pFile);
+    if (rc == SQLITE_OK)
+    {
+        if (sqlite3_backup* pBackup = sqlite3_backup_init(pFile, "main", mDatabase, "main"))
+        {
+            sqlite3_backup_step(pBackup, -1);
+            sqlite3_backup_finish(pBackup);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void yaget::SQLite::Log(const std::string& messageType, const std::string& message)
+{
+    using LogRecord = SQLite::Row<std::string /*Type*/, std::string /*Message*/, std::string /*SessionId*/>;
+
+    LogRecord logRecord(messageType, message, util::ApplicationId().str());
+    ExecuteStatement("MessageAdd", "Logs", logRecord, SQLite::Behaviour::TimeStampYes, SQLite::Behaviour::Insert);
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------
+yaget::db::Transaction::Transaction(SQLite& database) : mDatabase(database)
+{
+    bool result = mDatabase.ExecuteStatement("BEGIN", nullptr);
+    YAGET_ASSERT(result, "BEGIN TRANSCATION failed. %s", ParseErrors(mDatabase).c_str());
+}
+
+void yaget::db::Transaction::Rollback()
+{
+    mCommit = false;
+}
+
+yaget::db::Transaction::~Transaction()
+{
+    if (mCommit)
+    {
+        bool result = mDatabase.ExecuteStatement("END", nullptr);
+        YAGET_ASSERT(result, "END TRANSCATION failed. %s", ParseErrors(mDatabase).c_str());
+    }
+    else
+    {
+        bool result = mDatabase.ExecuteStatement("ROLLBACK", nullptr);
+        YAGET_ASSERT(result, "ROLLBACK TRANSCATION failed. %s", ParseErrors(mDatabase).c_str());
+    }
+}
+

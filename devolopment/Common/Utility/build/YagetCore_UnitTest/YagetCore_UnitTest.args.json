@@ -1,0 +1,22 @@
+{
+  "FileVersion": 2,
+  "Id": "c7b11e9f-e134-4506-99cc-5fa382aaecf5",
+  "Items": [
+    {
+      "Id": "e2ae31d4-02ed-4f6c-8b97-1d1d26a8c93c",
+      "Command": "--test_filter=CoordinatorSystem"
+    },
+    {
+      "Id": "9ba4c4f0-be6d-468f-ab63-8af7d93d9a32",
+      "Command": "--test_filter=Coordinator"
+    },
+    {
+      "Id": "18f4665a-ee60-42bf-836b-d65ed741db4e",
+      "Command": "--test_filter=ApplicationRun"
+    },
+    {
+      "Id": "d3b98e8b-1113-4801-b5e8-149c4aade8b8",
+      "Command": "--options_view"
+    }
+  ]
+}

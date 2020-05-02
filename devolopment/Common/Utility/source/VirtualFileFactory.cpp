@@ -1,0 +1,5 @@
+
+namespace eg {
+
+
+} // namespace eg

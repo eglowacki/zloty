@@ -1,0 +1,11 @@
+// Items schema aka scene management
+
+// version table
+"CREATE TABLE 'Version' ('Id' INTEGER NOT NULL DEFAULT 1, PRIMARY KEY('Id')) WITHOUT ROWID; ",
+"INSERT INTO Version(Id) VALUES('1');",
+
+"UPDATE Version SET Id = '" YAGET_STRINGIZE(YAGET_ITEMS_VERSION) "';",
+
+// Create id cache table, used for in game persistent items
+"CREATE TABLE 'IdCache' ('Marker' INTEGER UNIQUE, 'BatchSize' INTEGER, 'NextId' INTEGER, PRIMARY KEY('Marker'));",
+"INSERT INTO IdCache(Marker, BatchSize, NextId) VALUES('1', '100', '1000000000000000');",

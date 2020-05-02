@@ -1,0 +1,23 @@
+//////////////////////////////////////////////////////////////////////
+// TestHelpers.h
+//
+//  Copyright 11/27/2019 Edgar Glowacki
+//
+//  Maintained by: Edgar
+//
+//  NOTES:
+//      
+//
+//
+//  #include "TestHelpers/TestHelpers.h"
+//
+//////////////////////////////////////////////////////////////////////
+//! \file
+#pragma once
+
+#include "YagetCore.h"
+
+
+namespace yaget::test
+{
+} // namespace yaget::test

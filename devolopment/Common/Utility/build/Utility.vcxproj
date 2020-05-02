@@ -1,0 +1,317 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{50B550FA-6F86-4CDE-9F85-4A1780FC5AD2}</ProjectGuid>
+    <RootNamespace>Utility</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\BuildRules\yaget.Release.props" />
+    <Import Project="..\..\..\BuildRules\yaget.Math.props" />
+    <Import Project="..\..\..\BuildRules\Packages\luabind.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\BuildRules\yaget.Debug.props" />
+    <Import Project="..\..\..\BuildRules\yaget.Math.props" />
+    <Import Project="..\..\..\BuildRules\Packages\luabind.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DisableSpecificWarnings>4127;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4127;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\Base.h" />
+    <ClInclude Include="..\include\ObjectId.h" />
+    <ClInclude Include="..\include\safe_bool.h" />
+    <ClInclude Include="..\..\include\STLHelper.h" />
+    <ClInclude Include="..\..\include\YagetVersion.h" />
+    <ClInclude Include="..\source\Precompiled.h" />
+    <ClInclude Include="..\include\Config\ConfigHelper.h" />
+    <ClInclude Include="..\include\Config\Console.h" />
+    <ClInclude Include="..\include\Hash\Hash.h" />
+    <ClInclude Include="..\include\Hash\ReverseHashLookup.h" />
+    <ClInclude Include="..\include\Math\InterpolationType.h" />
+    <ClInclude Include="..\include\Math\MathHelpers.h" />
+    <ClInclude Include="..\include\File\ArchiveHelpers.h" />
+    <ClInclude Include="..\include\File\AssetLoadSystem.h" />
+    <ClInclude Include="..\include\File\DiskFileFactory.h" />
+    <ClInclude Include="..\include\File\file_util.h" />
+    <ClInclude Include="..\include\File\FileWatcher.h" />
+    <ClInclude Include="..\include\File\MemoryFileFactory.h" />
+    <ClInclude Include="..\include\File\PackFileFactory.h" />
+    <ClInclude Include="..\include\File\VirtualFileFactory.h" />
+    <ClInclude Include="..\include\File\VirtualFileSystem.h" />
+    <ClInclude Include="..\include\File\XmlHelpers.h" />
+    <ClInclude Include="..\include\Message\Dispatcher.h" />
+    <ClInclude Include="..\include\MessageInterface.h" />
+    <ClInclude Include="..\include\Plugin\IPluginObject.h" />
+    <ClInclude Include="..\include\Plugin\Loader.h" />
+    <ClInclude Include="..\include\Plugin\ModuleHelper.h" />
+    <ClInclude Include="..\include\Plugin\PluginManager.h" />
+    <ClInclude Include="..\include\Registrate.h" />
+    <ClInclude Include="..\include\Synchronization\AtomicValue.h" />
+    <ClInclude Include="..\include\Synchronization\ConditionObject.h" />
+    <ClInclude Include="..\include\Synchronization\JobQueue.h" />
+    <ClInclude Include="..\include\FSM\FSM.h" />
+    <ClInclude Include="..\include\FSM\FSMState.h" />
+    <ClInclude Include="..\include\Watcher\AssetWatcher.h" />
+    <ClInclude Include="..\include\Timer\Clock.h" />
+    <ClInclude Include="..\include\Timer\ClockManager.h" />
+    <ClInclude Include="..\include\Timer\ClockUtilities.h" />
+    <ClInclude Include="..\include\Timer\ITimeSource.h" />
+    <ClInclude Include="..\include\Timer\Timer.h" />
+    <ClInclude Include="..\source\Win32\TimeSourceHRWin32.h" />
+    <ClInclude Include="..\include\Property\IProperty.h" />
+    <ClInclude Include="..\include\Property\PropertyData.h" />
+    <ClInclude Include="..\include\Property\PropertyDataConversion.h" />
+    <ClInclude Include="..\include\Property\PropertyDataImpl.h" />
+    <ClInclude Include="..\include\Asset\Asset.h" />
+    <ClInclude Include="..\include\Asset\AssetHandle.h" />
+    <ClInclude Include="..\include\Asset\AssetHandleImpl.h" />
+    <ClInclude Include="..\include\Asset\AssetHelpers.h" />
+    <ClInclude Include="..\include\Asset\AssetImpl.h" />
+    <ClInclude Include="..\include\Asset\BitmapAsset.h" />
+    <ClInclude Include="..\include\Asset\IAsset.h" />
+    <ClInclude Include="..\include\Asset\MediaAsset.h" />
+    <ClInclude Include="..\include\Asset\MediaAssetImpl.h" />
+    <ClInclude Include="..\include\Asset\TextureAsset.h" />
+    <ClInclude Include="..\include\StringHelper.h" />
+    <ClInclude Include="..\include\App\AppContext.h" />
+    <ClInclude Include="..\include\App\AppTraits.h" />
+    <ClInclude Include="..\include\App\AppUtilities.h" />
+    <ClInclude Include="..\include\App\AppWindow.h" />
+    <ClInclude Include="..\include\App\MainConsole.h" />
+    <ClInclude Include="..\include\App\MainDLL.h" />
+    <ClInclude Include="..\include\App\MainFrame.h" />
+    <ClInclude Include="..\include\Interface\ICollision.h" />
+    <ClInclude Include="..\include\IEditorFrame.h" />
+    <ClInclude Include="..\include\IEditorMessages.h" />
+    <ClInclude Include="..\include\IMetPlugin.h" />
+    <ClInclude Include="..\include\INetwork.h" />
+    <ClInclude Include="..\include\Interface\IRenderContext.h" />
+    <ClInclude Include="..\include\IRenderer.h" />
+    <ClInclude Include="..\include\Interface\IRendererTypes.h" />
+    <ClInclude Include="..\include\Input\InputManager.h" />
+    <ClInclude Include="..\include\Input\InputManagerImpl.h" />
+    <ClInclude Include="..\include\Compression\unzip.h" />
+    <ClInclude Include="..\include\Compression\zip.h" />
+    <CustomBuildStep Include="..\include\MemoryManager\MemoryMgr.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\include\MemoryManager\MemoryMgr_Private.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\include\MemoryManager\mmgr.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\include\MemoryManager\nommgr.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\include\MemoryManager\Stackwalker.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <ClInclude Include="..\include\Network\MessageFactory.h" />
+    <ClInclude Include="..\include\IdGameCache.h" />
+    <ClInclude Include="..\include\Widget\WidgetAsset.h" />
+    <ClInclude Include="..\include\Profiler\prof.h" />
+    <ClInclude Include="..\include\Profiler\prof_gather.h" />
+    <ClInclude Include="..\source\Profiler\prof_internal.h" />
+    <ClInclude Include="..\include\Profiler\prof_win32.h" />
+    <ClInclude Include="..\include\Profiler\Profiler.h" />
+    <ClInclude Include="..\include\Logger\Log.h" />
+    <ClInclude Include="..\include\Exception\Exception.h" />
+    <ClInclude Include="..\include\Script\luacpp.h" />
+    <ClInclude Include="..\include\Script\ref_iterator_policy.hpp" />
+    <ClInclude Include="..\source\Script\Script.h" />
+    <ClInclude Include="..\include\Script\ScriptAsset.h" />
+    <ClInclude Include="..\include\Script\ScriptErrorHandler.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\Precompiled.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\source\ConfigHelper.cpp" />
+    <ClCompile Include="..\source\Console.cpp" />
+    <ClCompile Include="..\source\Hash.cpp" />
+    <ClCompile Include="..\source\InterpolationType.cpp" />
+    <ClCompile Include="..\source\MathHelpers.cpp" />
+    <ClCompile Include="..\source\AssetLoadSystem.cpp" />
+    <ClCompile Include="..\source\DiskFileFactory.cpp" />
+    <ClCompile Include="..\source\FileWatcher.cpp" />
+    <ClCompile Include="..\source\MemoryFileFactory.cpp" />
+    <ClCompile Include="..\source\PackFileFactory.cpp" />
+    <ClCompile Include="..\source\VirtualFileFactory.cpp" />
+    <ClCompile Include="..\source\VirtualFileSystem.cpp" />
+    <ClCompile Include="..\source\Dispatcher.cpp" />
+    <ClCompile Include="..\source\Loader.cpp" />
+    <ClCompile Include="..\source\ModuleHelper.cpp" />
+    <ClCompile Include="..\source\PluginManager.cpp" />
+    <ClCompile Include="..\source\ConditionObject.cpp" />
+    <ClCompile Include="..\source\FSM.cpp" />
+    <ClCompile Include="..\source\FSMState.cpp" />
+    <ClCompile Include="..\source\AssetWatcher.cpp" />
+    <ClCompile Include="..\source\ClockManager.cpp" />
+    <ClCompile Include="..\source\Win32\TimeSourceHRWin32.cpp" />
+    <ClCompile Include="..\source\BitmapAsset.cpp" />
+    <ClCompile Include="..\source\TextureAsset.cpp" />
+    <ClCompile Include="..\source\StringHelper.cpp" />
+    <ClCompile Include="..\source\Win32\AppUtilities.cpp" />
+    <ClCompile Include="..\source\MainConsole.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
+    </ClCompile>
+    <ClCompile Include="..\source\MainFrame.cpp" />
+    <ClCompile Include="..\source\InputManager.cpp" />
+    <ClCompile Include="..\source\unzip.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\source\zip.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryMgr.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryManager\mmgr.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4311;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4311;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryManager\Stackwalker.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\source\MemoryManager\tracealloc.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\source\MessageFactory.cpp" />
+    <ClCompile Include="..\source\IdGameCache.cpp" />
+    <ClCompile Include="..\source\Profiler\prof_draw.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\prof_draw_console.cpp" />
+    <ClCompile Include="..\source\Profiler\prof_draw_dx.cpp" />
+    <ClCompile Include="..\source\Profiler\prof_gather.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\prof_process.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\prof_win32.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="..\source\Profiler\Profiler.cpp" />
+    <ClCompile Include="..\source\Log.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\bind_action.cpp" />
+    <ClCompile Include="..\source\Script\bind_app.cpp" />
+    <ClCompile Include="..\source\Script\bind_connection.cpp" />
+    <ClCompile Include="..\source\Script\bind_math.cpp" />
+    <ClCompile Include="..\source\Script\bind_timer.cpp" />
+    <ClCompile Include="..\source\Script\lb_dispatcher.cpp" />
+    <ClCompile Include="..\source\Script\lb_input.cpp" />
+    <ClCompile Include="..\source\Script\lb_log.cpp" />
+    <ClCompile Include="..\source\Script\Script.cpp" />
+    <ClCompile Include="..\source\Script\ScriptAsset.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
