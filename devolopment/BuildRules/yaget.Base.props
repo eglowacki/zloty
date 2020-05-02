@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="yaget.Branch.props" />
+    <Import Project="yaget.Options.props" />
+    <Import Project="yaget.Math.props" />
+    <Import Project="yaget.Bullet.props" />
+    <Import Project="yaget.flatbuffers.props" />
+    <Import Project="yaget.nlohmann_json.props" />
+    <Import Project="yaget.RADTelemetry.props" />
+    <Import Project="yaget.DXTK.props" />
+    <Import Project="yaget.fmt.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <YAGET_RUN_FOLDER>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\bin\$(ProjectName)\$(Platform).$(Configuration)\</YAGET_RUN_FOLDER>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IntDir>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\obj\$(ProjectName)\$(PlatformName).$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\include;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\include;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\source\vld;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>Precompiled.h</PrecompiledHeaderFile>
+      <WarningLevel>Level4</WarningLevel>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);TIXML_USE_STL;_ENABLE_ATOMIC_ALIGNMENT_FIX;NOMINMAX;GUID_WINDOWS;_WIN64</PreprocessorDefinitions>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <WarningVersion>18</WarningVersion>
+    </ClCompile>
+    <Link>
+      <ImportLibrary>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\lib\$(PlatformName)\$(ProjectName)$(YAGET_DEBUG_SUFFIX).lib</ImportLibrary>
+      <AdditionalLibraryDirectories>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\lib\$(PlatformName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>YagetCore$(YAGET_DEBUG_SUFFIX).lib;Shlwapi.lib;vld.lib;%(AdditionalDependencies);Dbghelp.lib;Shcore.lib</AdditionalDependencies>
+    </Link>
+    <FxCompile>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="YAGET_RUN_FOLDER">
+      <Value>$(YAGET_RUN_FOLDER)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
