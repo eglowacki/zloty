@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
-    <YAGET_BRANCH_FOLDER>zloty/development</YAGET_BRANCH_FOLDER>
+    <YAGET_BRANCH_FOLDER>zloty\development</YAGET_BRANCH_FOLDER>
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
