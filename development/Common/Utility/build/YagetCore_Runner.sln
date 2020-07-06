@@ -1,19 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30225.117
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetCore", "YagetCore.vcxproj", "{07303B2D-746E-4E66-9F3E-E0C5D4A31D80}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Research", "Research.vcxproj", "{42B1D01D-4AB7-45E2-BD8D-ACA7DEEC95E4}"
-	ProjectSection(ProjectDependencies) = postProject
-		{07303B2D-746E-4E66-9F3E-E0C5D4A31D80} = {07303B2D-746E-4E66-9F3E-E0C5D4A31D80}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest_YagetCore", "UnitTest_YagetCore.vcxproj", "{8016FCEB-2E28-4637-A2E4-A80C889E49E8}"
-	ProjectSection(ProjectDependencies) = postProject
-		{07303B2D-746E-4E66-9F3E-E0C5D4A31D80} = {07303B2D-746E-4E66-9F3E-E0C5D4A31D80}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,24 +21,11 @@ Global
 		{07303B2D-746E-4E66-9F3E-E0C5D4A31D80}.Release|x64.Build.0 = Release|x64
 		{07303B2D-746E-4E66-9F3E-E0C5D4A31D80}.Release|x86.ActiveCfg = Release|Win32
 		{07303B2D-746E-4E66-9F3E-E0C5D4A31D80}.Release|x86.Build.0 = Release|Win32
-		{42B1D01D-4AB7-45E2-BD8D-ACA7DEEC95E4}.Debug|x64.ActiveCfg = Debug|x64
-		{42B1D01D-4AB7-45E2-BD8D-ACA7DEEC95E4}.Debug|x64.Build.0 = Debug|x64
-		{42B1D01D-4AB7-45E2-BD8D-ACA7DEEC95E4}.Debug|x86.ActiveCfg = Debug|Win32
-		{42B1D01D-4AB7-45E2-BD8D-ACA7DEEC95E4}.Debug|x86.Build.0 = Debug|Win32
-		{42B1D01D-4AB7-45E2-BD8D-ACA7DEEC95E4}.Release|x64.ActiveCfg = Release|x64
-		{42B1D01D-4AB7-45E2-BD8D-ACA7DEEC95E4}.Release|x64.Build.0 = Release|x64
-		{42B1D01D-4AB7-45E2-BD8D-ACA7DEEC95E4}.Release|x86.ActiveCfg = Release|Win32
-		{42B1D01D-4AB7-45E2-BD8D-ACA7DEEC95E4}.Release|x86.Build.0 = Release|Win32
-		{8016FCEB-2E28-4637-A2E4-A80C889E49E8}.Debug|x64.ActiveCfg = Debug|x64
-		{8016FCEB-2E28-4637-A2E4-A80C889E49E8}.Debug|x64.Build.0 = Debug|x64
-		{8016FCEB-2E28-4637-A2E4-A80C889E49E8}.Debug|x86.ActiveCfg = Debug|Win32
-		{8016FCEB-2E28-4637-A2E4-A80C889E49E8}.Debug|x86.Build.0 = Debug|Win32
-		{8016FCEB-2E28-4637-A2E4-A80C889E49E8}.Release|x64.ActiveCfg = Release|x64
-		{8016FCEB-2E28-4637-A2E4-A80C889E49E8}.Release|x64.Build.0 = Release|x64
-		{8016FCEB-2E28-4637-A2E4-A80C889E49E8}.Release|x86.ActiveCfg = Release|Win32
-		{8016FCEB-2E28-4637-A2E4-A80C889E49E8}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6B6F3B8F-8BC9-4941-B9DE-D569AB461AF8}
 	EndGlobalSection
 EndGlobal
