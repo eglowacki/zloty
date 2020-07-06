@@ -4,19 +4,16 @@
 #include "Platform/Support.h"
 #include "YagetVersion.h"
 #include "Debugging/DevConfiguration.h"
-
-#if YAGET_CONC_METRICS_ENABLED == 1
-    #pragma message("======== Concurenty Metrics Enabled ========")
-#else
-    #pragma message("======== Concurenty Metrics NOT Included ========")
-//#error  "YAGET_METRICS_USE_CONC is not define, there is no support for turning off metrics at this time"
-#endif // YAGET_CONC_METRICS_ENABLED
-
-#if YAGET_CONC_METRICS_ENABLED == 1
 #include "rad_tm.h"
 
 #include <cvmarkersobj.h>
 namespace conc = Concurrency::diagnostic;
+
+#if YAGET_CONC_METRICS_ENABLED == 1
+    #pragma message("======== Concurenty Metrics Enabled ========")
+#else
+    #error  "YAGET_METRICS_USE_CONC is not define, there is no support for turning off metrics at this time"
+#endif // YAGET_CONC_METRICS_ENABLED
 
 namespace
 {
@@ -251,6 +248,3 @@ void yaget::metrics::MarkEndTimeSpan(uint64_t spanId, const char* file, uint32_t
 {
     tmEndTimeSpanEx(CaptureMask, spanId, file, line);
 }
-#else
-
-#endif // YAGET_CONC_METRICS_ENABLED

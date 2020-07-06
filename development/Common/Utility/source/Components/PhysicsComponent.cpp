@@ -6,16 +6,16 @@
 #include "Debugging/DevConfiguration.h"
 
 
-//#pragma warning( push )
-//    #pragma warning( disable : 4127 )  // conditional expression is constant
-//    #pragma warning( disable : 4099 )  // '': type name first seen using 'class' now seen using 'struct'
-//    #include "btBulletDynamicsCommon.h" 
-//#pragma warning( pop )
+#pragma warning( push )
+    #pragma warning( disable : 4127 )  // conditional expression is constant
+    #pragma warning( disable : 4099 )  // '': type name first seen using 'class' now seen using 'struct'
+    #include "btBulletDynamicsCommon.h" 
+#pragma warning( pop )
 
 using namespace yaget;
 using namespace DirectX;
 
-#if 0
+
 namespace yaget
 {
     namespace conv
@@ -107,15 +107,14 @@ namespace
         comp::PhysicsComponent::Params::WorldTransformCallback_t mWorldTransformCallback;
     };
 } // namespace
-#endif // 0
 
 yaget::comp::PhysicsWorldComponent::PhysicsWorldComponent(Id_t id)
     : Component(id)
-    //, mCollisionConfiguration(std::make_unique<btDefaultCollisionConfiguration>())
-    //, mDispatcher(std::make_unique<btCollisionDispatcher>(mCollisionConfiguration.get()))
-    //, mOverlappingPairCache(std::make_unique<btDbvtBroadphase>())
-    //, mSolver(std::make_unique<btSequentialImpulseConstraintSolver>())
-    //, mDynamicsWorld(std::make_unique<btDiscreteDynamicsWorld>(mDispatcher.get(), mOverlappingPairCache.get(), mSolver.get(), mCollisionConfiguration.get()))
+    , mCollisionConfiguration(std::make_unique<btDefaultCollisionConfiguration>())
+    , mDispatcher(std::make_unique<btCollisionDispatcher>(mCollisionConfiguration.get()))
+    , mOverlappingPairCache(std::make_unique<btDbvtBroadphase>())
+    , mSolver(std::make_unique<btSequentialImpulseConstraintSolver>())
+    , mDynamicsWorld(std::make_unique<btDiscreteDynamicsWorld>(mDispatcher.get(), mOverlappingPairCache.get(), mSolver.get(), mCollisionConfiguration.get()))
 {
 
     //static physx::PxDefaultErrorCallback gDefaultErrorCallback;
@@ -125,10 +124,10 @@ yaget::comp::PhysicsWorldComponent::PhysicsWorldComponent(Id_t id)
     //YAGET_ASSERT(foundation, "xCreateFoundation failed.");
 }
 
-void yaget::comp::PhysicsWorldComponent::Update(const time::GameClock& /*gameClock*/, yaget::metrics::Channel& /*channel*/)
+void yaget::comp::PhysicsWorldComponent::Update(const time::GameClock& gameClock, yaget::metrics::Channel& /*channel*/)
 {
-    //float stepInSeconds = time::FromTo<float>(gameClock.GetDeltaTime(), time::kMicrosecondUnit, time::kSecondUnit);
-    //mDynamicsWorld->stepSimulation(stepInSeconds);
+    float stepInSeconds = time::FromTo<float>(gameClock.GetDeltaTime(), time::kMicrosecondUnit, time::kSecondUnit);
+    mDynamicsWorld->stepSimulation(stepInSeconds);
 }
 
 
@@ -148,93 +147,92 @@ comp::PhysicsComponent::PhysicsComponent(Id_t id, PhysicsWorldComponent* physics
     });
 }
 
-comp::PhysicsComponent::PhysicsComponent(Id_t id, PhysicsWorldComponent* /*physicsWorld*/, const yaget::physics::CollisionShape& /*collisionSHape*/, const math3d::Vector3& position, const math3d::Quaternion& orientation)
+comp::PhysicsComponent::PhysicsComponent(Id_t id, PhysicsWorldComponent* physicsWorld, const yaget::physics::CollisionShape& collisionSHape, const math3d::Vector3& position, const math3d::Quaternion& orientation)
     : Component(id)
-    //, mDynamicsWorld(physicsWorld->mDynamicsWorld.get())
-    //, mColisionlShape(collisionSHape.GetShape())
+    , mDynamicsWorld(physicsWorld->mDynamicsWorld.get())
+    , mColisionlShape(collisionSHape.GetShape())
     , mPosition(position)
     , mOrientation(orientation)
 {
     AddSupportedTrigger(TransformChanged);
 
-    //btTransform startTransform = conv::Matrix(mPosition, mOrientation);
-    //btVector3 localInertia(0, 0, 0);
+    btTransform startTransform = conv::Matrix(mPosition, mOrientation);
+    btVector3 localInertia(0, 0, 0);
 
-    ////rigidbody is dynamic if and only if mass is non zero, otherwise static
-    //if (collisionSHape.GetMass() != 0.f)
-    //{
-    //    mColisionlShape->calculateLocalInertia(collisionSHape.GetMass(), localInertia);
-    //}
+    //rigidbody is dynamic if and only if mass is non zero, otherwise static
+    if (collisionSHape.GetMass() != 0.f)
+    {
+        mColisionlShape->calculateLocalInertia(collisionSHape.GetMass(), localInertia);
+    }
 
-    //auto motionCallback = [this](auto&&... params) { onSigTransformChanged(params...); };
-    //btDefaultMotionState* motionState = new YagetDefaultMotionState(motionCallback, startTransform);
-    //btRigidBody::btRigidBodyConstructionInfo rbInfo(collisionSHape.GetMass(), motionState, mColisionlShape, localInertia);
-    //mRigidBody = new btRigidBody(rbInfo);
+    auto motionCallback = [this](auto&&... params) { onSigTransformChanged(params...); };
+    btDefaultMotionState* motionState = new YagetDefaultMotionState(motionCallback, startTransform);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(collisionSHape.GetMass(), motionState, mColisionlShape, localInertia);
+    mRigidBody = new btRigidBody(rbInfo);
 
-    //mDynamicsWorld->addRigidBody(mRigidBody);
+    mDynamicsWorld->addRigidBody(mRigidBody);
 }
 
-comp::PhysicsComponent::PhysicsComponent(Id_t id, PhysicsWorldComponent* /*physicsWorld*/, const Params& /*params*/)
-    : Component(id)
-    //: PhysicsComponent(id, physicsWorld->mDynamicsWorld.get(), params)
+comp::PhysicsComponent::PhysicsComponent(Id_t id, PhysicsWorldComponent* physicsWorld, const Params& params)
+    : PhysicsComponent(id, physicsWorld->mDynamicsWorld.get(), params)
 {
-    //mDynamicsWorld->addRigidBody(mRigidBody);
+    mDynamicsWorld->addRigidBody(mRigidBody);
 }
 
-comp::PhysicsComponent::PhysicsComponent(Id_t id, btDiscreteDynamicsWorld* /*dynamicsWorld*/, const Params& /*params*/)
+comp::PhysicsComponent::PhysicsComponent(Id_t id, btDiscreteDynamicsWorld* dynamicsWorld, const Params& params)
     : Component(id)
-    //, mDynamicsWorld(dynamicsWorld)
-    //, mColisionlShape(params.collisionShape)
+    , mDynamicsWorld(dynamicsWorld)
+    , mColisionlShape(params.collisionShape)
 {
     AddSupportedTrigger(TransformChanged);
 
-    //YAGET_ASSERT(mDynamicsWorld, "Can not create Physics Component when dynamicsWorld is nullptr.");
+    YAGET_ASSERT(mDynamicsWorld, "Can not create Physics Component when dynamicsWorld is nullptr.");
 
-    ///// Create Dynamic Objects
-    //btTransform startTransform;
-    //if (params.matrix)
-    //{
-    //    startTransform = conv::Matrix(*params.matrix);
-    //}
-    //else
-    //{
-    //    startTransform.setIdentity();
-    //}
+    /// Create Dynamic Objects
+    btTransform startTransform;
+    if (params.matrix)
+    {
+        startTransform = conv::Matrix(*params.matrix);
+    }
+    else
+    {
+        startTransform.setIdentity();
+    }
 
-    //btScalar mass(params.mass);
+    btScalar mass(params.mass);
 
-    ////rigidbody is dynamic if and only if mass is non zero, otherwise static
-    //bool isDynamic = (mass != 0.f);
+    //rigidbody is dynamic if and only if mass is non zero, otherwise static
+    bool isDynamic = (mass != 0.f);
 
-    //btVector3 localInertia(0, 0, 0);
-    //if (isDynamic)
-    //{
-    //    mColisionlShape->calculateLocalInertia(mass, localInertia);
-    //}
+    btVector3 localInertia(0, 0, 0);
+    if (isDynamic)
+    {
+        mColisionlShape->calculateLocalInertia(mass, localInertia);
+    }
 
-    //auto callback = params.worldTransformCallback ? params.worldTransformCallback : std::bind(&PhysicsComponent::onSigTransformChanged, this, std::placeholders::_1, std::placeholders::_2);
-    //btDefaultMotionState* motionState = new YagetDefaultMotionState(callback, startTransform);
-    //btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, mColisionlShape, localInertia);
-    //mRigidBody = new btRigidBody(rbInfo);
-    //mUpdateDynamicsWorld = true;
+    auto callback = params.worldTransformCallback ? params.worldTransformCallback : std::bind(&PhysicsComponent::onSigTransformChanged, this, std::placeholders::_1, std::placeholders::_2);
+    btDefaultMotionState* motionState = new YagetDefaultMotionState(callback, startTransform);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, mColisionlShape, localInertia);
+    mRigidBody = new btRigidBody(rbInfo);
+    mUpdateDynamicsWorld = true;
 }
 
 comp::PhysicsComponent::~PhysicsComponent()
 {
-    //delete mRigidBody->getMotionState();
-    //mDynamicsWorld->removeCollisionObject(mRigidBody);
-    //delete mRigidBody;
-    //delete mColisionlShape;
-    //mUpdateDynamicsWorld = false;
+    delete mRigidBody->getMotionState();
+    mDynamicsWorld->removeCollisionObject(mRigidBody);
+    delete mRigidBody;
+    delete mColisionlShape;
+    mUpdateDynamicsWorld = false;
 }
 
 void comp::PhysicsComponent::Tick(const time::GameClock& /*gameClock*/)
 {
-    //if (mUpdateDynamicsWorld && mDynamicsWorld && mRigidBody)
-    //{
-    //    mUpdateDynamicsWorld = false;
-    //    mDynamicsWorld->addRigidBody(mRigidBody);
-    //}
+    if (mUpdateDynamicsWorld && mDynamicsWorld && mRigidBody)
+    {
+        mUpdateDynamicsWorld = false;
+        mDynamicsWorld->addRigidBody(mRigidBody);
+    }
 }
 
 void comp::PhysicsComponent::onSigTransformChanged(const math3d::Vector3& position, const math3d::Quaternion& orientation)
@@ -245,45 +243,44 @@ void comp::PhysicsComponent::onSigTransformChanged(const math3d::Vector3& positi
     TriggerSignal(TransformChanged);
 }
 
-void comp::PhysicsComponent::SetMatrix(const SimpleMath::Matrix& /*matrix*/)
+void comp::PhysicsComponent::SetMatrix(const SimpleMath::Matrix& matrix)
 {
-    //btTransform trans = conv::Matrix(matrix);
-    //if (mRigidBody->getMotionState())
-    //{
-    //    mRigidBody->getMotionState()->setWorldTransform(trans);
-    //}
-    //else
-    //{
-    //    mRigidBody->setWorldTransform(trans);
-    //}
+    btTransform trans = conv::Matrix(matrix);
+    if (mRigidBody->getMotionState())
+    {
+        mRigidBody->getMotionState()->setWorldTransform(trans);
+    }
+    else
+    {
+        mRigidBody->setWorldTransform(trans);
+    }
 }
 
 SimpleMath::Matrix comp::PhysicsComponent::GetMatrix() const
 {
-    return {};
-    //btTransform trans;
-    //if (mRigidBody && mRigidBody->getMotionState())
-    //{
-    //    mRigidBody->getMotionState()->getWorldTransform(trans);
-    //}
-    //else
-    //{
-    //    trans = mRigidBody->getWorldTransform();
-    //}
+    btTransform trans;
+    if (mRigidBody && mRigidBody->getMotionState())
+    {
+        mRigidBody->getMotionState()->getWorldTransform(trans);
+    }
+    else
+    {
+        trans = mRigidBody->getWorldTransform();
+    }
 
-    //return conv::Matrix(trans);
+    return conv::Matrix(trans);
 }
 
 
 comp::PhysicsComponentPool::PhysicsComponentPool()
     : ComponentPool<PhysicsComponent, 1000>()
-    //, mCollisionConfiguration(std::make_unique<btDefaultCollisionConfiguration>())
-    //, mDispatcher(std::make_unique<btCollisionDispatcher>(mCollisionConfiguration.get()))
-    //, mOverlappingPairCache(std::make_unique<btDbvtBroadphase>())
-    //, mSolver(std::make_unique<btSequentialImpulseConstraintSolver>())
-    //, mDynamicsWorld(std::make_unique<btDiscreteDynamicsWorld>(mDispatcher.get(), mOverlappingPairCache.get(), mSolver.get(), mCollisionConfiguration.get()))
+    , mCollisionConfiguration(std::make_unique<btDefaultCollisionConfiguration>())
+    , mDispatcher(std::make_unique<btCollisionDispatcher>(mCollisionConfiguration.get()))
+    , mOverlappingPairCache(std::make_unique<btDbvtBroadphase>())
+    , mSolver(std::make_unique<btSequentialImpulseConstraintSolver>())
+    , mDynamicsWorld(std::make_unique<btDiscreteDynamicsWorld>(mDispatcher.get(), mOverlappingPairCache.get(), mSolver.get(), mCollisionConfiguration.get()))
 {
-    //mDynamicsWorld->setGravity(btVector3(0, -10, 0));
+    mDynamicsWorld->setGravity(btVector3(0, -10, 0));
 }
 
 comp::PhysicsComponentPool::~PhysicsComponentPool()
@@ -291,53 +288,53 @@ comp::PhysicsComponentPool::~PhysicsComponentPool()
     
 }
 
-void comp::PhysicsComponentPool::SetDebugDraw(btIDebugDraw* /*debugDraw*/)
+void comp::PhysicsComponentPool::SetDebugDraw(btIDebugDraw* debugDraw)
 {
-    //mDebugDraw.reset(debugDraw);
-    //mDynamicsWorld->setDebugDrawer(mDebugDraw.get());
+    mDebugDraw.reset(debugDraw);
+    mDynamicsWorld->setDebugDrawer(mDebugDraw.get());
 }
 
 void comp::PhysicsComponentPool::Tick(const time::GameClock& gameClock)
 {
     ComponentPool<PhysicsComponent, 1000>::Tick(gameClock);
 
-    //float stepInSeconds = time::FromTo<float>(gameClock.GetDeltaTime(), time::kMicrosecondUnit, time::kSecondUnit);
-    //mDynamicsWorld->stepSimulation(stepInSeconds);
+    float stepInSeconds = time::FromTo<float>(gameClock.GetDeltaTime(), time::kMicrosecondUnit, time::kSecondUnit);
+    mDynamicsWorld->stepSimulation(stepInSeconds);
 
-    //if (dev::CurrentConfiguration().mDebug.mFlags.Physics)
-    //{
-    //        //DBG_NoDebug = 0,
-    //        //DBG_DrawWireframe = 1,
-    //        //DBG_DrawAabb = 2,
-    //        //DBG_DrawFeaturesText = 4,
-    //        //DBG_DrawContactPoints = 8,
-    //        //DBG_NoDeactivation = 16,
-    //        //DBG_NoHelpText = 32,
-    //        //DBG_DrawText = 64,
-    //        //DBG_ProfileTimings = 128,
-    //        //DBG_EnableSatComparison = 256,
-    //        //DBG_DisableBulletLCP = 512,
-    //        //DBG_EnableCCD = 1024,
-    //        //DBG_DrawConstraints = (1 << 11),
-    //        //DBG_DrawConstraintLimits = (1 << 12),
-    //        //DBG_FastWireframe = (1 << 13),
-    //        //DBG_DrawNormals = (1 << 14),
-    //        //DBG_DrawFrames = (1 << 15),
+    if (dev::CurrentConfiguration().mDebug.mFlags.Physics)
+    {
+            //DBG_NoDebug = 0,
+            //DBG_DrawWireframe = 1,
+            //DBG_DrawAabb = 2,
+            //DBG_DrawFeaturesText = 4,
+            //DBG_DrawContactPoints = 8,
+            //DBG_NoDeactivation = 16,
+            //DBG_NoHelpText = 32,
+            //DBG_DrawText = 64,
+            //DBG_ProfileTimings = 128,
+            //DBG_EnableSatComparison = 256,
+            //DBG_DisableBulletLCP = 512,
+            //DBG_EnableCCD = 1024,
+            //DBG_DrawConstraints = (1 << 11),
+            //DBG_DrawConstraintLimits = (1 << 12),
+            //DBG_FastWireframe = (1 << 13),
+            //DBG_DrawNormals = (1 << 14),
+            //DBG_DrawFrames = (1 << 15),
 
-    //    //uint32_t flags = mBulletDebug.mWireFrame ? btIDebugDraw::DBG_DrawWireframe : 0;
-    //    //flags |= mBulletDebug.mAabb ? btIDebugDraw::DBG_DrawAabb : 0;
-    //    //mDebugDraw->setDebugMode(flags);
-    //    mDynamicsWorld->debugDrawWorld();
-    //}
+        //uint32_t flags = mBulletDebug.mWireFrame ? btIDebugDraw::DBG_DrawWireframe : 0;
+        //flags |= mBulletDebug.mAabb ? btIDebugDraw::DBG_DrawAabb : 0;
+        //mDebugDraw->setDebugMode(flags);
+        mDynamicsWorld->debugDrawWorld();
+    }
 }
 
 comp::PhysicsComponentPool::Ptr comp::PhysicsComponentPool::New(Id_t id, const PhysicsComponent::Params& params)
 {
-    Ptr c = NewComponent(id, (PhysicsWorldComponent*)nullptr/*mDynamicsWorld.get()*/, params);
+    Ptr c = NewComponent(id, mDynamicsWorld.get(), params);
     return c;
 }
 
-yaget::comp::PhysicsComponent::Params yaget::comp::physics::CreateInitState(int shape, const math3d::Vector3& /*halfExtents*/)
+yaget::comp::PhysicsComponent::Params yaget::comp::physics::CreateInitState(int shape, const math3d::Vector3& halfExtents)
 {
     comp::PhysicsComponent::Params params;
 
@@ -345,8 +342,8 @@ yaget::comp::PhysicsComponent::Params yaget::comp::physics::CreateInitState(int 
     {
     case BoxShape:
 
-        //params.collisionShape = new btBoxShape(btVector3(halfExtents.x, halfExtents.y, halfExtents.z));// btScalar(8.0), btScalar(0.1), btScalar(8.0)));
-        //break;
+        params.collisionShape = new btBoxShape(btVector3(halfExtents.x, halfExtents.y, halfExtents.z));// btScalar(8.0), btScalar(0.1), btScalar(8.0)));
+        break;
 
     default:
         YAGET_ASSERT(false, "Shape '%d' for collision is not supported.", shape);

@@ -54,12 +54,12 @@ namespace yaget
 
             friend PhysicsComponent;
 
-            //std::unique_ptr<btDefaultCollisionConfiguration> mCollisionConfiguration;
-            //std::unique_ptr<btCollisionDispatcher> mDispatcher;
-            //std::unique_ptr<btBroadphaseInterface> mOverlappingPairCache;
-            //std::unique_ptr<btSequentialImpulseConstraintSolver> mSolver;
-            //std::unique_ptr<btDiscreteDynamicsWorld> mDynamicsWorld;
-            //std::unique_ptr<btIDebugDraw> mDebugDraw;
+            std::unique_ptr<btDefaultCollisionConfiguration> mCollisionConfiguration;
+            std::unique_ptr<btCollisionDispatcher> mDispatcher;
+            std::unique_ptr<btBroadphaseInterface> mOverlappingPairCache;
+            std::unique_ptr<btSequentialImpulseConstraintSolver> mSolver;
+            std::unique_ptr<btDiscreteDynamicsWorld> mDynamicsWorld;
+            std::unique_ptr<btIDebugDraw> mDebugDraw;
         };
 
         //! Any entity that needs to participate in physics
@@ -122,12 +122,12 @@ namespace yaget
             void SetDebugDraw(btIDebugDraw* debugDraw);
 
         private:
-            //std::unique_ptr<btDefaultCollisionConfiguration> mCollisionConfiguration;
-            //std::unique_ptr<btCollisionDispatcher> mDispatcher;
-            //std::unique_ptr<btBroadphaseInterface> mOverlappingPairCache;
-            //std::unique_ptr<btSequentialImpulseConstraintSolver> mSolver;
-            //std::unique_ptr<btDiscreteDynamicsWorld> mDynamicsWorld;
-            //std::unique_ptr<btIDebugDraw> mDebugDraw;
+            std::unique_ptr<btDefaultCollisionConfiguration> mCollisionConfiguration;
+            std::unique_ptr<btCollisionDispatcher> mDispatcher;
+            std::unique_ptr<btBroadphaseInterface> mOverlappingPairCache;
+            std::unique_ptr<btSequentialImpulseConstraintSolver> mSolver;
+            std::unique_ptr<btDiscreteDynamicsWorld> mDynamicsWorld;
+            std::unique_ptr<btIDebugDraw> mDebugDraw;
         };
 
         namespace physics
