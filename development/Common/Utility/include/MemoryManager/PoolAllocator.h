@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////
-// ItemDatabase.h
+// PoolAllocator.h
 //
 //  Copyright 8/10/2017 Edgar Glowacki.
 //
@@ -9,11 +9,6 @@
 //      Memory pool allocator with compile time memory size
 //      Needed header if using memory::New(...)
 //      #include <functional>
-//      
-//      Possible extra include needed
-//          #include "Exception/Exception.h"
-//      
-//
 //
 //  #include "MemoryManager/PoolAllocator.h"
 //

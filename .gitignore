@@ -35,3 +35,6 @@
 *.db
 *.log
 *.pdb
+/development/Common/Utility/build/.vs/YagetCore_Runner/v16
+/development/Common/Utility/build/Research.vcxproj.user
+/.vs
