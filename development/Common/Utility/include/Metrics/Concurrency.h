@@ -25,6 +25,8 @@ namespace yaget
 {
     namespace metrics
     {
+#if YAGET_CONC_METRICS_ENABLED == 1
+
         //--------------------------------------------------------------------------------------------------------------
         // Marks thread span
         class Channel : public yaget::Noncopyable<Channel>
@@ -111,6 +113,51 @@ namespace yaget
         void MarkEndTimeSpan(uint64_t spanId, const char* file, uint32_t line);
 
         void Tick();
+#else
+
+        class Channel
+        {
+        public:
+            Channel(const char*, const char*, uint32_t) {}
+        };
+
+        //--------------------------------------------------------------------------------------------------------------
+        // Marks start and end time (with span) regardless of which thread started and which one ended
+        class TimeSpan
+        {
+        public:
+            TimeSpan(const char*, const char*, uint32_t) {}
+        };
+
+        //--------------------------------------------------------------------------------------------------------------
+        class Locker
+        {
+        public:
+            Locker(std::mutex&, const char*, const char*, uint32_t) {}
+        };
+
+        //--------------------------------------------------------------------------------------------------------------
+        class LockerSpan : public Locker
+        {
+        public:
+            LockerSpan(std::mutex& mutex, const char* message, const char* file, uint32_t line)
+                : Locker(mutex, message, file, line)
+            {}
+        };
+        //--------------------------------------------------------------------------------------------------------------
+        inline void Initialize(const args::Options&) {}
+
+        inline void MarkStartThread(std::thread&, const char*) {}
+        inline void MarkEndThread(std::thread&) {}
+        inline void MarkStartThread(uint32_t, const char*) {}
+        inline void MarkEndThread(uint32_t) {}
+
+        inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
+        inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
+
+        inline void Tick() {}
+
+#endif // YAGET_CONC_METRICS_ENABLED
 
     } // namespace metric
 } // namespace yaget

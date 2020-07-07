@@ -39,3 +39,4 @@
 /development/Common/Utility/build/Research.vcxproj.user
 /.vs
 development/obj/YagetCore/x64.Debug/Resource.res
+development/obj/YagetCore/x64.Release/Resource.res
