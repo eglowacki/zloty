@@ -32,7 +32,7 @@ namespace yaget
         If numThreads is 0, then allocate number_of_hardware_threads - 1.
         If numThreads > 0, then allocate that many threads.
         There is no validation on upper limit and undefined behavior may occur at large values.
-        What are a large values you may ask. Circa 2019 it may be hundreds or so, later who knows???
+        What are a large values you may ask. Circa 2019 it may be thousands or so, later who knows???
         */
         class JobPool : public Noncopyable<JobPool>
         {

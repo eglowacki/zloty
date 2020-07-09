@@ -4,7 +4,6 @@
     <Import Project="yaget.Branch.props" />
     <Import Project="yaget.Options.props" />
     <Import Project="yaget.Math.props" />
-    <Import Project="yaget.Bullet.props" />
     <Import Project="yaget.flatbuffers.props" />
     <Import Project="yaget.nlohmann_json.props" />
     <Import Project="yaget.RADTelemetry.props" />
@@ -32,7 +31,7 @@
     <Link>
       <ImportLibrary>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\lib\$(PlatformName)\$(ProjectName)$(YAGET_DEBUG_SUFFIX).lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\lib\$(PlatformName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>YagetCore$(YAGET_DEBUG_SUFFIX).lib;Shlwapi.lib;vld.lib;%(AdditionalDependencies);Dbghelp.lib;Shcore.lib</AdditionalDependencies>
+      <AdditionalDependencies>YagetCore$(YAGET_DEBUG_SUFFIX).lib;Shlwapi.lib;%(AdditionalDependencies);Dbghelp.lib;Shcore.lib</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>

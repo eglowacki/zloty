@@ -6,6 +6,9 @@
 *.lo
 *.o
 *.obj
+development/obj/
+**/.vs/
+**/build/packages/
 
 # Precompiled Headers
 *.gch
@@ -35,8 +38,6 @@
 *.db
 *.log
 *.pdb
-/development/Common/Utility/build/.vs/YagetCore_Runner/v16
-/development/Common/Utility/build/Research.vcxproj.user
 /.vs
-development/obj/YagetCore/x64.Debug/Resource.res
-development/obj/YagetCore/x64.Release/Resource.res
+*.user
+*.ilk
