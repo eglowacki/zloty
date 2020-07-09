@@ -9,6 +9,7 @@
 development/obj/
 **/.vs/
 **/build/packages/
+development/Tests/**/x64/
 
 # Precompiled Headers
 *.gch
