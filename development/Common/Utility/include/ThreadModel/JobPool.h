@@ -17,6 +17,7 @@
 #pragma once
 
 #include "JobProcessor.h"
+#include "ThreadModel/Condition.h" 
 #include <functional>
 #include <deque>
 #include <map>
@@ -47,6 +48,10 @@ namespace yaget
             void UnpauseAll();
             
             void Clear();
+
+            // Blocking call, it will process all tasks until none. 
+            // It is possible to add new task while Join() from other threads. 
+            void Join(); 
 
         private:
             JobProcessor::Task_t PopNextTask();
