@@ -57,12 +57,15 @@ namespace
 #endif // YAGET_WRITE_LOG_TAGS
             }
 
+#ifndef YAGET_SHIPPING
             ylog::Config::Vector configList;
             ylog::Config::addOutput(configList, "OutputDebug");
             ylog::Config::setOption(configList, "split_log", "true");
 
             Output::Ptr outputPtr(new OutputDebug(*configList.begin()));
             mOutputList.push_back(outputPtr);
+#endif // YAGET_SHIPPING
+
         }
 
         Channel::Map mChannelMap;                       ///< Map of shared pointer of Channel objects

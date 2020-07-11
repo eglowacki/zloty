@@ -59,7 +59,7 @@ void yaget::mt::JobPool::AddTask(mt::JobProcessor::Task_t task)
  
 void yaget::mt::JobPool::Join() 
 { 
-    mJoinCondition.Wait(); 
+    mEmptyCondition.Wait(); 
 } 
  
 void yaget::mt::JobPool::UnpauseAll() 
@@ -72,17 +72,17 @@ void yaget::mt::JobPool::UnpauseAll()
     } 
 } 
  
-yaget::mt::JobProcessor::Task_t yaget::mt::JobPool::PopNextTask() 
-{ 
-    std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex); 
-    if (!mTasks.empty()) 
+yaget::mt::JobProcessor::Task_t yaget::mt::JobPool::PopNextTask()
+{
+    std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
+    if (!mTasks.empty())
     { 
-        JobProcessor::Task_t task = *mTasks.begin(); 
-        mTasks.pop_front(); 
+        JobProcessor::Task_t task = *mTasks.begin();
+        mTasks.pop_front();
  
-        return task; 
+        return task;
     } 
  
-    mJoinCondition.Trigger(); 
+    mEmptyCondition.Trigger(); 
     return JobProcessor::Task_t(); 
 } 

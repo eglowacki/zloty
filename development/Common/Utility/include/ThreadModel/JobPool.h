@@ -51,7 +51,38 @@ namespace yaget
 
             // Blocking call, it will process all tasks until none. 
             // It is possible to add new task while Join() from other threads. 
-            void Join(); 
+            void Join();
+
+            // if there is allot of task to be added, it's more efficient
+            // to use this class, since it will lock mutex once,
+            class Locker
+            {
+            public:
+                Locker(JobPool& pool)
+                    : mPool(pool), mMutexLock(pool.mPendingTasksMutex)
+                {}
+
+                void AddTask(JobProcessor::Task_t task)
+                {
+                    mPool.mTasks.push_back(task);
+                }
+
+                template <typename T>
+                void AddTasks(const T& tasks)
+                {
+                    std::copy(std::begin(tasks), std::end(tasks),
+                        std::inserter(mPool.mTasks, std::end(mPool.mTasks)));
+                }
+
+            private:
+                JobPool& mPool;
+                std::unique_lock<std::mutex> mMutexLock;
+            };
+
+            Locker GetLocker()
+            {
+                return Locker(*this);
+            }
 
         private:
             JobProcessor::Task_t PopNextTask();
@@ -64,6 +95,7 @@ namespace yaget
             std::mutex mPendingTasksMutex;
             std::string mName;
             Behaviour mBehaviour = Behaviour::StartAsRun;
+            mt::Condition mEmptyCondition;
         };
     } // namespace mt
 } // namespace yaget
