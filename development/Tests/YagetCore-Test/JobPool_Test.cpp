@@ -9,7 +9,8 @@ namespace yaget::ylog
     {
         yaget::Strings tags =
         {
-            #include "Logger/LogTags.h" 
+            #include "Logger/LogTags.h"
+            "TEST"
         };
 
         return tags;
@@ -53,11 +54,10 @@ TEST(YagetCoreTest, JobPool)
         pool.Join();
     }
 
-    std::string loadsMessage;
+    std::string loadsMessage = fmt::format("{} tasks processed, threads load:", Iterations);
     for (auto elem : WorkLoads)
     {
         loadsMessage += fmt::format("\n\tThreadId: {} = {}", elem.first, elem.second);
-        //loadsMessage << elem.first << " " << elem.second.first << " " << elem.second.second << "\n";
     }
     YLOG_NOTICE("TEST", loadsMessage.c_str());
     EXPECT_EQ(counter, 0);
