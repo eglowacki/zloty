@@ -248,6 +248,27 @@ void yaget::metrics::MarkEndTimeSpan(uint64_t spanId, const char* file, uint32_t
 }
 #else
 
-#pragma message("======== Concurenty Metrics NOT Included ========")
+#pragma message("======== Concurenty Metrics Partialy NOT Included ========")
+
+void yaget::metrics::MarkStartThread(uint32_t threadId, const char* threadName)
+{
+    //tmThreadName(CaptureMask, threadId, threadName);
+    platform::SetThreadName(threadName, threadId);
+}
+
+void yaget::metrics::MarkStartThread(std::thread& t, const char* threadName)
+{
+    MarkStartThread(platform::GetThreadId(t), threadName);
+}
+
+std::string yaget::metrics::MarkGetThreadName(std::thread& thread)
+{
+    return MarkGetThreadName(platform::GetThreadId(thread));
+}
+
+std::string yaget::metrics::MarkGetThreadName(uint32_t threadId)
+{
+    return platform::GetThreadName(threadId);
+}
 
 #endif // YAGET_CONC_METRICS_ENABLED

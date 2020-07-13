@@ -147,9 +147,16 @@ namespace yaget
         //--------------------------------------------------------------------------------------------------------------
         inline void Initialize(const args::Options&) {}
 
-        inline void MarkStartThread(std::thread&, const char*) {}
+        // putting back intel concurrency functionality
+        void MarkStartThread(std::thread& thread, const char* name);
+        void MarkStartThread(uint32_t threadId, const char* name);
+
+        std::string MarkGetThreadName(std::thread& thread);
+        std::string MarkGetThreadName(uint32_t threadId);
+
+
+        // not converted yet
         inline void MarkEndThread(std::thread&) {}
-        inline void MarkStartThread(uint32_t, const char*) {}
         inline void MarkEndThread(uint32_t) {}
 
         inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
