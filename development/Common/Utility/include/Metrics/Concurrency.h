@@ -111,6 +111,8 @@ namespace yaget
         void MarkEndTimeSpan(uint64_t spanId, const char* file, uint32_t line);
 
         void Tick();
+		
+		void AddedThisAtHome() {}
 
     } // namespace metric
 } // namespace yaget
