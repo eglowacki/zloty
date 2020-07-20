@@ -6,6 +6,10 @@
 *.lo
 *.o
 *.obj
+development/obj/
+**/.vs/
+**/build/packages/
+development/Tests/**/x64/
 
 # Precompiled Headers
 *.gch
@@ -35,3 +39,6 @@
 *.db
 *.log
 *.pdb
+/.vs
+*.user
+*.ilk
