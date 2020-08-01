@@ -6,6 +6,7 @@
     <PACKAGE_DEBUG_SUFFIX>d</PACKAGE_DEBUG_SUFFIX>
     <PACKAGE_DASH_DEBUG_SUFFIX>-d</PACKAGE_DASH_DEBUG_SUFFIX>
     <PACKAGE_PHYSX_LIB_DIR>debug</PACKAGE_PHYSX_LIB_DIR>
+    <YAGET_DEPENDENCIES_FOLDER>Dependencies</YAGET_DEPENDENCIES_FOLDER>
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
@@ -38,6 +39,9 @@
     </BuildMacro>
     <BuildMacro Include="PACKAGE_PHYSX_LIB_DIR">
       <Value>$(PACKAGE_PHYSX_LIB_DIR)</Value>
+    </BuildMacro>
+    <BuildMacro Include="YAGET_DEPENDENCIES_FOLDER">
+      <Value>$(YAGET_DEPENDENCIES_FOLDER)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>

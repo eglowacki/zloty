@@ -7,10 +7,10 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(YAGET_ROOT_FOLDER)\Modules\DirectXTK11-5.10.2020\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(YAGET_DEPENDENCIES_PATH)\DirectXTK11-5.10.2020\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(YAGET_ROOT_FOLDER)\Modules\DirectXTK11-5.10.2020\Bin\Desktop_2019\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(YAGET_DEPENDENCIES_PATH)\DirectXTK11-5.10.2020\bin\CMake\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>DirectXTK.lib;d3dcompiler.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
