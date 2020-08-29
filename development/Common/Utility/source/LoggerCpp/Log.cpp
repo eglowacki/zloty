@@ -47,6 +47,7 @@ Log::~Log()
     if (!mIsFiltered)
     {
         mTime.Make();
+        FormatLineMessage();
         mLogger.output(*this);
     }
 }
@@ -136,5 +137,52 @@ void Log::Write(const char* file, unsigned line, const char* functionName, uint3
     else
     {
         mIsFiltered = true;
+    }
+}
+
+void Log::FormatLineMessage()
+{
+    const DateTime& time = getTime();
+    const auto& timeText = time.ToString();
+    const auto& channelName = mLogger.getName();
+    const auto& severityText = Log::toString(getSeverity());
+    const auto& streamText = getStream().str();
+
+    char tag[5] = { '\0' };
+    *(reinterpret_cast<uint32_t*>(tag)) = GetTag();
+    constexpr std::size_t BufferSize = 1024 * 16;
+
+    mFormatedLineMessageSplit.resize(BufferSize);
+    char* buffer = mFormatedLineMessageSplit.data();
+
+    int result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%s] %s\n%s(%d) : %s\n", 
+        timeText.c_str(), channelName.c_str(),
+        severityText, tag[0] ? ":" : "", tag,
+        streamText.c_str(), GetFileName().c_str(), GetFileLine(), GetFunctionName().c_str());
+
+    if (result == -1)
+    {
+        buffer[BufferSize - 5] = '.';
+        buffer[BufferSize - 4] = '.';
+        buffer[BufferSize - 3] = '.';
+        buffer[BufferSize - 2] = '\n';
+        buffer[BufferSize - 1] = '\0';
+    }
+
+    mFormatedLineMessage.resize(BufferSize);
+    buffer = mFormatedLineMessage.data();
+
+    result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%s] %s ** %s(%d) : %s\n",
+        timeText.c_str(), channelName.c_str(),
+        severityText, tag[0] ? ":" : "", tag,
+        streamText.c_str(), GetFileName().c_str(), GetFileLine(), GetFunctionName().c_str());
+
+    if (result == -1)
+    {
+        buffer[BufferSize - 5] = '.';
+        buffer[BufferSize - 4] = '.';
+        buffer[BufferSize - 3] = '.';
+        buffer[BufferSize - 2] = '\n';
+        buffer[BufferSize - 1] = '\0';
     }
 }

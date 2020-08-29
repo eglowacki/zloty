@@ -43,7 +43,7 @@ namespace yaget
         InitializationResult InitializeSetup(const char* commandLine, args::Options& options, const char* configData, size_t configSize);
         InitializationResult InitializeSetup(int argc, char* argv[], args::Options& options, const char* configData, size_t configSize);
         InitializationResult InitializeSetup(args::Options& options, const char* configData, size_t configSize);
-        InitializationResult InitializeSetup();
+        InitializationResult InitializeSetup(const char* configData = nullptr, size_t configSize = 0);
 
         //! Call this to initialize dev, runtime and logging sub-systems. This will set engine state to valid.
         //! Only call this if you need fine control over options and custom error handling, prefer InitializeSetup variant  

@@ -13,7 +13,7 @@ yaget::mt::JobPool::JobPool(const char* poolName, uint32_t numThreads /*= 0*/, B
         maxThreads = std::thread::hardware_concurrency() > 1 ? std::thread::hardware_concurrency() - 1 : 1; 
     } 
  
-    YLOG_DEBUG("POOL", "Creating JobPool '%s' with '%d' threads", mName.c_str(), maxThreads); 
+    YLOG_DEBUG("POOL", "Creating JobPool '%s' with '%d' threads.", mName.c_str(), maxThreads); 
  
     for (uint32_t i = 0; i < maxThreads; ++i) 
     { 

@@ -6,16 +6,16 @@
 #include "Platform/Support.h"
 #include "Debugging/DevConfiguration.h"
 #include "App/FileUtilities.h"
-
-//#include "vld.h"
+#include "HashUtilities.h"
 #include "Platform/WindowsLean.h"
+
 #include <Shlwapi.h>
 #include <filesystem>
 #include <fstream>
 #include <regex>
 #include <comdef.h>
-
 #include <Dbghelp.h>
+#include <shlobj.h>
 
 namespace fs = std::filesystem;
 
@@ -28,7 +28,7 @@ namespace
         const size_t kMaxPath = 512;
         char buf[kMaxPath] = {'\0'};
         ::GetModuleFileName(nullptr, buf, kMaxPath);
-        return std::string(buf);
+        return fs::path(buf).generic_string();
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -49,7 +49,7 @@ namespace
             }
         }
 
-        return appPath;
+        return fs::path(appPath).generic_string();
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -133,6 +133,48 @@ namespace
 #endif // 
     }
 
+    std::string GetKnowFolder(REFKNOWNFOLDERID refId)
+    {
+        std::string result;
+        PWSTR path = nullptr;
+        HRESULT r = ::SHGetKnownFolderPath(refId, KF_FLAG_CREATE, nullptr, &path);
+        assert(SUCCEEDED(r));
+        if (path)
+        {
+            result = yaget::conv::wide_to_utf8(path);
+            CoTaskMemFree(path);
+        }
+
+        return fs::path(result).generic_string();
+    }
+    //--------------------------------------------------------------------------------------------------
+    std::string ResolveUserDataFolder()
+    {
+        fs::path result = GetKnowFolder(FOLDERID_SavedGames);
+        result /= ResolveAppName();
+
+        return result.generic_string();
+    }
+
+    //--------------------------------------------------------------------------------------------------
+    std::string ResolveAppDataFolder()
+    {
+        fs::path result = GetKnowFolder(FOLDERID_LocalAppData);
+        result /= ResolveAppName();
+
+        return result.generic_string();
+    }
+
+    //--------------------------------------------------------------------------------------------------
+    std::string ResolveScreenshotFolder()
+    {
+        fs::path result = GetKnowFolder(FOLDERID_Screenshots);
+        result /= ResolveAppName();
+
+        return result.generic_string();
+    }
+
+    //--------------------------------------------------------------------------------------------------
     yaget::util::EnvironmentList& EnvList()
     {
         static yaget::util::EnvironmentList envList = {
@@ -143,7 +185,12 @@ namespace
             { "$(AppPathName)", {ResolveAppPathName(), true} },
             { "$(ConfigurationFolder)",{ ResolveConfigurationFolderName(yaget::BinMarker), true } },
             { "$(RootFolder)",{ ResolveConfigurationFolderName(yaget::RootMarker), true } },
-            { "$(Temp)",{ ResolveTempPathName(), false } }
+            { "$(Temp)",{ ResolveTempPathName(), false } },
+            { "$(LogFolder)",{ "$(UserDataFolder)/Logs", false } },
+            { "$(SaveDataFolder)",{ "$(UserDataFolder)/Saves", false } },
+            { "$(UserDataFolder)",{ ResolveUserDataFolder(), true } },
+            { "$(AppDataFolder)",{ ResolveAppDataFolder(), true } },
+            { "$(ScreenshotFolder)",{ ResolveScreenshotFolder(), false } }
         };
 
         return envList;
@@ -642,6 +689,7 @@ void yaget::util::DefaultOptions(args::Options& options)
         ("keybindings_file", "Relative or absolute path to Key Bindings file.", args::value<std::string>())
         ("logic_tick", "Game Logic thread tick update (hz) (default 60)", args::value<uint32_t>())
         ("vts_fix", "Fix VTS errors.")
+        ("log_write_tags", "Write out file to $(LogFolder) of all active log tags.")
         ;
 }
 

@@ -13,6 +13,7 @@
 #include "LoggerCpp/Exception.h"
 #include "App/AppUtilities.h"
 #include "App/FileUtilities.h"
+#include "StringHelpers.h"
 
 #include <cstdio>
 #include <sys/types.h>
@@ -21,12 +22,15 @@
 #include <filesystem>
 
 
+
 using namespace yaget;
 using namespace yaget::ylog;
 namespace fs = std::filesystem;
 
 // Open the output file
-OutputFile::OutputFile(const Config::Ptr& aConfigPtr) : mpFile(nullptr)
+OutputFile::OutputFile(const Config::Ptr& aConfigPtr)
+: mpFile(nullptr)
+, m_bSplitLines(conv::Convertor<bool>::FromString(aConfigPtr->get("split_lines", "false")))
 {
     assert(aConfigPtr);
 
@@ -105,10 +109,8 @@ void OutputFile::rotate() const
 }
 
 // Output the Log to the standard console using printf
-void OutputFile::OnOutput(const Channel::Ptr& aChannelPtr, const Log& aLog) const
+void OutputFile::OnOutput(const Channel::Ptr& /*aChannelPtr*/, const Log& aLog) const
 {
-    const DateTime& time = aLog.getTime();
-
     if (mSize > mMaxSize)
     {
         rotate();
@@ -116,18 +118,8 @@ void OutputFile::OnOutput(const Channel::Ptr& aChannelPtr, const Log& aLog) cons
 
     if (mpFile)
     {
-        char tag[5] = { '\0' };
-
-        if (aLog.GetTag())
-        {
-            *(reinterpret_cast<uint32_t*>(tag)) = aLog.GetTag();
-        }
-
-        // uses fprintf for atomic thread-safe operation
-        int nbWritten = fprintf(mpFile, "%s  %-12s [%s%s%s] %s(%d) %s : %s\n", time.ToString().c_str(), aChannelPtr->getName().c_str(),
-            Log::toString(aLog.getSeverity()), tag ? ":" : "", tag,
-            aLog.GetFileName().c_str(), aLog.GetFileLine(), aLog.getStream().str().c_str(), aLog.GetFunctionName().c_str());
-
+        const auto& buffer = aLog.FormatedMessage(m_bSplitLines);
+        int nbWritten = fprintf(mpFile, buffer.c_str());
         fflush(mpFile);
         mSize += nbWritten;
     }

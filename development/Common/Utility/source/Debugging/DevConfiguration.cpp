@@ -6,6 +6,8 @@
 #include "App/FileUtilities.h"
 #include "Logger/YLog.h"
 #include "LoggerCpp/OutputDebug.h"
+#include "LoggerCpp/OutputConsole.h"
+#include "LoggerCpp/OutputFile.h"
 #include "Platform/Support.h"
 #include "Exception/Exception.h"
 #include "Fmt/format.h"
@@ -237,10 +239,20 @@ void yaget::dev::Initialize(const args::Options& options, const char* configData
     // if there is no log output setup, let's create default one
     if (configuration.mDebug.mLogging.Outputs.empty())
     {
+        ylog::Manager::RegisterOutputType<ylog::OutputDebug>(&ylog::CreateOutputInstance<ylog::OutputDebug>);
+        ylog::Manager::RegisterOutputType<ylog::OutputConsole>(&ylog::CreateOutputInstance<ylog::OutputConsole>);
+        ylog::Manager::RegisterOutputType<ylog::OutputFile>(&ylog::CreateOutputInstance<ylog::OutputFile>);
+
         dev::Configuration::Debug::Logging::Sinks defualtOutputs;
 
-        defualtOutputs["ylog::OutputDebug"]["split_log"] = "true";
+        defualtOutputs["ylog::OutputDebug"]["split_lines"] = "true";
         defualtOutputs["ylog::OutputConsole"] = {};
+
+        if (platform::IsDebuggerAttached())
+        {
+            defualtOutputs["ylog::OutputFile"]["max_startup_size"] = "0";
+            defualtOutputs["ylog::OutputFile"]["filename"] = "$(LogFolder)/$(AppName).log";
+        }
 
         configuration.mDebug.mLogging.Outputs = defualtOutputs;
         configuration.mDebug.mLogging.Level = "DBUG";

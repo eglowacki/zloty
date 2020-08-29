@@ -48,7 +48,7 @@ yaget::mt::JobProcessor::JobProcessor(const std::string& threadName, PopNextTask
  
 yaget::mt::JobProcessor::~JobProcessor() 
 { 
-    YLOG_DEBUG("MULT", "Stopping job: '%s'...", mThreadName.c_str()); 
+    YLOG_DEBUG("MULT", "Requesting job: '%s' to stop.", mThreadName.c_str()); 
  
     mQuit = true; 
     mTaskReadyCondition.Trigger(); 
@@ -60,7 +60,7 @@ yaget::mt::JobProcessor::~JobProcessor()
  
     metrics::MarkEndThread(mThread); 
  
-    YLOG_DEBUG("MULT", "Stopped job: '%s'", mThreadName.c_str()); 
+    YLOG_DEBUG("MULT", "Job: '%s' Stopped.", mThreadName.c_str()); 
 } 
  
  

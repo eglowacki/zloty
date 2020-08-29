@@ -53,14 +53,9 @@ unsigned short OutputConsole::toWin32Attribute(Log::Level aLevel)
 }
 
 // Output the Log to the standard console using fprintf
-void OutputConsole::OnOutput(const Channel::Ptr& aChannelPtr, const Log& aLog) const
+void OutputConsole::OnOutput(const Channel::Ptr& /*aChannelPtr*/, const Log& aLog) const
 {
-    const DateTime& time = aLog.getTime();
-    char tag[5] = { '\0' };
-    if (aLog.GetTag())
-    {
-        *(reinterpret_cast<uint32_t*>(tag)) = aLog.GetTag();
-    }
+    const auto& buffer = aLog.FormatedMessage(false);
 
     unsigned short backgroundAttrib = 0x0;
     unsigned short forgroundAttrib = 0xF;
@@ -73,7 +68,7 @@ void OutputConsole::OnOutput(const Channel::Ptr& aChannelPtr, const Log& aLog) c
 
     // uses fprintf for atomic thread-safe operation
     SetConsoleTextAttribute(mConHandle, toWin32Attribute(aLog.getSeverity()) | backgroundAttrib);
-    fprintf(stdout, "%s  %-12s [%s%s%s] %s\n", time.ToString().c_str(), aChannelPtr->getName().c_str(), Log::toString(aLog.getSeverity()), tag ? ":" : "", tag, (aLog.getStream()).str().c_str());
+    fprintf(stdout, buffer.c_str());
     SetConsoleTextAttribute(mConHandle, forgroundAttrib | backgroundAttrib);
     fflush(stdout);
 }

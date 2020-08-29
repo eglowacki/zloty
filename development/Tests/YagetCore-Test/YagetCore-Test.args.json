@@ -4,7 +4,7 @@
   "Items": [
     {
       "Id": "e1c7ef36-9c25-4c38-b897-07d2880d01cb",
-      "Command": "--log_filter1=MULT"
+      "Command": "--log_filter=MULT --log_filter=POOL --log_filter=FILE --log_write_tags"
     }
   ]
 }

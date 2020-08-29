@@ -39,39 +39,25 @@ namespace
     {
         ManagerData()
         {
-            // how do we process which tags are valid, if we read some kind of file (at compile)
-            // how do we allow to extend tags from other libraries and executables 
-            // without recompiling core libraries?
-#ifdef YAGET_WRITE_LOG_TAGS
-            std::string fileName = util::ExpendEnv("$(LogFolder)/LogTags.txt", nullptr);
-            std::ofstream logTagsFile(fileName.c_str());
-#endif // YAGET_WRITE_LOG_TAGS
-
             yaget::Strings tags = yaget::ylog::GetRegisteredTags();
             for (const auto& tag : tags)
             {
                 mTags.insert(LOG_TAG(tag.c_str()));
-
-#ifdef YAGET_WRITE_LOG_TAGS
-                logTagsFile << std::setw(4) << std::left << tag << " = " << std::setw(10) << std::right << LOG_TAG(tag.c_str()) << std::endl;
-#endif // YAGET_WRITE_LOG_TAGS
             }
 
 #ifndef YAGET_SHIPPING
             ylog::Config::Vector configList;
             ylog::Config::addOutput(configList, "OutputDebug");
-            ylog::Config::setOption(configList, "split_log", "true");
+            ylog::Config::setOption(configList, "split_lines", "true");
 
             Output::Ptr outputPtr(new OutputDebug(*configList.begin()));
             mOutputList.push_back(outputPtr);
 #endif // YAGET_SHIPPING
-
         }
 
         Channel::Map mChannelMap;                       ///< Map of shared pointer of Channel objects
         Output::Vector mOutputList;                     ///< List of Output objects
         Log::Level mDefaultLevel = Log::Log::Level::eDebug;    ///< Default Log::Level of any new Channel
-
         
         using TagFilters_t = std::set<uint32_t>;
         TagFilters_t mTagFilters;
@@ -86,24 +72,6 @@ namespace
     {
         static ManagerData managerData;
         return managerData;
-    }
-
-
-    bool DumpRegisteredTags(const ManagerData& tagData)
-    {
-        using namespace yaget;
-
-        std::string settingsPath = util::ExpendEnv("$(LogFolder)/RegisteredTags.txt", nullptr);
-
-        std::ofstream file(settingsPath.c_str());
-
-        file << "; All registered log tags." << std::endl;
-        for (const auto& it : tagData.mTags)
-        {
-            file << it << std::endl;
-        }
-
-        return true;
     }
 
 } // namespace

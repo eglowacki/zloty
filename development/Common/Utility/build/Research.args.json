@@ -2,11 +2,11 @@
   "DataCollection": [
     {
       "Id": "31d214e4-f591-4b3d-ab03-f6f5c3459be8",
-      "Command": "--split_log --filter=SPAM --filter=TIME --filter=INPT"
+      "Command": "--split_lines --filter=SPAM --filter=TIME --filter=INPT"
     },
     {
       "Id": "5c674ca9-6807-4659-a7d5-cb42b8d48fcd",
-      "Command": "--split_log"
+      "Command": "--split_lines"
     }
   ]
 }

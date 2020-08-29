@@ -14,48 +14,46 @@
 
 #include <cassert>
 
-using namespace yaget;
-using namespace yaget::ylog;
 
 // Initialize a Logger utility object
-Logger::Logger(const char* apChannelName) : mChannelPtr(Manager::get(apChannelName))
+yaget::ylog::Logger::Logger(const char* apChannelName) : mChannelPtr(Manager::get(apChannelName))
 {
     assert(mChannelPtr);
 }
 
 // Utility const method to produce Log objets, used to collect the stream to output
-Log Logger::debug() const
+yaget::ylog::Log yaget::ylog::Logger::debug() const
 {
     return Log(*this, Log::Level::eDebug);
 }
 
-Log Logger::info() const
+yaget::ylog::Log yaget::ylog::Logger::info() const
 {
     return Log(*this, Log::Level::eInfo);
 }
 
-Log Logger::notice() const
+yaget::ylog::Log yaget::ylog::Logger::notice() const
 {
     return Log(*this, Log::Level::eNotice);
 }
 
-Log Logger::warning() const
+yaget::ylog::Log yaget::ylog::Logger::warning() const
 {
     return Log(*this, Log::Level::eWarning);
 }
 
-Log Logger::error() const
+yaget::ylog::Log yaget::ylog::Logger::error() const
 {
     return Log(*this, Log::Level::eError);
 }
 
-Log Logger::critic() const
+yaget::ylog::Log yaget::ylog::Logger::critic() const
 {
     return Log(*this, Log::Level::eCritic);
 }
 
 // To be used only by the Log class
-void Logger::output(const Log& aLog) const
+void yaget::ylog::Logger::output(const Log& aLog) const
 {
     Manager::output(mChannelPtr, aLog);
 }

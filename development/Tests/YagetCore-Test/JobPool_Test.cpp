@@ -1,8 +1,15 @@
 #include "pch.h" 
 #include "ThreadModel/JobPool.h" 
 #include "fmt/format.h" 
+
+#include "LoggerCpp/OutputDebug.h"
+#include "LoggerCpp/OutputFile.h"
+
+
 #include "Metrics/Gather.h" 
 #include "Metrics/Concurrency.h"
+
+#include "TestHelpers/TestHelpers.h"
 
 namespace yaget::ylog
 {
@@ -18,12 +25,12 @@ namespace yaget::ylog
     }
 } // namespace yaget::ylog 
 
+
 TEST(YagetCoreTest, JobPool)
 {
     using namespace yaget;
 
-    //system::InitializeSetup();
-    metrics::MarkStartThread(platform::CurrentThreadId(), "MAIN");
+    test::Environment environment;
 
     const int Iterations = 1000000;
     const int MaxThreads = 4;

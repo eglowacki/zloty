@@ -621,8 +621,9 @@ void system::Initialize(const args::Options& options, const char* configData, si
 
     double appTime = time::FromTo<double>(platform::GetRealTime(time::kMicrosecondUnit), time::kMicrosecondUnit, time::kSecondUnit);
     std::string buildNumber = dev::CurrentConfiguration().mDebug.mFlags.BuildId == -1 ? "" : fmt::format(", Build: '{}'", dev::CurrentConfiguration().mDebug.mFlags.BuildId);
-    YLOG_NOTICE("INIT", "YAGET Engine initialized. Application: '%s', Version: '%s'%s at time: %f sec.",
+    YLOG_NOTICE("INIT", "YAGET Engine initialized. Application: '%s', Configuration: '%s', Version: '%s'%s at time: %f sec.",
         util::ExpendEnv("$(AppName)", nullptr).c_str(),
+        util::ExpendEnv("$(BuildConfiguration)", nullptr).c_str(),
         yaget::ToString(yaget::YagetVersion).c_str(),
         buildNumber.c_str(), appTime);
 }
@@ -643,12 +644,12 @@ system::InitializationResult system::InitializeSetup(args::Options& options, con
     return InitializeSetup(commandLine, options, configData, configSize);
 }
 
-system::InitializationResult system::InitializeSetup()
+system::InitializationResult system::InitializeSetup(const char* configData /*= nullptr*/, size_t configSize /*= 0*/)
 {
     std::string appName = util::ExpendEnv("$(AppName)", nullptr);
     args::Options options(appName);
     
-    return InitializeSetup(options, nullptr, 0);
+    return InitializeSetup(options, configData, configSize);
 }
 
 

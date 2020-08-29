@@ -36,6 +36,12 @@ namespace yaget
         //!  $(ConfigurationFolder) = Defaults to $(AppFolder), but searches up for yaget::BinMarker:       C:/Development/yaget/branch/version_0_2/bin
         //!  $(RootFolder)          = Defaults to $(AppFolder), but searches up for yaget::RootMarker. It points to global data, modules, etc
         //!  $(Temp)                = System temporary folder                                               C:/Users/me_user/AppData/Local/Temp/vts_test
+        //! Newest additions:
+        //!  $(LogFolder)           = Location of all log files.                                            $(UserDataFolder)/Logs
+        //!  $(SaveDataFolder)      = Location of saved game data.                                          $(UserDataFolder)/Saves
+        //!  $(UserDataFolder)      = Location of saved user data.                                          FOLDERID_SavedGames   [%USERPROFILE%\Saved Games\$(AppName)]
+        //!  $(AppDataFolder)       = Location of saved application data                                    FOLDERID_LocalAppData [%LOCALAPPDATA%\$(AppName) (%USERPROFILE%\AppData\Local\$(AppName))]
+        //!  $(ScreenshotFolder)    = Location of saved screenshots                                         FOLDERID_Screenshots [%USERPROFILE%\Pictures\Screenshots\$(AppName)]
 
         //! environment variable storage
         struct EnvAlias { std::string Value; bool ReadOnly = false; };

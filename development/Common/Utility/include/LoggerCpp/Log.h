@@ -115,6 +115,11 @@ namespace yaget
                 return mTag;
             }
 
+            inline const std::string& FormatedMessage(bool split) const
+            {
+                return split ? mFormatedLineMessageSplit : mFormatedLineMessage;
+            }
+
             /**
              * @brief Convert a Level to its string representation
              *
@@ -145,6 +150,8 @@ namespace yaget
              */
             Log(const Logger& aLogger, Level aSeverity);
 
+            void FormatLineMessage();
+
             const Logger& mLogger; ///< Reference to the parent Logger
             Level mSeverity; ///< Severity of this Log
             DateTime mTime; ///< Timestamp of the output
@@ -155,6 +162,9 @@ namespace yaget
             uint32_t mTag = 0;
             bool mIsFiltered = false;
             std::string mFunctionName;
+
+            std::string mFormatedLineMessage;
+            std::string mFormatedLineMessageSplit;
         };
 
     } // namespace ylog

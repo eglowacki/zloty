@@ -14,13 +14,20 @@
 #include "LoggerCpp/Channel.h"
 #include "LoggerCpp/Output.h"
 #include "LoggerCpp/Config.h"
+#include "Meta/CompilerAlgo.h"
 #include <condition_variable>
-//#include <thread>
 
 namespace yaget
 {
     namespace ylog
     {
+
+        template<typename T>
+        ylog::Output* CreateOutputInstance(const ylog::Config::Ptr& configPtr)
+        {
+            return new T(configPtr);
+        }
+
         /**
          * @brief   The static class that manage the registered channels and outputs
          * @ingroup LoggerCpp
@@ -97,11 +104,6 @@ namespace yaget
                 ylog::Manager::AddOutput(logOutput);
             }
 
-
-            //template<typename T, typename... Args>
-            //ylog::Output* createInstance(Args&&... args)
-
-
             using OutputCreator = Output*(*)(const Config::Ptr& configPtr);
 
             template<typename T>
@@ -110,15 +112,20 @@ namespace yaget
                 RegisterOutputType(typeid(T).name(), outputCreator);
             }
 
+            template<typename... Args>
+            static void RegisterOutputTypes()
+            {
+                using LogOutputs = std::tuple<Args...>;
+                meta::for_each_type<LogOutputs>([](const auto& logType)
+                {
+                    using LogType = std::decay_t<decltype(*logType)>;
+                    RegisterOutputType<LogType>(&ylog::CreateOutputInstance<LogType>);
+                });
+            }
+
             static void RegisterOutputType(const char* name, OutputCreator outputCreator);
             static void ResetRuntimeData();
         };
-
-        template<typename T>
-        ylog::Output* CreateOutputInstance(const ylog::Config::Ptr& configPtr)
-        {
-            return new T(configPtr);
-        }
 
     } // namespace ylog
 } // namespace yaget

@@ -72,6 +72,8 @@ namespace yaget
              * @brief "filename_old" : Name of the log file renamed after max_size is reach
              */
             std::string mFilenameOld;
+
+            bool m_bSplitLines = false;
         };
 
     } //  // namespace ylog
