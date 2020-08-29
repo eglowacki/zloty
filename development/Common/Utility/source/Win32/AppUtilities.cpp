@@ -89,6 +89,8 @@ namespace
     {
         fs::path confFolder = ResolveAppFolder();
         bool bMoreFolders = true;
+        const bool& hasRoot = confFolder.has_root_path();
+        const auto& rootDrive = confFolder.root_path();
         do 
         {
             if (fs::is_directory(confFolder) && fs::exists(confFolder / marker))
@@ -97,7 +99,12 @@ namespace
                 return confFolder.generic_string();
             }
 
-            bMoreFolders = confFolder.has_parent_path();
+            const bool& hasParent = confFolder.has_parent_path();
+            const bool& rootNotSame = rootDrive != confFolder;
+
+            bMoreFolders = hasParent && hasRoot && rootNotSame;
+
+            //bMoreFolders = hasParent;// && ((hasRoot && rootDrive != confFolder) || (!hasRoot));
             confFolder = confFolder.parent_path();
 
         } while (bMoreFolders);

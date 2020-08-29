@@ -5,7 +5,7 @@
     <ClCompile Include="JobPool_Test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="test.cpp">
+    <ClCompile Include="Guid_Test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

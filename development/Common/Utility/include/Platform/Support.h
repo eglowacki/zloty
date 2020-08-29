@@ -43,6 +43,7 @@ namespace yaget
         void BusySleep(time::TimeUnits_t numSleep, time::TimeUnits_t unitType);
 
         bool ParseArgs(const char* commandLine, args::Options& options, std::string* errorMessage);
+        bool ParseArgs(args::Options& options, std::string* errorMessage);
 
         /// Return random number in [from, to] range
         int GetRandom(int from, int to);

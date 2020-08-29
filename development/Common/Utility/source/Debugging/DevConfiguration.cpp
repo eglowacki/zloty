@@ -194,6 +194,10 @@ void yaget::dev::Initialize(const args::Options& options, const char* configData
     {
         configStream.reset(new io::file::imemstream(configData, configSize));
     }
+    else if (optionsPathName.empty())
+    {
+        configStream.reset(new io::file::imemstream("{}", sizeof("{}")));
+    }
     else
     {
         configStream.reset(new std::ifstream(optionsPathName.c_str()));

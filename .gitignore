@@ -44,3 +44,7 @@ development/Tests/**/x64/
 *.ilk
 
 development/bin/YagetCore-Test/x64.Release/
+
+development/bin/
+
+development/Tests/YagetCore-Test/packages/

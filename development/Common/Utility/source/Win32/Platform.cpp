@@ -191,8 +191,22 @@ namespace
         if (commandLine)
         {
             std::string appName = util::ExpendEnv("$(ExecutableName)", nullptr);
-            std::string commands = appName + " " + commandLine;
+            if (conv::ToLower(conv::safe(commandLine)).find(conv::ToLower(appName)) != std::string::npos)
+            {
+                // looks like commandLine passed to us already has app name, so we don't prefix here
+                appName = "";
+            }
+            else
+            {
+                appName += " ";
+            }
+
+            std::string commands = appName + conv::safe(commandLine);
             argValues = CommandLineToArgvA(commands.c_str(), &argCount);
+
+            //std::string appName = util::ExpendEnv("$(ExecutableName)", nullptr);
+            //std::string commands = appName + " " + commandLine;
+            //argValues = CommandLineToArgvA(commands.c_str(), &argCount);
             releaser.mArg = argValues;
         }
 
@@ -200,9 +214,9 @@ namespace
         if (!ParseOptions(options, argCount, argValues, &errorMessage))
         {
             std::string commands;
-            for (int i = 1; i < argc; ++i)
+            for (int i = 1; i < argCount; ++i)
             {
-                commands += argv[i];
+                commands += argValues[i];
                 commands += " ";
             }
 
@@ -554,12 +568,28 @@ bool platform::ParseArgs(const char* commandLine, args::Options& options, std::s
 {
     int argCount;
     std::string appName = util::ExpendEnv("$(ExecutableName)", nullptr);
-    std::string commands = appName + " " + commandLine;
+    if (conv::ToLower(conv::safe(commandLine)).find(conv::ToLower(appName)) != std::string::npos)
+    {
+        // looks like commandLine passed to us already has app name, so we don't prefix here
+        appName = "";
+    }
+    else
+    {
+        appName += " ";
+    }
+
+    std::string commands = appName + conv::safe(commandLine);
     char** argValues = CommandLineToArgvA(commands.c_str(), &argCount);
     Releaser releaser;
     releaser.mArg = argValues;
 
     return ParseOptions(options, argCount, argValues, errorMessage);
+}
+
+bool platform::ParseArgs(args::Options& options, std::string* errorMessage)
+{
+    const char* cl = ::GetCommandLineA();
+    return ParseArgs(cl, options, errorMessage);
 }
 
 bool platform::IsDebuggerAttached()
@@ -606,6 +636,21 @@ system::InitializationResult system::InitializeSetup(const char* commandLine, ar
 {
     return InitializeEngine(commandLine, 0, nullptr, options, configData, configSize);
 }
+
+system::InitializationResult system::InitializeSetup(args::Options& options, const char* configData, size_t configSize)
+{
+    const char* commandLine = ::GetCommandLineA();
+    return InitializeSetup(commandLine, options, configData, configSize);
+}
+
+system::InitializationResult system::InitializeSetup()
+{
+    std::string appName = util::ExpendEnv("$(AppName)", nullptr);
+    args::Options options(appName);
+    
+    return InitializeSetup(options, nullptr, 0);
+}
+
 
 // Convert wide Unicode String to UTF8 string
 std::string conv::wide_to_utf8(const wchar_t* wstr)

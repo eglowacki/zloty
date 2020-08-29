@@ -1,0 +1,10 @@
+{
+  "FileVersion": 2,
+  "Id": "6c57825d-e4aa-43a5-89d7-52b97b0dca76",
+  "Items": [
+    {
+      "Id": "e1c7ef36-9c25-4c38-b897-07d2880d01cb",
+      "Command": "--log_filter1=MULT"
+    }
+  ]
+}
