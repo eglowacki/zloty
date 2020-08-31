@@ -17,20 +17,9 @@
 #include "App/AppUtilities.h"
 #include "StringHelpers.h"
 
-#include <stdexcept>
 #include <string>
 #include <algorithm>
 #include <fstream>
-
-//#define YAGET_WRITE_LOG_TAGS
-
-using namespace yaget;
-using namespace yaget::ylog;
-
-namespace yaget::ylog
-{
-    extern yaget::Strings GetRegisteredTags();
-}
 
 namespace
 {
@@ -39,6 +28,8 @@ namespace
     {
         ManagerData()
         {
+            using namespace yaget;
+
             yaget::Strings tags = yaget::ylog::GetRegisteredTags();
             for (const auto& tag : tags)
             {
@@ -50,21 +41,21 @@ namespace
             ylog::Config::addOutput(configList, "OutputDebug");
             ylog::Config::setOption(configList, "split_lines", "true");
 
-            Output::Ptr outputPtr(new OutputDebug(*configList.begin()));
+            ylog::Output::Ptr outputPtr(new ylog::OutputDebug(*configList.begin()));
             mOutputList.push_back(outputPtr);
 #endif // YAGET_SHIPPING
         }
 
-        Channel::Map mChannelMap;                       ///< Map of shared pointer of Channel objects
-        Output::Vector mOutputList;                     ///< List of Output objects
-        Log::Level mDefaultLevel = Log::Log::Level::eDebug;    ///< Default Log::Level of any new Channel
+        yaget::ylog::Channel::Map mChannelMap;                       ///< Map of shared pointer of Channel objects
+        yaget::ylog::Output::Vector mOutputList;                     ///< List of Output objects
+        yaget::ylog::Log::Level mDefaultLevel = yaget::ylog::Log::Log::Level::eDebug;    ///< Default Log::Level of any new Channel
         
         using TagFilters_t = std::set<uint32_t>;
         TagFilters_t mTagFilters;
         TagFilters_t mOverriteTagFilters;
         TagFilters_t mTags;
 
-        using OutputTypes = std::map<std::string, Manager::OutputCreator>;
+        using OutputTypes = std::map<std::string, yaget::ylog::Manager::OutputCreator>;
         OutputTypes mRegisteredOutputTypes;
     };
 
@@ -76,19 +67,20 @@ namespace
 
 } // namespace
 
-/*static*/ void Manager::AddOutput(Output::Ptr outputPtr)
+
+/*static*/ void yaget::ylog::Manager::AddOutput(Output::Ptr outputPtr)
 {
     auto& d = md();
     d.mOutputList.push_back(outputPtr);
 }
 
-/*static*/ void Manager::RegisterOutputType(const char* name, Manager::OutputCreator outputCreator)
+/*static*/ void yaget::ylog::Manager::RegisterOutputType(const char* name, Manager::OutputCreator outputCreator)
 {
     auto& d = md();
     d.mRegisteredOutputTypes.insert(std::make_pair(name, outputCreator));
 }
 
-/*static*/ void Manager::ResetRuntimeData()
+/*static*/ void yaget::ylog::Manager::ResetRuntimeData()
 {
     auto& d = md();
     auto outputTypes = std::move(d.mRegisteredOutputTypes);
@@ -101,7 +93,7 @@ namespace
 }
 
 // Create and configure the Output objects.
-void Manager::configure(const Config::Vector& aConfigList)
+void yaget::ylog::Manager::configure(const Config::Vector& aConfigList)
 {
     auto& d = md();
     d.mOutputList.clear();
@@ -124,13 +116,12 @@ void Manager::configure(const Config::Vector& aConfigList)
 }
 
 // Return the Channel corresponding to the provided name
-Channel::Ptr Manager::get(const char* apChannelName)
+yaget::ylog::Channel::Ptr yaget::ylog::Manager::get(const char* apChannelName)
 {
     auto& d = md();
     ylog::Channel::Ptr ChannelPtr;
-    ylog::Channel::Map::iterator iChannelPtr = d.mChannelMap.find(apChannelName);
 
-    if (d.mChannelMap.end() != iChannelPtr)
+    if (const auto iChannelPtr = d.mChannelMap.find(apChannelName); d.mChannelMap.end() != iChannelPtr)
     {
         ChannelPtr = iChannelPtr->second;
     }
@@ -145,25 +136,23 @@ Channel::Ptr Manager::get(const char* apChannelName)
 }
 
 // Output the Log to all the active Output objects.
-void Manager::output(const ylog::Channel::Ptr& aChannelPtr, const ylog::Log& aLog)
+void yaget::ylog::Manager::output(const ylog::Channel::Ptr& aChannelPtr, const ylog::Log& aLog)
 {
     auto& d = md();
-    Output::Vector::iterator iOutputPtr;
 
-    for (iOutputPtr = d.mOutputList.begin(); iOutputPtr != d.mOutputList.end(); ++iOutputPtr)
+    for (auto iOutputPtr = d.mOutputList.begin(); iOutputPtr != d.mOutputList.end(); ++iOutputPtr)
     {
         (*iOutputPtr)->output(aChannelPtr, aLog);
     }
 }
 
 // Serialize the current Log::Level of Channel objects and return them as a Config instance
-Config::Ptr Manager::getChannelConfig(void)
+yaget::ylog::Config::Ptr yaget::ylog::Manager::getChannelConfig(void)
 {
     auto& d = md();
     Config::Ptr ConfigPtr(new Config("ChannelConfig"));
 
-    Channel::Map::const_iterator iChannel;
-    for (iChannel = d.mChannelMap.begin(); iChannel != d.mChannelMap.end(); ++iChannel)
+    for (auto iChannel = d.mChannelMap.begin(); iChannel != d.mChannelMap.end(); ++iChannel)
     {
         ConfigPtr->setValue(iChannel->first.c_str(), Log::toString(iChannel->second->getLevel()));
     }
@@ -172,61 +161,60 @@ Config::Ptr Manager::getChannelConfig(void)
 }
 
 // Set the Log::Level of Channel objects from the provided Config instance
-void Manager::setChannelConfig(const ylog::Config::Ptr& aConfigPtr)
+void yaget::ylog::Manager::setChannelConfig(const ylog::Config::Ptr& aConfigPtr)
 {
     const Config::Values& ConfigValues = aConfigPtr->getValues();
 
-    Config::Values::const_iterator iValue;
-    for (iValue = ConfigValues.begin(); iValue != ConfigValues.end(); ++iValue)
+    for (auto iValue = ConfigValues.begin(); iValue != ConfigValues.end(); ++iValue)
     {
         Manager::get(iValue->first.c_str())->setLevel(Log::toLevel(iValue->second.c_str()));
     }
 }
             
-void Manager::setDefaultLevel(Log::Level aLevel)
+void yaget::ylog::Manager::setDefaultLevel(Log::Level aLevel)
 {
     auto& d = md();
     d.mDefaultLevel = aLevel;
 }
 
-bool Manager::IsValidTag(uint32_t tag)
+bool yaget::ylog::Manager::IsValidTag(uint32_t tag)
 {
     const auto& d = md();
     return d.mTags.find(tag) != std::end(d.mTags);
 }
 
-bool Manager::IsFilter(uint32_t tag)
+bool yaget::ylog::Manager::IsFilter(uint32_t tag)
 {
     auto& d = md();
-    ManagerData::TagFilters_t::const_iterator it = d.mTagFilters.find(tag);
+    const auto it = d.mTagFilters.find(tag);
     return it != d.mTagFilters.end();
 }
 
-bool Manager::IsSeverityFilter(ylog::Log::Level severity, uint32_t /*tag*/)
+bool yaget::ylog::Manager::IsSeverityFilter(ylog::Log::Level severity, uint32_t /*tag*/)
 {
     return severity < ylog::Log::Level::eError;
 }
 
-void Manager::AddFilter(uint32_t tag)
+void yaget::ylog::Manager::AddFilter(uint32_t tag)
 {
     auto& d = md();
     d.mTagFilters.insert(tag);
 }
 
-bool Manager::IsOverrideFilter(uint32_t tag)
+bool yaget::ylog::Manager::IsOverrideFilter(uint32_t tag)
 {
     auto& d = md();
-    ManagerData::TagFilters_t::const_iterator it = d.mOverriteTagFilters.find(tag);
+    const auto it = d.mOverriteTagFilters.find(tag);
     return it != d.mOverriteTagFilters.end();
 }
 
-void Manager::AddOverrideFilter(uint32_t tag)
+void yaget::ylog::Manager::AddOverrideFilter(uint32_t tag)
 {
     auto& d = md();
     d.mOverriteTagFilters.insert(tag);
 }
 
-void Manager::RemoveFilter(uint32_t tag)
+void yaget::ylog::Manager::RemoveFilter(uint32_t tag)
 {
     auto& d = md();
     d.mTagFilters.erase(tag);

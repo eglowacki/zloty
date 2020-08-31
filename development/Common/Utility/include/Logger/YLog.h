@@ -65,6 +65,8 @@ namespace yaget
             };
         };
 
+        extern std::vector<std::string> GetRegisteredTags();
+
     } // namespace ylog 
 } // namespace yaget
 

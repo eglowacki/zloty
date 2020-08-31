@@ -14,11 +14,6 @@
     #pragma message("======== Yaget Log NOT Included ========")
 #endif // YAGET_LOG_ENABLED
 
-namespace yaget::ylog
-{
-    extern yaget::Strings GetRegisteredTags();
-}
-
 namespace
 {
     std::set<std::string> GetTagSet()

@@ -57,7 +57,7 @@ namespace
                 options.parse(argCount, argValues);
                 if (options.find<bool>("help", false))
                 {
-                    yaget::platform::DebuggerOutput(options.help().c_str());
+                    yaget::platform::DebuggerOutput(options.help());
                     return false;
                 }
             }
@@ -66,7 +66,7 @@ namespace
         }
         catch (const args::OptionException& e)
         {
-            yaget::platform::DebuggerOutput(options.help().c_str());
+            yaget::platform::DebuggerOutput(options.help());
             yaget::platform::DebuggerOutput(e.what());
             if (errorMessage)
             {
@@ -204,9 +204,6 @@ namespace
             std::string commands = appName + conv::safe(commandLine);
             argValues = CommandLineToArgvA(commands.c_str(), &argCount);
 
-            //std::string appName = util::ExpendEnv("$(ExecutableName)", nullptr);
-            //std::string commands = appName + " " + commandLine;
-            //argValues = CommandLineToArgvA(commands.c_str(), &argCount);
             releaser.mArg = argValues;
         }
 
