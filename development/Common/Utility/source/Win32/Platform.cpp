@@ -179,9 +179,12 @@ namespace
     } consoleRedirector;
 
 
-    system::InitializationResult InitializeEngine(const char* commandLine, int argc, char* argv[], args::Options& options, const char* configData, size_t configSize)
+    system::InitializationResult InitializeEngine(const char* commandLine, int argc, char* argv[], args::Options& options, const char* configData, size_t configSize, bool skipOptions)
     {
-        util::DefaultOptions(options);
+        if (!skipOptions)
+        {
+            util::DefaultOptions(options);
+        }
 
         int argCount = argc;
         char** argValues = argv;
@@ -208,7 +211,7 @@ namespace
         }
 
         std::string errorMessage;
-        if (!ParseOptions(options, argCount, argValues, &errorMessage))
+        if (!skipOptions && !ParseOptions(options, argCount, argValues, &errorMessage))
         {
             std::string commands;
             for (int i = 1; i < argCount; ++i)
@@ -384,6 +387,31 @@ namespace
     ThreadNames threadNames;
 
 } // namespace
+
+
+//! This will return random number from 0 to 1
+float yaget::rng::GetRandom()
+{
+    return static_cast<float>(rand()) / RAND_MAX;
+}
+
+float yaget::rng::GetRandomRange(float lowValue, float hiValue)
+{
+    float t = GetRandom();
+    return (hiValue - lowValue) * t + lowValue;
+}
+
+//! Return random value from 1 to NumberOfSides. Simulate dice roll
+int yaget::rng::GetDice(int numberSides)
+{
+    float value = GetRandom();
+    // and now scale to fit within MinRange and MaxRange
+    float newResult = (numberSides - 1) * value;
+    // we need to round it to the nearest integer
+    return static_cast<int>(newResult + 0.5f);
+}
+
+
 
 /*
 *Get the list of all files in given directory and its sub directories.
@@ -627,12 +655,12 @@ void system::Initialize(const args::Options& options, const char* configData, si
 
 system::InitializationResult system::InitializeSetup(int argc, char* argv[], args::Options& options, const char* configData, size_t configSize)
 {
-    return InitializeEngine(nullptr, argc, argv, options, configData, configSize);
+    return InitializeEngine(nullptr, argc, argv, options, configData, configSize, false);
 }
 
 system::InitializationResult system::InitializeSetup(const char* commandLine, args::Options& options, const char* configData, size_t configSize)
 {
-    return InitializeEngine(commandLine, 0, nullptr, options, configData, configSize);
+    return InitializeEngine(commandLine, 0, nullptr, options, configData, configSize, false);
 }
 
 system::InitializationResult system::InitializeSetup(args::Options& options, const char* configData, size_t configSize)
@@ -641,12 +669,13 @@ system::InitializationResult system::InitializeSetup(args::Options& options, con
     return InitializeSetup(commandLine, options, configData, configSize);
 }
 
-system::InitializationResult system::InitializeSetup(const char* configData /*= nullptr*/, size_t configSize /*= 0*/)
+system::InitializationResult system::InitializeSetup(const char* configData /*= nullptr*/, size_t configSize /*= 0*/, bool skipOptions /*= false*/)
 {
-    std::string appName = util::ExpendEnv("$(AppName)", nullptr);
+    const auto& appName = util::ExpendEnv("$(AppName)", nullptr);
     args::Options options(appName);
-    
-    return InitializeSetup(options, configData, configSize);
+    const char* commandLine = ::GetCommandLineA();
+
+    return InitializeEngine(commandLine, 0, nullptr, options, configData, configSize, skipOptions);
 }
 
 

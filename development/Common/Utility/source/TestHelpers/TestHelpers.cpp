@@ -37,7 +37,7 @@ void yaget::test::InitializeEnvironment()
 {
     ylog::Manager::RegisterOutputTypes<ylog::OutputDebug, ylog::OutputFile>();
 
-    system::InitializeSetup(configBlock, std::strlen(configBlock));
+    system::InitializeSetup(configBlock, std::strlen(configBlock), true);
     metrics::MarkStartThread(platform::CurrentThreadId(), "MAIN");
 }
 

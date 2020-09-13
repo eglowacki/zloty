@@ -1,8 +1,11 @@
 #include "pch.h" 
 #include "Streams/Guid.h"
+#include "TestHelpers/TestHelpers.h"
 
-TEST(YagetCoreTest, Guid)
+
+TEST(YagetCore, Types_Guid)
 {
+    yaget::test::Environment environment;
     /*************************************************************************
     * HAPPY PATH TESTS
     *************************************************************************/

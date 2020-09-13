@@ -141,6 +141,10 @@ namespace yaget
             {
                 return "sec";
             }
+            else if (timeUnits - time::kRawUnit == 0)
+            {
+                return "raw";
+            }
 
             return "?";
 

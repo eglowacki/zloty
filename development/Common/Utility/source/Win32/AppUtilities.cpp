@@ -130,16 +130,16 @@ namespace
         return "Release";
 #else
     #error "Missing build configuration for Alias $(BuildConfiguration) Names resolution"
-#endif // 
+#endif
     }
 
     std::string GetKnowFolder(REFKNOWNFOLDERID refId)
     {
         std::string result;
         PWSTR path = nullptr;
-        HRESULT r = ::SHGetKnownFolderPath(refId, KF_FLAG_CREATE, nullptr, &path);
-        assert(SUCCEEDED(r));
-        if (path)
+        HRESULT hr = ::SHGetKnownFolderPath(refId, KF_FLAG_CREATE, nullptr, &path);
+        assert(SUCCEEDED(hr));
+        if (SUCCEEDED(hr) && path)
         {
             result = yaget::conv::wide_to_utf8(path);
             CoTaskMemFree(path);

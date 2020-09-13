@@ -43,6 +43,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GameClock_Test.cpp" />
     <ClCompile Include="Guid_Test.cpp" />
     <ClCompile Include="JobPool_Test.cpp" />
     <ClCompile Include="pch.cpp">
@@ -51,6 +52,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PoolAllocator_Test.cpp" />
+    <ClCompile Include="StringConverters_Test.cpp" />
+    <ClCompile Include="StringHelpers_Test.cpp" />
+    <ClCompile Include="VTS_Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

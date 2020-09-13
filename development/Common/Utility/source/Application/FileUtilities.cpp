@@ -313,7 +313,7 @@ yaget::io::file::FileOpResult yaget::io::file::AssureDirectories(const std::stri
 {
     std::string canonicalPath = fs::path(util::ExpendEnv(pathName, nullptr)).make_preferred().string();
 
-    YLOG_INFO("FILE", "Assuring directory path: '%s'.", fs::path(canonicalPath).parent_path().generic_string().c_str());
+    //YLOG_INFO("FILE", "Assuring directory path: '%s'.", fs::path(canonicalPath).parent_path().generic_string().c_str());
 
     if (!::MakeSureDirectoryPathExists(canonicalPath.c_str()))
     {

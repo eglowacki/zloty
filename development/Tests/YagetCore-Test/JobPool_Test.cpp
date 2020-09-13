@@ -26,7 +26,7 @@ namespace yaget::ylog
 } // namespace yaget::ylog 
 
 
-TEST(YagetCoreTest, JobPool)
+TEST(YagetCore, Threads_JobPool)
 {
     using namespace yaget;
 

@@ -71,5 +71,14 @@ namespace yaget
         void DebuggerOutput(const std::string& message);
 
     } // namespace yaget
+
+    namespace rng
+    {
+        float GetRandom();
+        int GetDice(int numberSides);
+        float GetRandomRange(float lowValue, float hiValue);
+
+    }
+
 } // namespace yaget
 
