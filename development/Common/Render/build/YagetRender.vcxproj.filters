@@ -1,0 +1,366 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Render Files">
+      <UniqueIdentifier>{409d2c5f-5330-4e45-915b-747886e657fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helper Files">
+      <UniqueIdentifier>{b8610a63-c81e-4360-8002-b0f6db5359e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component Files">
+      <UniqueIdentifier>{70f34573-cf52-4615-9c39-fb0c967b6397}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Debugging Files">
+      <UniqueIdentifier>{1da4c64d-269e-45ee-8981-05dc0d84aad3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui Files">
+      <UniqueIdentifier>{e5eba5ac-7103-47eb-b1a8-69a3dfae32d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Loaders Files">
+      <UniqueIdentifier>{eaab288c-6151-4968-a72d-7d3bf846a4d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VTS Files">
+      <UniqueIdentifier>{8d4156d9-686f-4018-a574-6822b4949981}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Gui Files">
+      <UniqueIdentifier>{571f6e70-c8ec-475d-85ce-eb75c29e91b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ResourceView Files">
+      <UniqueIdentifier>{28c79d39-4d51-4253-aee5-b753b7ff2b9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ResourceView Files\RenderState Files">
+      <UniqueIdentifier>{888975df-6fc6-4090-8021-b8b93a6c7de1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ResourceView Files\Helper Files">
+      <UniqueIdentifier>{2d9596a2-6648-4ac3-ba84-d8e511697ff7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../source/targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Device.h">
+      <Filter>Render Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Scene.h">
+      <Filter>Render Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\ModelComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\TextComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\RenderComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\GridComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Debugging\PhysicsDebugDraw.h">
+      <Filter>Debugging Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\LineComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\RenderHelpers.h">
+      <Filter>Helper Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\CameraComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Debugging\Primitives.h">
+      <Filter>Debugging Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\ComponentPools.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Loaders\GeometryConvertor.h">
+      <Filter>Loaders Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\CameraCalc.h">
+      <Filter>Render Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\TextureResource.h">
+      <Filter>Render Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\TerrainComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Streams\GeometryStream.h">
+      <Filter>Loaders Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Generated\geometry_stream_generated.h">
+      <Filter>Loaders Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\VTS\RenderResolvedAssets.h">
+      <Filter>VTS Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Gui\Support.h">
+      <Filter>Gui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Gui\Layout.h">
+      <Filter>Gui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Gui\Controls.h">
+      <Filter>Gui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\GeometryResource.h">
+      <Filter>ResourceView Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\ConstantsResource.h">
+      <Filter>ResourceView Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\SkinShaderResource.h">
+      <Filter>ResourceView Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\ShaderResources.h">
+      <Filter>ResourceView Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Gui\VideoOptions.h">
+      <Filter>Gui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DesktopApplication.h">
+      <Filter>Helper Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\RenderTarget.h">
+      <Filter>Render Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\GeometryComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Debugging\dxerr.h">
+      <Filter>Debugging Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\DescriptionResource.h">
+      <Filter>ResourceView Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\VTS\RenderStateResolvedAssets.h">
+      <Filter>VTS Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\ResourceView.h">
+      <Filter>ResourceView Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\DepthStencilStateResource.h">
+      <Filter>ResourceView Files\RenderState Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\RasterizerStateResource.h">
+      <Filter>ResourceView Files\RenderState Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\BlendStateResource.h">
+      <Filter>ResourceView Files\RenderState Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\RenderStateCache.h">
+      <Filter>ResourceView Files\RenderState Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\RenderTargetResource.h">
+      <Filter>ResourceView Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\FontResource.h">
+      <Filter>ResourceView Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\ResourceWatchRefresher.h">
+      <Filter>ResourceView Files\Helper Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\VTS\RenderConfigAssets.h">
+      <Filter>VTS Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\PlatformDisplayModes.h">
+      <Filter>Render Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\VTS\DefaultResolvers.h">
+      <Filter>VTS Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Resources\ResourceActivator.h">
+      <Filter>ResourceView Files\Helper Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\imgui\imconfig.h">
+      <Filter>imgui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\imgui\imgui.h">
+      <Filter>imgui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\imgui\imgui_internal.h">
+      <Filter>imgui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\imgui\imstb_rectpack.h">
+      <Filter>imgui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\imgui\imstb_textedit.h">
+      <Filter>imgui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\imgui\imstb_truetype.h">
+      <Filter>imgui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\imgui\examples\imgui_impl_dx11.h">
+      <Filter>imgui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\imgui\examples\imgui_impl_win32.h">
+      <Filter>imgui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Gui\imgui_OutputConsole.h">
+      <Filter>imgui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Logger\RenderLogTags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\Device.cpp">
+      <Filter>Render Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\RenderHelpers.cpp">
+      <Filter>Helper Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Scene.cpp">
+      <Filter>Render Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\RenderComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ModelComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TextComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\GridComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\LineComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\CameraComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Debugging\Primitives.cpp">
+      <Filter>Debugging Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\GeometryConvertor.cpp">
+      <Filter>Loaders Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\CameraCalc.cpp">
+      <Filter>Render Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TextureResource.cpp">
+      <Filter>Render Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\TerrainComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Streams\GeometryStream.cpp">
+      <Filter>Loaders Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Gui\Support.cpp">
+      <Filter>Gui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Gui\Layout.cpp">
+      <Filter>Gui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Gui\Controls.cpp">
+      <Filter>Gui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\GeometryResource.cpp">
+      <Filter>ResourceView Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\ConstantsResource.cpp">
+      <Filter>ResourceView Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\SkinShaderResource.cpp">
+      <Filter>ResourceView Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\ShaderResources.cpp">
+      <Filter>ResourceView Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Gui\VideoOptions.cpp">
+      <Filter>Gui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\RenderTarget.cpp">
+      <Filter>Render Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\GeometryComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Debugging\dxerr.cpp">
+      <Filter>Debugging Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\VTS\RenderResolvedAssets.cpp">
+      <Filter>VTS Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\DescriptionResource.cpp">
+      <Filter>ResourceView Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\VTS\RenderStateResolvedAssets.cpp">
+      <Filter>VTS Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\ResourceView.cpp">
+      <Filter>ResourceView Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\DepthStencilStateResource.cpp">
+      <Filter>ResourceView Files\RenderState Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\RasterizerStateResource.cpp">
+      <Filter>ResourceView Files\RenderState Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\BlendStateResource.cpp">
+      <Filter>ResourceView Files\RenderState Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\RenderStateCache.cpp">
+      <Filter>ResourceView Files\RenderState Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\RenderTargetResource.cpp">
+      <Filter>ResourceView Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\FontResource.cpp">
+      <Filter>ResourceView Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\ResourceWatchRefresher.cpp">
+      <Filter>ResourceView Files\Helper Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DeviceGui.cpp">
+      <Filter>Render Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\VTS\RenderConfigAssets.cpp">
+      <Filter>VTS Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\PlatformDisplayModes.cpp">
+      <Filter>Render Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Resources\ResourceActivator.cpp">
+      <Filter>ResourceView Files\Helper Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\VTS\DefaultResolvers.cpp">
+      <Filter>VTS Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\imgui\imgui.cpp">
+      <Filter>imgui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\imgui\imgui_demo.cpp">
+      <Filter>imgui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\imgui\imgui_draw.cpp">
+      <Filter>imgui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\imgui\imgui_widgets.cpp">
+      <Filter>imgui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\imgui\examples\imgui_impl_dx11.cpp">
+      <Filter>imgui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\imgui\examples\imgui_impl_win32.cpp">
+      <Filter>imgui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Gui\imgui_OutputConsole.cpp">
+      <Filter>imgui Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\source\Generated\geometry_stream.fbs">
+      <Filter>Loaders Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

@@ -52,3 +52,5 @@ development/Tests/YagetCore-Test/packages/
 *.idb
 
 *.recipe
+
+development/Common/Render/source/Generated/

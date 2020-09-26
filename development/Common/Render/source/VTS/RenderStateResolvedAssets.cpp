@@ -1,0 +1,3 @@
+#include "VTS/RenderStateResolvedAssets.h"
+
+DISREGARD_LINKER_4221(COMPILER_VERIFICATION_RenderStateResolvedAssets_h)
