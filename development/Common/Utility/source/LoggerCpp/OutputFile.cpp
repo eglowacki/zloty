@@ -78,7 +78,7 @@ OutputFile::~OutputFile()
 // Open the file
 void OutputFile::open() const
 {
-    mpFile = fopen(mFilename.c_str(), "ab");
+    mpFile = fopen(mFilename.c_str(), "at");
     if (!mpFile)
     {
         LOGGER_THROW("file \"" << mFilename << "\" not opened");

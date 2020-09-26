@@ -39,13 +39,13 @@ TEST(YagetCore, Threads_JobPool)
     const auto& message = fmt::format("Running '{}' tasks with '{}' threads", conv::ToThousandsSep(Iterations), MaxThreads);
     const auto& message2 = fmt::format("Adding '{}' tasks", conv::ToThousandsSep(Iterations));
 
-    metrics::TimeScoper<time::kMilisecondUnit> cleanupTimer(message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+    metrics::TimeScoper<time::kMilisecondUnit> cleanupTimer("TEST", message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
     std::atomic_int counter{ Iterations };
 
     {
         mt::JobPool pool("UNIT_TEST", MaxThreads, mt::JobPool::Behaviour::StartAsPause);
         {
-            metrics::TimeScoper<time::kMilisecondUnit> intTimer(message2.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+            metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", message2.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
 
             auto f = [&counter, &WorkLoads]()
             {
@@ -60,7 +60,7 @@ TEST(YagetCore, Threads_JobPool)
             locker.AddTasks(functions);
         }
 
-        metrics::TimeScoper<time::kMilisecondUnit> runThreadsTimer("Run all jobs", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> runThreadsTimer("TEST", "Run all jobs", YAGET_LOG_FILE_LINE_FUNCTION);
         pool.UnpauseAll();
         pool.Join();
     }

@@ -357,7 +357,7 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
     // Show loaded config file
     // show all search path for config file and marked used one with *
     std::string message = "=== Configuration Search Path:";
-    message += "\n" + configFile + " : Found and Used.";
+    message += "\nFound: '" + (!configFile.empty() ? configFile : "*NO CONFIGURATION*") + "'.";
 
     Strings searches = io::file::GenerateConfigSearchPath("Configuration", true, options);
     for (const auto& searched : searches)

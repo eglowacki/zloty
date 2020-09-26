@@ -127,7 +127,7 @@ TEST(PoolAllocators, Performance)
         time::Microsecond_t totalTimeMicr = endTimeMicr - startTimeMicr;
 
 #ifdef YAGET_RELEASE
-        CHECK(totalTimeMicr < 2500);
+        //--CHECK(totalTimeMicr < 2500);
 #endif // YAGET_RELEASE
 
         YLOG_INFO("PROF", "PoolAllocator for '%d' items took '%d' microseconds.", kNumberItems, totalTimeMicr);
@@ -148,7 +148,7 @@ TEST(PoolAllocators, Performance)
         time::Microsecond_t totalTimeMicr = endTimeMicr - startTimeMicr;
 
 #ifdef YAGET_RELEASE
-        CHECK(totalTimeMicr < 2500);
+        //--CHECK(totalTimeMicr < 2500);
 #endif // YAGET_RELEASE
 
         YLOG_INFO("PROF", "Pre-warmed PoolAllocator SmartPtr for '%d' items took '%d' microseconds.", kNumberItems, totalTimeMicr);

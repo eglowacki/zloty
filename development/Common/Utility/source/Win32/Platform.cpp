@@ -237,7 +237,11 @@ namespace
             if (options.find<bool>("options_view", false))
             {
                 platform::DebuggerOutput(util::DisplayCurrentConfiguration(&options));
-                return system::InitializationResult::Helped;
+
+                if (!options.find<bool>("generate_config", false))
+                {
+                    return system::InitializationResult::Helped;
+                }
             }
             if (options.find<bool>("generate_config", false))
             {
@@ -646,11 +650,12 @@ void system::Initialize(const args::Options& options, const char* configData, si
 
     double appTime = time::FromTo<double>(platform::GetRealTime(time::kMicrosecondUnit), time::kMicrosecondUnit, time::kSecondUnit);
     std::string buildNumber = dev::CurrentConfiguration().mDebug.mFlags.BuildId == -1 ? "" : fmt::format(", Build: '{}'", dev::CurrentConfiguration().mDebug.mFlags.BuildId);
-    YLOG_NOTICE("INIT", "YAGET Engine initialized. Application: '%s', Configuration: '%s', Version: '%s'%s at time: %f sec.",
+    YLOG_INFO("INIT", "YAGET Engine initialized. Application: '%s', Configuration: '%s', Version: '%s'%s at time: %f sec. Command Line: '%s'.",
         util::ExpendEnv("$(AppName)", nullptr).c_str(),
         util::ExpendEnv("$(BuildConfiguration)", nullptr).c_str(),
         yaget::ToString(yaget::YagetVersion).c_str(),
-        buildNumber.c_str(), appTime);
+        buildNumber.c_str(), appTime,
+        ::GetCommandLineA());
 }
 
 system::InitializationResult system::InitializeSetup(int argc, char* argv[], args::Options& options, const char* configData, size_t configSize)

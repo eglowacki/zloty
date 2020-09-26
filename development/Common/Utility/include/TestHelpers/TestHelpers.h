@@ -21,7 +21,7 @@
 namespace yaget::test
 {
     // Call this to initialize testing environment by adding default log outputs
-    void InitializeEnvironment();
+    void InitializeEnvironment(const char* configBlockData = nullptr, std::size_t size = 0);
     void ResetEnvironment();
 
     // RTTI support for cleaning up test environment if different between tests.

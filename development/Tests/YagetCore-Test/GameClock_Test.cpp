@@ -59,6 +59,7 @@ TEST_F(Time, Sleep)
         accumulatedError += std::abs(sleepDuration - diff);
     }
 
+    // the error should not be bigger then 1 ms
     EXPECT_LE(accumulatedError / Iterations, 1000);
     timings["BusySleep"] = accumulatedError / Iterations;
     accumulatedError = 0;
@@ -66,15 +67,16 @@ TEST_F(Time, Sleep)
     for (auto i = 0; i < Iterations; ++i)
     {
         // check sleep (0.1 second) using platform dependent sleep functionality
-        const time::Microsecond_t stampStart = yaget::platform::GetRealTime(time::kMicrosecondUnit);
-        yaget::platform::Sleep(sleepDuration, time::kMicrosecondUnit);
+        const time::Microsecond_t stampStart = platform::GetRealTime(time::kMicrosecondUnit);
+        platform::Sleep(sleepDuration, time::kMicrosecondUnit);
         const time::Microsecond_t stampEnd = platform::GetRealTime(time::kMicrosecondUnit);
 
         const time::Microsecond_t diff = stampEnd - stampStart;
         accumulatedError += std::abs(sleepDuration - diff);
     }
 
-    EXPECT_LE(accumulatedError / Iterations, 1000);
+    // the error should not be bigger then 2% of total sleep time
+    EXPECT_LE(accumulatedError / Iterations, (Iterations * sleepDuration) * 0.02);
     timings["Sleep"] = accumulatedError / Iterations;
     accumulatedError = 0;
 
@@ -82,17 +84,18 @@ TEST_F(Time, Sleep)
     {
         const time::Microsecond_t stampStart = platform::GetRealTime(time::kMicrosecondUnit);
         time::Microsecond_t endSleepTime = stampStart + sleepDuration;
-        yaget::platform::Sleep([endSleepTime]()
+        platform::Sleep([endSleepTime]()
             {
                 return platform::GetRealTime(time::kMicrosecondUnit) < endSleepTime;
             });
 
-        const time::Microsecond_t stampEnd = yaget::platform::GetRealTime(time::kMicrosecondUnit);
+        const time::Microsecond_t stampEnd = platform::GetRealTime(time::kMicrosecondUnit);
 
         const time::Microsecond_t diff = stampEnd - stampStart;
         accumulatedError += std::abs(sleepDuration - diff);
     }
 
+    // the error should not be bigger then 1 ms
     EXPECT_LE(accumulatedError / Iterations, 1000);
     timings["Sleep-Lambda"] = accumulatedError / Iterations;
     accumulatedError = 0;

@@ -13,8 +13,6 @@
 //////////////////////////////////////////////////////////////////////
 //! \file
 
-#ifndef YAGET_STL_HELPER_H
-#define YAGET_STL_HELPER_H
 #pragma once
 
 #include <Base.h>
@@ -30,8 +28,22 @@ namespace yaget
     template <typename T, std::size_t Size>
     typename type_of_size<Size>::type& sizeof_array_helper(T(&)[Size]);
 
-    #define sizeof_array(pArray) sizeof(yaget::sizeof_array_helper(pArray))
+    // remove duplicate elements from container without changing the order
+    template <typename T>
+    void RemoveDuplicates(T& num)
+    {
+        std::unordered_set<T::value_type> set;
+        std::size_t pos = 0;
+        for (auto v : num)
+        {
+            if (set.insert(v).second)
+            {
+                num[pos++] = v;
+            }
+        }
+        num.resize(pos);
+    }
 
 } // namespace yaget
 
-#endif // YAGET_STL_HELPER_H
+#define sizeof_array(pArray) sizeof(yaget::sizeof_array_helper(pArray))

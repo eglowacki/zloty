@@ -156,11 +156,16 @@ namespace yaget
         public:
             //YAGET_LOG_FILE_LINE_FUNCTION
             TimeScoper(const char* message, const char* file, uint32_t line, const char* function)
+                : TimeScoper("PROF", message, file, line, function)
+            {}
+
+            TimeScoper(const char* tag, const char* message, const char* file, uint32_t line, const char* function)
                 : mStartTime(platform::GetRealTime(time::kMicrosecondUnit))
                 , mMessage(message)
                 , mFile(file)
                 , mLine(line)
                 , mFunction(function)
+                , mTag(tag)
             {}
 
             ~TimeScoper()
@@ -169,7 +174,7 @@ namespace yaget
                 time::Microsecond_t runTime = endTime - mStartTime;
                 int timeDiff = time::FromTo<int>(runTime, time::kMicrosecondUnit, TU);
 
-                YLOG_PINFO("PROF", mFile, mLine, mFunction, "%s: '%s' (%s).", mMessage, conv::ToThousandsSep(timeDiff).c_str(), UnitName(TU).c_str());
+                YLOG_PNOTICE(mTag, mFile, mLine, mFunction, "%s: '%s' (%s).", mMessage, conv::ToThousandsSep(timeDiff).c_str(), UnitName(TU).c_str());
             }
 
         private:
@@ -178,6 +183,7 @@ namespace yaget
             const char* mFile = "";
             uint32_t mLine = 0;
             const char* mFunction = "";
+            const char* mTag = "PROF";
         };
 
 #if YAGET_METRIC_GATHER == 1

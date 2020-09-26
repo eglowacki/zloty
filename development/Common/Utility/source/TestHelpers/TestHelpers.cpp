@@ -13,7 +13,7 @@ namespace
 
                     "Logging": {
                         "Filters": [],
-                        "Level": "DBUG",
+                        "Level": "NOTE",
                         "Outputs": {
                             "ylog::OutputDebug": {
                                 "split_lines": "true"
@@ -33,11 +33,13 @@ namespace
 }
 
 
-void yaget::test::InitializeEnvironment()
+void yaget::test::InitializeEnvironment(const char* configBlockData /*= nullptr*/, std::size_t size /*= 0*/)
 {
     ylog::Manager::RegisterOutputTypes<ylog::OutputDebug, ylog::OutputFile>();
 
-    system::InitializeSetup(configBlock, std::strlen(configBlock), true);
+    const char* block = configBlockData ? configBlockData : configBlock;
+    const std::size_t blockSize = configBlockData ? size : std::strlen(configBlock);
+    system::InitializeSetup(block, blockSize, true);
     metrics::MarkStartThread(platform::CurrentThreadId(), "MAIN");
 }
 

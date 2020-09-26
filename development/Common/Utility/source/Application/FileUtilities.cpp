@@ -2,18 +2,16 @@
 #include "App/AppUtilities.h"
 #include "Platform/Support.h"
 #include "Logger/YLog.h"
+#include "STLHelper.h"
 #include "StringHelpers.h"
-#include "Debugging/Assert.h"
 #include "Platform/WindowsLean.h"
 
 #include <comdef.h>
-
-//#pragma warning( push )
-//#pragma warning( disable : 4091 )  // ' ' : ignored on left of '' when no variable is declared
 #include <Dbghelp.h>
-//#pragma warning( pop )
 
+#include <unordered_set>
 #include <filesystem>
+
 namespace fs = std::filesystem;
 
 // Notes:
@@ -172,6 +170,8 @@ yaget::Strings yaget::io::file::GenerateConfigSearchPath(const std::string& name
 
     AddSearchPath(searches, name);
     AddSearchPath(searches,"$(AppName)");
+
+    RemoveDuplicates(searches);
 
     return searches;
 }

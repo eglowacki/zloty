@@ -1,0 +1,14 @@
+{
+  "FileVersion": 2,
+  "Id": "06e29f3b-9331-403e-9c3b-7b92cd01c37f",
+  "Items": [
+    {
+      "Id": "546b0770-9a51-4d26-9d35-7269f62c89f0",
+      "Command": "--options_view --generate_config"
+    },
+    {
+      "Id": "c7cbdaa5-b997-4837-980c-19ea4a56a665",
+      "Command": "--help"
+    }
+  ]
+}

@@ -57,8 +57,8 @@ namespace yaget
 #define __func__    __FUNCTION__
 #endif
 
-    /// @brief Helper macro to throw an Exception with file/line/function information, using the string stream Formatter
-#define LOGGER_THROW(x) throw Exception(Formatter() << __FILE__ << ":" << TOSTRING(__LINE__) << ": " << __func__ << "(): " << x)
-
    } // namespace ylog 
 } // namespace yaget
+
+/// @brief Helper macro to throw an Exception with file/line/function information, using the string stream Formatter
+#define LOGGER_THROW(x) throw yaget::ylog::Exception(yaget::ylog::Formatter() << __FILE__ << ":" << TOSTRING(__LINE__) << ": " << __func__ << "(): " << x)
