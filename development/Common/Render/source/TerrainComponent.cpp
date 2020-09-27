@@ -1,4 +1,6 @@
 #include "Components/TerrainComponent.h"
+#if 0
+
 #include "Device.h"
 #include "App/Application.h"
 #include "App/AppUtilities.h"
@@ -114,3 +116,4 @@ render::TerrainComponentPool::Ptr render::TerrainComponentPool::New(comp::Id_t i
     Ptr c = NewComponent(id, device, scene);
     return c;
 }
+#endif // 0

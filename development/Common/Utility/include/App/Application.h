@@ -20,8 +20,10 @@
 #include "Metrics/Concurrency.h"
 #include "IdGameCache.h"
 #include "ThreadModel/JobPool.h"
-#include "MathFacade.h"
+#include "Display.h"
+
 #include <functional>
+
 
 
 namespace yaget
@@ -41,31 +43,17 @@ namespace yaget
             ERROR_LOGIC = 3
         };
 
-        static int ExitCode(ReturnCode returnCode)
-        {
-            return static_cast<int>(returnCode);
-        }
+        static int ExitCode(ReturnCode returnCode) { return static_cast<int>(returnCode); }
 
-        typedef void* WindowHandle_t;
+        using WindowHandle_t = void*;
 
-        // This show state of this window for display purpose.
-        enum class Surface { Window, Borderless, Fullscreen, Maximized, Minimized };
-
-        Application(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
-        virtual ~Application();
+        virtual ~Application() = default;
 
         using StatusCallback_t = std::function<void()>;
         using UpdateCallback_t = std::function<void(Application&, const time::GameClock&, metrics::Channel&)>;
-        int Run(UpdateCallback_t logicCallback, UpdateCallback_t renderCallback, StatusCallback_t idleCallback, StatusCallback_t quitCallback);
+        int Run(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback, UpdateCallback_t renderCallback, StatusCallback_t idleCallback, StatusCallback_t quitCallback);
         void RequestQuit();
         input::InputDevice& Input() {return mInputDevice;}
-        WindowHandle_t GetWindowHandle() const { return mWinHandle; }
-
-        // Helper method to cast window handle into specific T
-        template <typename T>
-        T GetWindowHandle() const { return reinterpret_cast<T>(mWinHandle); }
-
-        virtual math3d::Vector2 GetWindowSize() const = 0;
 
         const args::Options Options;
         IdGameCache IdCache;
@@ -90,28 +78,30 @@ namespace yaget
         // it is up to caller to provide some kind of confirmation of video options change
         void ChangeVideoSettings(const VideoOptions& videoOptions);
 
+        virtual app::DisplaySurface GetSurface() const = 0;
+
     protected:
+        Application(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
+
         using Mouse = input::InputDevice::Mouse;
 
         items::Director& mDirector;
         std::atomic_bool mQuit{ false };
-        WindowHandle_t mWinHandle = nullptr;
         bool mLastKeyState[256] = { false };
         time::GameClock mGameClock;
         input::InputDevice mInputDevice;
         std::unique_ptr<Mouse> mLastMouseInput;
-        Surface mSurface = Surface::Window;
 
     private:
         virtual bool onMessagePump(const time::GameClock& gameClock) = 0;
         virtual void Cleanup() = 0;
         void onRenderTask(UpdateCallback_t renderCallback);
-        void onLogicTask(UpdateCallback_t logicCallback);
+        void onLogicTask(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback);
 
         // when user request quit, this will be processed on the next frame, to make sure orderly exit
         std::atomic_bool mRequestQuit{ false };
         std::unique_ptr<mt::JobPool> mGeneralPoolThread;
-        typedef double State_t;
+        using State_t = double;
         State_t mRenderState = 0.0;
         io::VirtualTransportSystem& mVTS;
     };

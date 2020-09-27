@@ -1,8 +1,8 @@
 // DevConfiguration.cpp
 #include "Debugging/DevConfiguration.h"
-#include "Debugging/DevConfigurationParsers.h"
-#include "App/Args.h"
+#include "StringHelpers.h"
 #include "App/AppUtilities.h"
+#include "App/Args.h"
 #include "App/FileUtilities.h"
 #include "Logger/YLog.h"
 #include "LoggerCpp/OutputDebug.h"
@@ -12,12 +12,12 @@
 #include "Exception/Exception.h"
 #include "Fmt/format.h"
 #include "Metrics/Gather.h"
-#include "StringHelpers.h"
+#include "Platform/Support.h"
+#include "Debugging/DevConfigurationParsers.h"
 
 #include <filesystem>
 #include <fstream>
 
-//using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 
@@ -31,7 +31,7 @@ namespace
 
     yaget::dev::ThreadIds& GetCurrentThreadIds()
     {
-        static yaget::dev::ThreadIds currentThreadIds;
+        static yaget::dev::ThreadIds currentThreadIds {yaget::platform::CurrentThreadId() };
         return currentThreadIds;
     }
 
@@ -169,6 +169,11 @@ void yaget::dev::ThreadIds::RefreshRender(uint32_t threadId) const
     GetCurrentThreadIds().Render = threadId;
 }
 
+
+bool yaget::dev::ThreadIds::IsThreadMain() const
+{
+    return Main ? platform::CurrentThreadId() == Main : true;
+}
 
 bool yaget::dev::ThreadIds::IsThreadLogic() const
 {

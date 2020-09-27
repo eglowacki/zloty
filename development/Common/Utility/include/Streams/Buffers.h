@@ -25,6 +25,8 @@ namespace yaget
 {
     namespace io
     {
+        // .first - points to data
+        // .second - size of data
         using Buffer = std::pair<std::shared_ptr<uint8_t>, size_t>;
 
         inline const char* BufferPointer(const Buffer& buffer)

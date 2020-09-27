@@ -9,6 +9,11 @@
 //      Memory pool allocator with compile time memory size
 //      Needed header if using memory::New(...)
 //      #include <functional>
+//      
+//      Possible extra include needed
+//          #include "Exception/Exception.h"
+//      
+//
 //
 //  #include "MemoryManager/PoolAllocator.h"
 //
@@ -96,12 +101,6 @@ namespace yaget
                     {
                         ResetSlot(freeSlot);
                         YAGET_ASSERT(false, "Examine this bad_init excpetion: '%s'.", e.what());
-                        throw;
-                    }
-                    catch (const ex::bad_resource& e)
-                    {
-                        ResetSlot(freeSlot);
-                        YAGET_ASSERT(false, "Examine this bad_resource excpetion: '%s'.", e.what());
                         throw;
                     }
                 }

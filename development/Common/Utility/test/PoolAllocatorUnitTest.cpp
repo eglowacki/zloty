@@ -1,6 +1,6 @@
 #include "YagetCore.h"
 #include "MemoryManager/PoolAllocator.h"
-#include "Math/MathBase.h"
+#include "MathFacade.h"
 #include "Platform/Support.h"
 #include "Logger/YLog.h"
 #include "Exception/Exception.h"

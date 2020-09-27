@@ -607,59 +607,52 @@ void yaget::util::Throw(const char* tag, const std::string& message, const char*
 {
     if (platform::IsDebuggerAttached())
     {
-        //yaget::ylog::Get().error().Write(file, line, functionName, LOG_TAG(tag), true, message.c_str());
         YLOG_PERROR(tag, file, line, functionName, message.c_str());
         platform::DebuggerBreak();
     }
 
-    std::string textError = fmt::format("{}\n{}({})", message, (file ? file : "no_file"), line);
+    const auto& textError = fmt::format("{}\n{}({})", message, (file ? file : "no_file"), line);
     throw ex::bad_init(textError);
 }
 
 
 //---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::ThrowOnError(long hr, const std::string& message, const char* file, unsigned line)
+void yaget::util::ThrowOnError(long hr, const std::string& message, const char* file /*= nullptr*/, unsigned line /*= 0*/, const char* functionName /*= nullptr*/)
 {
     if (FAILED(hr))
     {
         _com_error cr(HRESULT_FROM_WIN32(hr));
         const char* errorMessage = cr.ErrorMessage();
-        std::string textError = fmt::format("HRESULT = {}, {}. Error: {}\n{}({})", hr, message, errorMessage, (file ? file : "no_file"), line);
+        auto textError = fmt::format("HRESULT = {}, {}. Error: {}", hr, message, errorMessage);
         if (platform::IsDebuggerAttached())
         {
-            YLOG_ERROR("UTIL", textError.c_str());
+            YLOG_PERROR("UTIL", file, line, functionName, textError.c_str());
             platform::DebuggerBreak();
         }
 
+        textError += fmt::format("\n{}({})", (file ? file : "no_file"), line);
         throw ex::bad_init(textError);
     }
 }
 
 
 //---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::ThrowOnResult(bool result, const std::string& message, const char* file, unsigned line)
+void yaget::util::ThrowOnResult(const char* tag, bool result, const std::string& message, const char* file, unsigned line, const char* functionName /*= nullptr*/)
 {
     if (!result)
     {
-        std::string textError = fmt::format("{}.\n{}({})", message, (file ? file : "no_file"), line);
-        if (platform::IsDebuggerAttached())
-        {
-            YLOG_ERROR("UTIL", textError.c_str());
-            platform::DebuggerBreak();
-        }
-
-        throw ex::bad_init(textError);
+        Throw(tag, message, file, line, functionName);
     }
 }
 
 
 //---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::ThrowOnError(bool resultValid, const std::string& message, const char* file, unsigned line)
+void yaget::util::ThrowOnError(bool resultValid, const std::string& message, const char* file, unsigned line, const char* functionName /*= nullptr*/)
 {
     if (!resultValid)
     {
-        uint64_t hr = ::GetLastError();
-        util::ThrowOnError(static_cast<long>(hr), message, file, line);
+        const uint64_t hr = ::GetLastError();
+        util::ThrowOnError(static_cast<long>(hr), message, file, line, functionName);
     }
 }
 

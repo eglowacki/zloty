@@ -46,10 +46,10 @@ namespace DirectX::SimpleMath
         auto values = yaget::conv::Split(source, ",");
         if (values.size() == 4)
         {
-            float r = yaget::conv::Atof(values[0].c_str());
-            float g = yaget::conv::Atof(values[1].c_str());
-            float b = yaget::conv::Atof(values[2].c_str());
-            float a = yaget::conv::Atof(values[3].c_str());
+            float r = yaget::conv::AtoN<float>(values[0].c_str());
+            float g = yaget::conv::AtoN<float>(values[1].c_str());
+            float b = yaget::conv::AtoN<float>(values[2].c_str());
+            float a = yaget::conv::AtoN<float>(values[3].c_str());
             color = math3d::Color(r, g, b, a);
         }
     }
@@ -94,7 +94,8 @@ namespace yaget::dev
             lhs.Gui == rhs.Gui &&
             lhs.SuppressUI == rhs.SuppressUI &&
             lhs.BuildId == rhs.BuildId &&
-            lhs.MetricGather == rhs.MetricGather;
+            lhs.MetricGather == rhs.MetricGather &&
+            lhs.DisregardDebugger == rhs.DisregardDebugger;
     }
 
     inline bool operator==(const Configuration::Debug::Logging& lhs, const Configuration::Debug::Logging& rhs)
@@ -130,12 +131,14 @@ namespace yaget::dev
     {
         return lhs.mVTSConfig == rhs.mVTSConfig &&
             lhs.mEnvironmentList == rhs.mEnvironmentList &&
-            lhs.mWindowOptions == rhs.mWindowOptions;
+            lhs.mWindowOptions == rhs.mWindowOptions && 
+            lhs.mGameDirectorScript == rhs.mGameDirectorScript;
     }
 
     inline bool operator==(const Configuration::Runtime& lhs, const Configuration::Runtime& rhs)
     {
-        return lhs.DpiScaleFactor == rhs.DpiScaleFactor;
+        return lhs.DpiScaleFactor == rhs.DpiScaleFactor &&
+               lhs.mShowScriptHelp == rhs.mShowScriptHelp;
     }
 
     inline bool operator==(const Configuration::Graphics& lhs, const Configuration::Graphics& rhs)
@@ -205,7 +208,7 @@ namespace yaget::dev
         j["SuppressUI"] = flags.SuppressUI;
         j["BuildId"] = flags.BuildId;
         j["MetricGather"] = flags.MetricGather;
-
+        j["DisregardDebugger"] = flags.DisregardDebugger;
     }
 
     inline void from_json(const nlohmann::json& j, Configuration::Debug::Flags& flags)
@@ -215,6 +218,7 @@ namespace yaget::dev
         flags.SuppressUI = yaget::json::GetValue(j, "SuppressUI", flags.SuppressUI);
         flags.BuildId = yaget::json::GetValue(j, "BuildId", flags.BuildId);
         flags.MetricGather = yaget::json::GetValue(j, "MetricGather", flags.MetricGather);
+        flags.DisregardDebugger = yaget::json::GetValue(j, "DisregardDebugger", flags.DisregardDebugger);
     }
 
     //-------------------------------------------------------------------------------------------------------------------------------
@@ -348,6 +352,7 @@ namespace yaget::dev
         j["VTS"] = init.mVTSConfig;
         j["Aliases"] = init.mEnvironmentList;
         j["WindowOptions"] = init.mWindowOptions;
+        j["GameDirectorScript"] = init.mGameDirectorScript;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -369,18 +374,21 @@ namespace yaget::dev
         }
 
         init.mWindowOptions = json::GetValue(j, "WindowOptions", init.mWindowOptions);
+        init.mGameDirectorScript = json::GetValue(j, "GameDirectorScript", init.mGameDirectorScript);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
     inline void to_json(nlohmann::json& j, const dev::Configuration::Runtime& runtime)
     {
         j["DpiScaleFactor"] = runtime.DpiScaleFactor;
+        j["ShowScriptHelp"] = runtime.mShowScriptHelp;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
     inline void from_json(const nlohmann::json& j, dev::Configuration::Runtime& runtime)
     {
         runtime.DpiScaleFactor = json::GetValue(j, "DpiScaleFactor", runtime.DpiScaleFactor);
+        runtime.mShowScriptHelp = json::GetValue(j, "ShowScriptHelp", runtime.mShowScriptHelp);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------

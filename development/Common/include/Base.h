@@ -24,7 +24,7 @@ namespace yaget
 This is 3D engine (Yet Another Game Engine Technology)
 */
 
-#include <stddef.h>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 

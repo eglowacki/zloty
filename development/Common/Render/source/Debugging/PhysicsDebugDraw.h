@@ -11,11 +11,9 @@
 //
 /////////////////////////////////////////////////////////////////////////
 //! \file
-
-#ifndef YAGET_PHYSISCS_DEBUG_DRAW_H
-#define YAGET_PHYSISCS_DEBUG_DRAW_H
 #pragma once
 
+#if 0
 #include "LinearMath/btIDebugDraw.h"
 #include <Components/LineComponent.h>
 
@@ -131,5 +129,4 @@ namespace yaget
 
     } // namespace render
 } // namespace yaget
-
-#endif // YAGET_PHYSISCS_DEBUG_DRAW_H
+#endif // 0

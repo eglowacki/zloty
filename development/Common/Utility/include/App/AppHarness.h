@@ -33,6 +33,12 @@ namespace yaget::app
         template<typename... Args>
         int Harness(const char* lpCmdLine, args::Options& options, Callback callback)
         {
+            // this will force first time ever initialization if current ids struct with setting
+            // main thread id as current one. If user utilizes different thread as a "main",
+            // it can call this before calling Harness
+            auto mainId = dev::CurrentThreadIds().Main;
+            metrics::MarkStartThread(mainId, "MAIN");
+
             const char* configData = nullptr;
             size_t configSize = 0;
 
@@ -51,7 +57,7 @@ namespace yaget::app
             int returnResult = 0;
             try
             {
-                YLOG_NOTICE("MAIN", util::DisplayCurrentConfiguration(&options).c_str());
+                YLOG_NOTICE("INIT", util::DisplayCurrentConfiguration(&options).c_str());
                 returnResult = callback();
             }
             catch (const ex::standard& e)

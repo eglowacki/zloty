@@ -16,12 +16,12 @@
 
 #pragma once
 
-#include "VTS/BlobLoader.h"
-#include "Streams/Buffers.h"
-#include "Debugging/DevConfiguration.h"
 #include "Database/Database.h"
-#include "Platform/Support.h"
+#include "Debugging/DevConfiguration.h"
 #include "Json/JsonHelpers.h"
+#include "Platform/Support.h"
+#include "Streams/Buffers.h"
+#include "VTS/BlobLoader.h"
 
 
 namespace
@@ -143,6 +143,7 @@ namespace yaget
 
             // Create tag data based on section. This includes new guid or recovered guid
             io::Tag GenerateTag(const Section& section) const;
+            io::Tag AssureTag(const Section& section);
 
             //! Return true if section(s) does exist in DB 
             bool IsSectionValid(const Section& section) const { return IsSectionValid(Sections{ section }); }
@@ -236,9 +237,6 @@ namespace yaget
         //--------------------------------------------------------------------------------------------------
         namespace db
         {
-            // predefined data row for various vts tables
-            using TagRecord = SQLite::Row<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
-
             // syntactic sugar for creation of db query command strings in uniform matter
             inline std::string TagRecordQuery(const VirtualTransportSystem::Section& section, const char* columns = nullptr)
             {
@@ -377,6 +375,14 @@ namespace yaget
                     return std::make_shared<F>(io::Tag{}, yaget::io::Buffer{}, vts);
                 }
             }
+
+            template <typename F>
+            F GetAsset(std::function<F(typename BLobLoader<T>::AssetPtr baseAsset)> converter) const
+            {
+                auto asset = GetAsset();
+                return converter(asset);
+            }
+
         };
 
 
@@ -480,4 +486,25 @@ namespace yaget
         std::string NormalizePath(const std::string& filePath);
 
     } // namespace io
+
+    namespace conv
+    {
+        //-------------------------------------------------------------------------------------------------------------------------------
+        template <>
+        struct Convertor<io::VirtualTransportSystem::Section>
+        {
+            static std::string ToString(const io::VirtualTransportSystem::Section& value)
+            {
+                if (std::string result = value.ToString(); !result.empty())
+                {
+                    return result;
+                }
+                else
+                {
+                    return "NULL";
+                }
+            }
+        };
+    }
+
 } // namespace yaget

@@ -15,7 +15,6 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
 #include "Components/Coordinator.h"
 
 
@@ -36,6 +35,38 @@ namespace yaget
 
     } // namespace comp
 
+    namespace internal
+    {
+        //template <typename T>
+        //struct HasSetCoordinators
+        //{
+        //    enum { value = false };
+        //};
+
+        template<typename T>
+        concept has_set_coordinators = requires { typename T::set_coordinators; };
+    }
+
+    //template <class T> struct HasSetCoordinator
+    //{
+    //    // We test if the type has serialize using decltype and declval.
+    //    template <typename C>
+    //    static constexpr decltype(std::declval<C>().SetCoordinator(), bool()) test(int /* unused */)
+    //    {
+    //        // We can return values, thanks to constexpr instead of playing with sizeof.
+    //        return true;
+    //    }
+
+    //    template <typename C>
+    //    static constexpr bool test(...)
+    //    {
+    //        return false;
+    //    }
+
+    //    // int is used to give the precedence!
+    //    static constexpr bool value = test<T>(int());
+    //};
+
 
     class IGameCoordinator
     {
@@ -45,6 +76,7 @@ namespace yaget
 
         virtual void GameInitialize(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/) = 0;
         virtual void GameUpdate(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/) = 0;
+        virtual void GameShutdown(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/) = 0;
         virtual void RenderUpdate(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/) = 0;
     };
 
@@ -57,7 +89,7 @@ namespace yaget
 
     //std::forward<Args>(args)...
     // P - CoordinatorPolicy
-    // S - GameSytems
+    // S - GameSystem
     template <typename P, typename... S>
     class GameCoordinator : public IGameCoordinator
     {
@@ -66,6 +98,10 @@ namespace yaget
         using Global = typename P::Global;
         using Systems = std::tuple<S...>;
         using RenderCallback = std::function<void(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/)>;
+
+        using GlobalCoordinator = comp::Coordinator<Global>;
+        using EntityCoordinator = comp::Coordinator<Entity>;
+        using Coordinators = std::tuple<GlobalCoordinator, EntityCoordinator>;
 
         GameCoordinator(RenderCallback renderCallback, S... args) 
             : mRenderCallback(renderCallback)
@@ -76,21 +112,18 @@ namespace yaget
             : GameCoordinator([](const time::GameClock&, metrics::Channel&) {}, args...)
         {}
 
-        template<typename T>
-        comp::Coordinator<T>& GetCoordinator()
-        {
-            return std::get<comp::Coordinator<T>>(mCoordinators);
-        }
+        //template<typename T>
+        //comp::Coordinator<T>& GetCoordinator()
+        //{
+        //    return std::get<comp::Coordinator<T>>(mCoordinators);
+        //}
 
         void GameInitialize(const time::GameClock& gameClock, metrics::Channel& channel) override;
         void GameUpdate(const time::GameClock& gameClock, metrics::Channel& channel) override;
+        void GameShutdown(const time::GameClock& gameClock, metrics::Channel& channel) override;
         void RenderUpdate(const time::GameClock& gameClock, metrics::Channel& channel) override;
 
     private:
-        using GlobalCoordinator = comp::Coordinator<Global>;
-        using EntityCoordinator = comp::Coordinator<Entity>;
-        using Coordinators = std::tuple<GlobalCoordinator, EntityCoordinator>;
-
         Coordinators mCoordinators;
 
         RenderCallback mRenderCallback;
@@ -107,8 +140,19 @@ void yaget::GameCoordinator<P, S...>::GameInitialize(const time::GameClock& game
     {
         if (gameSystem)
         {
-            gameSystem->Initialize(gameClock, channel, std::get<gameSystem->COORDINATOR_ID>(mCoordinators));
-            //gameSystem->Update(gameClock, channel, std::get<gameSystem->COORDINATOR_ID>(mCoordinators));
+            using GS = std::decay_t<decltype(*gameSystem)>;
+
+            if constexpr (internal::has_set_coordinators<GS>)
+            {
+                using gs_type = typename std::tuple_element<gameSystem->COORDINATOR_ID, decltype(mCoordinators)>::type;
+
+                gameSystem->SetCoordinators(gameClock, channel, std::get<GLOBAL_ID>(mCoordinators), std::get<ENTITY_ID>(mCoordinators));
+                gameSystem->Initialize<gs_type::Policy>(gameClock, channel);
+            }
+            else
+            {
+                gameSystem->Initialize(gameClock, channel, std::get<gameSystem->COORDINATOR_ID>(mCoordinators));
+            }
         }
     });
 }
@@ -126,7 +170,31 @@ void yaget::GameCoordinator<P, S...>::GameUpdate(const time::GameClock& gameCloc
 }
 
 template <typename P, typename... S>
+void yaget::GameCoordinator<P, S...>::GameShutdown(const time::GameClock& gameClock, metrics::Channel& channel)
+{
+    meta::for_each(mSystems, [this, &gameClock, &channel](auto gameSystem)
+    {
+        if (gameSystem)
+        {
+            using GS = std::decay_t<decltype(*gameSystem)>;
+
+            if constexpr (internal::has_set_coordinators<GS>)
+            {
+                using gs_type = typename std::tuple_element<gameSystem->COORDINATOR_ID, decltype(mCoordinators)>::type;
+
+                gameSystem->Shutdown<gs_type::Policy>(gameClock, channel);
+            }
+            else
+            {
+                gameSystem->Shutdown(gameClock, channel, std::get<gameSystem->COORDINATOR_ID>(mCoordinators));
+            }
+        }
+    });
+}
+
+template <typename P, typename... S>
 void yaget::GameCoordinator<P, S...>::RenderUpdate(const time::GameClock& gameClock, metrics::Channel& channel)
 {
     mRenderCallback(gameClock, channel);
 }
+

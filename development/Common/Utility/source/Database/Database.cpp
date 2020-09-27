@@ -35,23 +35,23 @@ namespace
         return true;
     }
 
-    void InitializeDatabase(yaget::SQLite& database, const std::vector<std::string>& schema, const std::string& databaseName, int excpectedVersion)
+    void InitializeDatabase(yaget::SQLite& database, const std::vector<std::string>& schema, const std::string& databaseName, size_t excpectedVersion)
     {
         using namespace yaget;
         const std::string fileName = yaget::util::ExpendEnv(databaseName, nullptr);
         std::string dbFileName = fileName.empty() ? ":memory:" : fileName;
-        SQLite::DatabaseType dbAsType = SQLite::DatabaseType::DT_IN_MEMORY;
+        SQLite::DatabaseType dbAsType = SQLite::DatabaseType::InMemory;
 
         if (!fileName.empty())
         {
             bool bFileExist = io::file::IsFileExists(fileName);
             if (bFileExist)
             {
-                dbAsType = SQLite::DatabaseType::DT_APPEND;
+                dbAsType = SQLite::DatabaseType::Append;
             }
             else
             {
-                dbAsType = SQLite::DatabaseType::DT_NEW;
+                dbAsType = SQLite::DatabaseType::New;
             }
 
             if (!bFileExist)
@@ -61,29 +61,29 @@ namespace
         }
 
         using namespace std::placeholders;
-        auto callback = dbAsType == SQLite::DatabaseType::DT_APPEND ? std::bind(InitializeEmptySchema, _1, _2, schema) : std::bind(InitializeSchema, _1, _2, schema);
+        auto callback = dbAsType == SQLite::DatabaseType::Append ? std::bind(InitializeEmptySchema, _1, _2, schema) : std::bind(InitializeSchema, _1, _2, schema);
         if (database.Open(dbFileName.c_str(), dbAsType, callback))
         {
             if (excpectedVersion != Database::NonVersioned)
             {
-                using Version = SQLite::Row<int>;
-
-                Version dbVersion = database.GetRow<Version>("SELECT Id FROM Version;");
-                if (dbVersion.Result != excpectedVersion)
+                auto dbVersion = GetCell<size_t>(database, "SELECT Id FROM Version;");
+                if (dbVersion != excpectedVersion)
                 {
-                    throw yaget::ex::bad_init(fmt::format("Database '{}' has mismatched version. Expected: '{}', result: '{}'.", fileName, excpectedVersion, dbVersion.Result));
+                    const auto& textError = fmt::format("Database '{}' has mismatched version. Expected: '{}', result: '{}'.", fileName, excpectedVersion, dbVersion);
+                    YAGET_UTIL_THROW("DB", textError);
                 }
             }
         }
         else
         {
-            throw yaget::ex::bad_init(fmt::format("Did not initialize database '{}'. {}.", fileName, conv::Combine(database.GetErrors(), "\n")));
+            const auto& textError = fmt::format("Did not initialize database '{}'. {}.", fileName, conv::Combine(database.GetErrors(), "\n"));
+            YAGET_UTIL_THROW("DB", textError);
         }
-    }
+    }                                                                                           
 
 } // namespace
 
-yaget::Database::Database(const std::string& name, const std::vector<std::string>& schema, int excpectedVersion)
+yaget::Database::Database(const std::string& name, const std::vector<std::string>& schema, size_t excpectedVersion)
 {
     InitializeDatabase(mDatabase, schema, name, excpectedVersion);
 }

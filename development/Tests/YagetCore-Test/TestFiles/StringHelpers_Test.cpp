@@ -116,15 +116,15 @@ TEST_F(Strings, ToVectorConversion)
 
 TEST_F(Strings, NumberConversion)
 {
-    int64_t result = yaget::conv::Atoll("");
+    int64_t result = yaget::conv::AtoN<int64_t>("");
     EXPECT_EQ(0, result);
-    result = yaget::conv::Atoll(nullptr);
+    result = yaget::conv::AtoN<int64_t>(nullptr);
     EXPECT_EQ(0, result);
-    result = yaget::conv::Atoll("f");
+    result = yaget::conv::AtoN<int64_t>("f");
     EXPECT_EQ(0, result);
-    result = yaget::conv::Atoll("123");
+    result = yaget::conv::AtoN<int64_t>("123");
     EXPECT_EQ(123, result);
-    result = yaget::conv::Atoll("-123");
+    result = yaget::conv::AtoN<int64_t>("-123");
     EXPECT_EQ(-123, result);
 }
 

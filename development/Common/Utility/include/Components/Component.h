@@ -32,6 +32,28 @@ namespace yaget
 
     namespace comp
     {
+        class Component;
+
+        namespace db
+        {
+            // overload ComponentProperties to provide which properties are save/load in db.
+            template <typename T>
+            struct ComponentProperties;
+
+            struct Id {};
+            struct Coordinator {};
+
+            // specialization for base component to expose Id and Coordinator type
+            template <>
+            struct ComponentProperties<Component>
+            {
+                using Row = std::tuple<Id, Coordinator>;
+                using Types = std::tuple<comp::Id_t, int>;
+                static Types DefaultRow() { return Types{ comp::INVALID_ID, 0 }; }
+            };
+
+        }
+
         // just provide basic template when using components. This does not add virtual table (vpt).
         class BaseComponent : public Noncopyable<BaseComponent>
         {
@@ -169,11 +191,6 @@ namespace yaget
                     return lcPool;
                 }
                 catch (const ex::bad_init& /*e*/)
-                {
-                    FreeComponent(id);
-                    throw;
-                }
-                catch (const ex::bad_resource& /*e*/)
                 {
                     FreeComponent(id);
                     throw;

@@ -14,11 +14,10 @@
 //! \file
 
 #pragma once
-#ifndef YAGET_RENDER_SCENE_H
-#define YAGET_RENDER_SCENE_H
 
-#include "Components/ComponentPools.h"
-#include "Math/Vector.h"
+#if 0
+
+#include "MathFacade.h"
 #include "Loaders/GeometryConvertor.h"
 #include "Gui/VideoOptions.h"
 #include "Debugging/Primitives.h"
@@ -203,5 +202,4 @@ namespace yaget
 
     } // namespace render
 } // namespace yaget
-
-#endif // YAGET_RENDER_SCENE_H
+#endif // 0

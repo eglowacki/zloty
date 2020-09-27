@@ -12,11 +12,11 @@
 /////////////////////////////////////////////////////////////////////////
 //! \file
 
-#ifndef YAGET_RENDER_TERRAIN_COMPONENT_H
-#define YAGET_RENDER_TERRAIN_COMPONENT_H
 #pragma once
 
-#include "Math/MathBase.h"
+#if 0
+
+#include "MathFacade.h"
 #include "Components/RenderComponent.h"
 #include "Resources/ShaderResources.h"
 #include "ThreadModel/Variables.h"
@@ -73,5 +73,4 @@ namespace yaget
 
     } // namespace render
 } // namespace yaget
-
-#endif // YAGET_RENDER_TERRAIN_COMPONENT_H
+#endif // 0

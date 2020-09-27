@@ -24,8 +24,8 @@ namespace yaget
     class Database
     {
     public:
-        constexpr int static NonVersioned = -1;
-        Database(const std::string& name, const std::vector<std::string>& schema, int excpectedVersion);
+        constexpr size_t static NonVersioned = static_cast<size_t>(-1);
+        Database(const std::string& name, const std::vector<std::string>& schema, size_t excpectedVersion);
         ~Database();
 
         SQLite& DB() { return mDatabase; }

@@ -17,6 +17,7 @@
 #pragma once
 
 #include "YagetCore.h"
+#include "Meta/CompilerAlgo.h"
 
 
 namespace yaget::conv

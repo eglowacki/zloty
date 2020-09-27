@@ -3,6 +3,7 @@
 #include "TestHelpers/TestHelpers.h"
 #include "VTS/VirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
+#include "VTS/ToolVirtualTransportSystem.h"
 
 namespace 
 {
@@ -116,28 +117,27 @@ TEST(VTS, Section)
     EXPECT_TRUE(section.Match == Section::FilterMatch::Like);
     EXPECT_EQ("", section.ToString());
 
-    Section intialSection = Section(">TestSource@Attach/foo.txt");
-    nlohmann::json rootData(intialSection);
+    Section initialSection = Section(">TestSource@Attach/foo.txt");
+    nlohmann::json rootData(initialSection);
 
     Section newSection = rootData.get<Section>();
-    EXPECT_EQ(intialSection.ToString(), newSection.ToString());
+    EXPECT_EQ(initialSection.ToString(), newSection.ToString());
 
-    intialSection = Section();
-    rootData = nlohmann::json(intialSection);
+    initialSection = Section();
+    rootData = nlohmann::json(initialSection);
 
     newSection = rootData.get<Section>();
-    EXPECT_EQ(intialSection.ToString(), newSection.ToString());
+    EXPECT_EQ(initialSection.ToString(), newSection.ToString());
 }
 
-#if 0
 
-TEST(VTS)
+TEST(VTS, TransportSystem)
 {
     using namespace yaget;
     using Options = io::tool::VirtualTransportSystem::Options;
     using Section = io::VirtualTransportSystem::Section;
 
-    const char* vtsFile = "";
+    const char* vtsFile = "$(AppDataFolder)/Database/vts.sqlite";
     const Section blobFile("TestSource@Attach/foo.txt");
     const Section sourceSection("TestSource@Attach");
     const Section targetSection("TestTarget@Clones");
@@ -150,32 +150,33 @@ TEST(VTS)
     //--------------------------------------------------------------------------------------------------
     // create new buffer, attach it to vts, load it back up and then save it
     {
-        io::tool::VirtualTransportSystemReset vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
+        io::tool::VirtualTransportSystemReset vts({}, Resolvers, vtsFile);
 
-        // delete all test data,
-        CHECK(vts.DeleteBlob({ sourceSection, targetSection }));
-        CHECK_EQUAL(vts.GetNumTags({ sourceSection, targetSection }), 0);
+        //// delete all test data,
+        //CHECK(vts.DeleteBlob({ sourceSection, targetSection }));
+        //CHECK_EQUAL(vts.GetNumTags({ sourceSection, targetSection }), 0);
 
-        newTag = vts.GenerateTag(blobFile);
-        CHECK(newTag.mGuid.IsValid());
+        //newTag = vts.GenerateTag(blobFile);
+        //CHECK(newTag.mGuid.IsValid());
 
-        std::shared_ptr<TestAsset> testAsset = std::make_shared<TestAsset>(newTag, io::CreateBuffer(message), vts);
-        CHECK_EQUAL(message, testAsset->mMessage);
+        //std::shared_ptr<TestAsset> testAsset = std::make_shared<TestAsset>(newTag, io::CreateBuffer(message), vts);
+        //CHECK_EQUAL(message, testAsset->mMessage);
 
-        CHECK(vts.AttachBlob(testAsset));
+        //CHECK(vts.AttachBlob(testAsset));
 
-        CHECK_EQUAL(1, vts.GetNumTags(blobFile));
-        CHECK_EQUAL(1, vts.GetNumTags(Section("TestSource@Attach/FOO.txt")));   // check for case insensitive in Filter part
-        CHECK_EQUAL(1, vts.GetNumTags(Section("TestSource@Attach/fOO.tXT")));
+        //CHECK_EQUAL(1, vts.GetNumTags(blobFile));
+        //CHECK_EQUAL(1, vts.GetNumTags(Section("TestSource@Attach/FOO.txt")));   // check for case insensitive in Filter part
+        //CHECK_EQUAL(1, vts.GetNumTags(Section("TestSource@Attach/fOO.tXT")));
 
-        io::BLobLoader<TestAsset> bLobLoader(vts, blobFile);
-        auto checkedAsset = bLobLoader.Assets();
-        CHECK_EQUAL(1, checkedAsset.size());
+        //io::BLobLoader<TestAsset> bLobLoader(vts, blobFile);
+        //auto checkedAsset = bLobLoader.Assets();
+        //CHECK_EQUAL(1, checkedAsset.size());
 
-        auto asset = *checkedAsset.begin();
-        CHECK_EQUAL(message, asset->mMessage);
+        //auto asset = *checkedAsset.begin();
+        //CHECK_EQUAL(message, asset->mMessage);
     }
     
+#if 0
     //--------------------------------------------------------------------------------------------------
     // Find attached blob with correct guid, copy to new section, flat and preserve hierarchy and save
     {
@@ -448,5 +449,6 @@ TEST(VTS)
         CHECK(vts.DeleteBlob({ seting, sourceSection }));
         CHECK_EQUAL(0, vts.GetNumTags({ seting, sourceSection }));
     }
-}
+
 #endif
+}

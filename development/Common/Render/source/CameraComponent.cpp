@@ -3,14 +3,12 @@
 #include "Device.h"
 #include "App/Application.h"
 #include "Input/InputDevice.h"
-#include "Logger/YLog.h"
 #include "Debugging/Assert.h"
 #include "StringHelpers.h"
 #include "Scene.h"
-#include <LinearMath/btVector3.h>
-#include <BulletDynamics/Dynamics/btRigidBody.h>
-#include <algorithm>
 #include <imgui.h>
+
+#include <algorithm>
 
 using namespace yaget;
 using namespace DirectX;
@@ -183,7 +181,7 @@ namespace
 yaget::render::CameraComponent::CameraComponent(comp::Id_t id, Device& device, comp::PhysicsComponent* physics)
     : RenderComponent(id, device, Init::AutoReset, {})
     , mPhysics(physics)
-    , mCameraCalc(physics->GetMatrix().Translation()/*math3d::Vector3(4.5f, 494.0f, 0)*/, kPI / 2.0f/*1.49f*/, 0.0f, 0.0f)
+    , mCameraCalc(physics->GetMatrix().Translation()/*math3d::Vector3(4.5f, 494.0f, 0)*/, math3d::kPI / 2.0f/*1.49f*/, 0.0f, 0.0f)
 {
     using namespace std::placeholders;
     auto fun = [this](auto&&... params) { OnAction(params...); };

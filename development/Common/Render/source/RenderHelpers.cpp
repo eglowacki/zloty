@@ -4,7 +4,6 @@
 #include "StringHelpers.h"
 #include "Fmt/format.h"
 #include "Logger/YLog.h"
-#include "Math/Vector.h"
 #include "Debugging/DevConfiguration.h"
 #include "MathFacade.h"
 #include <comdef.h>

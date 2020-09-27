@@ -161,21 +161,21 @@ namespace
 
         std::ofstream file(settingsPath.c_str());
 
-        file << "; These values are used in KeyBindings file to author actions." << std::endl;
-        file << "; User friendly names for keys. Use ASCII values as int or char for rest of values, (\"A\" or 65)." << std::endl;
-        file << "[KeysMap]" << std::endl;
+        file << "; These values are used in KeyBindings file to author actions.\n";
+        file << "; User friendly names for keys. Use ASCII values as int or char for rest of values, (\"A\" or 65).\n";
+        file << "[KeysMap]\n";
         for (auto&& it: KeysMap)
         {
-            file << it.first << std::endl;
+            file << it.first << '\n';
         }
 
-        file << std::endl << "; User friendly names for key flags. Those can be or'ed together with |, (ButtonDown|ButtonShift)." << std::endl;
-        file << "[FlagsMap]" << std::endl;
+        file << std::endl << "; User friendly names for key flags. Those can be or'ed together with |, (ButtonDown|ButtonShift).\n";
+        file << "[FlagsMap]\n";
         for (auto&& it : FlagsMap)
         {
-            file << it.first << std::endl;
+            file << it.first << '\n';
         }
-        file << "[Example]" << std::endl;
+        file << "[Example]\n";
         file << "\"Quit App\":\n";
         file << "{\n";
         file << "    \"Action\": \"Quit App\",\n";

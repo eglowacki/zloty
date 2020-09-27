@@ -1,6 +1,5 @@
-#include "Math/Vector.h"
 #include "Components/ModelComponent.h"
-#include "Components/ComponentPools.h"
+#include "MathFacade.h"
 #include "Device.h"
 #include "Scene.h"
 #include "TextureResource.h"
@@ -14,9 +13,9 @@
 #include "Fmt/format.h"
 #include "Exception/Exception.h"
 #include "ImageLoaders/ImageProcessor.h"
+
 #include <filesystem>
 #include <d3dcompiler.h>
-
 #include <VertexTypes.h>
 
 using namespace yaget;

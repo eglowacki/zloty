@@ -79,4 +79,35 @@ namespace yaget::io
         return asset->IsValid() ? asset : nullptr;
     }
 
+    //-------------------------------------------------------------------------------------------------------------------------------
+    // This will load asset (blocking call) and will convert json data to T.
+    // It checks for null asset, but it silently ignores.
+    template <typename T>
+    T LoadBlob(io::VirtualTransportSystem& vts, const io::VirtualTransportSystem::Section& section)
+    {
+        io::SingleBLobLoader<io::JsonAsset> loader(vts, section);
+        
+        T result = loader.GetAsset<T>([](auto asset)
+        {
+            T result{};
+            if (asset)
+            {
+                const auto& jsonBlock = asset->root;
+                from_json(jsonBlock, result);
+            }
+
+            return result;
+        });
+
+        return result;
+    }
+
+    //-------------------------------------------------------------------------------------------------------------------------------
+    // Helper function to just return json object
+    inline std::shared_ptr<io::JsonAsset> LoadJson(io::VirtualTransportSystem& vts, const io::VirtualTransportSystem::Section& section)
+    {
+        io::SingleBLobLoader<io::JsonAsset> loader(vts, section);
+        return loader.GetAsset();
+    }
+
 } // namespace yaget::io

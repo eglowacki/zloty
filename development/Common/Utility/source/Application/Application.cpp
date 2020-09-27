@@ -5,9 +5,9 @@
 using namespace yaget;
 
 Application::Application(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
-    : mDirector(director)
-    , Options(options)
-    , IdCache(&mDirector)
+    : Options(options)
+    , IdCache(&director)
+    , mDirector(director)
     , mInputDevice(vts)
     , mGeneralPoolThread(std::make_unique<mt::JobPool>("AppPool", yaget::dev::CurrentConfiguration().mDebug.mThreads.App))
     , mVTS(vts)
@@ -15,32 +15,28 @@ Application::Application(const std::string& title, items::Director& director, io
     YLOG_INFO("INIT", "Created Application '%s'.", title.c_str());
 }
 
-Application::~Application()
-{
-}
-
 void Application::onRenderTask(UpdateCallback_t renderCallback)
 {
     dev::CurrentThreadIds().RefreshRender(platform::CurrentThreadId());
-    metrics::MarkStartThread(dev::CurrentThreadIds().Render, "Rendering");
+    metrics::MarkStartThread(dev::CurrentThreadIds().Render, "RENDER");
 
     metrics::Channel channel("RenderThread", YAGET_METRICS_CHANNEL_FILE_LINE);
 
     while (!mQuit)
     {
-        metrics::Channel channel("RenderTick", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel rChannel("RenderTick", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-        renderCallback(*this, mGameClock, channel);
+        renderCallback(*this, mGameClock, rChannel);
         std::this_thread::yield();
     }
 
     dev::CurrentThreadIds().RefreshRender(0);
 }
 
-void Application::onLogicTask(UpdateCallback_t logicCallback)
+void Application::onLogicTask(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback)
 {
     dev::CurrentThreadIds().RefreshLogic(platform::CurrentThreadId());
-    metrics::MarkStartThread(dev::CurrentThreadIds().Logic, "Game Logic");
+    metrics::MarkStartThread(dev::CurrentThreadIds().Logic, "LOGIC");
 
 
     metrics::Channel channel("GameThread", YAGET_METRICS_CHANNEL_FILE_LINE);
@@ -60,38 +56,38 @@ void Application::onLogicTask(UpdateCallback_t logicCallback)
 
     do
     {
-        time::Microsecond_t nextTickTime = platform::GetRealTime(time::kMicrosecondUnit);
-        time::Microsecond_t deltaTickTime = nextTickTime - currentTickTime;
+        const time::Microsecond_t nextTickTime = platform::GetRealTime(time::kMicrosecondUnit);
+        const time::Microsecond_t deltaTickTime = nextTickTime - currentTickTime;
         tickAccumulator += deltaTickTime;
 
         while (tickAccumulator >= kFixedDeltaTime)
         {
-            metrics::Channel channel("GameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel gChannel("GameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-            time::Microsecond_t startProccessTime = platform::GetRealTime(time::kMicrosecondUnit);
+            const time::Microsecond_t startProcessTime = platform::GetRealTime(time::kMicrosecondUnit);
             const uint64_t tickCounter = mGameClock.GetTickCounter();
 
             mGameClock.Tick(kFixedDeltaTime);
-            /*uint32_t numInputs =*/ mInputDevice.Tick(mGameClock, defaultPerformancePolicy, channel);
+            /*uint32_t numInputs =*/ mInputDevice.Tick(mGameClock, defaultPerformancePolicy, gChannel);
 
             tickAccumulator -= kFixedDeltaTime;
 
             if (logicCallback)
             {
-                metrics::Channel channel("Callback", YAGET_METRICS_CHANNEL_FILE_LINE);
+                metrics::Channel gChannel("Callback", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-                logicCallback(*this, mGameClock, channel);
+                logicCallback(*this, mGameClock, gChannel);
             }
 
-            time::Microsecond_t actualProccessTime = platform::GetRealTime(time::kMicrosecondUnit) - startProccessTime;
-            if (actualProccessTime > kFixedDeltaTime)
+            const time::Microsecond_t actualProcessTime = platform::GetRealTime(time::kMicrosecondUnit) - startProcessTime;
+            if (actualProcessTime > kFixedDeltaTime)
             {
-                YLOG_DEBUG("PROF", "Tick Loop tool too long. Budget: '%d' (mc), Actual: '%d' (mc).", kFixedDeltaTime, actualProccessTime);
+                YLOG_NOTICE("PROF", "Tick Loop tool too long. Budget: '%d' (mc), Actual: '%d' (mc).", kFixedDeltaTime, actualProcessTime);
                 if (platform::IsDebuggerAttached())
                 {
                     // since we are under debugger, we just adjust the main timer to account for that loss time (maybe due to break point)
-                    platform::AdjustDrift(actualProccessTime - kFixedDeltaTime, time::kMicrosecondUnit);
-                    YLOG_DEBUG("PROF", "Adjusted Main Real Time by: '%d' (mc).", actualProccessTime - kFixedDeltaTime);
+                    platform::AdjustDrift(actualProcessTime - kFixedDeltaTime, time::kMicrosecondUnit);
+                    YLOG_NOTICE("PROF", "Adjusted Main Real Time by: '%d' (mc).", actualProcessTime - kFixedDeltaTime);
                 }
             }
 
@@ -114,10 +110,15 @@ void Application::onLogicTask(UpdateCallback_t logicCallback)
 
     } while (!mQuit);
 
+    if (shutdownLogicCallback)
+    {
+        shutdownLogicCallback(*this, mGameClock, channel);
+    }
+
     dev::CurrentThreadIds().RefreshLogic(0);
 }
 
-int Application::Run(UpdateCallback_t logicCallback, UpdateCallback_t renderCallback, StatusCallback_t idleCallback, StatusCallback_t quitCallback)
+int Application::Run(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback, UpdateCallback_t renderCallback, StatusCallback_t idleCallback, StatusCallback_t quitCallback)
 {
     // kick off separate thread for rendering
     YAGET_ASSERT(mGeneralPoolThread, "Can not call Run second time.");
@@ -125,7 +126,7 @@ int Application::Run(UpdateCallback_t logicCallback, UpdateCallback_t renderCall
     {
         mGeneralPoolThread->AddTask([this, renderCallback]() { onRenderTask(renderCallback); });
     }
-    mGeneralPoolThread->AddTask([this, logicCallback]() { onLogicTask(logicCallback); });
+    mGeneralPoolThread->AddTask([this, logicCallback, shutdownLogicCallback]() { onLogicTask(logicCallback, shutdownLogicCallback); });
 
     YLOG_DEBUG("APP", "Application.Run pump started.");
     while (!mRequestQuit)

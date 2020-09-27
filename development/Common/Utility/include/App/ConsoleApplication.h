@@ -28,18 +28,8 @@ namespace yaget
     public:
         ConsoleApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
         virtual ~ConsoleApplication();
-        math3d::Vector2 GetWindowSize() const override;
 
-#if  0
-        void Print(const std::string& charBuffer) override;
-        void PrintAt(int x, int y, const std::string& charBuffer) override;
-        void GotoXY(int x, int y) override;
-        void Clear(int ForgC = -1, int BackC = -1) override;
-        void SetColor(int ForgC, int BackC = -1) override;
-        void SetColor(float r, float g, float b, float a) override;
-        void Cursor(bool bShow) override;
-        void SetCursorLoc(int x, int y) override;
-#endif // 0
+        app::DisplaySurface GetSurface() const override { return app::DisplaySurface{ mOutputHandle, app::SurfaceState::Shared }; };
 
     private:
         bool onMessagePump(const time::GameClock& gameClock) override;
@@ -61,7 +51,9 @@ namespace yaget
         public:
             BlankApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
 
-            math3d::Vector2 GetWindowSize() const override;
+            const yaget::time::GameClock& GameClock() const { return mGameClock; }
+
+            app::DisplaySurface GetSurface() const override { return app::DisplaySurface{ nullptr, app::SurfaceState::Shared }; };
 
         private:
             bool onMessagePump(const time::GameClock& gameClock) override;

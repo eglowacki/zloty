@@ -73,6 +73,8 @@ namespace yaget
 
     Guid NewGuid();
 
+    std::ostream &operator<<(std::ostream &s, const Guid &guid);
+
 } // namespace yaget
 
 

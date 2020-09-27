@@ -13,15 +13,14 @@
 //
 //////////////////////////////////////////////////////////////////////
 //! \file
-
 #pragma once
-#ifndef YAGET_WINDOW_APLICATION_H
-#define YAGET_WINDOW_APLICATION_H
 
 #include "Application.h"
 
+
 namespace yaget
 {
+    namespace app { class ProcHandler; }
     namespace io { class VirtualTransportSystem; }
 
     class WindowApplication : public Application
@@ -30,34 +29,34 @@ namespace yaget
         WindowApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
         virtual ~WindowApplication();
 
-        math3d::Vector2 GetWindowSize() const override;
+        app::DisplaySurface GetSurface() const override;
 
+    protected:
+        using Event = std::function<void()>;
 
-        // used internally
+        void AddEvent(Event event);
+
+    private:
+        virtual int64_t onHandleRawInput(WindowHandle_t hWnd, uint32_t message, uint64_t wParam, int64_t lParam) = 0;
+        virtual void OnResize() = 0;
+        virtual void OnSurfaceStateChange() = 0;
+
         void _onSuspend(bool bSuspend);
-        void _onResise();
+        void ProcessResize();
         int _processInputMessage(int64_t lParam);
         int _processMouseMessage(uint32_t message, uint64_t wParam, int64_t lParam);
         int64_t _onHandleInputMessage(WindowHandle_t hWnd, uint32_t message, uint64_t wParam, int64_t lParam);
-        void _onToggleFullScreen();
+        int64_t ProcessUserInput(uint32_t message, uint64_t wParam, int64_t lParam);
 
-    private:
-        virtual void OnResize() = 0;
         bool onMessagePump(const time::GameClock& gameClock) override;
-        virtual int64_t onHandleRawInput(WindowHandle_t hWnd, uint32_t message, uint64_t wParam, int64_t lParam) = 0;
         void Cleanup() override;
 
         uint32_t mLastKeyFlags = 0;
+        std::unique_ptr<app::ProcHandler> mWindowHandler;
+        app::SurfaceState mActiveSurfaceState = app::SurfaceState::Shared;
 
-        // handling of window to cover entire screen
-        bool mFullScreen = false;
-        uint32_t mWindowStyle = 0;
-        uint32_t mWindowExStyle = 0;
-        int32_t mWindowLeft = 0;
-        int32_t mWindowTop = 0;
-        int32_t mWindowRight = 0;
-        int32_t mWindowBottom = 0;
+        using RequestedEvents = std::queue<Event>;
+        RequestedEvents mRequestedEvents;
+        std::mutex mEventsMutex;
     };
 } // namespace yaget
-
-#endif // YAGET_WINDOW_APLICATION_H

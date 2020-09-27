@@ -17,15 +17,18 @@
 #pragma once
 
 #include "YagetCore.h"
-#include "MemoryManager/PoolAllocator.h"
 #include "Components/ComponentTypes.h"
+#include "Components/GameCoordinatorGenerator.h"
+#include "MemoryManager/PoolAllocator.h"
 #include "Meta/CompilerAlgo.h"
-#include <map>
-#include <typeindex>
+
 #include <any>
-#include <tuple>
-#include <type_traits>
 #include <functional>
+#include <map>
+#include <tuple>
+#include <typeindex>
+#include <type_traits>
+
 
 
 namespace yaget
@@ -63,18 +66,18 @@ namespace yaget
             // Add component to pool and collection.
             // This will create a new instance of T component allocator
             template<typename T, typename... Args>
-            T* AddCompponent(comp::Id_t id, Args&&... args);
+            T* AddComponent(comp::Id_t id, Args&&... args);
 
             // Remove and delete component. It will set component to nullptr
             template<typename T>
-            void RemoveCompponent(comp::Id_t id, T*& component);
+            void RemoveComponent(comp::Id_t id, T*& component);
 
             // Remove and delete component type from item id
             template<typename T>
-            void RemoveCompponent(comp::Id_t id);
+            void RemoveComponent(comp::Id_t id);
 
             // Remove all components with this id
-            void RemoveCompponents(comp::Id_t id);
+            void RemoveComponents(comp::Id_t id);
 
             // Remove items 
             void RemoveItems(const comp::ItemIds& ids);
@@ -169,6 +172,8 @@ namespace yaget
             // which in turn helps to find a specific set of items.
             using ItemBits = std::unordered_map<std::type_index, uint32_t>;
             ItemBits mItemBitsMapping;
+
+            const Strings mComponentNames;
         };
 
         namespace internal
@@ -195,10 +200,10 @@ namespace yaget
     } // namespace comp
 } // namespace yaget
 
-
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 template<typename P>
 yaget::comp::Coordinator<P>::Coordinator()
+    : mComponentNames(comp::db::GetPolicyRowNames<P::Row>())
 {
     int counter = 0;
     meta::for_each_type<P::Row>([this, &counter](const auto& logType)
@@ -211,7 +216,7 @@ yaget::comp::Coordinator<P>::Coordinator()
 template<typename P>
 yaget::comp::Coordinator<P>::~Coordinator()
 {
-    YAGET_ASSERT(mItems.empty(), "Coordinator still has outstanding '%d' component(s).", mItems.size());
+    YAGET_ASSERT(mItems.empty(), "Coordinator still has outstanding '%d' component(s): [%s]", mItems.size(), conv::Combine(mItems, "], [").c_str());
 }
 
 template<typename P>
@@ -223,7 +228,7 @@ std::any yaget::comp::Coordinator<P>::FindAllocator(const std::type_index& alloc
 
 template<typename P>
 template<typename T, typename... Args>
-T* yaget::comp::Coordinator<P>::AddCompponent(comp::Id_t id, Args&&... args)
+T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
 {
     memory::PoolAllocator<T>* componentAllocator = FindAllocator<T>();
     if (!componentAllocator)
@@ -262,7 +267,7 @@ T* yaget::comp::Coordinator<P>::AddCompponent(comp::Id_t id, Args&&... args)
 
 template<typename P>
 template<typename T>
-void yaget::comp::Coordinator<P>::RemoveCompponent(comp::Id_t id, T*& component)
+void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
 {
     YAGET_ASSERT(component, "Component parameter of type: '%s' is nulptr.", typeid(T).name());
     YAGET_ASSERT(mItems.find(id) != mItems.end(), "Item id: '%d' of type: '%s' does not exist in collection.", id, typeid(T).name());
@@ -296,15 +301,15 @@ void yaget::comp::Coordinator<P>::RemoveCompponent(comp::Id_t id, T*& component)
 
 template<typename P>
 template<typename T>
-void yaget::comp::Coordinator<P>::RemoveCompponent(comp::Id_t id)
+void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id)
 {
     auto it = mItems.find(id);
     YAGET_ASSERT(it != mItems.end(), "Item id: '%d' of type: '%s' does not exist in collection.", id, typeid(T).name());
-    RemoveCompponent(id, std::get<T*>(it->second));
+    RemoveComponent(id, std::get<T*>(it->second));
 }
 
 template<typename P>
-void yaget::comp::Coordinator<P>::RemoveCompponents(comp::Id_t id)
+void yaget::comp::Coordinator<P>::RemoveComponents(comp::Id_t id)
 {
     auto it = mItems.find(id);
     YAGET_ASSERT(it != mItems.end(), "Item id: '%d' does not exist in collection.", id);
@@ -314,7 +319,7 @@ void yaget::comp::Coordinator<P>::RemoveCompponents(comp::Id_t id)
     {
         if (item)
         {
-            RemoveCompponent(id, item);
+            RemoveComponent(id, item);
         }
     });
 
@@ -326,7 +331,7 @@ void yaget::comp::Coordinator<P>::RemoveItems(const comp::ItemIds& ids)
 {
     for (const auto& id : ids)
     {
-        RemoveCompponents(id);
+        RemoveComponents(id);
     }
 }
 
@@ -354,15 +359,15 @@ typename R::Row yaget::comp::Coordinator<P>::FindItem(comp::Id_t id) const
     {
         // TODO: TEST: Verify that all R components are part of P
         //             Verify compile asserts
-        typename R::Row requestedComnponents;
+        typename R::Row requestedComponents;
         constexpr size_t numComponents = std::tuple_size_v<std::remove_reference_t<R::Row>>;
         static_assert(numComponents > 0, "At least one user requested component required");
         static_assert(numComponents <= std::tuple_size_v<std::remove_reference_t<Row>>, "Number of user requested components must be no larger then actual item components.");
 
         Row itemComponents = FindItem(id);
-        internal::RowCopy<numComponents, R::Row, Row>(requestedComnponents, itemComponents);
+        internal::RowCopy<numComponents, R::Row, Row>(requestedComponents, itemComponents);
 
-        return requestedComnponents;
+        return requestedComponents;
     }
 }
 

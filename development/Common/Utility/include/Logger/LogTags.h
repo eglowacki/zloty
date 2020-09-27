@@ -56,4 +56,6 @@
 "IGUI",
 "VTS",
 "WATC",
-"WIN",      // make sure that last entry has , or you may get compile error or worst a silent false positive
+"CONV",
+"WIN",
+"DB", // make sure that last entry has , or you may get compile error or worst a silent false positive

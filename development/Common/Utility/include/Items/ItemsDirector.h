@@ -24,31 +24,30 @@ namespace yaget
 
     namespace items
     {
+        //-------------------------------------------------------------------------------------------------
         struct IdBatch
         {
             uint64_t mNextId;
             uint64_t mBatchSize;
         };
 
-        inline bool operator==(const IdBatch& lh, const IdBatch& rh)
-        {
-            return lh.mBatchSize == rh.mBatchSize && lh.mNextId == rh.mNextId;
-        }
-
+        inline bool operator==(const IdBatch& lh, const IdBatch& rh) { return lh.mBatchSize == rh.mBatchSize && lh.mNextId == rh.mNextId; }
         inline bool operator!=(const IdBatch& lh, const IdBatch& rh) { return !(lh == rh); }
 
-
-        class Director
+        //-------------------------------------------------------------------------------------------------
+        class Director : public Noncopyable<Director>
         {
         public:
-            Director(const std::string& name);
-            ~Director();
+            Director(const std::string& name, const Strings& additionalSchema, int64_t expectedVersion);
+            virtual ~Director();
 
             IdBatch GetNextBatch();
+            SQLite& DB() { return mDatabase.DB(); }
+            const SQLite& DB() const { return mDatabase.DB(); }
 
         private:
             //--------------------------------------------------------------------------------------------------
-            // provides locking for DB for read/write, use LockDatabaseAccess() accessors to aquire one
+            // provides locking for DB for read/write, use LockDatabaseAccess() accessors to acquire one
             struct DatabaseLocker
             {
                 DatabaseLocker(Director& director) : mDatabase(director.mDatabase) {}

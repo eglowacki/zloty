@@ -14,7 +14,6 @@
 #pragma once
 
 #include "Components/Component.h"
-#include "Math/MathBase.h"
 #include "MathFacade.h"
 #include "Platform/Support.h"
 #include "ThreadModel/JobPool.h"

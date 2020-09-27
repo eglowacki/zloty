@@ -26,9 +26,10 @@ namespace yaget
 {
     namespace dev
     {
-        //! program configuration values, debug, init, runtime, etc
-        //! NOTE: We maintain global variable 'configuration', for now there is no good process what kind of data and
-        //! how we are using, can we or should we allow changes of this data at run time, or should we make it const?
+        //! Program configuration values, debug, init, runtime, etc.
+        //! We provide global function CurrentConfiguration() that returns const ref to current data.
+        //! There are some Refresh(...) methods that allow to change some values at run time.
+        //! NOTE: Is this a good idea to change values at runtime?
         struct Configuration
         {
             // Any debug config values
@@ -41,6 +42,7 @@ namespace yaget
                     bool SuppressUI = false;        // if true, then do not show any dialog boxes
                     int BuildId = -1;               // during dev, you can set to whatever number and be printed in log for engine init
                     bool MetricGather = false;      // turn on metric gather system
+                    bool DisregardDebugger = false; // this controls how IsDebuggerAttached function works.
                 };
                 Flags mFlags;
 
@@ -128,8 +130,19 @@ namespace yaget
 
                 // user options to use
                 std::string mWindowOptions;
+                // which script to start running when GameDirector is initialized, aka boot script
+                std::string mGameDirectorScript;
 
-                std::string mGameDirectorBoot;
+                // This represents certain command line options, specially video/window options
+                struct CLO
+                {
+                    int mResolutionX = 0;
+                    int mResolutionY = 0;
+                    bool mFullscreen = false;
+
+                    bool IsResValid() const { return mResolutionX > 0 && mResolutionY > 0; }
+                };
+                CLO mCLO;
             };
             Init mInit;
 
@@ -137,6 +150,7 @@ namespace yaget
             struct Runtime
             {
                 float DpiScaleFactor = 1.0f;
+                bool mShowScriptHelp = false;
 
                 void RefreshDpi(float factor) const;
             };
@@ -168,12 +182,14 @@ namespace yaget
         // Used in debug to make sure calls are done on correct threads
         struct ThreadIds
         {
+            uint32_t Main = 0;
             uint32_t Logic = 0;
             uint32_t Render = 0;
 
             void RefreshLogic(uint32_t threadId) const;
             void RefreshRender(uint32_t threadId) const;
 
+            bool IsThreadMain() const;
             bool IsThreadLogic() const;
             bool IsThreadRender() const;
         };
@@ -184,4 +200,17 @@ namespace yaget
         const ThreadIds& CurrentThreadIds();
 
     } // namespace dev
+
+    namespace conv
+    {
+        template<>
+        struct Convertor<yaget::dev::Configuration::Init::VTS>
+        {
+            static std::string ToString(const yaget::dev::Configuration::Init::VTS& value)
+            {
+                return value.Name;
+            }
+        };
+    }
+
 } // namespace yaget

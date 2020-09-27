@@ -20,12 +20,13 @@
 
 namespace yaget::time
 {
-    const uint64_t INVALID_TICK_COUNTER = std::numeric_limits<uint64_t>::max();
+    constexpr uint64_t INVALID_TICK_COUNTER = std::numeric_limits<uint64_t>::max();
+    constexpr uint64_t INVALID_TIME = INVALID_TICK_COUNTER;
     using TimeUnits_t = int64_t;
-    const TimeUnits_t kRawUnit          = 1;
-    const TimeUnits_t kMicrosecondUnit  = 10;
-    const TimeUnits_t kMilisecondUnit   = 10000;
-    const TimeUnits_t kSecondUnit       = 10000000;
+    constexpr TimeUnits_t kRawUnit          = 1;
+    constexpr TimeUnits_t kMicrosecondUnit  = 10;
+    constexpr TimeUnits_t kMilisecondUnit   = 10000;
+    constexpr TimeUnits_t kSecondUnit       = 10000000;
 
     using Raw_t                         = TimeUnits_t;
     using Microsecond_t                 = TimeUnits_t;

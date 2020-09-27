@@ -6,7 +6,6 @@
     <Import Project="yaget.Math.props" />
     <Import Project="yaget.flatbuffers.props" />
     <Import Project="yaget.nlohmann_json.props" />
-    <Import Project="yaget.RADTelemetry.props" />
     <Import Project="yaget.DXTK.props" />
     <Import Project="yaget.fmt.props" />
   </ImportGroup>

@@ -8,45 +8,13 @@
 #include "Metrics/Concurrency.h"
 
 #include <filesystem>
+#include <utility>
 namespace fs = std::filesystem;
 
 #define YAGET_VTS_VERSION 10
 
-
 const int kPoolSize = 0;
 
-
-namespace yaget
-{
-    namespace conv
-    {
-        //template<>
-        //struct Convertor<yaget::dev::Configuration::Init::VTSConfigList>
-        //{
-        //    static std::string ToString(const yaget::dev::Configuration::Init::VTSConfigList& value)
-        //    {
-        //        value;
-        //        return "";
-        //        //return fmt::format("[r = {:.2f}, g = {:.2f}, b = {:.2f}, a = {:.2f}]", value.x, value.y, value.z, value.w);
-        //    }
-        //};
-
-        template<>
-        struct Convertor<yaget::dev::Configuration::Init::VTS>
-        {
-            static std::string ToString(const yaget::dev::Configuration::Init::VTS& value)
-            {
-                return value.Name;
-            }
-        };
-    }
-}
-
-
-//namespace std
-//{
-//    inline std::string to_string(const yaget::dev::Configuration::Init::VTSConfigList& /*value*/) { return "FOO"; }
-//} // namespace std
 
 namespace
 {
@@ -114,12 +82,12 @@ namespace
         SectionEntriesCollector(yaget::dev::Configuration::Init::VTSConfigList configList, yaget::Database& database, DoneCallback doneCallback)
             : mTimeSpan("VTS Entries Collector", YAGET_METRICS_CHANNEL_FILE_LINE)
             , mDatabase(database)
-            , mDoneCallback(doneCallback)
-            , mRequestPool("vts.Collector", yaget::dev::CurrentConfiguration().mDebug.mThreads.VTSSections)
+            , mDoneCallback(std::move(doneCallback))
+            , mRequestPool("INDX", yaget::dev::CurrentConfiguration().mDebug.mThreads.VTSSections)
         {
             using namespace yaget;
             using VTS = dev::Configuration::Init;
-            using SectionRecord = SQLite::Row<std::string /*Name*/, Strings /*Path*/, Strings /*Filters*/, std::string /*Converters*/, bool /*ReadOnly*/, bool /*Recursive*/>;
+            using SectionRecord = std::tuple<std::string /*Name*/, Strings /*Path*/, Strings /*Filters*/, std::string /*Converters*/, bool /*ReadOnly*/, bool /*Recursive*/>;
 
             //metrics::MarkStartTimeSpan(reinterpret_cast<std::uintptr_t>(this), "Indexing VTS", YAGET_METRICS_CHANNEL_FILE_LINE);
             metrics::Channel channel("Entries Collector", YAGET_METRICS_CHANNEL_FILE_LINE);
@@ -135,8 +103,7 @@ namespace
                 {
                     transaction.Rollback();
                     std::string message = fmt::format("Did not delete table 'Logs'. DB Error: ", ParseErrors(mDatabase.DB()));
-                    YLOG_WARNING("VTS", message.c_str());
-                    throw ex::bad_init(message);
+                    YAGET_UTIL_THROW("VTS", message);
                 }
 
                 mDatabase.Log("SESSION_START", "VTS Started");
@@ -145,8 +112,7 @@ namespace
                 {
                     transaction.Rollback();
                     std::string message = fmt::format("There are '{}' blobs left in DirtyTags table.", numDirtyBlobs);
-                    YLOG_WARNING("VTS", message.c_str());
-                    throw ex::bad_init(message);
+                    YAGET_UTIL_THROW("VTS", message);
                 }
 
                 auto listSize = configList.size();
@@ -160,7 +126,7 @@ namespace
                     std::set_difference(originalConfigList.begin(), originalConfigList.end(), configList.begin(), configList.end(), std::inserter(invalidConfigList, invalidConfigList.begin()));
 
                     std::string message = fmt::format("VTS Sections '{}' are not valid. Fix VTS section in configuration file.", conv::Combine(invalidConfigList, ", "));
-                    YAGET_UTIL_THROW("VTS", message.c_str());
+                    YAGET_UTIL_THROW("VTS", message);
                 }
 
                 for (const auto& it : configList)
@@ -169,7 +135,10 @@ namespace
                 }
 
                 std::string command = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly, Recursive FROM Sections ORDER BY Name;");
-                VTS::VTSConfigList sectionRecords = mDatabase.DB().GetRows<VTS::VTS, SectionRecord, VTS::VTSConfigList>(command, [](const SectionRecord& record) { return VTS::VTS{ record.Result, record.Result1, record.Result2, record.Result3, record.Result4, record.Result5 }; });
+                VTS::VTSConfigList sectionRecords = mDatabase.DB().GetRowsTuple<VTS::VTS, SectionRecord, VTS::VTSConfigList>(command, [](const SectionRecord& record)
+                {
+                    return VTS::VTS{ std::get<0>(record), std::get<1>(record), std::get<2>(record), std::get<3>(record), std::get<4>(record), std::get<5>(record) };
+                });
 
                 std::set_difference(configList.begin(), configList.end(), sectionRecords.begin(), sectionRecords.end(), std::inserter(newSection, newSection.end()));
                 std::set_difference(sectionRecords.begin(), sectionRecords.end(), configList.begin(), configList.end(), std::inserter(deletedSections, deletedSections.end()));
@@ -179,7 +148,7 @@ namespace
                 for (const auto& it : newSection)
                 {
                     SectionRecord section(it.Name, it.Path, it.Filters, it.Converters, it.ReadOnly, it.Recursive);
-                    if (!mDatabase.DB().ExecuteStatement("SectionInsert", "Sections", section, SQLite::Behaviour::NoTimeStamp, SQLite::Behaviour::Insert))
+                    if (!mDatabase.DB().ExecuteStatementTuple("SectionInsert", "Sections", section, { "Name", "Path", "Filters", "Converters", "ReadOnly", "Recursive" }, SQLite::Behaviour::Insert))
                     {
                         transaction.Rollback();
                         std::string message = fmt::format("SectionInsert: '{}' for vts failed. {}.", it.Name, ParseErrors(mDatabase.DB()));
@@ -213,7 +182,7 @@ namespace
                     {
                         numChanged++;
                         SectionRecord section(it.Name, it.Path, it.Filters, it.Converters, it.ReadOnly, it.Recursive);
-                        if (!mDatabase.DB().ExecuteStatement("SectionInsert", "Sections", section, SQLite::Behaviour::NoTimeStamp, SQLite::Behaviour::Update))
+                        if (!mDatabase.DB().ExecuteStatementTuple("SectionInsert", "Sections", section, { "Name", "Path", "Filters", "Converters", "ReadOnly", "Recursive" }, SQLite::Behaviour::Update))
                         {
                             transaction.Rollback();
                             std::string message = fmt::format("SectionInsert: '{}' for vts failed. {}.", it.Name, ParseErrors(mDatabase.DB()));
@@ -339,7 +308,6 @@ namespace
         void UpdateDatabase()
         {
             using namespace yaget;
-            using DeletedRecord = SQLite::Row<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
 
             metrics::Channel channel("UpdateDatabase", YAGET_METRICS_CHANNEL_FILE_LINE);
 
@@ -349,12 +317,14 @@ namespace
             db::Transaction transaction(mDatabase.DB());
             for (const auto& section : mSections)
             {
+                using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
+
                 const std::string& nameSection = section.first.first;
                 const std::string& namePath = section.first.second;
                 const Strings& tagFiles = section.second;
 
                 std::string command = io::db::TagRecordQuery(io::VirtualTransportSystem::Section(nameSection + "@" + namePath));
-                Strings tagRecords = mDatabase.DB().GetRows<std::string, io::db::TagRecord, Strings>(command, [](const io::db::TagRecord& record) { return record.Result2; });
+                Strings tagRecords = mDatabase.DB().GetRowsTuple<std::string, TagRecordTuple, Strings>(command, [](const TagRecordTuple& record) { return std::get<2>(record); });
 
                 // based on what is on disk (tagFiles) and in db (tagRecords), generate deleted files from disk and new files on disk,
                 // so we can update db data
@@ -370,13 +340,13 @@ namespace
 
                     int deletedRowCount = GetCell<int>(mDatabase.DB(), "SELECT COUNT(*) FROM 'Deleted';");
                     const bool checkDeleted = deletedRowCount > 0;
-                    std::vector<io::db::TagRecord> deletedBlobs;
+                    std::vector<TagRecordTuple> deletedBlobs;
 
                     if (deletedRowCount < 1000)
                     {
                         // load entire table into memory, since it's a small one, otherwise just query db for each one
                         command = fmt::format("SELECT Guid, Name, VTS, Section FROM Deleted;");
-                        deletedBlobs = mDatabase.DB().GetRows<io::db::TagRecord>(command);
+                        deletedBlobs = mDatabase.DB().GetRowsTuple<TagRecordTuple>(command);
                     }
                         
                     for (const std::string& vtsName : newTags)
@@ -393,11 +363,12 @@ namespace
                             {
                                 auto it = std::find_if(deletedBlobs.begin(), deletedBlobs.end(), [&vtsName](const auto& param)
                                 {
-                                    return param.Result2 == vtsName;
+                                    return std::get<2>(param) == vtsName;
                                 });
+
                                 if (it != deletedBlobs.end())
                                 {
-                                    recoveredGuid = (*it).Result3;
+                                    recoveredGuid = std::get<3>(*it);
                                     deletedBlobs.erase(it);
                                 }
                             }
@@ -417,9 +388,11 @@ namespace
                         {
                             recoveredGuid = NewGuid();
                         }
-                        
-                        io::db::TagRecord tag(recoveredGuid, fs::path(vtsName).filename().stem().generic_string(), vtsName, nameSection);
-                        if (!mDatabase.DB().ExecuteStatement("TagInsert", "Tags", tag, SQLite::Behaviour::NoTimeStamp, SQLite::Behaviour::Insert))
+
+                        using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
+
+                        TagRecordTuple tag(recoveredGuid, fs::path(vtsName).filename().stem().generic_string(), vtsName, nameSection);
+                        if (!mDatabase.DB().ExecuteStatementTuple("TagInsert", "Tags", tag, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Insert))
                         {
                             transaction.Rollback();
                             std::string message = fmt::format("TagInsert: '{}' for vts section: {} failed. {}.", vtsName, nameSection, ParseErrors(mDatabase.DB()));
@@ -431,16 +404,19 @@ namespace
 
                     for (const auto& it : deletedTags)
                     {
+                        using TagData = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
+                        bool result = true;
+
                         command = io::db::TagRecordQuery(io::VirtualTransportSystem::Section(nameSection + "@" + it));
-                        io::db::TagRecord existingTag = mDatabase.DB().GetRow<io::db::TagRecord>(command);
-                        if (!existingTag.bValid)
+                        TagData existingTag = mDatabase.DB().GetRowTuple<TagData>(command, &result);
+                        if (!result)
                         {
                             transaction.Rollback();
                             std::string message = fmt::format("VTS: '{}' does not exist in Tags table. {}.", it, ParseErrors(mDatabase.DB()));
                             YAGET_UTIL_THROW("VTS", message.c_str());
                         }
 
-                        command = fmt::format("DELETE FROM Tags WHERE Guid = '{}';", existingTag.Result.str());
+                        command = fmt::format("DELETE FROM Tags WHERE Guid = '{}';", std::get<0>(existingTag).str());
                         if (!mDatabase.DB().ExecuteStatement(command.c_str(), nullptr))
                         {
                             transaction.Rollback();
@@ -448,7 +424,7 @@ namespace
                             YAGET_UTIL_THROW("VTS", message.c_str());
                         }
 
-                        if (!mDatabase.DB().ExecuteStatement("DeletedInsert", "Deleted", existingTag, SQLite::Behaviour::NoTimeStamp, SQLite::Behaviour::Update))
+                        if (!mDatabase.DB().ExecuteStatementTuple("DeletedInsert", "Deleted", existingTag, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Update))
                         {
                             transaction.Rollback();
                             std::string message = fmt::format("DeletedInsert: '{}' for vts 'Deleted' failed with section: {}. {}.", it, nameSection, ParseErrors(mDatabase.DB()));
@@ -463,7 +439,13 @@ namespace
             mDatabase.Log("INFO", fmt::format("VTS Update Tags - New: {}, Deleted: {}.", numNewTags, numDeletedTags));
 
             // fire callback on separate thread from here, since recipient of this message will delete us
-            std::thread notifier = std::thread([](DoneCallback doneCallback) { doneCallback(); }, mDoneCallback);
+            std::thread notifier = std::thread([](DoneCallback doneCallback)
+            {
+                metrics::MarkStartThread(platform::CurrentThreadId(), "INDXDONE");
+
+                doneCallback();
+            }, mDoneCallback);
+
             notifier.detach();
         }
 
@@ -516,7 +498,7 @@ namespace
             if (mTagsCounter)
             {
                 YAGET_ASSERT(mTagsCounter->load() > 0, "Tags Counter value must be larger then 0 for Tag: '%s'.", mRequestedTag.mVTSName.c_str());
-                (*mTagsCounter)--;
+                (void)(*mTagsCounter)--;
             }
         }
 
@@ -618,7 +600,7 @@ std::string yaget::io::VirtualTransportSystem::Section::ToString() const
 
 yaget::io::VirtualTransportSystem::VirtualTransportSystem(dev::Configuration::Init::VTSConfigList configList, VirtualTransportSystem::DoneCallback doneCallback, const AssetResolvers& assetResolvers, const std::string& fileName, RuntimeMode reset)
     : mRuntimeMode(RuntimeMode::Optimum)
-    , mDoneCallback(doneCallback)
+    , mDoneCallback(std::move(doneCallback))
     , mRequestPool("vts.Request", dev::CurrentConfiguration().mDebug.mThreads.VTS)
     , mAssetResolvers(assetResolvers)
     , mDatabase(ResolveDatabaseName(fileName, reset == RuntimeMode::Reset), vtsSchema, YAGET_VTS_VERSION)
@@ -658,20 +640,20 @@ yaget::io::VirtualTransportSystem::~VirtualTransportSystem()
 
     if (mRuntimeMode == RuntimeMode::Optimum)
     {
-        using DirtyRow = SQLite::Row<Guid /*guid*/, std::string /*VTS*/, std::string /*Section*/>;
-        std::vector<DirtyRow> dirtyBlobs = mDatabase.DB().GetRows<DirtyRow>("SELECT Tags.Guid, Tags.VTS, Tags.Section FROM Tags INNER JOIN DirtyTags ON Tags.Guid=DirtyTags.Guid;");
+        using DirtyRow = std::tuple<Guid /*guid*/, std::string /*VTS*/, std::string /*Section*/>;
+        std::vector<DirtyRow> dirtyBlobs = mDatabase.DB().GetRowsTuple<DirtyRow>("SELECT Tags.Guid, Tags.VTS, Tags.Section FROM Tags INNER JOIN DirtyTags ON Tags.Guid=DirtyTags.Guid;");
 
-        for (auto it : dirtyBlobs)
+        for (const auto& it : dirtyBlobs)
         {
             io::Tag tag;
-            tag.mGuid = it.Result;
+            tag.mGuid = std::get<0>(it);
             auto asset = FindAsset(tag);
-            YAGET_ASSERT(asset, "Did not find asset: '%s' in collection while trying to save dirty blob.", it.Result1.c_str());
+            YAGET_ASSERT(asset, "Did not find asset: '%s' in collection while trying to save dirty blob.", std::get<1>(it).c_str());
 
-            std::string fileName = util::ExpendEnv(it.Result1, nullptr);
+            std::string fileName = util::ExpendEnv(std::get<1>(it), nullptr);
             if (!fs::path(fileName).has_extension())
             {
-                std::string command = fmt::format("SELECT Filters FROM 'Sections' WHERE Name = '{}';", it.Result2);
+                std::string command = fmt::format("SELECT Filters FROM 'Sections' WHERE Name = '{}';", std::get<2>(it));
                 auto filters = GetCell<Strings>(mDatabase.DB(), command);
                 if (filters.size() == 1)
                 {
@@ -717,7 +699,7 @@ void yaget::io::VirtualTransportSystem::onBlobLoaded(const io::Buffer& dataBuffe
         if (!asset)
         {
             // incoming data blob, find converter callback for it and execute
-            std::string command = fmt::format("SELECT Sections.Converters FROM Sections INNER JOIN Tags ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", requestedTag.mGuid.str());
+            const std::string command = fmt::format("SELECT Sections.Converters FROM Sections INNER JOIN Tags ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", requestedTag.mGuid.str());
             std::string converterType;
 
             if (DatabaseHandle dHandle = LockDatabaseAccess())
@@ -746,7 +728,7 @@ void yaget::io::VirtualTransportSystem::onBlobLoaded(const io::Buffer& dataBuffe
     }
     catch (const yaget::ex::standard& e)
     {
-        std::string message = fmt::format("Blob '{}' did not get converted. '{}'.", requestedTag.mVTSName.c_str(), e.what());
+        const std::string message = fmt::format("Blob '{}' did not get converted. '{}'.", requestedTag.mVTSName.c_str(), e.what());
         YLOG_ERROR("VTS", message.c_str());
     }
 }
@@ -838,13 +820,14 @@ void yaget::io::VirtualTransportSystem::AttachTransientBlob(const std::vector<st
     {
         SQLite& database = databaseHandle->DB();
         yaget::db::Transaction transaction(database);
+        using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
 
         for (const auto& it : assets)
         {
             const io::Tag& tag = it->mTag;
-            io::db::TagRecord tagRecord(tag.mGuid, tag.mName, tag.mVTSName, tag.mSectionName);
+            TagRecordTuple tagRecord(tag.mGuid, tag.mName, tag.mVTSName, tag.mSectionName);
 
-            if (!database.ExecuteStatement("TagInsert", "Tags", tagRecord, SQLite::Behaviour::NoTimeStamp, SQLite::Behaviour::Insert))
+            if (!database.ExecuteStatementTuple("TagInsert", "Tags", tagRecord, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Insert))
             {
                 transaction.Rollback();
 
@@ -885,14 +868,15 @@ bool yaget::io::VirtualTransportSystem::UpdateAssetData(const std::shared_ptr<io
 
         const std::string dirtyCommand = fmt::format("INSERT INTO 'DirtyTags' VALUES('{}');", tag.mGuid.str());
         yaget::db::Transaction transaction(database);
+        using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
 
         // lock asset list for any changes
         std::unique_lock<std::mutex> locker(mMutexAssets);
         auto assetData = FindAssetNonMT(tag);
         if (!assetData && request == Request::Add)
         {
-            io::db::TagRecord tagRecord(tag.mGuid, tag.mName, tag.mVTSName, tag.mSectionName);
-            if (!database.ExecuteStatement("TagInsert", "Tags", tagRecord, SQLite::Behaviour::NoTimeStamp, SQLite::Behaviour::Insert) ||
+            TagRecordTuple tagRecord(tag.mGuid, tag.mName, tag.mVTSName, tag.mSectionName);
+            if (!database.ExecuteStatementTuple("TagInsert", "Tags", tagRecord, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Insert) ||
                 !database.ExecuteStatement(dirtyCommand, nullptr))
             {
                 transaction.Rollback();
@@ -1003,9 +987,14 @@ std::vector<yaget::io::Tag> yaget::io::VirtualTransportSystem::GetTags(const Sec
             {
                 for (auto it = sectionPath.rbegin(); it != sectionPath.rend(); ++it)
                 {
+                    using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
+
                     std::string vtsName = *it + "/" + section.Filter;
                     query = io::db::TagRecordQuery(Section(operation + section.Name + "@" + vtsName));
-                    std::vector<io::Tag> nextResults = dHandle->DB().GetRows<io::Tag, io::db::TagRecord>(query, [](const io::db::TagRecord& record) { return io::Tag{ record.Result1, record.Result, record.Result2, record.Result3 }; });
+                    std::vector<io::Tag> nextResults = dHandle->DB().GetRowsTuple<io::Tag, TagRecordTuple>(query, [](const TagRecordTuple& record)
+                    {
+                        return io::Tag{std::get<1>(record), std::get<0>(record), std::get<2>(record), std::get<3>(record) };
+                    });
 
                     if (section.Match == Section::FilterMatch::Override)
                     {
@@ -1029,48 +1018,61 @@ std::vector<yaget::io::Tag> yaget::io::VirtualTransportSystem::GetTags(const Sec
 
 yaget::io::Tag yaget::io::VirtualTransportSystem::GenerateTag(const Section& section) const
 {
-    using TargetSection = SQLite::Row<std::string /*Name*/, Strings /*Path*/, Strings /*Filters*/, std::string /*Converters*/, bool /*ReadOnly*/>;
+    using TargetSection = std::tuple<std::string /*Name*/, Strings /*Path*/, Strings /*Filters*/, std::string /*Converters*/, bool /*ReadOnly*/>;
 
     io::Tag newTag;
-    std::string command = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly FROM Sections WHERE Name = '{}'", section.Name);
 
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
         SQLite& database = databaseHandle->DB();
+        std::string command = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly FROM Sections WHERE Name = '{}'", section.Name);
 
-        if (TargetSection targetSection = database.GetRow<TargetSection>(command); targetSection.bValid)
+        bool result = true;
+        TargetSection targetSection = database.GetRowTuple<TargetSection>(command, &result);
+        if (!result)
         {
-            fs::path filePath = *targetSection.Result1.begin() + "/" + section.Filter;
-
-            newTag.mName = filePath.filename().stem().string();
-            newTag.mVTSName = filePath.generic_string();
-            newTag.mSectionName = section.Name;
-
-            command = fmt::format("SELECT Guid FROM Deleted WHERE VTS = '{}';", newTag.mVTSName);
-            Guid recoveredGuid = GetCell<Guid>(database, command);
-            if (recoveredGuid.IsValid())
-            {
-                command = fmt::format("DELETE FROM Deleted WHERE Guid = '{}';", recoveredGuid.str());
-                if (!database.ExecuteStatement(command.c_str(), nullptr))
-                {
-                    YLOG_ERROR("VTS", "Did not deleted: '%s' from Deleted table. %s", newTag.mVTSName.c_str(), ParseErrors(database).c_str());
-                }
-                else
-                {
-                    newTag.mGuid = recoveredGuid;
-                }
-            }
-        }
-        else
-        {
-            YLOG_ERROR("VTS", "Did not get Target Section from section: '%s'.", section.ToString().c_str());
+            YLOG_ERROR("VTS", "Did not get Target Section from section: '%s'. %s", section.ToString().c_str(), ParseErrors(database).c_str());
             return {};
+        }
+
+        fs::path filePath = *std::get<1>(targetSection).begin() + "/" + section.Filter;
+
+        newTag.mName = filePath.filename().stem().string();
+        newTag.mVTSName = filePath.generic_string();
+        newTag.mSectionName = section.Name;
+
+        command = fmt::format("SELECT Guid FROM Deleted WHERE VTS = '{}';", newTag.mVTSName);
+        Guid recoveredGuid = GetCell<Guid>(database, command);
+        if (recoveredGuid.IsValid())
+        {
+            command = fmt::format("DELETE FROM Deleted WHERE Guid = '{}';", recoveredGuid.str());
+            if (!database.ExecuteStatement(command, nullptr))
+            {
+                YLOG_ERROR("VTS", "Did not deleted: '%s' from Deleted table. %s", newTag.mVTSName.c_str(), ParseErrors(database).c_str());
+            }
+            else
+            {
+                newTag.mGuid = recoveredGuid;
+            }
         }
     }
 
     newTag.mGuid = newTag.mGuid.IsValid() ? newTag.mGuid : NewGuid();
     return newTag;
 }
+
+
+yaget::io::Tag yaget::io::VirtualTransportSystem::AssureTag(const Section& section)
+{
+    auto tag = GetTag(section);
+    if (!tag.IsValid())
+    {
+        tag = GenerateTag(section);
+    }
+
+    return tag;
+}
+
 
 
 size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>& tags, BlobAssetCallback blobAssetCallback, std::atomic_size_t* tagsCounter)

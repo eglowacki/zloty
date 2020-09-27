@@ -18,7 +18,6 @@
 #pragma once
 
 #include "Base.h"
-//#include "Math/MathBase.h"
 #include "Platform/WindowsLean.h"
 #include <d3d11_2.h>
 #include <SimpleMath.h>
@@ -47,6 +46,8 @@ namespace math3d
     {
         return a * 57.29577951f;
     }
+
+    constexpr float kPI(3.14159265359f);
 
 } // namespace math3d
 

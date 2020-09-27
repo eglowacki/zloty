@@ -1,4 +1,5 @@
 #include "Scene.h"
+#if 0
 #include "Device.h"
 #include "RenderTarget.h"
 #include "Resources/ShaderResources.h"
@@ -25,11 +26,11 @@
 
 #include <filesystem>
 
-#pragma warning( push )
-#pragma warning( disable : 4127 )  // conditional expression is constant
-#pragma warning( disable : 4099 )  // 'btDefaultMotionState': type name first seen using 'class' now seen using 'struct'
-#include "btBulletDynamicsCommon.h" 
-#pragma warning( pop )
+//#pragma warning( push )
+//#pragma warning( disable : 4127 )  // conditional expression is constant
+//#pragma warning( disable : 4099 )  // 'btDefaultMotionState': type name first seen using 'class' now seen using 'struct'
+//#include "btBulletDynamicsCommon.h" 
+//#pragma warning( pop )
 
 using namespace yaget;
 namespace fs = std::filesystem;
@@ -749,3 +750,4 @@ comp::Id_t render::Scene::NewItem(const math3d::Matrix& matrix)
 
     return itemId;
 }
+#endif // 0

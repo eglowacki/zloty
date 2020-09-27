@@ -19,7 +19,7 @@
 
 #include "YagetCore.h"
 #include "Debugging/Assert.h"
-#include "Coordinator.h"
+#include "Components/GameCoordinator.h"
 #include "Metrics/Concurrency.h"
 #include <functional>
 
@@ -66,7 +66,13 @@ namespace yaget
             template <typename T>
             void Initialize(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/, comp::Coordinator<T>& /*coordinator*/)
             {
+            }
+
+            template <typename T>
+            void Shutdown(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/, comp::Coordinator<T>& /*coordinator*/)
+            {
                 mUpdatedItemIds.clear();
+                mTimers.clear();
             }
 
             template <typename T>
@@ -76,7 +82,11 @@ namespace yaget
 
                 [[maybe_unused]] bool updateCalled = coordinator.ForEach<RowPolicy>([&gameClock, &channel, this](comp::Id_t id, const auto& row)
                 {
-                    Update(id, gameClock, channel, row);
+                    if (IsUpdateNeeded(id))
+                    {
+                        Update(id, gameClock, channel, row);
+                    }
+
                     return true;
                 });
 
@@ -87,6 +97,20 @@ namespace yaget
                     {
                         Update(comp::END_ID_MARKER, gameClock, channel, Row());
                     }
+                }
+            }
+
+            enum class FireTimer { Once, Repeat, Stop };
+            void ActivateTimer(comp::Id_t id, const time::GameClock& gameClock, time::Microsecond_t triggerDuration, FireTimer fireTimer)
+            {
+                if (triggerDuration == 0)
+                {
+                    mTimers.erase(id);
+                }
+                else
+                {
+                    const auto nowTime = platform::GetRealTime(time::kMicrosecondUnit);
+                    mTimers[id] = TimeTriger{ nowTime + triggerDuration, triggerDuration, fireTimer };
                 }
             }
 
@@ -104,10 +128,66 @@ namespace yaget
                 std::apply(mUpdateFunctor, newRow);
             }
 
+            bool IsUpdateNeeded(comp::Id_t id)
+            {
+                if (auto it = mTimers.find(id); it != std::end(mTimers))
+                {
+                    auto nowTime = platform::GetRealTime(time::kMicrosecondUnit);
+
+                    return it->second.Update(nowTime);
+                }
+
+                return true;
+            }
+
             UpdateFunctor mUpdateFunctor;
             InitializeFunctor mInitializeFunctor;
             std::string mNiceName;
             comp::ItemIds mUpdatedItemIds;
+
+            // Keeps track of which components (by id) to Update and how often
+            struct TimeTriger
+            {
+                time::Microsecond_t mNextTriggerTime;
+                time::Microsecond_t mDuration;
+                FireTimer mFireTimer;
+
+                // return true if trigger updated
+                // false if trigger will not fire
+                bool Update(time::Microsecond_t nowTime)
+                {
+                    if (mFireTimer == FireTimer::Repeat)
+                    {
+                        if (mNextTriggerTime < nowTime)
+                        {
+                            // our trigger is in the past and it needs to be executed
+                            // most drift you will get is size of frame tick
+                            mNextTriggerTime += mDuration;
+                            return true;
+                        }
+
+                        // trigger is still in the future, do nothing
+                    }
+                    else if (mFireTimer == FireTimer::Once)
+                    {
+                        if (mNextTriggerTime < nowTime)
+                        {
+                            // our trigger is in the past and it needs to be executed
+                            // most drift you will get is size of frame tick
+                            mFireTimer = FireTimer::Stop;
+                            return true;
+                        }
+
+                        // trigger is still in the future, do nothing
+                    }
+
+                    return false;
+                }
+
+            };
+
+            using Timers = std::unordered_map<comp::Id_t, TimeTriger>;
+            Timers mTimers;
         };
 
     } // namespace comp

@@ -22,6 +22,24 @@ namespace yaget
 {
     namespace comp
     {
+        class LocationComponent;
+
+        namespace db
+        {
+            struct Position {};
+            struct Orientation {};
+            struct Scale {};
+
+            template <>
+            struct ComponentProperties<comp::LocationComponent>
+            {
+                using Row = std::tuple<Position, Orientation, Scale>;
+                using Types = std::tuple<math3d::Vector3, math3d::Quaternion, math3d::Vector3>;
+                static Types DefaultRow() { return Types{math3d::Vector3{}, math3d::Quaternion{}, math3d::Vector3{1.0f, 1.0f, 1.0f}}; }
+            };
+
+        }
+
         class LocationComponent : public Component
         {
         public:

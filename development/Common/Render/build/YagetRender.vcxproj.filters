@@ -76,9 +76,6 @@
     <ClInclude Include="..\include\Debugging\Primitives.h">
       <Filter>Debugging Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Components\ComponentPools.h">
-      <Filter>Component Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Loaders\GeometryConvertor.h">
       <Filter>Loaders Files</Filter>
     </ClInclude>

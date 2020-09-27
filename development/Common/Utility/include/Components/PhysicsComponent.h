@@ -11,9 +11,6 @@
 //
 /////////////////////////////////////////////////////////////////////////
 //! \file
-
-#ifndef YAGET_COMPONENTS_PHYSISCS_COMPONENT_H
-#define YAGET_COMPONENTS_PHYSISCS_COMPONENT_H
 #pragma once
 
 #include "MathFacade.h"
@@ -38,7 +35,28 @@ namespace yaget
     {
         // forward declaration
         class LocationComponent;
+        class PhysicsWorldComponent;
         class PhysicsComponent;
+
+        namespace db
+        {
+            template <>
+            struct ComponentProperties<comp::PhysicsWorldComponent>
+            {
+                using Row = std::tuple<>;
+                using Types = std::tuple<>;
+                static Types DefaultRow() { return Types{}; };
+            };
+
+            template <>
+            struct ComponentProperties<comp::PhysicsComponent>
+            {
+                using Row = std::tuple<>;
+                using Types = std::tuple<>;
+                static Types DefaultRow() { return Types{}; };
+            };
+
+        }
 
         class PhysicsWorldComponent : public Component
         {
@@ -141,6 +159,3 @@ namespace yaget
     } // namespace comp
 
 } // namespace yaget
-
-#endif // YAGET_COMPONENTS_PHYSISCS_COMPONENT_H
-

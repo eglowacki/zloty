@@ -32,6 +32,11 @@ namespace yaget
         static const Id_t INVALID_ID = 0;
         static const Id_t END_ID_MARKER = std::numeric_limits<Id_t>::max() - 1;
 
+        inline bool IsIdValid(Id_t id)
+        {
+            return !(id == INVALID_ID || id == END_ID_MARKER);
+        }
+
         // game system
         namespace gs
         {

@@ -100,7 +100,7 @@ namespace
                 {
                     if (freopen_s(&mInHandle, "CONIN$", "r", stdin) == 0)
                     {
-                        setvbuf(stdin, NULL, _IONBF, 0);
+                        setvbuf(stdin, nullptr, _IONBF, 0);
                     }
                 }
 
@@ -109,7 +109,7 @@ namespace
                 {
                     if (freopen_s(&mOutHandle, "CONOUT$", "w", stdout) == 0)
                     {
-                        setvbuf(stdout, NULL, _IONBF, 0);
+                        setvbuf(stdout, nullptr, _IONBF, 0);
                     }
                 }
 
@@ -118,7 +118,7 @@ namespace
                 {
                     if (freopen_s(&mErrHandle, "CONOUT$", "w", stderr) == 0)
                     {
-                        setvbuf(stderr, NULL, _IONBF, 0);
+                        setvbuf(stderr, nullptr, _IONBF, 0);
                     }
                 }
 
@@ -149,21 +149,21 @@ namespace
                 // Redirect STDIN to NUL
                 if (freopen_s(&fp, "NUL:", "r", stdin) == 0)
                 {
-                    setvbuf(stdin, NULL, _IONBF, 0);
+                    setvbuf(stdin, nullptr, _IONBF, 0);
                 }
 
                 // Redirect STDOUT to NUL
                 fp = nullptr;
                 if (freopen_s(&fp, "NUL:", "w", stdout) == 0)
                 {
-                    setvbuf(stdout, NULL, _IONBF, 0);
+                    setvbuf(stdout, nullptr, _IONBF, 0);
                 }
 
                 // Redirect STDERR to NUL
                 fp = nullptr;
                 if (freopen_s(&fp, "NUL:", "w", stderr) == 0)
                 {
-                    setvbuf(stderr, NULL, _IONBF, 0);
+                    setvbuf(stderr, nullptr, _IONBF, 0);
                 }
 
                 // Detach from console

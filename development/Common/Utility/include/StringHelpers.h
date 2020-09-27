@@ -16,12 +16,17 @@
 #pragma once
 
 #include "Base.h"
-#include "Fmt/format.h"
 #include "MathFacade.h"
+#include "Fmt/format.h"
+#include "Streams/Buffers.h"
 #include "Streams/Guid.h"
-#include <vector>
+#include "Meta/CompilerAlgo.h"
+
 #include <algorithm>
+#include <charconv>
 #include <sstream>
+#include <vector>
+
 
 
 namespace yaget
@@ -111,46 +116,46 @@ namespace yaget
             return theStringVector;
         }
 
-        ////----------------------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------------------
         template<typename T>
-        std::string Combine(const T& values, const char* delimeter);
+        std::string Combine(const T& values, const char* delimiter);
 
         //----------------------------------------------------------------------------------------------------------------------------------
-        inline int64_t Atoll(const char* value)
+        // convert ascii into number representation
+        template <typename T>
+        T AtoN(const char* value)
         {
-            return value ? atoll(value) : 0;
+            T result = 0;
+            if (value)
+            {
+                //std::to_address()
+                //const auto res = std::from_chars(std::addressof(*str.begin()), std::addressof(*str.end()), value, format);
+
+                std::string_view v{value};
+                while (!v.empty() && *v.begin() == ' ') { v.remove_prefix(1); }
+                if (!v.empty())
+                {
+                    const auto res = std::from_chars(v.data(), v.data() + v.size(), result);
+                    YLOG_CWARNING("CONV", res.ec == std::errc(), "String conversion from: '%s' to type: '%s' failed with error code: '%d'.", value, meta::ViewToString(meta::type_name<T>()).c_str(), res.ec);
+                }
+            }
+
+            return result;
         }
 
-        //----------------------------------------------------------------------------------------------------------------------------------
-        inline uint64_t Atoull(const char* value)
+        // specialized for bool
+        template <>
+        inline bool AtoN<bool>(const char* value)
         {
-            return value ? std::stoull(value) : 0;
+            bool result = false;
+            if (value)
+            {
+                result = value[0] == '1' || value[0] == 't' || value[0] == 'T';
+            }
+
+            return result;
         }
 
-        //----------------------------------------------------------------------------------------------------------------------------------
-        inline int Atoi(const char* value)
-        {
-            return value ? atoi(value) : 0;
-        }
-
-        //----------------------------------------------------------------------------------------------------------------------------------
-        // ascii to unsigned int
-        inline uint32_t Atoui(const char* value)
-        {
-            return value ? static_cast<uint32_t>(std::stoul(value)) : 0;
-        }
-        
-        //----------------------------------------------------------------------------------------------------------------------------------
-        inline float Atof(const char* value)
-        {
-            return value ? static_cast<float>(atof(value)) : 0;
-        }
-
-        //----------------------------------------------------------------------------------------------------------------------------------
-        inline bool Atob(const char* value)
-        {
-            return value && (value[0] == '1' || value[0] == 't' || value[0] == 'T');
-        }
 
         //----------------------------------------------------------------------------------------------------------------------------------
         typedef struct unused_marker
@@ -234,6 +239,23 @@ namespace yaget
             return value;
         }
 
+        inline std::string& LeftTrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
+        {
+            str.erase(0, str.find_first_not_of(chars));
+            return str;
+        }
+         
+        inline std::string& RightTrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
+        {
+            str.erase(str.find_last_not_of(chars) + 1);
+            return str;
+        }
+         
+        inline std::string& Trim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
+        {
+            return LeftTrim(RightTrim(str, chars), chars);
+        }
+
         //----------------------------------------------------------------------------------------------------------------------------------
         template <>
         struct Convertor<unused_marker_t>
@@ -273,7 +295,7 @@ namespace yaget
         {
             static uint8_t FromString(const char* value)
             {
-                return static_cast<uint8_t>(yaget::conv::Atoui(value));
+                return static_cast<uint8_t>(yaget::conv::AtoN<uint8_t>(value));
             }
 
             static std::string ToString(uint8_t value)
@@ -288,7 +310,7 @@ namespace yaget
         {
             static int FromString(const char* value)
             {
-                return yaget::conv::Atoi(value);
+                return yaget::conv::AtoN<int>(value);
             }
 
             static std::string ToString(int value)
@@ -303,7 +325,7 @@ namespace yaget
         {
             static uint32_t FromString(const char* value)
             {
-                return yaget::conv::Atoui(value);
+                return yaget::conv::AtoN<uint32_t>(value);
             }
 
             static std::string ToString(uint32_t value)
@@ -318,10 +340,24 @@ namespace yaget
         {
             static size_t FromString(const char* value)
             {
-                return yaget::conv::Atoull(value);
+                return yaget::conv::AtoN<size_t>(value);
             }
 
             static std::string ToString(size_t value)
+            {
+                return std::to_string(value);
+            }
+        };
+
+        template <>
+        struct Convertor<int64_t>
+        {
+            static int64_t FromString(const char* value)
+            {
+                return yaget::conv::AtoN<int64_t>(value);
+            }
+
+            static std::string ToString(int64_t value)
             {
                 return std::to_string(value);
             }
@@ -333,7 +369,7 @@ namespace yaget
         {
             static bool FromString(const char* value)
             {
-                return yaget::conv::Atob(value);
+                return yaget::conv::AtoN<bool>(value);
             }
 
             static std::string ToString(bool value)
@@ -348,7 +384,7 @@ namespace yaget
         {
             static float FromString(const char* value)
             {
-                return value ? ::yaget::conv::Atof(value) : 0.0f;
+                return value ? yaget::conv::AtoN<float>(value) : 0.0f;
             }
 
             static std::string ToString(float value)
@@ -440,12 +476,38 @@ namespace yaget
             static math3d::Vector2 FromString(const char* value)
             {
                 std::vector<float> values = internal::ParseValues<float>(value ? value : "");
-                math3d::Vector2 v(&values[0]);
+                const math3d::Vector2 v(&values[0]);
                 return v;
             }
             static std::string ToString(const math3d::Vector2& value)
             {
                 return fmt::format("[x = {:.2f}, y = {:.2f}]", value.x, value.y);
+            }
+        };
+
+        //----------------------------------------------------------------------------------------------------------------------------------
+        template<> 
+        struct Convertor<math3d::Quaternion>
+        {
+            static math3d::Quaternion FromString(const char* value)
+            {
+                std::vector<float> values = internal::ParseValues<float>(value ? value : "");
+                const math3d::Quaternion v(&values[0]);
+                return v;
+            }
+            static std::string ToString(const math3d::Quaternion& value)
+            {
+                return fmt::format("[x = {:.2f}, y = {:.2f}, z = {:.2f}, w = {:.2f}]", value.x, value.y, value.z, value.w);
+            }
+        };
+
+        //-------------------------------------------------------------------------------------------------------------------------------
+        template <>
+        struct Convertor<io::Tag>
+        {
+            static std::string ToString(const io::Tag& value)
+            {
+                return value.IsValid() ? value.mSectionName + "@" + value.mName : "NULL";
             }
         };
 
@@ -476,8 +538,6 @@ namespace yaget
                 return Convertor<V1>::ToString(value.first) + "x" + Convertor<V2>::ToString(value.second);
             }
         };
-
-
         
         //----------------------------------------------------------------------------------------------------------------------------------
         template<> 
@@ -501,7 +561,7 @@ namespace yaget
 
         //----------------------------------------------------------------------------------------------------------------------------------
         template<typename T>
-        std::string Combine(const T& values, const char* delimeter)
+        std::string Combine(const T& values, const char* delimiter)
         {
             //using std::to_string;
             std::string result;
@@ -510,10 +570,22 @@ namespace yaget
             const size_t num = values.size();
             for (auto it = std::begin(values); it != it_end; ++it)
             {
-                result += conv::Convertor<T::value_type>::ToString(*it) + ((delimeter && num > 1 && std::distance(it, it_end) > 1) ? delimeter : "");
+                result += conv::Convertor<typename T::value_type>::ToString(*it) + ((delimiter && num > 1 && std::distance(it, it_end) > 1) ? delimiter : "");
             }
 
             return result;
+        }
+
+        template<typename K, typename V>
+        std::string Combine(const std::map<K, V>& values, const char* delimiter)
+        {
+            std::vector<K> indexes;
+            for (const auto& [key, value] : values)
+            {
+                indexes.push_back(key);
+            }
+
+            return Combine(indexes, delimiter);
         }
 
     } // namespace conv
@@ -524,8 +596,8 @@ namespace yaget
     bool WildCompare(const std::string& filterString, const std::string& sourceString);
     inline bool WildCompareI(const std::string& filterString, const std::string& sourceString)
     {
-        std::string pattern = conv::ToLower(filterString);
-        std::string fullString = conv::ToLower(sourceString);
+        const auto pattern = conv::ToLower(filterString);
+        const auto fullString = conv::ToLower(sourceString);
         return WildCompare(pattern, fullString);
     }
 
