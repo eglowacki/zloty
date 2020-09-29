@@ -64,14 +64,8 @@ namespace
         searchPath = util::ExpendEnv("$(ConfigurationFolder)/" + name, "json");
         searches.push_back(searchPath);
 
-        searchPath = util::ExpendEnv("$(RootFolder)/Data/" + name, "json");
+        searchPath = util::ExpendEnv("$(DataFolder)/Data/" + name, "json");
         searches.push_back(searchPath);
-
-        if (util::IsEnvironment("$(DataFolder)"))
-        {
-            searchPath = util::ExpendEnv("$(DataFolder)/" + name, "json");
-            searches.push_back(searchPath);
-        }
     }
 
 } // namespace

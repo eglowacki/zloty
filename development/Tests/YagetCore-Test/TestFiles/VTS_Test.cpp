@@ -5,6 +5,8 @@
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 
+YAGET_BRAND_NAME("Beyond Limits")
+
 namespace 
 {
     //-------------------------------------------------------------------------------------------------------------------------------
@@ -33,20 +35,73 @@ namespace
         { "JSON", ResolveTestAsset }//yaget::io::ResolveJsonAsset }
     };
 
+
+    const auto configBlock = R"(
+        {
+            "Init" : {
+                "Aliases": {
+                   "$(AssetsFolder) ": {
+                        "Path": "$(UserDataFolder)/Assets",
+                        "ReadOnly" : true
+                    },
+                   "$(DatabaseFolder) ": {
+                        "Path": "$(UserDataFolder)/Database",
+                        "ReadOnly" : true
+                    }
+                },
+                "VTS" : [{
+                    "SourceDocs": {
+                        "Converters": "TEST",
+                        "Filters" : [ "*.txt" ],
+                        "Path" : [ "$(AssetsFolder)/Sources" ],
+                        "ReadOnly" : true,
+                        "Recursive" : true
+                    }
+                },
+                {
+                    "TargetDocs": {
+                        "Converters": "TEST",
+                        "Filters" : [ "*.txt" ],
+                        "Path" : [ "$(AssetsFolder)/Targets" ],
+                        "ReadOnly" : false,
+                        "Recursive" : true
+                    }
+                },
+                {
+                    "WriteTestSettings": {
+                        "Converters": "TEST",
+                        "Filters" : [ "*.txt" ],
+                        "Path" : [ "$(AssetsFolder)/" ],
+                        "ReadOnly" : false,
+                        "Recursive" : true
+                    }
+                },
+                {
+                    "TestSettings": {
+                        "Path": [ "$(AssetsFolder)/Settings", "$(AssetsFolder)/User/Settings" ],
+                        "ReadOnly": true,
+                        "Filters": [ "*.txt" ],
+                        "Converters": "TEST"
+                    }
+                }]
+            }
+        }
+    )";
+
 } // namespace
 
 
 class VTS : public ::testing::Test
 {
 protected:
-    // void SetUp() override {}
-    // void TearDown() override {}
+    //void SetUp() override
+    //void TearDown() override
 
 private:
-    yaget::test::Environment mEnvironment;
+    yaget::test::Environment mEnvironment{ configBlock, std::strlen(configBlock) };
 };
 
-TEST(VTS, Section)
+TEST_F(VTS, Section)
 {
     using namespace yaget;
     using Section = io::VirtualTransportSystem::Section;
@@ -131,16 +186,16 @@ TEST(VTS, Section)
 }
 
 
-TEST(VTS, TransportSystem)
+TEST_F(VTS, TransportSystem)
 {
     using namespace yaget;
     using Options = io::tool::VirtualTransportSystem::Options;
     using Section = io::VirtualTransportSystem::Section;
 
-    const char* vtsFile = "$(AppDataFolder)/Database/vts.sqlite";
-    const Section blobFile("TestSource@Attach/foo.txt");
-    const Section sourceSection("TestSource@Attach");
-    const Section targetSection("TestTarget@Clones");
+    const char* vtsFile = "$(DatabaseFolder)/vts.sqlite";
+    const Section blobFile("SourceDocs@Attach/foo.txt");
+    const Section sourceSection("SourceDocs@Attach");
+    const Section targetSection("TargetDocs@Clones");
     const std::string flatCopy = targetSection.Filter + "/foo.txt";
     const std::string exactCopy = targetSection.Filter + "/" + blobFile.Filter;
     const std::string message = "Hello World";
@@ -150,64 +205,60 @@ TEST(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // create new buffer, attach it to vts, load it back up and then save it
     {
-        io::tool::VirtualTransportSystemReset vts({}, Resolvers, vtsFile);
+        io::tool::VirtualTransportSystemReset vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
-        //// delete all test data,
-        //CHECK(vts.DeleteBlob({ sourceSection, targetSection }));
-        //CHECK_EQUAL(vts.GetNumTags({ sourceSection, targetSection }), 0);
+        // delete all test data,
+        EXPECT_TRUE(vts.DeleteBlob({ sourceSection, targetSection }));
+        EXPECT_EQ(vts.GetNumTags({ sourceSection, targetSection }), 0);
 
-        //newTag = vts.GenerateTag(blobFile);
-        //CHECK(newTag.mGuid.IsValid());
+        newTag = vts.GenerateTag(blobFile);
+        EXPECT_TRUE(newTag.mGuid.IsValid());
 
-        //std::shared_ptr<TestAsset> testAsset = std::make_shared<TestAsset>(newTag, io::CreateBuffer(message), vts);
-        //CHECK_EQUAL(message, testAsset->mMessage);
+        std::shared_ptr<TestAsset> testAsset = std::make_shared<TestAsset>(newTag, io::CreateBuffer(message), vts);
+        EXPECT_EQ(testAsset->mMessage, message);
 
-        //CHECK(vts.AttachBlob(testAsset));
+        EXPECT_TRUE(vts.AttachBlob(testAsset));
 
-        //CHECK_EQUAL(1, vts.GetNumTags(blobFile));
-        //CHECK_EQUAL(1, vts.GetNumTags(Section("TestSource@Attach/FOO.txt")));   // check for case insensitive in Filter part
-        //CHECK_EQUAL(1, vts.GetNumTags(Section("TestSource@Attach/fOO.tXT")));
+        EXPECT_EQ(vts.GetNumTags(blobFile), 1);
+        EXPECT_EQ(vts.GetNumTags(Section("SourceDocs@Attach/FOO.txt")), 1);   // check for case insensitive in Filter part
+        EXPECT_EQ(vts.GetNumTags(Section("SourceDocs@Attach/fOO.tXT")), 1);
 
-        //io::BLobLoader<TestAsset> bLobLoader(vts, blobFile);
-        //auto checkedAsset = bLobLoader.Assets();
-        //CHECK_EQUAL(1, checkedAsset.size());
+        io::BLobLoader<TestAsset> bLobLoader(vts, blobFile);
+        auto checkedAsset = bLobLoader.Assets();
+        EXPECT_EQ(checkedAsset.size(), 1);
 
-        //auto asset = *checkedAsset.begin();
-        //CHECK_EQUAL(message, asset->mMessage);
+        auto asset = *checkedAsset.begin();
+        EXPECT_EQ(asset->mMessage, message);
     }
     
-#if 0
     //--------------------------------------------------------------------------------------------------
     // Find attached blob with correct guid, copy to new section, flat and preserve hierarchy and save
     {
         io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
-        CHECK_EQUAL(1, vts.GetNumTags(blobFile));
+        EXPECT_EQ(vts.GetNumTags(blobFile), 1);
 
         io::BLobLoader<TestAsset> bLobLoader(vts, blobFile);
         auto checkedAsset = bLobLoader.Assets();
-        CHECK_EQUAL(1, checkedAsset.size());
+        EXPECT_EQ(checkedAsset.size(), 1);
         auto asset = *checkedAsset.begin();
-        CHECK(asset->mTag.mGuid == newTag.mGuid && asset->mMessage == message);
-
-        //auto it = checkedAsset.find(newTag.mGuid);
-        //CHECK(it != checkedAsset.end() && it->first == newTag.mGuid && it->second->mMessage == message);
+        EXPECT_TRUE(asset->mTag.mGuid == newTag.mGuid && asset->mMessage == message);
 
         io::Buffer sourceBuffer = asset->mBuffer;
 
         flatTag = vts.CopyTag(newTag, targetSection, Options::Flat);
-        CHECK(flatTag.mGuid.IsValid());
+        EXPECT_TRUE(flatTag.mGuid.IsValid());
         io::Buffer flatData = io::CloneBuffer(sourceBuffer);
         std::shared_ptr<TestAsset> flatAsset = std::make_shared<TestAsset>(flatTag, flatData, vts);
-        CHECK_EQUAL(message, flatAsset->mMessage);
-        CHECK(vts.AttachBlob(flatAsset));
+        EXPECT_EQ(flatAsset->mMessage, message);
+        EXPECT_TRUE(vts.AttachBlob(flatAsset));
 
         exactTag = vts.CopyTag(newTag, targetSection, Options::Hierarchy);
-        CHECK(exactTag.mGuid.IsValid());
+        EXPECT_TRUE(exactTag.mGuid.IsValid());
         io::Buffer exactData = io::CloneBuffer(sourceBuffer);
         std::shared_ptr<TestAsset> exactAsset = std::make_shared<TestAsset>(exactTag, exactData, vts);
-        CHECK_EQUAL(message, exactAsset->mMessage);
-        CHECK(vts.AttachBlob(exactAsset));
+        EXPECT_EQ(exactAsset->mMessage, message);
+        EXPECT_TRUE(vts.AttachBlob(exactAsset));
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -216,24 +267,24 @@ TEST(VTS, TransportSystem)
         io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
         io::BLobLoader<TestAsset> flatLoader(vts, Section(targetSection.Name + "@" + flatCopy));
-        CHECK(!flatLoader.Assets().empty() && (*flatLoader.Assets().begin())->mTag.mGuid == flatTag.mGuid);
+        EXPECT_TRUE(!flatLoader.Assets().empty() && (*flatLoader.Assets().begin())->mTag.mGuid == flatTag.mGuid);
 
         io::BLobLoader<TestAsset> exactLoader(vts, Section(targetSection.Name + "@" + exactCopy));
-        CHECK(exactLoader.Assets().empty() == false && (*exactLoader.Assets().begin())->mTag.mGuid == exactTag.mGuid);
+        EXPECT_TRUE(exactLoader.Assets().empty() == false && (*exactLoader.Assets().begin())->mTag.mGuid == exactTag.mGuid);
 
-        CHECK(vts.DeleteBlob({ sourceSection, targetSection }));
-        CHECK_EQUAL(0, vts.GetNumTags({ sourceSection, targetSection }));
+        EXPECT_TRUE(vts.DeleteBlob({ sourceSection, targetSection }));
+        EXPECT_EQ(vts.GetNumTags({ sourceSection, targetSection }), 0);
     }
-    
+
     //--------------------------------------------------------------------------------------------------
     // recover guid from deleted blob
     {
         io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
         io::Tag recoveredTag = vts.GenerateTag(blobFile);
-        CHECK_EQUAL(newTag.mGuid, recoveredTag.mGuid);
+        EXPECT_EQ(newTag.mGuid, recoveredTag.mGuid);
         io::Tag unrecoveredTag = vts.GenerateTag(blobFile);
-        CHECK(unrecoveredTag.mGuid != newTag.mGuid);
+        EXPECT_TRUE(unrecoveredTag.mGuid != newTag.mGuid);
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -251,31 +302,31 @@ TEST(VTS, TransportSystem)
 
         io::Tag copyTag = vts.GenerateTag(file11);
         io::Buffer data = io::CreateBuffer("Folder1/File1.txt");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
 
         copyTag = vts.GenerateTag(file12);
         data = io::CreateBuffer("Folder1/File2.txt");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
 
         copyTag = vts.GenerateTag(file13);
         data = io::CreateBuffer("Folder1/File3.txt");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
 
         copyTag = vts.GenerateTag(file21);
         data = io::CreateBuffer("Folder2/File1.txt");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
 
         copyTag = vts.GenerateTag(file22);
         data = io::CreateBuffer("Folder2/File2.txt");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
 
         copyTag = vts.GenerateTag(file1A);
         data = io::CreateBuffer("Folder1/A/Budapest.txt");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
 
         copyTag = vts.GenerateTag(file2A);
         data = io::CreateBuffer("Folder2/A/Moscow.txt");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -288,12 +339,12 @@ TEST(VTS, TransportSystem)
         {
             io::Tag copiedTag = vts.CopyTag(it->mTag, targetSection, Options::Hierarchy);
             io::Buffer data = io::CloneBuffer(it->mBuffer);
-            CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copiedTag, data, vts)));
+            EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copiedTag, data, vts)));
         }
 
-        CHECK_EQUAL(bLobLoader.Assets().size(), vts.GetNumTags(targetSection));
-        CHECK(vts.DeleteBlob(targetSection));
-        CHECK_EQUAL(0, vts.GetNumTags(targetSection));
+        EXPECT_EQ(vts.GetNumTags(targetSection), bLobLoader.Assets().size());
+        EXPECT_TRUE(vts.DeleteBlob(targetSection));
+        EXPECT_EQ(vts.GetNumTags(targetSection), 0);
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -310,8 +361,8 @@ TEST(VTS, TransportSystem)
             assets.push_back(std::make_shared<TestAsset>(copiedTag, data, vts));
         }
 
-        CHECK_EQUAL(false, vts.AttachBlob(assets));
-        CHECK_EQUAL(0, vts.GetNumTags(targetSection));
+        EXPECT_FALSE(vts.AttachBlob(assets));
+        EXPECT_EQ(vts.GetNumTags(targetSection), 0);
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -319,7 +370,7 @@ TEST(VTS, TransportSystem)
     {
         io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
-        CHECK(vts.DeleteBlob({ file11, file12 }));
+        EXPECT_TRUE(vts.DeleteBlob({ file11, file12 }));
 
         std::vector<std::shared_ptr<io::Asset>> assets;
         io::BLobLoader<TestAsset> bLobLoader(vts, sourceSection);
@@ -330,8 +381,8 @@ TEST(VTS, TransportSystem)
             assets.push_back(std::make_shared<TestAsset>(copiedTag, data, vts));
         }
 
-        CHECK(vts.AttachBlob(assets));
-        CHECK_EQUAL(bLobLoader.Assets().size(), vts.GetNumTags(targetSection));
+        EXPECT_TRUE(vts.AttachBlob(assets));
+        EXPECT_EQ(vts.GetNumTags(targetSection), bLobLoader.Assets().size());
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -339,8 +390,8 @@ TEST(VTS, TransportSystem)
     {
         io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
-        CHECK(vts.DeleteBlob({ sourceSection, targetSection }));
-        CHECK_EQUAL(0, vts.GetNumTags({ sourceSection, targetSection }));
+        EXPECT_TRUE(vts.DeleteBlob({ sourceSection, targetSection }));
+        EXPECT_EQ(vts.GetNumTags({ sourceSection, targetSection }), 0);
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -354,19 +405,19 @@ TEST(VTS, TransportSystem)
 
         io::Tag copyTag = vts.GenerateTag(file1);
         io::Buffer data = io::CreateBuffer("xxx");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
 
         copyTag = vts.GenerateTag(file2);
         data = io::CreateBuffer("xxx");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
 
         copyTag = vts.GenerateTag(file3);
         data = io::CreateBuffer("xxx");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
 
         copyTag = vts.GenerateTag(file4);
         data = io::CreateBuffer("xxx");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(copyTag, data, vts)));
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -375,33 +426,33 @@ TEST(VTS, TransportSystem)
         io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
         Section finder(sourceSection.ToString() + "/File");
-        CHECK_EQUAL(3, vts.GetNumTags(finder));
+        EXPECT_EQ(vts.GetNumTags(finder), 3);
 
         finder = Section(sourceSection.ToString() + "/Varoom");
-        CHECK_EQUAL(1, vts.GetNumTags(finder));
+        EXPECT_EQ(vts.GetNumTags(finder), 1);
 
         finder = Section(sourceSection.ToString() + "/File3");
-        CHECK_EQUAL(0, vts.GetNumTags(finder));
+        EXPECT_EQ(vts.GetNumTags(finder), 0);
     }
 
     //--------------------------------------------------------------------------------------------------
-    const Section seting("WriteTestSettings");
+    const Section settings("WriteTestSettings");
     // create files to test override
     {
         io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
-        CHECK(vts.DeleteBlob(seting));
-        CHECK_EQUAL(0, vts.GetNumTags(seting));
+        EXPECT_TRUE(vts.DeleteBlob(settings));
+        EXPECT_EQ(vts.GetNumTags(settings), 0);
 
-        const Section settingsFile1("WriteTestSettings@Settings/Bindings.json");
+        const Section settingsFile1("WriteTestSettings@Settings/Bindings.txt");
         io::Tag tag1 = vts.GenerateTag(settingsFile1);
         io::Buffer data1 = io::CreateBuffer("Exit App");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(tag1, data1, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(tag1, data1, vts)));
 
-        const Section settingsFile2("WriteTestSettings@User/Settings/Bindings.json");
+        const Section settingsFile2("WriteTestSettings@User/Settings/Bindings.txt");
         io::Tag tag2 = vts.GenerateTag(settingsFile2);
         io::Buffer data2 = io::CreateBuffer("Sound Options");
-        CHECK(vts.AttachBlob(std::make_shared<TestAsset>(tag2, data2, vts)));
+        EXPECT_TRUE(vts.AttachBlob(std::make_shared<TestAsset>(tag2, data2, vts)));
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -412,22 +463,22 @@ TEST(VTS, TransportSystem)
         const Section settingsFile(">TestSettings@Bindings");
 
         io::BLobLoader<TestAsset> settingLoader(vts, settingsFile);
-        CHECK_EQUAL(1, settingLoader.Assets().size());
+        EXPECT_EQ(settingLoader.Assets().size(), 1);
         auto settingAsset = *settingLoader.Assets().begin();
-        CHECK_EQUAL("Sound Options", settingAsset->mMessage);
+        EXPECT_EQ(settingAsset->mMessage, "Sound Options");
 
         const Section settingsFiles("TestSettings@Bindings");
 
         io::BLobLoader<TestAsset> settingsLoader(vts, settingsFiles);
-        CHECK_EQUAL(2, settingsLoader.Assets().size());
+        EXPECT_EQ(settingsLoader.Assets().size(), 2);
         auto asset0 = settingsLoader.Assets()[0];
-        CHECK_EQUAL("Sound Options", asset0->mMessage);
+        EXPECT_EQ(asset0->mMessage, "Sound Options");
         auto asset1 = settingsLoader.Assets()[1];
-        CHECK_EQUAL("Exit App", asset1->mMessage);
+        EXPECT_EQ(asset1->mMessage, "Exit App");
 
         {
             std::vector<io::Tag> tags = vts.GetTags(settingsFile);
-            CHECK_EQUAL(1, tags.size());
+            EXPECT_EQ(tags.size(), 1);
             io::Tag cachedTag = *tags.begin();
 
             io::Buffer buffer = io::CreateBuffer("Cached Sound Options");
@@ -436,9 +487,9 @@ TEST(VTS, TransportSystem)
         }
 
         io::BLobLoader<TestAsset> cachedLoader(vts, settingsFile);
-        CHECK_EQUAL(1, cachedLoader.Assets().size());
+        EXPECT_EQ(cachedLoader.Assets().size(), 1);
         auto cachedAsset = *cachedLoader.Assets().begin();
-        CHECK_EQUAL("Cached Sound Options", cachedAsset->mMessage);
+        EXPECT_EQ(cachedAsset->mMessage, "Cached Sound Options");
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -446,9 +497,8 @@ TEST(VTS, TransportSystem)
     {
         io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
-        CHECK(vts.DeleteBlob({ seting, sourceSection }));
-        CHECK_EQUAL(0, vts.GetNumTags({ seting, sourceSection }));
+        EXPECT_TRUE(vts.DeleteBlob({ settings, sourceSection }));
+        EXPECT_EQ(vts.GetNumTags({ settings, sourceSection }), 0);
     }
 
-#endif
 }

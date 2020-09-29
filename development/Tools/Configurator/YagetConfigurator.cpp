@@ -4,6 +4,7 @@
 #include "YagetCore.h"
 #include <iostream>
 
+
 namespace yaget::ylog
 {
   yaget::Strings GetRegisteredTags()
@@ -18,11 +19,13 @@ namespace yaget::ylog
 } // namespace yaget::ylog
 
 
+YAGET_BRAND_NAME("Beyond Limits")
+
 int main()
 {
     using namespace yaget;
 
-    auto result = system::InitializeSetup();
+    /*auto result =*/ system::InitializeSetup();
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

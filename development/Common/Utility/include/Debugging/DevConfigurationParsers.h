@@ -9,9 +9,13 @@
 //      Used internally by DevConfiguration to parse
 //      config file json sections.
 //      Not intended for public use
+//      In most cases you may need to include:
+//          #include "Debugging/DevConfiguration.h"
+//      before including this one.
+//          
 //
 //
-//  #include "DevConfigurationParsers.h"
+//  #include "Debugging/DevConfigurationParsers.h"
 //
 //////////////////////////////////////////////////////////////////////
 //! \file
@@ -526,6 +530,7 @@ namespace std
         for (auto it = j.begin(); it != j.end(); ++it)
         {
             auto key = it.key();
+            yaget::conv::Trim(key);
             auto value = it.value();
 
             from_json(value, environment[key]);

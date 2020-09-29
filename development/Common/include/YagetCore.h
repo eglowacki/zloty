@@ -68,8 +68,7 @@ namespace yaget
     using Strings = std::vector<std::string>;
 
 
-    static const char* BinMarker = "yaget_bin.txt";
-    static const char* RootMarker = "yaget_root.txt";
+    static const char* DataMarker = "yaget_data.marker";
 }
 
 // In some case compiler will generate this warning, (Internet has enough explanation about it)
@@ -89,3 +88,7 @@ __pragma(warning(disable : x)) \
 __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] Disabling Compiler Warning: [" YAGET_STRINGIZE(x) "] - " m))
 
 #define YAGET_COMPILE_SUPRESS_END __pragma(warning(pop))
+
+
+// It exposes GetBrandName function in application and return user specified brand/company name, which used in $(Brand) alias environment
+#define YAGET_BRAND_NAME(name)  extern "C" __declspec(dllexport) const char* GetBrandName() { return name; }

@@ -22,6 +22,26 @@ namespace fs = std::filesystem;
 namespace
 {
     //--------------------------------------------------------------------------------------------------
+    std::string ResolveBrandName()
+    {
+        std::string result = "Yaget";
+        if (HINSTANCE handle = ::GetModuleHandle(nullptr))
+        {
+            typedef const char* (*FuncBrandName) (void);
+
+            if (const auto getBrandName = (FuncBrandName)::GetProcAddress((HMODULE)handle, "GetBrandName"))
+            {
+                if (const auto b = getBrandName())
+                {
+                    result = b;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    //--------------------------------------------------------------------------------------------------
     /// some_drive:/some_folders/my_executable.exe
     std::string GetApllicationPath()
     {
@@ -116,8 +136,8 @@ namespace
     /// Return platform dependent path to temporary folder
     std::string ResolveTempPathName()
     {
-        std::string temp = (fs::temp_directory_path() / fs::path(ResolveAppName())).generic_string();
-        return temp;
+        const auto result = fs::temp_directory_path() / fs::path(ResolveBrandName()) / fs::path(ResolveAppName());
+        return result.generic_string();
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -151,7 +171,7 @@ namespace
     std::string ResolveUserDataFolder()
     {
         fs::path result = GetKnowFolder(FOLDERID_SavedGames);
-        result /= ResolveAppName();
+        result /= fs::path(ResolveBrandName()) / fs::path(ResolveAppName());
 
         return result.generic_string();
     }
@@ -160,16 +180,16 @@ namespace
     std::string ResolveAppDataFolder()
     {
         fs::path result = GetKnowFolder(FOLDERID_LocalAppData);
-        result /= ResolveAppName();
+        result /= fs::path(ResolveBrandName()) / fs::path(ResolveAppName());
 
         return result.generic_string();
     }
 
     //--------------------------------------------------------------------------------------------------
-    std::string ResolveScreenshotFolder()
+    std::string ResolveScreenshotsFolder()
     {
         fs::path result = GetKnowFolder(FOLDERID_Screenshots);
-        result /= ResolveAppName();
+        result /= fs::path(ResolveBrandName()) / fs::path(ResolveAppName());
 
         return result.generic_string();
     }
@@ -183,14 +203,15 @@ namespace
             { "$(AppName)", {ResolveAppName(), true} },
             { "$(ExecutableName)", {ResolveExecutableName(), true} },
             { "$(AppPathName)", {ResolveAppPathName(), true} },
-            { "$(ConfigurationFolder)",{ ResolveConfigurationFolderName(yaget::BinMarker), true } },
-            { "$(RootFolder)",{ ResolveConfigurationFolderName(yaget::RootMarker), true } },
+            { "$(ConfigurationFolder)",{ "$(AppFolder)", true } },
+            { "$(DataFolder)",{ ResolveConfigurationFolderName(yaget::DataMarker), true } },
             { "$(Temp)",{ ResolveTempPathName(), false } },
             { "$(LogFolder)",{ "$(UserDataFolder)/Logs", false } },
             { "$(SaveDataFolder)",{ "$(UserDataFolder)/Saves", false } },
             { "$(UserDataFolder)",{ ResolveUserDataFolder(), true } },
             { "$(AppDataFolder)",{ ResolveAppDataFolder(), true } },
-            { "$(ScreenshotFolder)",{ ResolveScreenshotFolder(), false } }
+            { "$(ScreenshotsFolder)",{ "$(UserDataFolder)/Screenshots", false } },
+            { "$(Brand)",{ ResolveBrandName(), true } }
         };
 
         return envList;

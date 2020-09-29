@@ -28,9 +28,9 @@ namespace yaget::test
     class Environment
     {
     public:
-        Environment()
+        Environment(const char* configBlockData = nullptr, std::size_t size = 0)
         {
-            InitializeEnvironment();
+            InitializeEnvironment(configBlockData, size);
         }
         
         ~Environment()

@@ -13,7 +13,7 @@
 //! \file
 #pragma once
 
-#include "Base.h"
+#include "YagetCore.h"
 #include "Streams/Guid.h"
 #include <string>
 #include <map>
@@ -33,15 +33,22 @@ namespace yaget
         //!  $(AppName)             = Executable name without extension:                                    vts_test
         //!  $(ExecutableName)      = Executable name with extension                                        vts_test.exe
         //!  $(AppPathName)         = Full file path name without extension                                 C:/Development/yaget/branch/version_0_2/bin/vts_test/x64.Debug/vts_test
-        //!  $(ConfigurationFolder) = Defaults to $(AppFolder), but searches up for yaget::BinMarker:       C:/Development/yaget/branch/version_0_2/bin
-        //!  $(RootFolder)          = Defaults to $(AppFolder), but searches up for yaget::RootMarker. It points to global data, modules, etc
         //!  $(Temp)                = System temporary folder                                               C:/Users/me_user/AppData/Local/Temp/vts_test
-        //! Newest additions:
-        //!  $(LogFolder)           = Location of all log files.                                            $(UserDataFolder)/Logs
-        //!  $(SaveDataFolder)      = Location of saved game data.                                          $(UserDataFolder)/Saves
-        //!  $(UserDataFolder)      = Location of saved user data.                                          FOLDERID_SavedGames   [%USERPROFILE%\Saved Games\$(AppName)]
-        //!  $(AppDataFolder)       = Location of saved application data                                    FOLDERID_LocalAppData [%LOCALAPPDATA%\$(AppName) (%USERPROFILE%\AppData\Local\$(AppName))]
-        //!  $(ScreenshotFolder)    = Location of saved screenshots                                         FOLDERID_Screenshots [%USERPROFILE%\Pictures\Screenshots\$(AppName)]
+        //!
+        //!  $(DataFolder)          = Defaults to $(AppDataFolder), but searches up from $(AppFolder) for yaget::DataMarker. It points to data folder which contains assets, files, etc needed by application.
+        //!  $(ConfigurationFolder) = Defaults to $(AppFolder)
+        //!
+        //! Newest additions:                                                                               %USERPROFILE% expends to 'C:\Users\edgar'
+        //!     %USERPROFILE% expends to  'C:\Users\edgar'
+        //!     %LOCALAPPDATA% expends to 'c:\Users\edgar\AppData\Local'
+        //!
+        //!  $(UserDataFolder)      = Location of saved user data.                                          %USERPROFILE%\Saved Games\$(Brand)\$(AppName) : Windows Id: FOLDERID_SavedGames
+        //!  $(AppDataFolder)       = Location of saved application data                                    %LOCALAPPDATA%\$(Brand)\$(AppName) or %USERPROFILE%\AppData\Local\$(Brand)\$(AppName): Windows Id: FOLDERID_LocalAppData
+        //!  $(ScreenshotsFolder)   = Location of saved screenshots                                         $(UserDataFolder)\Screenshots   (old folder: %USERPROFILE%\Pictures\Screenshots\$(Brand)\$(AppName) : Windows Id: FOLDERID_Screenshots)
+        //!  $(LogFolder)           = Location of all log files.                                            $(UserDataFolder)\Logs
+        //!  $(SaveDataFolder)      = Location of saved game data.                                          $(UserDataFolder)\Saves
+        //!  $(Brand)               = Name of company or brand used as prefix to application specific folders (default: Yaget). There is macro below YAGET_BRAND_NAME to customize brand name per project.
+
 
         //! environment variable storage
         struct EnvAlias { std::string Value; bool ReadOnly = false; };

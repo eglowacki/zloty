@@ -54,3 +54,5 @@ development/Tests/YagetCore-Test/packages/
 *.recipe
 
 development/Common/Render/source/Generated/
+
+*.exp

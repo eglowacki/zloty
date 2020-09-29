@@ -236,7 +236,7 @@ namespace
             // let's check for config_view option and dump some configuration values
             if (options.find<bool>("options_view", false))
             {
-                platform::DebuggerOutput(util::DisplayCurrentConfiguration(&options));
+                YLOG_NOTICE("MAIN", "\n%s", util::DisplayCurrentConfiguration(&options).c_str());
 
                 if (!options.find<bool>("generate_config", false))
                 {
@@ -280,7 +280,7 @@ namespace
 
                 nlohmann::json jsonBlock;
                 to_json(jsonBlock, configuration);
-                platform::DebuggerOutput(json::PrettyPrint(jsonBlock));
+                YLOG_NOTICE("MAIN", "\n%s", json::PrettyPrint(jsonBlock).c_str());
 
                 return system::InitializationResult::Helped;
             }
@@ -293,7 +293,7 @@ namespace
             std::string errorTitle = fmt::format("{} Startup Error", util::ExpendEnv("$(AppName)", nullptr));
 
             platform::DebuggerOutput(message);
-            YLOG_ERROR("MAIN", "Terminating application. %s", e.what());
+            YLOG_ERROR("MAIN", "%s .Terminating application. %s", message.c_str());
 
             if (platform::IsDebuggerAttached())
             {
