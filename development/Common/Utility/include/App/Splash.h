@@ -82,14 +82,14 @@ private:
     bool MakeTransparent();
     HWND RegAndCreateWindow();
 
-    COLORREF m_colTrans;
-    DWORD m_dwWidth;
-    DWORD m_dwHeight;
+    COLORREF m_colTrans = 0;
+    DWORD m_dwWidth = 0;
+    DWORD m_dwHeight = 0;
     void FreeResources();
-    HBITMAP m_hBitmap;
-    LPCTSTR m_lpszClassName;
+    HBITMAP m_hBitmap = nullptr;
+    LPCTSTR m_lpszClassName = nullptr;
 
-    HWND m_hwnd;
+    HWND m_hwnd = nullptr;
 
     std::string mMessage;
 };

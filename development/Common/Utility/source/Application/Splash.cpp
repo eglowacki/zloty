@@ -107,10 +107,11 @@ void yaget::Splash::Init()
     //  Keep the function pointer for the SetLayeredWindowAttributes function
     //  in User32.dll ready
     //  =======================================================================
-    HMODULE hUser32 = GetModuleHandle(TEXT("USER32.DLL"));
-
-    g_pSetLayeredWindowAttributes = (lpfnSetLayeredWindowAttributes)
-                        GetProcAddress(hUser32, "SetLayeredWindowAttributes");
+    if (HMODULE hUser32 = GetModuleHandle(TEXT("USER32.DLL")))
+    {
+        g_pSetLayeredWindowAttributes = (lpfnSetLayeredWindowAttributes)
+            GetProcAddress(hUser32, "SetLayeredWindowAttributes");
+    }
 }
 
 yaget::Splash::Splash()
