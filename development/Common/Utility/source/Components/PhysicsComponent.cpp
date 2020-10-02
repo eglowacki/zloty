@@ -178,6 +178,7 @@ comp::PhysicsComponent::PhysicsComponent(Id_t id, PhysicsWorldComponent* /*physi
     : Component(id)
     //: PhysicsComponent(id, physicsWorld->mDynamicsWorld.get(), params)
 {
+    AddSupportedTrigger(TransformChanged);
     //mDynamicsWorld->addRigidBody(mRigidBody);
 }
 
@@ -346,7 +347,7 @@ yaget::comp::PhysicsComponent::Params yaget::comp::physics::CreateInitState(int 
     case BoxShape:
 
         //params.collisionShape = new btBoxShape(btVector3(halfExtents.x, halfExtents.y, halfExtents.z));// btScalar(8.0), btScalar(0.1), btScalar(8.0)));
-        //break;
+        break;
 
     default:
         YAGET_ASSERT(false, "Shape '%d' for collision is not supported.", shape);

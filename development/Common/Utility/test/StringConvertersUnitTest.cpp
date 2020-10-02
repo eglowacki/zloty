@@ -33,15 +33,15 @@ namespace
     template<>
     struct Limits<yaget::Guid>
     {
-        static yaget::Guid Min() { return ""; }
-        static yaget::Guid Max() { return "qwertyuiop12344"; }
-        static yaget::Guid Init() { return "7bcd757f-5b10-4f9b-af69-1a1f226f3b3e"; }
+        static yaget::Guid Min() { return {""}; }
+        static yaget::Guid Max() { return {"qwertyuiop12344"}; }
+        static yaget::Guid Init() { return {"7bcd757f-5b10-4f9b-af69-1a1f226f3b3e"}; }
     };
 
     template<>
     struct Limits<math3d::Vector3>
     {
-        static math3d::Vector3 Min() { return { -10.0f, -10.0f, -10.0f }; }
+        static math3d::Vector3 Min() { return { -10.0f, -10.0f, -10.2f }; }
         static math3d::Vector3 Max() { return { 10.0f, 10.0f, 10.0f }; }
         static math3d::Vector3 Init() { return { 0.0f, 0.0f, 0.0f }; }
     };

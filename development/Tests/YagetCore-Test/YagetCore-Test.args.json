@@ -3,6 +3,10 @@
   "Id": "6c57825d-e4aa-43a5-89d7-52b97b0dca76",
   "Items": [
     {
+      "Id": "ee6f596d-443a-4cb5-bdd0-56434d22845f",
+      "Command": " --gtest_filter=Coordinator.*"
+    },
+    {
       "Id": "cbea5305-77d8-48b2-be52-10b7a4be3e95",
       "Command": " --gtest_filter=VTS.*"
     },

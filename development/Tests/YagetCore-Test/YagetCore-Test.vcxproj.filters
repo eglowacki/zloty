@@ -25,6 +25,9 @@
     <ClCompile Include="TestFiles\GameClock_Test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="TestFiles\Coordinator_Test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Test Files">

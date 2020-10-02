@@ -56,3 +56,5 @@ development/Tests/YagetCore-Test/packages/
 development/Common/Render/source/Generated/
 
 *.exp
+
+*.lastcodeanalysissucceeded
