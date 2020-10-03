@@ -49,7 +49,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TestFiles\Configuration_Test.cpp" />
     <ClCompile Include="TestFiles\Coordinator_Test.cpp" />
+    <ClCompile Include="TestFiles\File_Test.cpp" />
     <ClCompile Include="TestFiles\GameClock_Test.cpp" />
     <ClCompile Include="TestFiles\Guid_Test.cpp" />
     <ClCompile Include="TestFiles\JobPool_Test.cpp" />

@@ -1,0 +1,14 @@
+{
+  "FileVersion": 2,
+  "Id": "26af90b1-d749-4bfd-95b3-baba5c885c76",
+  "Items": [
+    {
+      "Id": "bd22da14-984a-4d19-9138-5e05d05b0703",
+      "Command": "--options_view"
+    },
+    {
+      "Id": "b0ac5c60-8795-443f-a316-74ee5ab18fba",
+      "Command": "--options_view --generate_config"
+    }
+  ]
+}

@@ -23,6 +23,7 @@ namespace yaget
 {
     namespace io { class VirtualTransportSystem; }
 
+    //! Used in console applications
     class ConsoleApplication : public Application
     {
     public:
@@ -40,6 +41,7 @@ namespace yaget
 
     namespace app
     {
+        // this adds quit (ESC) to input action, otherwise it's the same as ConsoleApplication
         class DefaultConsole : public ConsoleApplication
         {
         public:

@@ -53,6 +53,7 @@ namespace yaget
 
     constexpr uint32_t InvalidId = static_cast<uint32_t>(-1);
 
+    // disable copy on classes
     template <typename T>
     class Noncopyable
     {
@@ -64,6 +65,31 @@ namespace yaget
         Noncopyable() = default;
         ~Noncopyable() = default;
     };
+
+    //// Notes about move
+    //class Foo;
+    //class Move
+    //{
+    //public:
+    //    Move(Move&& other)
+    //        : mAFoo(other.mAFoo)
+    //    {
+    //        other.mAFoo = nullptr;
+    //    }
+
+    //    Move& operator=(Move&& other)
+    //    {
+    //        if (this != &other)
+    //        {
+    //            mAFoo = other.mAFoo;
+    //            other.mAFoo = nullptr;
+    //        }
+
+    //        return *this;
+    //    }
+    //private:
+    //    Foo* mAFoo;
+    //};
 
     using Strings = std::vector<std::string>;
 

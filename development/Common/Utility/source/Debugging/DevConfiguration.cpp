@@ -99,11 +99,19 @@ namespace
                 const nlohmann::json& jsonBlock = json::GetSection(root, "Configuration", "");
                 from_json(jsonBlock, configuration);
             }
+            else if (!root.empty())
+            {
+                // there ia some data in json, but it does not has 'Configuration' section
+                // What do we do here, we don't want to emit error to log, since they are not setup yet
+                // do we throw exception and is this the right level of error handling
+                std::string textError = fmt::format("Non-empty and valid config file data does not contain 'Configuration' section.\n{}", json::PrettyPrint(root));
+                throw std::exception(textError.c_str());
+            }
         }
         catch (const std::exception& e)
         {
-            std::string textError = fmt::format("Did not finished init configuration bindings from:\n{}.\nError: {}.\nIncludes: '{}'.", configPath.generic_string(), e.what(), "*"/*conv::Combine(currentIncludes, ", ")*/);
-            throw yaget::ex::bad_init(textError);
+            std::string textError = fmt::format("Did not finished init configuration bindings from:\n{}.\nError: {}", configPath.generic_string(), e.what());
+            YAGET_UTIL_THROW("INIT", textError);
         }
     }
 
@@ -200,6 +208,7 @@ void yaget::dev::Initialize(const args::Options& options, const char* configData
     if (configData && configSize)
     {
         configStream.reset(new io::file::imemstream(configData, configSize));
+        optionsPathName = "IN-MEMORY";
     }
     else if (optionsPathName.empty())
     {

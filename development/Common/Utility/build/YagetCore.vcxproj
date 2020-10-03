@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\include\ThreadModel\FileLoader.cpp" />
+    <ClCompile Include="..\source\Application\Display.cpp" />
     <ClCompile Include="..\source\Application\YagetVersion.cpp" />
     <ClCompile Include="..\source\Application\Application.cpp" />
     <ClCompile Include="..\source\Application\ConsoleApplication.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="..\include\App\AppUtilities.h" />
     <ClInclude Include="..\include\App\Args.h" />
     <ClInclude Include="..\include\App\ConsoleApplication.h" />
+    <ClInclude Include="..\include\App\Display.h" />
     <ClInclude Include="..\include\App\FileUtilities.h" />
     <ClInclude Include="..\include\App\Splash.h" />
     <ClInclude Include="..\include\App\WindowApplication.h" />

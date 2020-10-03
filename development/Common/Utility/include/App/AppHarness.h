@@ -21,6 +21,7 @@
 #include "App/AppUtilities.h"
 #include "StringHelpers.h"
 #include "Exception/Exception.h"
+#include "Platform/Support.h"
 #include <functional>
 
 
@@ -31,16 +32,16 @@ namespace yaget::app
         using Callback = std::function<int()>;
 
         template<typename... Args>
-        int Harness(const char* lpCmdLine, args::Options& options, Callback callback)
+        int Harness(const char* lpCmdLine, args::Options& options, const char* configData, size_t configSize, Callback callback)
         {
             // this will force first time ever initialization if current ids struct with setting
             // main thread id as current one. If user utilizes different thread as a "main",
             // it can call this before calling Harness
-            auto mainId = dev::CurrentThreadIds().Main;
-            metrics::MarkStartThread(mainId, "MAIN");
+            //auto mainId = dev::CurrentThreadIds().Main;
+            //metrics::MarkStartThread(mainId, "MAIN");
 
-            const char* configData = nullptr;
-            size_t configSize = 0;
+            //const char* configData = nullptr;
+            //size_t configSize = 0;
 
             using LogOutputs = std::tuple<Args...>;
             meta::for_each_type<LogOutputs>([](const auto& logType)
@@ -85,13 +86,13 @@ namespace yaget::app
         }
 
         template<typename... Args>
-        int Harness(const wchar_t* lpCmdLine, args::Options& options, Callback callback)
+        int Harness(const wchar_t* lpCmdLine, args::Options& options, const char* configData, size_t configSize, Callback callback)
         {
-            return app::helpers::Harness<Args...>(conv::wide_to_utf8(lpCmdLine).c_str(), options, callback);
+            return app::helpers::Harness<Args...>(conv::wide_to_utf8(lpCmdLine).c_str(), options, configData, configSize, callback);
         }
 
         template<typename... Args>
-        int Harness(int argc, char* argv[], args::Options& options, Callback callback)
+        int Harness(int argc, char* argv[], args::Options& options, const char* configData, size_t configSize, Callback callback)
         {
             std::string lineCommands;
             for (int i = 1; i < argc; ++i)
@@ -100,7 +101,7 @@ namespace yaget::app
                 lineCommands += " ";
             }
 
-            return Harness<Args...>(lineCommands.c_str(), options, callback);
+            return Harness<Args...>(lineCommands.c_str(), options, configData, configSize, callback);
         }
 
         inline std::string ParseCommandLineParameters(int argc, char* argv[], const std::string& extraParameters = {})

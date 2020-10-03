@@ -13,9 +13,9 @@ uint32_t yaget::internal::ParseBuildChange(const char* changeText)
 
 bool yaget::CheckVersion(const Version& version, const char* compilerVersion)
 {
-    YAGET_ASSERT(version == yaget::YagetVersion, "Mismatch of Yaget Engine Version. Engine Version: '%s'. Requested Version: '%s'.",
+    YAGET_ASSERT(version == yaget::YagetVersion, "Mismatch of Yaget Engine Version. Engine Version: '%s'. User Version: '%s'.",
         yaget::ToString(yaget::YagetVersion).c_str(), yaget::ToString(version).c_str());
-    YAGET_ASSERT(std::string(compilerVersion) == YAGET_COMPILER_INFO, "Mismatch of Yaget Engine compiler. Engine Compileed with: '%s'. User Version: '%s'.", YAGET_COMPILER_INFO, compilerVersion);
+    YAGET_ASSERT(std::string(compilerVersion) == YAGET_COMPILER_INFO, "Mismatch of platform compiler. Engine Compiled with: '%s'. User Version: '%s'.", YAGET_COMPILER_INFO, compilerVersion);
 
     return version == yaget::YagetVersion;
 }

@@ -6,8 +6,9 @@
 //  Maintained by: Edgar
 //
 //  NOTES:
-//      Provides collection and management of items (set of components)
-//      This used to be represented by Scene.
+//      Helper framework to generate Director datababe schema
+//      for a specific set of user game data, using meta programming.
+//      Main input to GenerateGameDirectorSchema is user GameCoordinator type.
 //
 //
 //  #include "Components/GameCoordinatorGenerator.h"

@@ -266,6 +266,9 @@
     <ClCompile Include="..\source\VTS\ToolVirtualTransportSystem.cpp">
       <Filter>VTS Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Application\Display.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -544,6 +547,9 @@
     </ClInclude>
     <ClInclude Include="..\include\VTS\ToolVirtualTransportSystem.h">
       <Filter>VTS Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\Display.h">
+      <Filter>Application Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

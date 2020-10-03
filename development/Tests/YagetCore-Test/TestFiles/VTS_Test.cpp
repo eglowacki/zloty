@@ -38,52 +38,54 @@ namespace
 
     const auto configBlock = R"(
         {
-            "Init" : {
-                "Aliases": {
-                   "$(AssetsFolder) ": {
-                        "Path": "$(UserDataFolder)/Assets",
-                        "ReadOnly" : true
+            "Configuration" : {
+                "Init" : {
+                    "Aliases": {
+                       "$(AssetsFolder) ": {
+                            "Path": "$(UserDataFolder)/Assets",
+                            "ReadOnly" : true
+                        },
+                       "$(DatabaseFolder) ": {
+                            "Path": "$(UserDataFolder)/Database",
+                            "ReadOnly" : true
+                        }
                     },
-                   "$(DatabaseFolder) ": {
-                        "Path": "$(UserDataFolder)/Database",
-                        "ReadOnly" : true
-                    }
-                },
-                "VTS" : [{
-                    "SourceDocs": {
-                        "Converters": "TEST",
-                        "Filters" : [ "*.txt" ],
-                        "Path" : [ "$(AssetsFolder)/Sources" ],
-                        "ReadOnly" : true,
-                        "Recursive" : true
-                    }
-                },
-                {
-                    "TargetDocs": {
-                        "Converters": "TEST",
-                        "Filters" : [ "*.txt" ],
-                        "Path" : [ "$(AssetsFolder)/Targets" ],
-                        "ReadOnly" : false,
-                        "Recursive" : true
-                    }
-                },
-                {
-                    "WriteTestSettings": {
-                        "Converters": "TEST",
-                        "Filters" : [ "*.txt" ],
-                        "Path" : [ "$(AssetsFolder)/" ],
-                        "ReadOnly" : false,
-                        "Recursive" : true
-                    }
-                },
-                {
-                    "TestSettings": {
-                        "Path": [ "$(AssetsFolder)/Settings", "$(AssetsFolder)/User/Settings" ],
-                        "ReadOnly": true,
-                        "Filters": [ "*.txt" ],
-                        "Converters": "TEST"
-                    }
-                }]
+                    "VTS" : [{
+                        "SourceDocs": {
+                            "Converters": "TEST",
+                            "Filters" : [ "*.txt" ],
+                            "Path" : [ "$(AssetsFolder)/Sources" ],
+                            "ReadOnly" : true,
+                            "Recursive" : true
+                        }
+                    },
+                    {
+                        "TargetDocs": {
+                            "Converters": "TEST",
+                            "Filters" : [ "*.txt" ],
+                            "Path" : [ "$(AssetsFolder)/Targets" ],
+                            "ReadOnly" : false,
+                            "Recursive" : true
+                        }
+                    },
+                    {
+                        "WriteTestSettings": {
+                            "Converters": "TEST",
+                            "Filters" : [ "*.txt" ],
+                            "Path" : [ "$(AssetsFolder)/" ],
+                            "ReadOnly" : false,
+                            "Recursive" : true
+                        }
+                    },
+                    {
+                        "TestSettings": {
+                            "Path": [ "$(AssetsFolder)/Settings", "$(AssetsFolder)/User/Settings" ],
+                            "ReadOnly": true,
+                            "Filters": [ "*.txt" ],
+                            "Converters": "TEST"
+                        }
+                    }]
+                }
             }
         }
     )";
