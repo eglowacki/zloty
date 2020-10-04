@@ -269,6 +269,9 @@
     <ClCompile Include="..\source\Application\Display.cpp">
       <Filter>Application Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Win32\ProcHandler.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -549,6 +552,9 @@
       <Filter>VTS Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\App\Display.h">
+      <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\ProcHandler.h">
       <Filter>Application Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -148,6 +148,7 @@
     <ClCompile Include="..\source\VTS\VirtualTransportSystem.cpp" />
     <ClCompile Include="..\source\Win32\AppUtilities.cpp" />
     <ClCompile Include="..\source\Win32\Platform.cpp" />
+    <ClCompile Include="..\source\Win32\ProcHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\Base.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="..\include\App\ConsoleApplication.h" />
     <ClInclude Include="..\include\App\Display.h" />
     <ClInclude Include="..\include\App\FileUtilities.h" />
+    <ClInclude Include="..\include\App\ProcHandler.h" />
     <ClInclude Include="..\include\App\Splash.h" />
     <ClInclude Include="..\include\App\WindowApplication.h" />
     <ClInclude Include="..\include\Components\Collectors.h" />
