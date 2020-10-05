@@ -98,8 +98,8 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
             catch (const std::exception& e) 
             { 
                 mTaskInProgress = false; 
-                YLOG_ERROR("MULT", "Task failed with exception: '%s'.", e.what()); 
-            } 
+                YLOG_ERROR("MULT", "Task '%s' running on '%s' thread failed with exception: '%s'.", "some_task_description", mThreadName.c_str(), e.what());
+            }
         } 
     } 
 } 

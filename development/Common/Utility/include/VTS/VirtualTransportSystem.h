@@ -154,8 +154,8 @@ namespace yaget
             // Remove local cached assets, but preserve entry in DB. Used to force reload from disk on next request/load blob
             void ClearAssets(const io::Tags& tags);
 
-            void AttachTransientBlob(const std::shared_ptr<io::Asset>& asset) { AttachTransientBlob({ asset }); }
-            void AttachTransientBlob(const std::vector<std::shared_ptr<io::Asset>>& assets);
+            void AttachTransientBlob(const std::shared_ptr<io::Asset>& asset) { AttachTransientBlob(std::vector<std::shared_ptr<io::Asset>>{ asset }); }
+            bool AttachTransientBlob(const std::vector<std::shared_ptr<io::Asset>>& assets);
 
             enum class Request { UpdateOnly, Add };
             bool UpdateAssetData(const std::shared_ptr<io::Asset>& asset, Request request);
@@ -174,6 +174,10 @@ namespace yaget
             std::shared_ptr<Asset> AddAsset(std::shared_ptr<Asset> asset);
             void RemoveAsset(const io::Tag& tag);
             std::shared_ptr<Asset> FindAsset(const io::Tag& tag) const;
+            bool AttachTransientBlobNonMT(const std::vector<std::shared_ptr<io::Asset>>& assets, db::Transaction& transaction);
+            bool AttachTransientBlobNonMT(const std::shared_ptr<io::Asset>& asset, db::Transaction& transaction) { return AttachTransientBlobNonMT(std::vector<std::shared_ptr<io::Asset>>{ asset }, transaction); }
+
+            AssetResolver FindAssetConverter(const std::string& converterType) const;
 
             //--------------------------------------------------------------------------------------------------
             // provides locking for DB for read/write, use LockDatabaseAccess() accessors to aquire one

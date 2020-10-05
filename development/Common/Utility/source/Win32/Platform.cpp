@@ -334,6 +334,7 @@ namespace
             : mResolved(ResolveTimerFunction())
             , mInitialTime(GetPresizeTime<T>())
         {
+            srand(static_cast<unsigned int>(::time(nullptr)));
         }
 
         T GetTime(time::TimeUnits_t timeUnit) const

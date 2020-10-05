@@ -19,6 +19,8 @@
 #include "Application.h"
 #include <string>
 
+namespace Term { class Terminal; }
+
 namespace yaget
 {
     namespace io { class VirtualTransportSystem; }
@@ -28,7 +30,7 @@ namespace yaget
     {
     public:
         ConsoleApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
-        virtual ~ConsoleApplication();
+        ~ConsoleApplication();
 
         app::DisplaySurface GetSurface() const override { return app::DisplaySurface{ mOutputHandle, app::SurfaceState::Shared }; };
 
@@ -37,6 +39,8 @@ namespace yaget
         void Cleanup() override;
 
         WindowHandle_t mOutputHandle = nullptr;
+        WindowHandle_t mInputHandle = nullptr;
+        std::unique_ptr<Term::Terminal> mTerminal;
     };
 
     namespace app
@@ -46,6 +50,7 @@ namespace yaget
         {
         public:
             DefaultConsole(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
+            ~DefaultConsole();
         };
 
         class BlankApplication : public Application

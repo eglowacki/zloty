@@ -43,47 +43,53 @@ TEST_F(Time, Sleep)
 {
     using namespace yaget;
 
-    // check busy sleep (0.1 second)
-    constexpr time::Microsecond_t sleepDuration = time::FromTo<int>(100, yaget::time::kMilisecondUnit, yaget::time::kMicrosecondUnit);
+    // check sleep (0.1 second)
+    constexpr time::Microsecond_t BusySleepDuration = time::FromTo<int>(2, yaget::time::kMilisecondUnit, yaget::time::kMicrosecondUnit);
     std::map<std::string, time::Microsecond_t> timings{ { "BusySleep", 0 }, { "Sleep", 0 }, { "Sleep-Lambda", 0 } };
 
     time::Microsecond_t accumulatedError = 0;
-    const auto Iterations = 5;
-    for (auto i = 0; i < Iterations; ++i)
+    const auto BusySkeepIterations = 10;
+    const auto MaximumBusySleepError = static_cast<time::Microsecond_t>(std::ceil((BusySkeepIterations * BusySleepDuration) * 0.01f));  // maximum error for busy sleeps in microseconds
+    const auto MaximumSleepError = 0.25f;   // maximum error in regular sleep in %
+
+    for (auto i = 0; i < BusySkeepIterations; ++i)
     {
         const time::Microsecond_t stampStart = platform::GetRealTime(time::kMicrosecondUnit);
-        platform::BusySleep(sleepDuration, time::kMicrosecondUnit);
+        platform::BusySleep(BusySleepDuration, time::kMicrosecondUnit);
         const time::Microsecond_t stampEnd = platform::GetRealTime(time::kMicrosecondUnit);
 
         const time::Microsecond_t diff = stampEnd - stampStart;
-        accumulatedError += std::abs(sleepDuration - diff);
+        accumulatedError += std::abs(BusySleepDuration - diff);
     }
 
-    // the error should not be bigger then 1 ms
-    EXPECT_LE(accumulatedError / Iterations, 1000);
-    timings["BusySleep"] = accumulatedError / Iterations;
+    // the error should not be bigger then MaximumBusySleepError ms
+    EXPECT_LE(accumulatedError / BusySkeepIterations, MaximumBusySleepError);
+    timings["BusySleep"] = accumulatedError / BusySkeepIterations;
     accumulatedError = 0;
 
-    for (auto i = 0; i < Iterations; ++i)
+    const auto SleepIteration = 4;
+    const auto SleepDuration = time::FromTo<int>(16, yaget::time::kMilisecondUnit, yaget::time::kMicrosecondUnit);
+    //-------------------------------
+    for (auto i = 0; i < SleepIteration; ++i)
     {
         // check sleep (0.1 second) using platform dependent sleep functionality
         const time::Microsecond_t stampStart = platform::GetRealTime(time::kMicrosecondUnit);
-        platform::Sleep(sleepDuration, time::kMicrosecondUnit);
+        platform::Sleep(SleepDuration, time::kMicrosecondUnit);
         const time::Microsecond_t stampEnd = platform::GetRealTime(time::kMicrosecondUnit);
 
         const time::Microsecond_t diff = stampEnd - stampStart;
-        accumulatedError += std::abs(sleepDuration - diff);
+        accumulatedError += std::abs(SleepDuration - diff);
     }
-
-    // the error should not be bigger then 2% of total sleep time
-    EXPECT_LE(accumulatedError / Iterations, (Iterations * sleepDuration) * 0.02);
-    timings["Sleep"] = accumulatedError / Iterations;
+    // the error should not be bigger then MaximumSleepError percentage of total sleep time
+    EXPECT_LE(accumulatedError / SleepIteration, (SleepIteration * SleepDuration) * MaximumSleepError);
+    timings["Sleep"] = accumulatedError / SleepIteration;
     accumulatedError = 0;
 
-    for (auto i = 0; i < Iterations; ++i)
+    //-------------------------------
+    for (auto i = 0; i < BusySkeepIterations; ++i)
     {
         const time::Microsecond_t stampStart = platform::GetRealTime(time::kMicrosecondUnit);
-        time::Microsecond_t endSleepTime = stampStart + sleepDuration;
+        time::Microsecond_t endSleepTime = stampStart + BusySleepDuration;
         platform::Sleep([endSleepTime]()
             {
                 return platform::GetRealTime(time::kMicrosecondUnit) < endSleepTime;
@@ -92,19 +98,24 @@ TEST_F(Time, Sleep)
         const time::Microsecond_t stampEnd = platform::GetRealTime(time::kMicrosecondUnit);
 
         const time::Microsecond_t diff = stampEnd - stampStart;
-        accumulatedError += std::abs(sleepDuration - diff);
+        accumulatedError += std::abs(BusySleepDuration - diff);
     }
 
-    // the error should not be bigger then 1 ms
-    EXPECT_LE(accumulatedError / Iterations, 1000);
-    timings["Sleep-Lambda"] = accumulatedError / Iterations;
+    // the error should not be bigger then MaximumBusySleepError
+    EXPECT_LE(accumulatedError / BusySkeepIterations, MaximumBusySleepError);
+    timings["Sleep-Lambda"] = accumulatedError / BusySkeepIterations;
     accumulatedError = 0;
 
-    std::string loadsMessage = fmt::format("Accumulated errors after '{}' iterations:", Iterations);
+    //-------------------------------
+    std::string loadsMessage = fmt::format("Accumulated errors after '{}' iterations:", BusySkeepIterations);
     for (const auto& elem : timings)
     {
-        loadsMessage += fmt::format("\n\t{} = {} {}.", elem.first, elem.second, metrics::UnitName(time::kMicrosecondUnit));
+        loadsMessage += fmt::format("\n\t{} = {} {}.", elem.first, conv::ToThousandsSep(elem.second), metrics::UnitName(time::kMicrosecondUnit));
     }
+
+    loadsMessage += fmt::format("\n\tBusySleep: {} {}, Sleep: {} {}.", 
+                                    conv::ToThousandsSep(BusySleepDuration), metrics::UnitName(time::kMicrosecondUnit),
+                                    conv::ToThousandsSep(SleepDuration), metrics::UnitName(time::kMicrosecondUnit));
 
     YLOG_NOTICE("TEST", loadsMessage.c_str());
 }

@@ -4,6 +4,8 @@
 #include "App/AppUtilities.h"
 
 #include <filesystem>
+
+#include "VTS/ResolvedAssets.h"
 namespace fs = std::filesystem;
 
 
@@ -15,23 +17,34 @@ yaget::io::tool::VirtualTransportSystem::VirtualTransportSystem(dev::Configurati
     // so we don't hit db unnecessary (SectionRecord for log tags), and also this code might go away.
     if (YLOG_IS_TAG_VISIBLE("VTS"))
     {
-        using SectionRecord = std::tuple<std::string /*Name*/, std::string /*Path*/, std::string /*Filters*/, bool /*ReadOnly*/>;
-        const std::string command = fmt::format("SELECT Name, Path, Filters, ReadOnly FROM Sections;");
+        using SectionRecord = std::tuple<std::string /*Name*/, std::string /*Path*/, std::string /*Filters*/, bool /*ReadOnly*/, bool /*Recursive*/>;
+        const std::string command = fmt::format("SELECT Name, Path, Filters, ReadOnly, Recursive FROM Sections;");
 
         DatabaseHandle dbLocker = LockDatabaseAccess();
         std::vector<SectionRecord> sections = dbLocker->DB().GetRowsTuple<SectionRecord>(command);
+        std::string logMessage = "VTS Sections:\n";
         for (const auto& section : sections)
         {
-            YLOG_INFO("VTS", "Section: '%s', Path: '[%s]', Filters: '[%s]', ReadOnly: '%s'.", std::get<0>(section).c_str(), std::get<1>(section).c_str(), std::get<2>(section).c_str(), std::get<3>(section) ? "YES" : "NO");
+            logMessage += fmt::format("Section: '{}', Path: '[{}]', Filters: '[{}]', ReadOnly: '{}', Recursive: '{}'\n", std::get<0>(section), std::get<1>(section), std::get<2>(section), pp::log(std::get<3>(section)), pp::log(std::get<4>(section)));
             auto resolvedPaths = conv::Split(std::get<1>(section), ",");
+            auto numPaths = resolvedPaths.size();
             for (const auto& it : resolvedPaths)
             {
-                YLOG_INFO("VTS", "    Expended Path: '%s'.", util::ExpendEnv(it, nullptr).c_str());
+                logMessage += fmt::format("    Expended Path: '{}'", util::ExpendEnv(it, nullptr));
+
+                if (--numPaths)
+                {
+                    logMessage += "\n";
+                }
             }
         }
+
+        YLOG_INFO("VTS", logMessage.c_str());
     }
 }
 
+
+//YAGET_COMPILE_SUPRESS_START(4189, "'': local variable is initialized but not referenced")
 
 bool yaget::io::tool::VirtualTransportSystem::AttachBlob(const std::vector<std::shared_ptr<io::Asset>>& assets)
 {
@@ -39,8 +52,15 @@ bool yaget::io::tool::VirtualTransportSystem::AttachBlob(const std::vector<std::
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
         SQLite& database = databaseHandle->DB();
+
+        using SectionRecord = std::tuple<std::string /*Name*/, Strings /*Path*/, std::string /*Filters*/, bool /*ReadOnly*/, bool /*Recursive*/>;
+        const std::string command = fmt::format("SELECT Name, Path, Filters, ReadOnly, Recursive FROM Sections;");
+        std::vector<SectionRecord> sections = database.GetRowsTuple<SectionRecord>(command);
+
         yaget::db::Transaction transaction(database);
         using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
+
+        std::vector<std::pair<io::Tag, Section>> duplicateFiles;
 
         for (const auto& it : assets)
         {
@@ -59,9 +79,62 @@ bool yaget::io::tool::VirtualTransportSystem::AttachBlob(const std::vector<std::
                 return false;
             }
 
+            // now we also need to find same path for any other sections, and if it matches
+            // we need to add entry to Tags folder under that Section which matched our path
+            fs::path newBlobFilePath = tag.ResolveVTS();
+            const auto& newBlobPath = newBlobFilePath.parent_path();
+
+            // iterate over all sections
+            for (const auto& s : sections)
+            {
+                // for each Path, expend and compare this path to newBlobPath, but skip tag.mSectionName
+                if (std::get<0>(s) == tag.mSectionName)
+                {
+                    continue;
+                }
+
+                for (const auto& p : std::get<1>(s))
+                {
+                    fs::path sectionPath = util::ExpendEnv(p, nullptr);
+                    if (newBlobPath == sectionPath)
+                    {
+                        // this blob also need entry under this section
+                        duplicateFiles.emplace_back(std::make_pair(tag, Section(std::get<0>(s) + "@" + p)));
+
+                        // we need to actually duplicate tag for this asset
+                        io::Tag dupTag = tag;
+                        dupTag.mGuid = NewGuid();
+                        dupTag.mSectionName = std::get<0>(s);
+
+                        const std::string dupCommand = fmt::format("SELECT Sections.Converters FROM Sections INNER JOIN Tags ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", tag.mGuid.str());
+                        auto converterType = GetCell<std::string>(database, dupCommand);
+                        if (auto converter = FindAssetConverter(converterType))
+                        {
+                            if (auto newAsset = converter(it->mBuffer, dupTag, *this))
+                            {
+                                TagRecordTuple newTagRecord(dupTag.mGuid, dupTag.mName, dupTag.mVTSName, dupTag.mSectionName);
+
+                                if (!database.ExecuteStatementTuple("TagInsert", "Tags", newTagRecord, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Insert))
+                                {
+                                    transaction.Rollback();
+
+                                    std::string message = fmt::format("Attaching blob '{}' to Section: '{}' as VTS: '{}' failed. {}.", dupTag.mName, dupTag.mSectionName, dupTag.mVTSName, ParseErrors(database));
+                                    YLOG_WARNING("VTS", message.c_str());
+
+                                    return false;
+                                }
+
+                                attachedAssets.push_back(newAsset);
+                            }
+                        }
+                    }
+                }
+            }
+
             attachedAssets.push_back(it);
         }
     }
+
 
     for (const auto& it : attachedAssets)
     {
@@ -70,6 +143,7 @@ bool yaget::io::tool::VirtualTransportSystem::AttachBlob(const std::vector<std::
 
     return true;
 }
+//YAGET_COMPILE_SUPRESS_END
 
 
 yaget::io::Tag yaget::io::tool::VirtualTransportSystem::CopyTag(const io::Tag& sourceTag, const Section& toSection, Options flat) const

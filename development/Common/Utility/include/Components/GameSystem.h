@@ -85,9 +85,16 @@ namespace yaget
                     if (IsUpdateNeeded(id))
                     {
                         Update(id, gameClock, channel, row);
+                        // timer needs to be removed if it's stopped. This happens to FireOnce timer when it actually fired
+                        if (auto it = mTimers.find(id); it != std::end(mTimers) && it->second.mFireTimer == FireTimer::Stop)
+                        {
+                            ActivateTimer(id, gameClock, 0, FireTimer::Stop);
+                        }
+
+                        return true;
                     }
 
-                    return true;
+                    return false;
                 });
 
                 // we only want to call end id marker if there were any id's processed

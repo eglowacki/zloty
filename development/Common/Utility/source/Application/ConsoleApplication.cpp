@@ -2,6 +2,7 @@
 #include "Logger/YLog.h"
 #include "Platform/WindowsLean.h"
 #include "Input/InputDevice.h"
+#include "cpp-terminal/terminal.h"
 
 using namespace yaget;
 
@@ -35,10 +36,12 @@ bool app::BlankApplication::onMessagePump(const time::GameClock& /*gameClock*/)
 
 ConsoleApplication::ConsoleApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
     : Application(title, director, vts, options)
+    //, mTerminal(std::make_unique<Term::Terminal>(true, false))
 {
     ::SetConsoleTitle(title.c_str());
     ::SetConsoleCtrlHandler(HandlerRoutine, TRUE);
     mOutputHandle = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    mInputHandle = ::GetStdHandle(STD_INPUT_HANDLE);
 }
 
 ConsoleApplication::~ConsoleApplication()
@@ -51,10 +54,10 @@ bool ConsoleApplication::onMessagePump(const time::GameClock& /*gameClock*/)
     inputRec.EventType = 0;
     DWORD numRead = 0;
     DWORD numPendingInputs = 0;
-    ::GetNumberOfConsoleInputEvents(GetSurface().Handle<HWND>(), &numPendingInputs);
+    ::GetNumberOfConsoleInputEvents(mInputHandle, &numPendingInputs);
     if (numPendingInputs)
     {
-        if (::ReadConsoleInput(GetSurface().Handle<HWND>(), &inputRec, 1, &numRead))
+        if (::ReadConsoleInput(mInputHandle, &inputRec, 1, &numRead))
         {
         }
         else
@@ -126,3 +129,5 @@ app::DefaultConsole::DefaultConsole(const std::string& title, items::Director& d
         RequestQuit();
     });
 }
+
+app::DefaultConsole::~DefaultConsole() = default;

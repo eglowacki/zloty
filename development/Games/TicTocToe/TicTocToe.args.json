@@ -3,6 +3,10 @@
   "Id": "26af90b1-d749-4bfd-95b3-baba5c885c76",
   "Items": [
     {
+      "Id": "b29e0f25-e1db-4d93-a951-8f780f04ee49",
+      "Command": "--log_filter=-VTS"
+    },
+    {
       "Id": "bd22da14-984a-4d19-9138-5e05d05b0703",
       "Command": "--options_view"
     },

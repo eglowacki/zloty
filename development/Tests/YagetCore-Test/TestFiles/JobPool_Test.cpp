@@ -32,7 +32,7 @@ TEST(YagetCore, Threads_JobPool)
 
     test::Environment environment;
 
-    const int Iterations = 1000000;
+    const int Iterations = 10000;
     const int MaxThreads = 4;
     std::map<uint32_t, std::atomic_int> WorkLoads;
 

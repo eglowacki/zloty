@@ -474,9 +474,9 @@ namespace
         {
             std::error_code ec;
             std::uintmax_t result = fs::remove(fs::path(fileName), ec);
-            if (result == static_cast<std::uintmax_t>(-1))
+            if (result == static_cast<std::uintmax_t>(-1) || result == 0)
             {
-                std::string message = fmt::format("VTS", "Delete database file '{}' from disk failed with error: '{}: {}'.", fileName, ec.value(), ec.message());
+                std::string message = fmt::format("Delete database file '{}' from disk failed with error: '{}: {}'.", fileName, ec.value(), ec.message());
                 YAGET_UTIL_THROW("VTS", message.c_str());
             }
         }
@@ -687,6 +687,16 @@ void yaget::io::VirtualTransportSystem::onErrorBlobLoader(const std::string& fil
 };
 
 
+yaget::io::VirtualTransportSystem::AssetResolver yaget::io::VirtualTransportSystem::FindAssetConverter(const std::string& converterType) const
+{
+    if (auto it = mAssetResolvers.find(converterType); it!= std::end(mAssetResolvers))
+    {
+        return it->second;
+    }
+
+    return {};
+}
+
 void yaget::io::VirtualTransportSystem::onBlobLoaded(const io::Buffer& dataBuffer, const io::Tag& requestedTag, BlobAssetCallback assetLoaded, std::atomic_size_t* tagsCounter)
 {
     metrics::Channel span(fmt::format("BlobLoaded {}", requestedTag.mVTSName).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
@@ -708,7 +718,11 @@ void yaget::io::VirtualTransportSystem::onBlobLoaded(const io::Buffer& dataBuffe
             }
 
             auto it = mAssetResolvers.find(converterType);
-            YAGET_ASSERT(it != mAssetResolvers.end(), "Asset Resolvers does not have entry for: '%s' for tag: '%s'.", converterType.c_str(), requestedTag.mVTSName.c_str());
+            YAGET_ASSERT(it != mAssetResolvers.end(), "Asset Resolvers section '%s' does not have entry for: '%s'. Requested tag: '%s', Expended: '%s'.",
+                requestedTag.mSectionName.c_str(),
+                converterType.c_str(),
+                requestedTag.mVTSName.c_str(),
+                requestedTag.ResolveVTS().c_str());
 
             if (auto newAsset = it->second(dataBuffer, requestedTag, *this))
             {
@@ -813,40 +827,46 @@ void yaget::io::VirtualTransportSystem::AddOverride(std::shared_ptr<io::Asset> a
 
 
 //--------------------------------------------------------------------------------------------------
-void yaget::io::VirtualTransportSystem::AttachTransientBlob(const std::vector<std::shared_ptr<io::Asset>>& assets)
+bool yaget::io::VirtualTransportSystem::AttachTransientBlob(const std::vector<std::shared_ptr<io::Asset>>& assets)
 {
-    std::vector<std::shared_ptr<io::Asset>> attachedAssets;
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
-        SQLite& database = databaseHandle->DB();
-        yaget::db::Transaction transaction(database);
-        using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
-
-        for (const auto& it : assets)
+        yaget::db::Transaction transaction(databaseHandle->DB());
+        if (!AttachTransientBlobNonMT(assets, transaction))
         {
-            const io::Tag& tag = it->mTag;
-            TagRecordTuple tagRecord(tag.mGuid, tag.mName, tag.mVTSName, tag.mSectionName);
-
-            if (!database.ExecuteStatementTuple("TagInsert", "Tags", tagRecord, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Insert))
-            {
-                transaction.Rollback();
-
-                std::string message = fmt::format("Attaching blob '{}' to Section: '{}' as VTS: '{}' failed. {}.", tag.mName, tag.mSectionName, tag.mVTSName, ParseErrors(database));
-                YLOG_ERROR("VTS", message.c_str());
-
-                return;
-            }
-
-            attachedAssets.push_back(it);
+            return false;
         }
     }
 
-    //std::unique_lock<std::mutex> locker(mMutexAssets);
-    for (const auto& asset : attachedAssets)
+    for (const auto& asset : assets)
     {
-        //(void)AddAssetNonMT(asset);
         (void)AddAsset(asset);
     }
+
+    return true;
+}
+
+bool yaget::io::VirtualTransportSystem::AttachTransientBlobNonMT(const std::vector<std::shared_ptr<io::Asset>>& assets, yaget::db::Transaction& transaction)
+{
+    using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
+
+    for (const auto& it : assets)
+    {
+        const io::Tag& tag = it->mTag;
+        TagRecordTuple tagRecord(tag.mGuid, tag.mName, tag.mVTSName, tag.mSectionName);
+
+        if (!transaction.DB().ExecuteStatementTuple("TagInsert", "Tags", tagRecord, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Insert))
+        {
+            transaction.Rollback();
+
+            std::string message = fmt::format("Attaching blob '{}' to Section: '{}' as VTS: '{}' failed. {}.", tag.mName, tag.mSectionName, tag.mVTSName, ParseErrors(transaction.DB()));
+            YLOG_ERROR("VTS", message.c_str());
+
+            return false;
+        }
+    }
+
+    return true;
 }
 
 

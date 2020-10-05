@@ -1,0 +1,114 @@
+{
+    "New Game": {
+        "Action": "New Game",
+        "ContextName": "MENU",
+        "DisplayName": "1",
+        "Flags": "ButtonDown",
+        "Value": "1"
+    },
+    "Resume Game": {
+        "Action": "Resume Game",
+        "ContextName": "MENU",
+        "DisplayName": "2",
+        "Flags": "ButtonDown",
+        "Value": "2"
+    },
+    "Save Game": {
+        "Action": "Save Game",
+        "ContextName": "MENU",
+        "DisplayName": "3",
+        "Flags": "ButtonDown",
+        "Value": "3"
+    },
+    "Load Game": {
+        "Action": "Load Game",
+        "ContextName": "MENU",
+        "DisplayName": "4",
+        "Flags": "ButtonDown",
+        "Value": "4"
+    },
+    "Options": {
+        "Action": "Options",
+        "ContextName": "MENU",
+        "DisplayName": "5",
+        "Flags": "ButtonDown",
+        "Value": "5"
+    },
+    "One Player": {
+        "Action": "One Player",
+        "ContextName": "MENU.NEW_GAME",
+        "DisplayName": "1",
+        "Flags": "ButtonDown",
+        "Value": "1"
+    },
+    "Two Players": {
+        "Action": "Two Players",
+        "ContextName": "MENU.NEW_GAME",
+        "DisplayName": "2",
+        "Flags": "ButtonDown",
+        "Value": "2"
+    },
+    "Board.Square 1": {
+        "Action": "Board.Square 1",
+        "ContextName": "GAME",
+        "DisplayName": "1",
+        "Flags": "ButtonDown",
+        "Value": "1"
+    },
+    "Board.Square 2": {
+        "Action": "Board.Square 2",
+        "ContextName": "GAME",
+        "DisplayName": "2",
+        "Flags": "ButtonDown",
+        "Value": "2"
+    },
+    "Board.Square 3": {
+        "Action": "Board.Square 3",
+        "ContextName": "GAME",
+        "DisplayName": "3",
+        "Flags": "ButtonDown",
+        "Value": "3"
+    },
+    "Board.Square 4": {
+        "Action": "Board.Square 4",
+        "ContextName": "GAME",
+        "DisplayName": "4",
+        "Flags": "ButtonDown",
+        "Value": "4"
+    },
+    "Board.Square 5": {
+        "Action": "Board.Square 5",
+        "ContextName": "GAME",
+        "DisplayName": "5",
+        "Flags": "ButtonDown",
+        "Value": "5"
+    },
+    "Board.Square 6": {
+        "Action": "Board.Square 6",
+        "ContextName": "GAME",
+        "DisplayName": "6",
+        "Flags": "ButtonDown",
+        "Value": "6"
+    },
+    "Board.Square 7": {
+        "Action": "Board.Square 7",
+        "ContextName": "GAME",
+        "DisplayName": "7",
+        "Flags": "ButtonDown",
+        "Value": "7"
+    },
+    "Board.Square 8": {
+        "Action": "Board.Square 8",
+        "ContextName": "GAME",
+        "DisplayName": "8",
+        "Flags": "ButtonDown",
+        "Value": "8"
+    },
+    "Board.Square 9": {
+        "Action": "Board.Square 9",
+        "ContextName": "GAME",
+        "DisplayName": "9",
+        "Flags": "ButtonDown",
+        "Value": "9"
+    }
+}

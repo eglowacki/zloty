@@ -439,6 +439,9 @@ int64_t yaget::app::ProcHandler::onMessage(uint32_t message, uint64_t wParam, in
 {
     YAGET_ASSERT(mWindowHandle, "onMessage called with no valid window handle set.");
 
+    // NOTE: Need to handle WM_QUERYENDSESSION message. This is used when user logs off the windows
+    // this should save if it can and issue orderly shutdown
+
     switch (message)
     {
         case WM_CLOSE:

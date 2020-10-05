@@ -54,7 +54,7 @@ namespace yaget::io::tool
     
     //--------------------------------------------------------------------------------------------------
     // used to start one db with reset data, and second one to re-use existing data (helper classes only)
-    class VirtualTransportSystemDefault : public VirtualTransportSystem
+    class VirtualTransportSystemDefault : public io::tool::VirtualTransportSystem
     {
     public:
         VirtualTransportSystemDefault(dev::Configuration::Init::VTSConfigList configList, const AssetResolvers& assetResolvers, const std::string& fileName)
@@ -63,7 +63,7 @@ namespace yaget::io::tool
     };
     
     //--------------------------------------------------------------------------------------------------
-    class VirtualTransportSystemReset : public VirtualTransportSystem
+    class VirtualTransportSystemReset : public io::tool::VirtualTransportSystem
     {
     public:
         VirtualTransportSystemReset(dev::Configuration::Init::VTSConfigList configList, const AssetResolvers& assetResolvers, const std::string& fileName)

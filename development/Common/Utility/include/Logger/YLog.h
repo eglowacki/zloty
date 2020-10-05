@@ -67,7 +67,20 @@ namespace yaget
 
         extern std::vector<std::string> GetRegisteredTags();
 
-    } // namespace ylog 
+
+    } // namespace ylog
+
+
+    // Pretty print helpers, used in logging and any text output
+    namespace pp
+    {
+        // helper functions to format various data types as a string
+        inline const char* log(bool value)
+        {
+            return value ? "YES" : "NO";
+        }
+    }
+
 } // namespace yaget
 
 #if !defined(YAGET_LOG_ENABLED)

@@ -351,6 +351,9 @@ namespace yaget
             ~Transaction();
             void Rollback();
 
+            SQLite& DB() { return mDatabase; }
+            const SQLite& DB() const { return mDatabase; }
+
         private:
             SQLite& mDatabase;
             bool mCommit = true;
