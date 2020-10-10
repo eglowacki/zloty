@@ -26,5 +26,8 @@
     <CopyFileToFolders Include="data\KeyBindings.json">
       <Filter>Data Files</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Configuration.json">
+      <Filter>Data Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

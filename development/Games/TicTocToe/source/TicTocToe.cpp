@@ -37,7 +37,7 @@ YAGET_BRAND_NAME("Beyond Limits")
 
 namespace 
 {
-    const auto configBlock = R"(
+    const auto configBlock = R"###(
     {
         "Configuration" : {
             "Debug": {
@@ -58,11 +58,11 @@ namespace
 
             "Init": {
                 "Aliases": {
-                   "$(AssetsFolder) ": {
+                   "$(AssetsFolder)": {
                         "Path": "$(UserDataFolder)/Assets",
                         "ReadOnly": true
                     },
-                   "$(DatabaseFolder) ": {
+                   "$(DatabaseFolder)": {
                         "Path": "$(UserDataFolder)/Database",
                         "ReadOnly": true
                     }
@@ -71,7 +71,7 @@ namespace
                     "Settings": {
                         "Converters": "JSON",
                         "Filters" : [ "*.json" ],
-                        "Path" : [ "$(DataFolder)/Data", "$(AppFolder)/" ],
+                        "Path" : [ "$(DataFolder)/Data", "$(AppFolder)" ],
                         "ReadOnly" : true,
                         "Recursive" : false
                     }
@@ -79,7 +79,7 @@ namespace
             }
         }
     }
-    )";
+    )###";
 
 
     //using UpdateCallback_t = std::function<void(Application&, const time::GameClock&, metrics::Channel&)>;
@@ -230,12 +230,17 @@ namespace
                         std::cout << selectedSquare + 1 << "\n";
                         PrintBoard();
 
-                        if (!IsOne())
+                        if (mTurn == 10)
                         {
-                            mCurrentPlayer = mCurrentPlayer == 'X' ? 'O' : 'X';
-                            std::cout << "Select which square number to place your " << mCurrentPlayer << " piece on: ";
+                            std::cout << "*******************************************************************************\n";
+                            std::cout << "Draw, neither player won\n";
+                            std::cout << "*******************************************************************************\n";
+                            app.Input().PopContext();
+
+                            mMenuState.mMenuRendered = false;
+                            mCurrentState = GameState::Menu;
                         }
-                        else
+                        else if (IsOne())
                         {
                             std::cout << "*******************************************************************************\n";
                             std::cout << "Congratulations " << mCurrentPlayer << " Player. You won in " << mTurn << " turns and beat Player " << (mCurrentPlayer == 'X' ? 'O' : 'X') << "\n";
@@ -244,6 +249,11 @@ namespace
 
                             mMenuState.mMenuRendered = false;
                             mCurrentState = GameState::Menu;
+                        }
+                        else
+                        {
+                            mCurrentPlayer = mCurrentPlayer == 'X' ? 'O' : 'X';
+                            std::cout << "Select which square number to place your " << mCurrentPlayer << " piece on: ";
                         }
                     }
                     
@@ -343,7 +353,7 @@ int main(int argc, char* argv[])
 
     args::Options options("Yaget.TicTocToe", "Usage of core yaget library to build a game. Eat your own dog food.");
 
-    int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug>(argc, argv, options, configBlock, std::strlen(configBlock), [&options]()
+    int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug>(argc, argv, options, nullptr/*configBlock*/, 0/*std::strlen(configBlock)*/, [&options]()
     {
         if (options.find<bool>("vts_fix", false))
         {

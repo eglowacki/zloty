@@ -1,0 +1,41 @@
+{
+	"Configuration" : {
+		"Debug": {
+			"Logging": {
+				"Filters": [ "MULT", "POOL", "SQL", "FILE", "VTS", "IDS", "INPT", "INIT", "SPAM" ],
+				"Level": "DBUG",
+				"Outputs": {
+					"ylog::OutputDebug": {
+						"split_lines": "true"
+					},
+					"ylog::OutputFile": {
+						"max_startup_size": "0",
+						"filename": "$(LogFolder)/$(AppName).log"
+					}
+				}
+			}
+		},
+
+		"Init": {
+			"Aliases": {
+			   "$(AssetsFolder)": {
+					"Path": "$(UserDataFolder)/Assets",
+					"ReadOnly": true
+				},
+			   "$(DatabaseFolder)": {
+					"Path": "$(UserDataFolder)/Database",
+					"ReadOnly": true
+				}
+			},
+			"VTS" : [{
+				"Settings": {
+					"Converters": "JSON",
+					"Filters" : [ "*.json" ],
+					"Path" : [ "$(DataFolder)/Data", "$(AppFolder)" ],
+					"ReadOnly" : true,
+					"Recursive" : false
+				}
+			}]
+		}
+	}
+}
