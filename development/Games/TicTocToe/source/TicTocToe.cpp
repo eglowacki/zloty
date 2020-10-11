@@ -37,53 +37,6 @@ YAGET_BRAND_NAME("Beyond Limits")
 
 namespace 
 {
-    const auto configBlock = R"###(
-    {
-        "Configuration" : {
-            "Debug": {
-                "Logging": {
-                    "Filters": [ "MULT", "POOL", "SQL", "FILE", "VTS", "IDS", "INPT", "INIT", "SPAM" ],
-                    "Level": "DBUG",
-                    "Outputs": {
-                        "ylog::OutputDebug": {
-                            "split_lines": "true"
-                        },
-                        "ylog::OutputFile": {
-                            "max_startup_size": "0",
-                            "filename": "$(LogFolder)/$(AppName).log"
-                        }
-                    }
-                }
-            },
-
-            "Init": {
-                "Aliases": {
-                   "$(AssetsFolder)": {
-                        "Path": "$(UserDataFolder)/Assets",
-                        "ReadOnly": true
-                    },
-                   "$(DatabaseFolder)": {
-                        "Path": "$(UserDataFolder)/Database",
-                        "ReadOnly": true
-                    }
-                },
-                "VTS" : [{
-                    "Settings": {
-                        "Converters": "JSON",
-                        "Filters" : [ "*.json" ],
-                        "Path" : [ "$(DataFolder)/Data", "$(AppFolder)" ],
-                        "ReadOnly" : true,
-                        "Recursive" : false
-                    }
-                }]
-            }
-        }
-    }
-    )###";
-
-
-    //using UpdateCallback_t = std::function<void(Application&, const time::GameClock&, metrics::Channel&)>;
-
     class GameDirector
     {
     public:
@@ -353,7 +306,7 @@ int main(int argc, char* argv[])
 
     args::Options options("Yaget.TicTocToe", "Usage of core yaget library to build a game. Eat your own dog food.");
 
-    int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug>(argc, argv, options, nullptr/*configBlock*/, 0/*std::strlen(configBlock)*/, [&options]()
+    int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug>(argc, argv, options, nullptr, 0, [&options]()
     {
         if (options.find<bool>("vts_fix", false))
         {
@@ -380,7 +333,4 @@ int main(int argc, char* argv[])
     });
 
     return result;
-
-    ///*auto result =*/ system::InitializeSetup();
-    //DefaultConsole(const std::string & title, items::Director & director, io::VirtualTransportSystem & vts, const args::Options & options);
 }
