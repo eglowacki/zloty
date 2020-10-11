@@ -102,9 +102,9 @@ namespace yaget
             void ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
 
             // Iterate over all items that conform to pattern R
-            // Return true if any items existed for a pattern, otherwise false
+            // Return number of matched items, or 0 if none.
             template<typename R>
-            bool ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
+            std::size_t ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
 
         private:
             // Helper method to find a specific component allocator
@@ -437,10 +437,10 @@ void yaget::comp::Coordinator<P>::ForEach(const comp::ItemIds& ids, std::functio
 
 template<typename P>
 template<typename R>
-bool yaget::comp::Coordinator<P>::ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback)
+std::size_t yaget::comp::Coordinator<P>::ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback)
 {
     auto ids = GetItemIds<R>();
     ForEach<R>(ids, callback);
 
-    return !ids.empty();
+    return ids.size();
 }

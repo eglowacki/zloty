@@ -1,39 +1,41 @@
 // TicTocToe.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
-#include <Components/GameCoordinatorGenerator.h>
-
 #include "YagetCore.h"
 #include "YagetVersion.h"
-
 #include "App/AppHarness.h"
-#include "App/ConsoleApplication.h"
+#include "Game.h"
 
-#include "Items/ItemsDirector.h"
+//#include "App/ConsoleApplication.h"
+
+//#include "Items/ItemsDirector.h"
+#include "VTS/DiagnosticVirtualTransportSystem.h"
 
 #include "LoggerCpp/OutputDebug.h"
 #include "LoggerCpp/OutputFile.h"
+
+
+#if 0
+namespace yaget::ylog
+{
+    yaget::Strings GetRegisteredTags()
+    {
+        yaget::Strings tags =
+        {
+            #include "Logger/LogTags.h"
+            "SPAM"
+        };
+
+        return tags;
+    }
+} // namespace yaget::ylog
+
 
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 
 
-namespace yaget::ylog
-{
-  yaget::Strings GetRegisteredTags()
-  {
-      yaget::Strings tags =
-      {
-          #include "Logger/LogTags.h"
-          "SPAM"
-      };
-
-      return tags;
-  }
-} // namespace yaget::ylog
-
-YAGET_BRAND_NAME("Beyond Limits")
+YAGET_BRAND_NAME_F("Beyond Limits")
 
 namespace 
 {
@@ -294,6 +296,7 @@ namespace
         int mTurn = 0;
     };
 }
+#endif
 
 
 
@@ -313,23 +316,25 @@ int main(int argc, char* argv[])
             yaget::io::diag::VirtualTransportSystem vtsFixer(false, "$(DatabaseFolder)/vts.sqlite");
         }
 
-        const io::VirtualTransportSystem::AssetResolvers resolvers = {
-            { "JSON", io::ResolveAsset<io::JsonAsset> }
-        };
+        return ttt::game::Run(options);
 
-        io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, resolvers, "$(DatabaseFolder)/vts.sqlite");
+        //const io::VirtualTransportSystem::AssetResolvers resolvers = {
+        //    { "JSON", io::ResolveAsset<io::JsonAsset> }
+        //};
 
-        const int64_t schemaVersion = Database::NonVersioned;
-        //const auto& pongerSchema = comp::db::GenerateGameDirectorSchema<pong::GameCoordinator>(schemaVersion);
-        items::Director director("$(DatabaseFolder)/director.sqlite", {}, schemaVersion);
+        //io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, resolvers, "$(DatabaseFolder)/vts.sqlite");
 
-        app::DefaultConsole app("Yaget.Tic-Tac-Toe", director, vts, options);
+        //const int64_t schemaVersion = Database::NonVersioned;
+        ////const auto& pongerSchema = comp::db::GenerateGameDirectorSchema<pong::GameCoordinator>(schemaVersion);
+        //items::Director director("$(DatabaseFolder)/director.sqlite", {}, schemaVersion);
 
-        GameDirector gameDirector;
-        auto logicCallback = [&gameDirector](auto&&... params) { gameDirector.GameLoop(params...); };
+        //app::DefaultConsole app("Yaget.Tic-Tac-Toe", director, vts, options);
 
-        const auto result = app.Run(logicCallback, {}, {}, {}, {});
-        return result;
+        //GameDirector gameDirector;
+        //auto logicCallback = [&gameDirector](auto&&... params) { gameDirector.GameLoop(params...); };
+
+        //const auto result = app.Run(logicCallback, {}, {}, {}, {});
+        //return result;
     });
 
     return result;

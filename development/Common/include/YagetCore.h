@@ -115,6 +115,38 @@ __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] Disabling Co
 
 #define YAGET_COMPILE_SUPRESS_END __pragma(warning(pop))
 
+// Support for custom functions to provide extra log tags
+#define YAGET_GET_BRAND_FUNCTION_NAME GetBrandName
+#define YAGET_GET_BRAND_FUNCTION_STRING YAGET_STRINGIZE(YAGET_GET_BRAND_FUNCTION_NAME)
+typedef const char* (*YagetFuncBrandName) (void);
 
-// It exposes GetBrandName function in application and return user specified brand/company name, which used in $(Brand) alias environment
-#define YAGET_BRAND_NAME(name)  extern "C" __declspec(dllexport) const char* GetBrandName() { return name; }
+// It exposes GetBrandName function in application and return user specified brand/company name, which is used in $(Brand) environment alias
+#define YAGET_BRAND_NAME_F(name)  extern "C" __declspec(dllexport) const char* YAGET_GET_BRAND_FUNCTION_NAME() { return name; }
+
+
+// Used in generating schema for GameDirector to provide customization of which c++ keywords need to be filtered out
+#define YAGET_USER_STRIP_KEYWORDS_FUNCTION_NAME UserStripKeywords
+#define YAGET_USER_STRIP_KEYWORDS_FUNCTION_STRING YAGET_STRINGIZE(YAGET_USER_STRIP_KEYWORDS_FUNCTION_NAME)
+typedef const char* (*YagetFuncUserStripKeywords) (const char*);
+
+#define YAGET_USER_STRIP_KEYWORDS_F(name) extern "C" __declspec(dllexport) const char* YAGET_USER_STRIP_KEYWORDS_FUNCTION_NAME(const char* name)
+
+namespace yaget
+{
+    //! This is used in definition of YAGET_USER_STRIP_KEYWORDS_F to simplify adding of new keywords
+    //YAGET_USER_STRIP_KEYWORDS_F(defaultSet)
+    //{
+    //  static yaget::Initer initer(defaultSet, ",::ttt,ttt::");
+    //  return initer.mKeywords.c_str();
+    //}
+
+    struct Initer
+    {
+        Initer(const char* defaults, const char* customKeywords)
+            : mKeywords(defaults ? std::string(defaults) + customKeywords : customKeywords)
+        {}
+
+        std::string mKeywords;
+    };
+
+}

@@ -58,6 +58,7 @@ namespace yaget::time
 
         //Current tick counter, increment by calls to Tick(...) method
         uint64_t GetTickCounter() const { return mTickCounter; }
+        Microsecond_t GetRealTime() const;
 
     private:
         std::atomic<Microsecond_t> mLogicTime{ 0 };

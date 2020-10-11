@@ -31,3 +31,8 @@ void yaget::time::GameClock::Tick(yaget::time::Microsecond_t deltaTime)
     mDeltaTime = deltaTime;
     mTickCounter++;
 }
+
+yaget::time::Microsecond_t yaget::time::GameClock::GetRealTime() const
+{
+    return platform::GetRealTime(yaget::time::kMicrosecondUnit);
+}

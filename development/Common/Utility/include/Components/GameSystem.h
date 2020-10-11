@@ -116,7 +116,7 @@ namespace yaget
                 }
                 else
                 {
-                    const auto nowTime = platform::GetRealTime(time::kMicrosecondUnit);
+                    const auto nowTime = gameClock.GetRealTime();
                     mTimers[id] = TimeTriger{ nowTime + triggerDuration, triggerDuration, fireTimer };
                 }
             }

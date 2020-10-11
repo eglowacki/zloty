@@ -36,10 +36,11 @@ namespace yaget
 
         namespace db
         {
-            // overload ComponentProperties to provide which properties are save/load in db.
+            // specialize ComponentProperties to provide which properties are save/load in Director db.
             template <typename T>
             struct ComponentProperties;
 
+            // Placeholder to use as names in ComponentProperties::Rpw for properties specified in ComponentProperties::Types
             struct Id {};
             struct Coordinator {};
 

@@ -10,6 +10,9 @@
 //      for a specific set of user game data, using meta programming.
 //      Main input to GenerateGameDirectorSchema is user GameCoordinator type.
 //
+//      add that where GenerateGameDirectorSchema is called
+//      #include "HashUtilities.h"
+//
 //
 //  #include "Components/GameCoordinatorGenerator.h"
 //
@@ -25,6 +28,57 @@
 
 namespace yaget::comp::db
 {
+    //-------------------------------------------------------------------------------------------------
+    // specialize this to return friendly name
+    //template <>
+    //struct CoordinatorName <ttt::GameCoordinator::GlobalCoordinator>
+    //{
+    //    static constexpr const char* Name() { return "Globals"; }
+    //};
+    template <typename T>
+    struct CoordinatorName;
+
+    //-------------------------------------------------------------------------------------------------
+    // specialize this to return which id is used for specific coordinator (Global (0) or Entity (1)).
+    //template <>
+    //struct CoordinatorName <ttt::GameCoordinator::GlobalCoordinator>
+    //{
+    //    static constexpr const int Value() { return ttt::GameCoordinator::GLOBAL_ID; }
+    //};
+    template <typename T>
+    struct CoordinatorId;
+
+    // Sample of common implementation. Put this in cpp above where you call GenerateGameDirectorSchema 
+    //namespace yaget::comp::db
+    //{
+    //    template <>
+    //    struct CoordinatorName <ttt::GameCoordinator::GlobalCoordinator>
+    //    {
+    //        static constexpr const char* Name() { return "Globals"; }
+    //    };
+
+    //    template <>
+    //    struct CoordinatorName <ttt::GameCoordinator::EntityCoordinator>
+    //    {
+    //        static constexpr const char* Name() { return "Entities"; }
+    //    };
+
+    //    template <>
+    //    struct CoordinatorId <ttt::GameCoordinator::GlobalCoordinator>
+    //    {
+    //        static constexpr int Value() { return ttt::GameCoordinator::GLOBAL_ID; }
+    //    };
+
+    //    template <>
+    //    struct CoordinatorId <ttt::GameCoordinator::EntityCoordinator>
+    //    {
+    //        static constexpr int Value() { return ttt::GameCoordinator::ENTITY_ID; }
+    //    };
+
+    //}
+
+
+
     inline void hash_combine(int64_t& /*seed*/) { }
 
     template <typename T, typename... Rest>
@@ -35,9 +89,7 @@ namespace yaget::comp::db
         hash_combine(seed, rest...);
     }
 
-    template <typename T>
-    struct CoordinatorName;
-
+    // forward decleration
     template <typename T>
     Strings GetPolicyRowNames();
 
@@ -45,14 +97,21 @@ namespace yaget::comp::db
     {
         const Strings stripKeywords{
             "::yaget", "yaget::",
-            "::ponger", "ponger::",
-            "::pong", "pong::",
             "::comp", "comp::",
-            "::scripting", "scripting::",
             "::db", "db::",
             "::io", "io::",
             "class",
-            "struct"};
+            "struct"
+        };
+
+
+        Strings ResolveUserStripKeywords(const Strings defaultSet);
+
+        inline const Strings& ResolveStripKeywords()
+        {
+            static Strings keywords = ResolveUserStripKeywords(stripKeywords);
+            return keywords;
+        }
 
         struct ColumnData
         {
@@ -76,7 +135,7 @@ namespace yaget::comp::db
             using BaseType = typename std::remove_pointer<typename std::decay<T>::type>::type;
             std::string typeName = meta::ViewToString(meta::type_name<BaseType>());
 
-            std::for_each(std::begin(internal::stripKeywords), std::end(internal::stripKeywords), [&typeName](const auto& element)
+            std::for_each(std::begin(internal::ResolveStripKeywords()), std::end(internal::ResolveStripKeywords()), [&typeName](const auto& element)
             {
                 conv::ReplaceAll(typeName, element, "");
             });
@@ -126,12 +185,12 @@ namespace yaget::comp::db
         }
 
         template <typename T>
-        std::string MakeTable(int64_t& schemaVersion, const std::string& tableName, std::set<std::string>& propertyNames, Columns& schemeTableData)
+        std::string MakeTable(int64_t& schemaVersion, const std::string& tableName, std::set<std::string>& propertyNames, Columns& schemeTableData, int coordinatorId)
         {
             auto command{ fmt::format("CREATE TABLE '{}' ('Id' INTEGER, ", tableName) };
             command += "'Name' TEXT DEFAULT '', ";
             command += "'Layer' INTEGER DEFAULT 0, ";
-            command += "'Coordinator' INTEGER DEFAULT 0, ";
+            command += fmt::format("'Coordinator' INTEGER DEFAULT {}, ", coordinatorId);
 
             const auto& table = CreateQuery<T>();
             for (const auto& element : table)
@@ -171,9 +230,10 @@ namespace yaget::comp::db
         {
             using BaseType = typename std::remove_pointer<typename std::decay<T0>::type>::type;
 
-            auto tableName = CoordinatorName<BaseType>::Name();
+            constexpr auto tableName = CoordinatorName<BaseType>::Name();
+            constexpr int coordinatorId = CoordinatorId<BaseType>::Value();
 
-            auto command = internal::MakeTable<BaseType::Row>(schemaVersion, tableName, propertyNames, schemaTableData);
+            auto command = internal::MakeTable<BaseType::Row>(schemaVersion, tableName, propertyNames, schemaTableData, coordinatorId);
             resultSchema.emplace_back(command);
         });
 
@@ -188,12 +248,13 @@ namespace yaget::comp::db
             {
                 columns += fmt::format("'{}' {}, ", element, "TEXT");
             }
-            auto command = fmt::format("CREATE TABLE '{}' ('Id' INTEGER, 'Coordinator' INTEGER DEFAULT 0, {} PRIMARY KEY('Id'));", componentTable.mPropertyTableName, columns);
+            // since we do not want to share component types between Coordinators, Coordinator field should be DEPRECATED.
+            auto command = fmt::format("CREATE TABLE '{}' ('Id' INTEGER, {} PRIMARY KEY('Id'));", componentTable.mPropertyTableName, columns);
             resultSchema.emplace_back(command);
         }
 
-        std::hash<char*> hasher;
-        schemaVersion = hasher(conv::Combine(resultSchema, "").c_str());
+        std::hash<std::string> hasher;
+        schemaVersion = hasher(conv::Combine(resultSchema, ""));
 
         return resultSchema;
     }

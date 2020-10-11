@@ -19,7 +19,7 @@ namespace yaget::ylog
 } // namespace yaget::ylog
 
 
-YAGET_BRAND_NAME("Beyond Limits")
+YAGET_BRAND_NAME_F("Beyond Limits")
 
 int main()
 {

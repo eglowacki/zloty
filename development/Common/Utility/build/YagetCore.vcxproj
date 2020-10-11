@@ -33,6 +33,7 @@
     <ClCompile Include="..\source\Components\ComponentTypes.cpp" />
     <ClCompile Include="..\source\Components\Coordinator.cpp" />
     <ClCompile Include="..\source\Components\GameCoordinator.cpp" />
+    <ClCompile Include="..\source\Components\GameCoordinatorGenerator.cpp" />
     <ClCompile Include="..\source\Components\GameSystem.cpp" />
     <ClCompile Include="..\source\Components\LocationComponent.cpp" />
     <ClCompile Include="..\source\Components\PayloadStager.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="..\include\Components\ComponentTypes.h" />
     <ClInclude Include="..\include\Components\Coordinator.h" />
     <ClInclude Include="..\include\Components\GameCoordinator.h" />
+    <ClInclude Include="..\include\Components\GameCoordinatorGenerator.h" />
     <ClInclude Include="..\include\Components\GameSystem.h" />
     <ClInclude Include="..\include\Components\LocationComponent.h" />
     <ClInclude Include="..\include\Components\PayloadStager.h" />

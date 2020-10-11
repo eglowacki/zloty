@@ -19,6 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\BoardSystem.cpp" />
+    <ClCompile Include="source\GameCoordinator.cpp" />
+    <ClCompile Include="source\InputComponent.cpp" />
+    <ClCompile Include="source\InventoryComponent.cpp" />
+    <ClCompile Include="source\PieceComponent.cpp" />
+    <ClCompile Include="source\PlayerComponent.cpp" />
+    <ClCompile Include="source\ScoreSystem.cpp" />
     <ClCompile Include="source\TicTocToe.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -34,6 +41,22 @@
       <FileType>Document</FileType>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\BoardComponent.cpp" />
+    <ClInclude Include="source\BoardComponent.h" />
+    <ClInclude Include="source\BoardSystem.h" />
+    <ClCompile Include="source\Game.cpp" />
+    <ClInclude Include="source\Game.h" />
+    <ClInclude Include="source\GameCoordinator.h" />
+    <ClInclude Include="source\GameTypes.h" />
+    <ClInclude Include="source\InputComponent.h" />
+    <ClInclude Include="source\InventoryComponent.h" />
+    <ClInclude Include="source\PieceComponent.h" />
+    <ClInclude Include="source\PlayerComponent.h" />
+    <ClInclude Include="source\ScoreComponent.h" />
+    <ClCompile Include="source\ScoreComponent.cpp" />
+    <ClInclude Include="source\ScoreSystem.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

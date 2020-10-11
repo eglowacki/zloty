@@ -61,7 +61,11 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
     : mDatabase(ResolveDatabaseName(name, false), CombineSchemas(additionalSchema, Strings{fmt::format("INSERT INTO VersionTables(Id) VALUES('{}');", expectedVersion)}, itemsSchema), YAGET_ITEMS_VERSION)
 {
     auto version = GetCell<int64_t>(mDatabase.DB(), "SELECT Id FROM VersionTables;");
-    YAGET_UTIL_THROW_ASSERT("DIRE", (expectedVersion == Database::NonVersioned || (expectedVersion != Database::NonVersioned && version == expectedVersion)), fmt::format("Director Database '{}' has mismatched version. Expected: '{}', result: '{}'.", name, expectedVersion, version));
+    YAGET_UTIL_THROW_ASSERT("DIRE", (expectedVersion == Database::NonVersioned || (expectedVersion != Database::NonVersioned && version == expectedVersion)), 
+        fmt::format("Director Database '{}' has mismatched version. Expected: '{}', result: '{}'.", 
+            yaget::util::ExpendEnv(name, nullptr).c_str(),
+            expectedVersion, 
+            version));
 
     YLOG_INFO("DIRE", "Items Director opened.");
 }

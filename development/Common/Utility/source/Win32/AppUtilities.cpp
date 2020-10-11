@@ -25,17 +25,9 @@ namespace
     std::string ResolveBrandName()
     {
         std::string result = "Yaget";
-        if (HINSTANCE handle = ::GetModuleHandle(nullptr))
+        if (const auto getBrandName = yaget::util::ResolveFunction<YagetFuncBrandName>(YAGET_GET_BRAND_FUNCTION_STRING))
         {
-            typedef const char* (*FuncBrandName) (void);
-
-            if (const auto getBrandName = (FuncBrandName)::GetProcAddress((HMODULE)handle, "GetBrandName"))
-            {
-                if (const auto b = getBrandName())
-                {
-                    result = b;
-                }
-            }
+            result = getBrandName();
         }
 
         return result;
@@ -211,7 +203,9 @@ namespace
             { "$(UserDataFolder)",{ ResolveUserDataFolder(), true } },
             { "$(AppDataFolder)",{ ResolveAppDataFolder(), true } },
             { "$(ScreenshotsFolder)",{ "$(UserDataFolder)/Screenshots", false } },
-            { "$(Brand)",{ ResolveBrandName(), true } }
+            { "$(Brand)",{ ResolveBrandName(), true } },
+            { "$(AssetsFolder)",{ "$(AppDataFolder)/Assets", false } },
+            { "$(DatabaseFolder)",{ "$(AppDataFolder)/Database", false } }
         };
 
         return envList;
@@ -707,3 +701,17 @@ void yaget::util::DefaultOptions(args::Options& options)
         ;
 }
 
+
+//---------------------------------------------------------------------------------------------------------------------------------
+void* yaget::util::ResolveFunction(const char* name)
+{
+    if (HINSTANCE handle = ::GetModuleHandle(nullptr))
+    {
+        if (const auto resolvedFunction = (void *)::GetProcAddress((HMODULE)handle, name))
+        {
+            return resolvedFunction;
+        }
+    }
+
+    return nullptr;
+}

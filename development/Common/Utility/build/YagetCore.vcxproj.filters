@@ -272,6 +272,9 @@
     <ClCompile Include="..\source\Win32\ProcHandler.cpp">
       <Filter>Application Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Components\GameCoordinatorGenerator.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -556,6 +559,9 @@
     </ClInclude>
     <ClInclude Include="..\include\App\ProcHandler.h">
       <Filter>Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\GameCoordinatorGenerator.h">
+      <Filter>Component Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

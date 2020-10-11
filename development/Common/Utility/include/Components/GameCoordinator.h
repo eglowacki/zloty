@@ -82,7 +82,7 @@ namespace yaget
 
 
     // Helper types to provide two basic types of how the ForEach loop in GameSystem is treated in respect
-    // to end if the list, and which coordinator to use
+    // to end of the list, and which coordinator to use
     using NoEndMarkerGlobal = comp::gs::EndMarkerNo<IGameCoordinator::GLOBAL_ID>;
     using EndMarkerEntity = comp::gs::EndMarkerYes<IGameCoordinator::ENTITY_ID>;
     using NoEndMarkerEntity = comp::gs::EndMarkerNo<IGameCoordinator::ENTITY_ID>;
