@@ -6,12 +6,15 @@
 //  Maintained by: Edgar
 //
 //  NOTES:
-//      Helper framework to generate Director datababe schema
+//      Helper framework to generate Director database schema
 //      for a specific set of user game data, using meta programming.
-//      Main input to GenerateGameDirectorSchema is user GameCoordinator type.
+//      Main input to GenerateGameDirectorSchema is user derived, aliased GameCoordinator type.
 //
 //      add that where GenerateGameDirectorSchema is called
 //      #include "HashUtilities.h"
+//
+//      and for any components used in template declarations, include relevant header for that component
+//      in the same place as above.
 //
 //
 //  #include "Components/GameCoordinatorGenerator.h"

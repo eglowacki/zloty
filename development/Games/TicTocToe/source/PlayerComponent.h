@@ -37,12 +37,13 @@ namespace ttt
 namespace yaget::comp::db
 {
     struct Side {};
+    struct SideControl {};
 
     template <>
     struct ComponentProperties<ttt::PlayerComponent>
     {
-        using Row = std::tuple<Side>;
-        using Types = std::tuple<int>;
-        static Types DefaultRow() { return Types{ 1 }; }
+        using Row = std::tuple<Side, SideControl>;
+        using Types = std::tuple<int, ttt::PieceType>;
+        static Types DefaultRow() { return Types{ 1, ttt::PieceType::Blank }; }
     };
 }

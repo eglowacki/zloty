@@ -30,7 +30,7 @@ namespace ttt
 
     // Represents type of pieces we have between players
     // It also serves as side control for player
-    enum class PieceType { X, O };
+    enum class PieceType {Blank, X, O };
 
     //! We only have one board and score hud per match
     using GlobalEntity = yaget::comp::RowPolicy<BoardComponent*, ScoreComponent*>;
