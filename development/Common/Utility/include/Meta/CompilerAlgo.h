@@ -21,6 +21,26 @@
 
 namespace yaget::meta
 {
+    // removes any cv, pointers and references qualifiers from T
+    // using BaseType = typename meta::strip_qualifiers<T>::type;
+    template <typename T>
+    struct strip_qualifiers
+    {
+        using type = typename std::remove_pointer<typename std::decay<T>::type>::type;
+    };
+
+    // Helper types
+    // using BaseType = typename meta::strip_qualifiers_t<T>;
+    template<typename T>
+    using strip_qualifiers_t = typename strip_qualifiers<T>::type;
+
+    // chekc if a specific type exist in tuple
+    template <typename T1, typename... T2>
+    constexpr bool check_for_type(std::tuple<T2...>)
+    {
+        return std::disjunction_v<std::is_same<T1, T2>...>;
+    }
+
     // compile time iteration over tuple and calling callback for each entry with Type
     // The Type is passed as Type pointer set to nullptr.
     template <
@@ -34,7 +54,8 @@ namespace yaget::meta
         if constexpr (Index < Size)
         {
             using RequestedType = typename std::tuple_element<Index, TTuple>::type;
-            using BaseType = typename std::remove_pointer<typename std::decay<RequestedType>::type>::type;
+            using BaseType = strip_qualifiers_t<RequestedType>;
+            //using BaseType = typename std::remove_pointer<typename std::decay<RequestedType>::type>::type;
             BaseType* rt = nullptr;
             std::invoke(callable, rt);
 
@@ -96,6 +117,27 @@ namespace yaget::meta
             meta::tuple_copy<N + 1, To, From>(to, from);
         }
     }
+
+    // return index of tuple based on type
+    // Row is some tuple of types <int, float, std::string, ...>
+    // T represents a type to find index of, int, std::string, etc.
+    // Index then can be used to get element from tuple at that position
+    // constexpr std::size_t index = meta::Index<T, Row>::value;
+    // return std::get<index>(mDataStorage);
+    template <class T, class Tuple>
+    struct Index;
+
+    template <class T, class... Types>
+    struct Index<T, std::tuple<T, Types...>>
+    {
+        static const std::size_t value = 0;
+    };
+
+    template <class T, class U, class... Types>
+    struct Index<T, std::tuple<U, Types...>>
+    {
+        static const std::size_t value = 1 + Index<T, std::tuple<Types...>>::value;
+    };
 
     // used to create array of visitor objects
     //constexpr temp::meta::Visitor visitor{

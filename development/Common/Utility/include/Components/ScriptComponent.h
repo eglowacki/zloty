@@ -28,18 +28,6 @@ namespace yaget
     {
         class ScriptComponent;
 
-        namespace db
-        {
-            template <>
-            struct ComponentProperties<comp::ScriptComponent>
-            {
-                using Row = std::tuple<>;
-                using Types = std::tuple<>;
-                static Types DefaultRow() { return Types{}; }
-            };
-
-        }
-
         class ScriptComponent : public Component
         {
         public:

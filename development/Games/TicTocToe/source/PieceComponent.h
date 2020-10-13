@@ -16,31 +16,24 @@
 //! \file
 #pragma once
 
-#include "GameTypes.h"
-#include "Components/Component.h"
+#include "Components/PersistentBaseComponent.h"
 
 
 namespace ttt
 {
-    class PieceComponent : public yaget::comp::BaseComponent
+    enum class PieceType;
+
+    namespace pic
+    {
+        struct Side {};
+        using Types = std::tuple<Side>;
+        using Storage = std::tuple<PieceType>;
+    }
+
+    class PieceComponent : public yaget::comp::db::PersistentBaseComponent<pic::Types, pic::Storage>
     {
     public:
-        static constexpr int Capacity = 4;
-
         PieceComponent(yaget::comp::Id_t id, PieceType pieceType);
-
-    private:
-        PieceType mPieceType;
     };
 
-}
-
-
-namespace yaget::comp::db
-{
-    template <>
-    struct ComponentProperties<ttt::PieceComponent>
-    {
-        using Row = std::tuple<>;
-    };
 }

@@ -17,8 +17,6 @@
 
 #include "Components/GameCoordinator.h"
 
-YAGET_COMPILE_SUPRESS_START(4100, "'': unreferenced local variable")
-
 namespace ttt
 {
     class BoardComponent;
@@ -48,6 +46,3 @@ namespace ttt
     using GamePolicy = yaget::comp::CoordinatorPolicy<Entity, GlobalEntity>;
 
 }
-
-YAGET_COMPILE_SUPRESS_END
-

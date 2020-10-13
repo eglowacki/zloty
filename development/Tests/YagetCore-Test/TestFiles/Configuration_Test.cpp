@@ -12,7 +12,7 @@ protected:
     // void TearDown() override {}
 
 private:
-    yaget::test::Environment mEnvironment;
+    //yaget::test::Environment mEnvironment;
 };
 
 

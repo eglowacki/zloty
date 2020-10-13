@@ -15,32 +15,23 @@
 //! \file
 #pragma once
 
-#include "Components/Component.h"
+#include "Components/PersistentBaseComponent.h"
 
 
 namespace ttt
 {
-    class BoardComponent : public yaget::comp::BaseComponent
+    namespace bc
+    {
+        struct Rows {};
+        struct Columns {};
+        using Types = std::tuple<Rows, Columns>;
+        using Storage = std::tuple<int, int>;
+    }
+
+    class BoardComponent : public yaget::comp::db::PersistentBaseComponent<bc::Types, bc::Storage, 4>
     {
     public:
-        static constexpr int Capacity = 4;
-
         BoardComponent(yaget::comp::Id_t id, int rows, int columns);
-
-    private:
-        int mNumRows;
-        int mNumColumns;
     };
 
 }
-
-namespace yaget::comp::db
-{
-    template <>
-    struct ComponentProperties<ttt::BoardComponent>
-    {
-        using Row = std::tuple<>;
-    };
-}
-
-

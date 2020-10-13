@@ -2,6 +2,6 @@
 
 
 ttt::ScoreComponent::ScoreComponent(yaget::comp::Id_t id)
-    : BaseComponent(id)
+    : PersistentBaseComponent(id)
 {
 }

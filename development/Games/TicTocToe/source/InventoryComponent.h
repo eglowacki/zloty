@@ -16,32 +16,22 @@
 //! \file
 #pragma once
 
-#include "Components/Component.h"
+#include "Components/PersistentBaseComponent.h"
 
 
 namespace ttt
 {
-    class InventoryComponent : public yaget::comp::BaseComponent
+    namespace ivc
+    {
+        struct NumPieces {};
+        using Types = std::tuple<NumPieces>;
+        using Storage = std::tuple<int>;
+    }
+
+    class InventoryComponent : public yaget::comp::db::PersistentBaseComponent<ivc::Types, ivc::Storage, 4>
     {
     public:
-        static constexpr int Capacity = 4;
-
         InventoryComponent(yaget::comp::Id_t id, int numPieces);
-
-    private:
-        int mNumPieces;
     };
 
 }
-
-namespace yaget::comp::db
-{
-    template <>
-    struct ComponentProperties<ttt::InventoryComponent>
-    {
-        using Row = std::tuple<>;
-    };
-}
-
-
-

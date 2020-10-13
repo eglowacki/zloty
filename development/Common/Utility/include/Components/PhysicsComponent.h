@@ -38,26 +38,6 @@ namespace yaget
         class PhysicsWorldComponent;
         class PhysicsComponent;
 
-        namespace db
-        {
-            template <>
-            struct ComponentProperties<comp::PhysicsWorldComponent>
-            {
-                using Row = std::tuple<>;
-                using Types = std::tuple<>;
-                static Types DefaultRow() { return Types{}; };
-            };
-
-            template <>
-            struct ComponentProperties<comp::PhysicsComponent>
-            {
-                using Row = std::tuple<>;
-                using Types = std::tuple<>;
-                static Types DefaultRow() { return Types{}; };
-            };
-
-        }
-
         class PhysicsWorldComponent : public Component
         {
         public:

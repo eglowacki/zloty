@@ -15,29 +15,21 @@
 //! \file
 #pragma once
 
-#include "Components/Component.h"
+#include "Components/PersistentBaseComponent.h"
 
 
 namespace ttt
 {
-    class ScoreComponent : public yaget::comp::BaseComponent
+    namespace sc
+    {
+        using Types = std::tuple<>;
+        using Storage = std::tuple<>;
+    }
+
+    class ScoreComponent : public yaget::comp::db::PersistentBaseComponent<sc::Types, sc::Storage, 4>
     {
     public:
-        static constexpr int Capacity = 4;
-
         ScoreComponent(yaget::comp::Id_t id);
     };
 
 }
-
-
-namespace yaget::comp::db
-{
-    template <>
-    struct ComponentProperties<ttt::ScoreComponent>
-    {
-        using Row = std::tuple<>;
-    };
-}
-
-

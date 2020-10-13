@@ -92,9 +92,12 @@ namespace yaget::comp::db
         hash_combine(seed, rest...);
     }
 
-    // forward decleration
+    // forward declerations
     template <typename T>
     Strings GetPolicyRowNames();
+
+    template <typename T>
+    Strings GetPolicyRowTypes();
 
     namespace internal
     {
@@ -108,7 +111,7 @@ namespace yaget::comp::db
         };
 
 
-        Strings ResolveUserStripKeywords(const Strings defaultSet);
+        Strings ResolveUserStripKeywords(const Strings& defaultSet);
 
         inline const Strings& ResolveStripKeywords()
         {
@@ -121,6 +124,7 @@ namespace yaget::comp::db
             std::string mName;                  // name of the column, this defaults to class_name
             std::string mPropertyTableName;
             Strings mPropertyNames;
+            Strings mPropertyTypes;
 
             bool operator<(const ColumnData& v) const
             {
@@ -135,7 +139,7 @@ namespace yaget::comp::db
         template <typename T>
         std::string ResolveName()
         {
-            using BaseType = typename std::remove_pointer<typename std::decay<T>::type>::type;
+            using BaseType = meta::strip_qualifiers_t<T>;
             std::string typeName = meta::ViewToString(meta::type_name<BaseType>());
 
             std::for_each(std::begin(internal::ResolveStripKeywords()), std::end(internal::ResolveStripKeywords()), [&typeName](const auto& element)
@@ -147,6 +151,28 @@ namespace yaget::comp::db
 
             return typeName;
         }
+
+        // used in outputting sqlite type from c++ types.
+        template <typename T>
+        inline std::string ResolveDatabaseType() { return "STRING"; }
+
+        template<>
+        inline std::string ResolveDatabaseType<int>() { return "INTEGER"; }
+
+        template<>
+        inline std::string ResolveDatabaseType<unsigned int>() { return "INTEGER"; }
+        template<>
+
+        inline std::string ResolveDatabaseType<int64_t>() { return "INTEGER"; }
+        template<>
+
+        inline std::string ResolveDatabaseType<uint64_t>() { return "INTEGER"; }
+
+        template<>
+        inline std::string ResolveDatabaseType<float>() { return "REAL"; }
+
+        template<>
+        inline std::string ResolveDatabaseType<double>() { return "REAL"; }
 
         template <typename T>
         std::string ResolveComponentTableName()
@@ -166,18 +192,22 @@ namespace yaget::comp::db
 
             auto callback = [&columns]<typename T0>(const T0& element)
             {
-                using BaseType = typename std::remove_pointer<typename std::decay<T0>::type>::type;
+                using BaseType = meta::strip_qualifiers_t<T0>;
 
                 auto typeName = internal::ResolveName<T0>();
 
                 const auto propertiesTable = fmt::format("{}Properties", typeName);
 
-                using propertyTypes = typename ComponentProperties<BaseType>::Row;
-                const auto& propNames = db::GetPolicyRowNames<propertyTypes>();
+                using rowType = typename RowDescription_t<BaseType>::Row;
+                using valueType = typename RowDescription_t<BaseType>::Types;
+                const auto& propNames = db::GetPolicyRowNames<rowType>();
+                const auto& propTypes = db::GetPolicyRowTypes<valueType>();
+                YAGET_ASSERT(propNames.size() == propTypes.size(), "propNames has '%d' elements, but propTypes does not match with '%d' elements.", propNames.size(), propTypes.size());
                 columns.emplace_back(ColumnData{
-                    .mName = typeName, 
+                    .mName = typeName,
                     .mPropertyTableName = propertiesTable,
-                    .mPropertyNames = propNames
+                    .mPropertyNames = propNames,
+                    .mPropertyTypes = propTypes
                 });
             };
 
@@ -198,7 +228,6 @@ namespace yaget::comp::db
             const auto& table = CreateQuery<T>();
             for (const auto& element : table)
             {
-                //comp::db::hash_combine(schemaVersion,element.mHash);
                 command += fmt::format("'{}' INTEGER DEFAULT 0, ", element.mName);
                 propertyNames.insert(element.mPropertyTableName);
 
@@ -231,7 +260,7 @@ namespace yaget::comp::db
 
         meta::for_each_type<Coordinators>([&schemaVersion, &propertyNames, &resultSchema, &schemaTableData]<typename T0>(const T0& element)
         {
-            using BaseType = typename std::remove_pointer<typename std::decay<T0>::type>::type;
+            using BaseType = meta::strip_qualifiers_t<T0>;
 
             constexpr auto tableName = CoordinatorName<BaseType>::Name();
             constexpr int coordinatorId = CoordinatorId<BaseType>::Value();
@@ -247,11 +276,13 @@ namespace yaget::comp::db
         for (const auto& componentTable : schemaTableData)
         {
             std::string columns;
-            for (const auto& element : componentTable.mPropertyNames)
+            auto it_name = std::begin(componentTable.mPropertyNames);
+            auto it_type = std::begin(componentTable.mPropertyTypes);
+            for (; it_name != std::end(componentTable.mPropertyNames); ++it_name, ++it_type)
             {
-                columns += fmt::format("'{}' {}, ", element, "TEXT");
+                columns += fmt::format("'{}' {}, ", *it_name, *it_type);
             }
-            // since we do not want to share component types between Coordinators, Coordinator field should be DEPRECATED.
+
             auto command = fmt::format("CREATE TABLE '{}' ('Id' INTEGER, {} PRIMARY KEY('Id'));", componentTable.mPropertyTableName, columns);
             resultSchema.emplace_back(command);
         }
@@ -284,20 +315,26 @@ namespace yaget::comp::db
     }
 
     template <typename T>
-    struct ComponentRowTypes
+    Strings GetPolicyRowTypes()
     {
-    private:
-        using BaseRowName = ComponentProperties<comp::Component>::Row;
-        using TName = typename ComponentProperties<T>::Row;
-        
-        using BaseRowType = ComponentProperties<comp::Component>::Types;
-        using TType = typename ComponentProperties<T>::Types;
+        using RowType = T;
+        Strings results;
 
-    public:
-        using RowNames = decltype(std::tuple_cat(BaseRowName{}, TName{}));
-        using RowTypes = decltype(std::tuple_cat(BaseRowType{}, TType{}));
+        meta::for_each_type<RowType>([&results]<typename T0>(const T0&)
+        {
+            using BaseType = meta::strip_qualifiers_t<T0>;
+            auto typeName = internal::ResolveDatabaseType<BaseType>();
+            results.emplace_back(typeName);
+        });
 
-        static RowTypes DefaultRow() { return std::tuple_cat(ComponentProperties<comp::Component>::DefaultRow(), ComponentProperties<T>::DefaultRow()); }
+        return results;
+    }
+
+    template <typename T>
+    struct ComponentRowDescription
+    {
+        using RowNames = typename RowDescription_t<T>::Row;
+        using RowTypes = typename RowDescription_t<T>::Types;
     };
 
     template <typename T>
@@ -312,7 +349,7 @@ namespace yaget::comp::db
     template <typename T>
     void PreCacheInsertComponent(SQLite& db)
     {
-        using CRT = ComponentRowTypes<T>;
+        using CRT = ComponentRowDescription<T>;
 
         const auto& tableName = GetTypeTableName<T>();
         const auto& rowNames = GetPolicyRowNames<typename CRT::RowNames>();
@@ -323,7 +360,7 @@ namespace yaget::comp::db
     }
 
     template <typename T>
-    bool InsertComponent(SQLite& db, const typename ComponentRowTypes<T>::RowTypes& row)
+    bool InsertComponent(SQLite& db, const typename ComponentRowDescription<T>::RowTypes& row)
     {
         const auto& tableName = GetTypeTableName<T>();
         auto result = db.ExecuteStatementTuple("ComponentInsert" + tableName, row);
@@ -332,7 +369,7 @@ namespace yaget::comp::db
     }
 
     template <typename T>
-    void InsertComponentTuple(SQLite& db, const typename ComponentRowTypes<T>::RowTypes& row)
+    void InsertComponentTuple(SQLite& db, const typename ComponentRowDescription<T>::RowTypes& row)
     {
         const auto& tableName = GetTypeTableName<T>();
 

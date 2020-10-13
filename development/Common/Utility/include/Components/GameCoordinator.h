@@ -106,7 +106,19 @@ namespace yaget
         GameCoordinator(RenderCallback renderCallback, S... args) 
             : mRenderCallback(renderCallback)
             , mSystems(args...)
-        {}
+        {
+            meta::for_each_type<typename Entity::Row>([]<typename T0>(const T0&)
+            {
+                typename Global::Row row{};
+                YAGET_ASSERT(!meta::check_for_type<T0>(row), "You can not have same types of row property between Global and Entity Coordinators. Type: '%s'.", meta::ViewToString(meta::type_name<T0>()).c_str());
+            });
+
+            meta::for_each_type<typename Global::Row>([]<typename T0>(const T0&)
+            {
+                typename Entity::Row row{};
+                YAGET_ASSERT(!meta::check_for_type<T0>(row), "You can not have same types of row property between Entity and Global Coordinators. Type: '%s'.", meta::ViewToString(meta::type_name<T0>()).c_str());
+            });
+        }
 
         GameCoordinator(S... args)
             : GameCoordinator([](const time::GameClock&, metrics::Channel&) {}, args...)

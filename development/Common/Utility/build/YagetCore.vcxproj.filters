@@ -275,6 +275,9 @@
     <ClCompile Include="..\source\Components\GameCoordinatorGenerator.cpp">
       <Filter>Component Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Components\PersistentBaseComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -561,6 +564,9 @@
       <Filter>Application Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Components\GameCoordinatorGenerator.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\PersistentBaseComponent.h">
       <Filter>Component Files</Filter>
     </ClInclude>
   </ItemGroup>

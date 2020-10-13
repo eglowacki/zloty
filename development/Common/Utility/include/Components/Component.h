@@ -19,10 +19,10 @@
 #include "Components/ComponentTypes.h"
 #include "MemoryManager/PoolAllocator.h"
 #include "Metrics/Performance.h"
-#include <memory>
-#include <map>
+
 #include <array>
-#include <stack>
+#include <map>
+#include <memory>
 #include <queue>
 #include <typeindex>
 
@@ -36,30 +36,53 @@ namespace yaget
 
         namespace db
         {
-            // specialize ComponentProperties to provide which properties are save/load in Director db.
-            template <typename T>
-            struct ComponentProperties;
-
-            // Placeholder to use as names in ComponentProperties::Rpw for properties specified in ComponentProperties::Types
-            struct Id {};
-            struct Coordinator {};
-
-            // specialization for base component to expose Id and Coordinator type
-            template <>
-            struct ComponentProperties<Component>
+            namespace internal
             {
-                using Row = std::tuple<Id, Coordinator>;
-                using Types = std::tuple<comp::Id_t, int>;
-                static Types DefaultRow() { return Types{ comp::INVALID_ID, 0 }; }
+                template<typename T>
+                concept HasCompRow = requires (T)
+                {
+                    T::Row;
+                    T::Types;
+                };
+
+                template <typename T>
+                auto GetPropRow()
+                {
+                    if constexpr (internal::HasCompRow<T>)
+                    {
+                        struct ComponentProperties
+                        {
+                            using Row = typename T::Row;
+                            using Types = typename T::Types;
+                        };
+
+                        return ComponentProperties{};
+                    }
+                    else
+                    {
+                        static_assert(false, "[yaget diagnostic] Type T missing Row alias, as in internal::HasCompRow concept");
+                    }
+                }
+
+            }
+
+            template <typename T>
+            struct RowDescription
+            {
+                using Type = decltype(internal::GetPropRow<T>());
             };
+
+            template <typename T>
+            using RowDescription_t = typename RowDescription<T>::Type;
 
         }
 
         // just provide basic template when using components. This does not add virtual table (vpt).
-        class BaseComponent : public Noncopyable<BaseComponent>
+        template <int Cap = 64>
+        class BaseComponent : public Noncopyable<BaseComponent<Cap>>
         {
         public:
-            static constexpr int Capacity = 64;
+            static constexpr int Capacity = Cap;
 
             ~BaseComponent() { mId = INVALID_ID; }
 
@@ -77,7 +100,7 @@ namespace yaget
 
         // Base class for all derive components. It exposes tick and id.
         // NOTE: Do we need anymore base class and virtual methods since we are relaying on pools?
-        class Component : public BaseComponent
+        class Component : public BaseComponent<64>
         {
         public:
             virtual ~Component();

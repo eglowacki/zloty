@@ -1,0 +1,3 @@
+﻿#include "Components/PersistentBaseComponent.h"
+
+DISREGARD_LINKER_4221(COMPILER_VERIFICATION_PersistentBaseComponent_h)

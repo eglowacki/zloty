@@ -16,7 +16,7 @@ protected:
     // void TearDown() override {}
 
 private:
-    yaget::test::Environment mEnvironment;
+    //yaget::test::Environment mEnvironment;
 };
 
 namespace
@@ -44,7 +44,7 @@ namespace
 } // namespace
 
 
-TEST(PoolAllocators, Basic)
+TEST_F(PoolAllocators, Basic)
 {
     using namespace yaget;
 
@@ -77,7 +77,7 @@ TEST(PoolAllocators, Basic)
     //--CHECK_EQUAL(testClass->z, -kUserNumber);
 }
 
-TEST(PoolAllocators, Capacity)
+TEST_F(PoolAllocators, Capacity)
 {
     using namespace yaget;
     using TC = std::shared_ptr<TestClass>;
@@ -105,7 +105,7 @@ TEST(PoolAllocators, Capacity)
     }
 }
 
-TEST(PoolAllocators, Performance)
+TEST_F(PoolAllocators, Performance)
 {
     using namespace yaget;
     using TC = std::shared_ptr<TestClass>;

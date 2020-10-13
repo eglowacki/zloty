@@ -178,6 +178,7 @@
     <ClInclude Include="..\include\Components\GameSystem.h" />
     <ClInclude Include="..\include\Components\LocationComponent.h" />
     <ClInclude Include="..\include\Components\PayloadStager.h" />
+    <ClInclude Include="..\include\Components\PersistentBaseComponent.h" />
     <ClInclude Include="..\include\Components\PhysicsComponent.h" />
     <ClInclude Include="..\include\Components\ScriptComponent.h" />
     <ClInclude Include="..\include\Database\Database.h" />
@@ -242,6 +243,7 @@
     <ClInclude Include="..\include\VTS\ToolVirtualTransportSystem.h" />
     <ClInclude Include="..\include\VTS\VirtualTransportSystem.h" />
     <ClInclude Include="..\source\Application\AppHarness.cpp" />
+    <ClCompile Include="..\source\Components\PersistentBaseComponent.cpp" />
     <ClInclude Include="..\source\ImageLoaders\lodepng.h" />
     <ClInclude Include="..\source\Logger\OutputMemory.cpp" />
     <ClInclude Include="..\source\targetver.h" />

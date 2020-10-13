@@ -16,34 +16,23 @@
 #pragma once
 
 #include "GameTypes.h"
-#include "Components/Component.h"
+#include "Components/PersistentBaseComponent.h"
 
 
 namespace ttt
 {
-    class PlayerComponent : public yaget::comp::BaseComponent
+    namespace pc
+    {
+        struct Side {};
+        struct SideControl {};
+        using Types = std::tuple<Side, SideControl>;
+        using Storage = std::tuple<int, PieceType>;
+    }
+
+    class PlayerComponent : public yaget::comp::db::PersistentBaseComponent<pc::Types, pc::Storage, 4>
     {
     public:
-        static constexpr int Capacity = 4;
-
         PlayerComponent(yaget::comp::Id_t id, PieceType sideControl);
-
-    private:
-        PieceType mSideControl;
     };
 
-}
-
-namespace yaget::comp::db
-{
-    struct Side {};
-    struct SideControl {};
-
-    template <>
-    struct ComponentProperties<ttt::PlayerComponent>
-    {
-        using Row = std::tuple<Side, SideControl>;
-        using Types = std::tuple<int, ttt::PieceType>;
-        static Types DefaultRow() { return Types{ 1, ttt::PieceType::Blank }; }
-    };
 }

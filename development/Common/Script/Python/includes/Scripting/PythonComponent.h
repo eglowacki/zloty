@@ -36,15 +36,6 @@ namespace yaget
     namespace comp::db
     {
         struct Scripts {};
-
-        template <>
-        struct ComponentProperties<scripting::PythonComponent>
-        {
-            using Row = std::tuple<Scripts>;
-            using Types = std::tuple<io::Tags>;
-            static Types DefaultRow() { return Types{}; };
-        };
-
     }
 
     namespace scripting

@@ -150,7 +150,7 @@ namespace yaget
         {
             if constexpr (Index < Size)
             {
-                using TT = typename std::remove_pointer<typename std::decay<decltype(std::get<Index>(tuple))>::type>::type;
+                using TT = meta::strip_qualifiers_t<decltype(std::get<Index>(tuple))>;
                 StatementBinder<TT>::Bind(database, stm, std::get<Index>(tuple), Index + 1);    // last param, index is always based on 1
 
                 if constexpr (Index + 1 < Size)

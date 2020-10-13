@@ -35,7 +35,7 @@ YAGET_USER_STRIP_KEYWORDS_F(defaultSet)
 {
     using namespace yaget;
 
-    static Initer initer(defaultSet, ",::ttt,ttt::");
+    static Initer initer(defaultSet, ",::ttt,ttt::,::bc,bc::,::ivc,ivc::,::pic,pic::,::pc,pc::");
     return initer.mKeywords.c_str();
 }
 
@@ -68,6 +68,88 @@ namespace yaget::comp::db
     };
 
 }
+
+
+#include <concepts>
+
+//template<typename T>
+//concept has_barV = requires(const T & t)
+//{
+//    t.BarV;
+//};
+//
+//
+//template<typename T>
+//concept has_bar = requires(const T & t)
+//{
+//    t.Bar();
+//};
+//
+//struct Foo
+//{
+//    float BarV2 = 0;
+//    void Bar() const {}
+//
+//    int z = 0;
+//};
+//
+//bool r = has_bar<Foo>;
+//bool r1 = has_barV<Foo>;
+
+//
+//template<typename T>
+//concept HasCompRow = requires (T)
+//{
+//    T::Row;
+//};
+//
+////template <typename T> requires HasCompRow<T>
+////struct Foo
+////{
+////    using Row = typename T::Row;
+////
+////    Row mRow{};
+////};
+//
+//
+//template <typename T>
+//auto GetPropRow()
+//{
+//    if constexpr (HasCompRow<T>)
+//    {
+//        struct Foo
+//        {
+//            using Row = typename T::Row;
+//        };
+//
+//        return Foo{};
+//    }
+//    else
+//    {
+//        struct Foo
+//        {
+//            using Row = char;
+//        };
+//
+//        return Foo{};
+//    }
+//}
+//
+//template <typename T>
+//struct PropAlias
+//{
+//    using Type = typename decltype(GetPropRow<T>())::Row;
+//};
+//
+//struct Bar
+//{
+//    using Row = int;
+//};
+//
+//struct Bar2
+//{
+//};
+
 
 
 YAGET_COMPILE_SUPRESS_START(4100, "'': unreferenced local variable")
