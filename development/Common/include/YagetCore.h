@@ -106,7 +106,8 @@ namespace yaget
 
 // helper defines during development to suppress any warnings, since we compile with warnings as errors
 //
-//  YAGET_COMPILE_SUPRESS_START(4100, "'': unreferenced local variable")
+//  YAGET_COMPILE_SUPRESS_START(4100, "unreferenced local variable")
+//  your code here
 //  YAGET_COMPILE_SUPRESS_END
 #define YAGET_COMPILE_SUPRESS_START(x, m) \
 __pragma(warning(push)) \
@@ -114,6 +115,20 @@ __pragma(warning(disable : x)) \
 __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] Disabling Compiler Warning: [" YAGET_STRINGIZE(x) "] - " m))
 
 #define YAGET_COMPILE_SUPRESS_END __pragma(warning(pop))
+
+
+// helper defines during development to change warning level around block of code
+//
+//  YAGET_COMPILE_WARNING_LEVEL_START(3, "Development of new class")
+//  your code here
+//  YAGET_COMPILE_WARNING_LEVEL_END
+#define YAGET_COMPILE_WARNING_LEVEL_START(x, m) \
+__pragma(warning(push, x)) \
+__pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] Changed Warning Level to: [" YAGET_STRINGIZE(x) "] - " m))
+
+#define YAGET_COMPILE_WARNING_LEVEL_END YAGET_COMPILE_SUPRESS_END
+
+
 
 // Support for custom functions to provide extra log tags
 #define YAGET_GET_BRAND_FUNCTION_NAME GetBrandName
@@ -131,6 +146,16 @@ typedef const char* (*YagetFuncUserStripKeywords) (const char*);
 
 #define YAGET_USER_STRIP_KEYWORDS_F(name) extern "C" __declspec(dllexport) const char* YAGET_USER_STRIP_KEYWORDS_FUNCTION_NAME(const char* name)
 
+// Helper define to simplyfy adding user strip keywords
+#define YAGET_CUSTOMIZE_STRIP_KEYWORDS(set)     \
+    YAGET_USER_STRIP_KEYWORDS_F(defaultSet)     \
+    {                                           \
+        using namespace yaget;                  \
+                                                \
+        static Initer initer(defaultSet, set);  \
+        return initer.mKeywords.c_str();        \
+    }
+
 namespace yaget
 {
     //! This is used in definition of YAGET_USER_STRIP_KEYWORDS_F to simplify adding of new keywords
@@ -139,6 +164,9 @@ namespace yaget
     //  static yaget::Initer initer(defaultSet, ",::ttt,ttt::");
     //  return initer.mKeywords.c_str();
     //}
+    //
+    // or use alternate macro
+    // YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::ttt,ttt::")
 
     struct Initer
     {

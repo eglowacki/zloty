@@ -17,6 +17,7 @@
 
 #include "YagetCore.h"
 #include "Database/Database.h"
+#include "Components/GameCoordinatorGenerator.h"
 
 namespace yaget
 {
@@ -76,6 +77,19 @@ namespace yaget
             Database mDatabase;
             mutable std::mutex mDatabaseMutex;
         };
+
+        template <typename T>
+        class DefaultDirector : public Director
+        {
+        public:
+            DefaultDirector()
+                : Director("$(DatabaseFolder)/director.sqlite", comp::db::GenerateGameDirectorSchema<T>(mSchemaVersion), Database::NonVersioned)
+            {}
+
+        private:
+            inline static int64_t mSchemaVersion = 0;
+        };
+
 
     } // namespace items
 } // namespace yaget

@@ -21,6 +21,7 @@
 
 namespace yaget::meta
 {
+    //-------------------------------------------------------------------------------------------------
     // removes any cv, pointers and references qualifiers from T
     // using BaseType = typename meta::strip_qualifiers<T>::type;
     template <typename T>
@@ -34,13 +35,14 @@ namespace yaget::meta
     template<typename T>
     using strip_qualifiers_t = typename strip_qualifiers<T>::type;
 
-    // chekc if a specific type exist in tuple
+    // check if a specific type exist in tuple
     template <typename T1, typename... T2>
     constexpr bool check_for_type(std::tuple<T2...>)
     {
         return std::disjunction_v<std::is_same<T1, T2>...>;
     }
 
+    //-------------------------------------------------------------------------------------------------
     // compile time iteration over tuple and calling callback for each entry with Type
     // The Type is passed as Type pointer set to nullptr.
     template <
@@ -49,7 +51,7 @@ namespace yaget::meta
         size_t Size = std::tuple_size_v<std::remove_reference_t<TTuple>>,
         typename TCallable
     >
-    void for_each_type(TCallable&& callable)
+    constexpr int for_each_type(TCallable&& callable)
     {
         if constexpr (Index < Size)
         {
@@ -64,6 +66,8 @@ namespace yaget::meta
                 for_each_type<TTuple, Index + 1>(std::forward<TCallable>(callable));
             }
         }
+
+        return 0;
     }
 
     // similar as above, but iterates over each element
@@ -73,7 +77,7 @@ namespace yaget::meta
         size_t Size = std::tuple_size_v<std::remove_reference_t<TTuple>>,
         typename TCallable
     >
-    void for_each(TTuple&& tuple, TCallable&& callable)
+    constexpr void for_each(TTuple&& tuple, TCallable&& callable)
     {
         if constexpr (Index < Size)
         {
@@ -93,7 +97,7 @@ namespace yaget::meta
         size_t Size = std::tuple_size_v<std::remove_reference_t<TTuple>>,
         typename TCallable
     >
-    void for_each_pair(TTuple&& tuple, TCallable&& callable)
+    constexpr void for_each_pair(TTuple&& tuple, TCallable&& callable)
     {
         if constexpr (Index + 1 < Size)
         {
@@ -106,18 +110,33 @@ namespace yaget::meta
         }
     }
 
-    // Copies one tuple into another. Both must match size
-    // From tuple elements are used like a function call
+    //-------------------------------------------------------------------------------------------------
+    // Makes unique instance from elements and copies
+    // that tuple element into another. Both must match size
+    // From tuple elements are used like a function call to make a separate copy
     template<int N, typename To, typename From, size_t Size = std::tuple_size_v<std::remove_reference_t<To>>>
-    void tuple_copy(To& to, const From& from)
+    constexpr void tuple_clone(To& to, const From& from)
     {
         std::get<N>(to) = std::get<N>(from)();
         if constexpr (N + 1 < Size)
         {
-            meta::tuple_copy<N + 1, To, From>(to, from);
+            meta::tuple_clone<N + 1, To, From>(to, from);
         }
     }
 
+    template<typename S, typename T, int N = std::tuple_size_v<std::remove_reference_t<S>>>
+    void tuple_copy(const S& source, T& target)
+    {
+        using ET = typename std::tuple_element<N - 1, S>::type;
+
+        std::get<ET>(target) = std::get<ET>(source) ? std::get<ET>(source) : std::get<ET>(target);
+        if constexpr (N - 1 > 0)
+        {
+            tuple_copy<S, T, N - 1>(source, target);
+        }
+    }
+
+    //-------------------------------------------------------------------------------------------------
     // return index of tuple based on type
     // Row is some tuple of types <int, float, std::string, ...>
     // T represents a type to find index of, int, std::string, etc.
@@ -139,6 +158,80 @@ namespace yaget::meta
         static const std::size_t value = 1 + Index<T, std::tuple<Types...>>::value;
     };
 
+
+    //-------------------------------------------------------------------------------------------------
+    // Finding a type in a tuple by Raymond
+    // https://devblogs.microsoft.com/oldnewthing/20200629-00/?p=103910
+    //// index = 1
+    //    constexpr std::size_t index =
+    //    tuple_element_index_v<int, std::tuple<char, int, float>>;
+
+    //// error: type does not appear in tuple
+    //constexpr std::size_t index =
+    //    tuple_element_index_v<double, std::tuple<char, int, float>>;
+
+    //// error: type appears more than once in tuple
+    //constexpr std::size_t index =
+    //    tuple_element_index_v<int, std::tuple<char, int, int>>;
+    //
+    template<typename T, typename Tuple>
+    struct tuple_element_index_helper;
+
+    template<typename T>
+    struct tuple_element_index_helper<T, std::tuple<>>
+    {
+        static constexpr std::size_t value = 0;
+    };
+
+    template<typename T, typename... Rest>
+    struct tuple_element_index_helper<T, std::tuple<T, Rest...>>
+    {
+        static constexpr std::size_t value = 0;
+        using RestTuple = std::tuple<Rest...>;
+        static_assert(tuple_element_index_helper<T, RestTuple>::value == std::tuple_size_v<RestTuple>,
+            "type appears more than once in tuple");
+    };
+
+    template<typename T, typename First, typename... Rest>
+    struct tuple_element_index_helper<T, std::tuple<First, Rest...>>
+    {
+        using RestTuple = std::tuple<Rest...>;
+        static constexpr std::size_t value = 1 + tuple_element_index_helper<T, RestTuple>::value;
+    };
+
+    template<typename T, typename Tuple>
+    struct tuple_element_index
+    {
+        static constexpr std::size_t value = tuple_element_index_helper<T, Tuple>::value;
+        static_assert(value < std::tuple_size_v<Tuple>, "type does not appear in tuple");
+    };
+
+    template<typename T, typename Tuple>
+    inline constexpr std::size_t tuple_element_index_v = tuple_element_index<T, Tuple>::value;
+
+    template<typename T, typename Tuple>
+    struct tuple_element_not_index
+    {
+        static constexpr std::size_t value = tuple_element_index_helper<T, Tuple>::value;
+        static_assert(value == std::tuple_size_v<Tuple>, "type appears in tuple");
+    };
+
+    template<typename T, typename Tuple>
+    inline constexpr std::size_t tuple_element_not_index_v = tuple_element_not_index<T, Tuple>::value;
+
+
+    template<typename T, typename Tuple>
+    struct tuple_is_element
+    {
+        static constexpr bool value = tuple_element_index_helper<T, Tuple>::value<std::tuple_size_v<Tuple>;
+    };
+
+    template<typename T, typename Tuple>
+    inline constexpr bool tuple_is_element_v = tuple_is_element<T, Tuple>::value;
+
+
+
+    //-------------------------------------------------------------------------------------------------
     // used to create array of visitor objects
     //constexpr temp::meta::Visitor visitor{
     //    [](comp::LocationComponent* component)
@@ -161,6 +254,7 @@ namespace yaget::meta
 
     template <typename ... T> Visitor(T...) -> Visitor<T...>;
 
+    //-------------------------------------------------------------------------------------------------
     // Return name of type
     //const int ci = 0;
     //auto varName = type_name<decltype(ci)>();
@@ -200,92 +294,93 @@ namespace yaget::meta
 } // namespace yaget::meta
 
 
-#include <tuple>
-#include <utility>
-
-// Based on
-// * http://alexpolt.github.io/type-loophole.html
-//   https://github.com/alexpolt/luple/blob/master/type-loophole.h
-//   by Alexandr Poltavsky, http://alexpolt.github.io
-// * https://www.youtube.com/watch?v=UlNUNxLtBI0
-//   Better C++14 reflections - Antony Polukhin - Meeting C++ 2018
-
-namespace refl {
-
-// tag<T, N> generates friend declarations and helps with overload resolution.
-// There are two types: one with the auto return type, which is the way we read types later.
-// The second one is used in the detection of instantiations without which we'd get multiple
-// definitions.
-template <typename T,int N>
-struct tag {
-    friend auto loophole(tag<T,N>);
-    constexpr friend int cloophole(tag<T,N>);
-};
-
-// The definitions of friend functions.
-template <typename T,typename U,int N,bool B,
-    typename = typename std::enable_if_t<
-    !std::is_same_v<
-    std::remove_cv_t<std::remove_reference_t<T>>,
-    std::remove_cv_t<std::remove_reference_t<U>>>>>
-    struct fn_def {
-    friend auto loophole(tag<T,N>) { return U{}; }
-    constexpr friend int cloophole(tag<T,N>) { return 0; }
-};
-
-// This specialization is to avoid multiple definition errors.
-template <typename T,typename U,int N> struct fn_def<T,U,N,true> {};
-
-// This has a templated conversion operator which in turn triggers instantiations.
-// Important point, using sizeof seems to be more reliable. Also default template
-// arguments are "cached" (I think). To fix that I provide a U template parameter to
-// the ins functions which do the detection using constexpr friend functions and SFINAE.
-template <typename T,int N>
-struct c_op {
-    template <typename U,int M>
-    static auto ins(...) -> int;
-    template <typename U,int M,int = cloophole(tag<T,M>{})>
-    static auto ins(int) -> char;
-
-    template <typename U,int = sizeof(fn_def<T,U,N,sizeof(ins<U,N>(0)) == sizeof(char)>)>
-    operator U();
-};
-
-// Here we detect the data type field number. The byproduct is instantiations.
-// Uses list initialization. Won't work for types with user-provided constructors.
-// In C++17 there is std::is_aggregate which can be added later.
-template <typename T,int... Ns>
-constexpr int fields_number(...) { return sizeof...(Ns) - 1; }
-
-template <typename T,int... Ns>
-constexpr auto fields_number(int) -> decltype(T{ c_op<T, Ns>{}... },0) {
-    return fields_number<T,Ns...,sizeof...(Ns)>(0);
-}
-
-// Here is a version of fields_number to handle user-provided ctor.
-// NOTE: It finds the first ctor having the shortest unambigious set
-//       of parameters.
-template <typename T,int... Ns>
-constexpr auto fields_number_ctor(int) -> decltype(T(c_op<T,Ns>{}...),0) {
-    return sizeof...(Ns);
-}
-
-template <typename T,int... Ns>
-constexpr int fields_number_ctor(...) {
-    return fields_number_ctor<T,Ns...,sizeof...(Ns)>(0);
-}
-
-// This is a helper to turn a ctor into a tuple type.
-// Usage is: refl::as_tuple<data_t>
-template <typename T,typename U> struct loophole_tuple;
-
-template <typename T,int... Ns>
-struct loophole_tuple<T,std::integer_sequence<int,Ns...>> {
-    using type = std::tuple<decltype(loophole(tag<T,Ns>{}))...>;
-};
-
-template <typename T>
-using as_tuple =
-typename loophole_tuple<T,std::make_integer_sequence<int,fields_number_ctor<T>(0)>>::type;
-
-}  // namespace refl
+////-------------------------------------------------------------------------------------------------
+//#include <tuple>
+//#include <utility>
+//
+//// Based on
+//// * http://alexpolt.github.io/type-loophole.html
+////   https://github.com/alexpolt/luple/blob/master/type-loophole.h
+////   by Alexandr Poltavsky, http://alexpolt.github.io
+//// * https://www.youtube.com/watch?v=UlNUNxLtBI0
+////   Better C++14 reflections - Antony Polukhin - Meeting C++ 2018
+//
+//namespace refl {
+//
+//// tag<T, N> generates friend declarations and helps with overload resolution.
+//// There are two types: one with the auto return type, which is the way we read types later.
+//// The second one is used in the detection of instantiations without which we'd get multiple
+//// definitions.
+//template <typename T,int N>
+//struct tag {
+//    friend auto loophole(tag<T,N>);
+//    constexpr friend int cloophole(tag<T,N>);
+//};
+//
+//// The definitions of friend functions.
+//template <typename T,typename U,int N,bool B,
+//    typename = typename std::enable_if_t<
+//    !std::is_same_v<
+//    std::remove_cv_t<std::remove_reference_t<T>>,
+//    std::remove_cv_t<std::remove_reference_t<U>>>>>
+//    struct fn_def {
+//    friend auto loophole(tag<T,N>) { return U{}; }
+//    constexpr friend int cloophole(tag<T,N>) { return 0; }
+//};
+//
+//// This specialization is to avoid multiple definition errors.
+//template <typename T,typename U,int N> struct fn_def<T,U,N,true> {};
+//
+//// This has a templated conversion operator which in turn triggers instantiations.
+//// Important point, using sizeof seems to be more reliable. Also default template
+//// arguments are "cached" (I think). To fix that I provide a U template parameter to
+//// the ins functions which do the detection using constexpr friend functions and SFINAE.
+//template <typename T,int N>
+//struct c_op {
+//    template <typename U,int M>
+//    static auto ins(...) -> int;
+//    template <typename U,int M,int = cloophole(tag<T,M>{})>
+//    static auto ins(int) -> char;
+//
+//    template <typename U,int = sizeof(fn_def<T,U,N,sizeof(ins<U,N>(0)) == sizeof(char)>)>
+//    operator U();
+//};
+//
+//// Here we detect the data type field number. The byproduct is instantiations.
+//// Uses list initialization. Won't work for types with user-provided constructors.
+//// In C++17 there is std::is_aggregate which can be added later.
+//template <typename T,int... Ns>
+//constexpr int fields_number(...) { return sizeof...(Ns) - 1; }
+//
+//template <typename T,int... Ns>
+//constexpr auto fields_number(int) -> decltype(T{ c_op<T, Ns>{}... },0) {
+//    return fields_number<T,Ns...,sizeof...(Ns)>(0);
+//}
+//
+//// Here is a version of fields_number to handle user-provided ctor.
+//// NOTE: It finds the first ctor having the shortest unambigious set
+////       of parameters.
+//template <typename T,int... Ns>
+//constexpr auto fields_number_ctor(int) -> decltype(T(c_op<T,Ns>{}...),0) {
+//    return sizeof...(Ns);
+//}
+//
+//template <typename T,int... Ns>
+//constexpr int fields_number_ctor(...) {
+//    return fields_number_ctor<T,Ns...,sizeof...(Ns)>(0);
+//}
+//
+//// This is a helper to turn a ctor into a tuple type.
+//// Usage is: refl::as_tuple<data_t>
+//template <typename T,typename U> struct loophole_tuple;
+//
+//template <typename T,int... Ns>
+//struct loophole_tuple<T,std::integer_sequence<int,Ns...>> {
+//    using type = std::tuple<decltype(loophole(tag<T,Ns>{}))...>;
+//};
+//
+//template <typename T>
+//using as_tuple =
+//typename loophole_tuple<T,std::make_integer_sequence<int,fields_number_ctor<T>(0)>>::type;
+//
+//}  // namespace refl

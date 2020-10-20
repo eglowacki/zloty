@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+    <Type Name="std::bitset&lt;*&gt;">
+        <DisplayString>{{ value={_Array[0],b} }}</DisplayString>
+        <Expand>
+            <Item Name="[parts]" ExcludeView="simple">(_Words + 1)</Item>
+            <Item Name="[bits]" ExcludeView="simple">sizeof(_Words) * 8</Item>
+            <ArrayItems>
+                <Size>_Words + 1</Size>
+                <ValuePointer>_Array</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+</AutoVisualizer>

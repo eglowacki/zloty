@@ -137,7 +137,7 @@ namespace yaget
 
                         try
                         {
-                            yaget::meta::tuple_copy<0>(mFields, resolvers);
+                            yaget::meta::tuple_clone<0>(mFields, resolvers);
                             mValidSection = validate();
                         }
                         catch (const nlohmann::detail::exception& ex)

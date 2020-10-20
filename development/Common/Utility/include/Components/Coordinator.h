@@ -35,16 +35,17 @@ namespace yaget
 {
     namespace comp
     {
-        // provides layout and types of entity components (Item)
-        // IS... var args represent list of classes that one item represents at it's fullest
-        // Not all items will have all components fill in
-        // Ex: RowPolicy<Location, Physics, Script>
-        //      most likely all components will have location, majority will have Physics and few if any may contain Script
-        template <typename... IS>
-        struct RowPolicy
+        namespace internal
         {
-            using Row = std::tuple<IS...>;
-        };
+            //template <typename T>
+            //struct HasSetCoordinators
+            //{
+            //    enum { value = false };
+            //};
+
+            template<typename T>
+            concept has_auto_cleanup = requires { typename T::AutoCleanup; };
+        }
 
         // Coordinator stores map of items (keyed on item guid), manages creation, storage and deletion of components.
         // It uses PoolAllocator as a storage for components.
@@ -105,6 +106,16 @@ namespace yaget
             // Return number of matched items, or 0 if none.
             template<typename R>
             std::size_t ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
+
+            template<typename T>
+            PatternSet GetPattern() const
+            {
+                PatternSet bits = 0;
+                auto bp = GetBitPosition<T>();
+                bits[bp] = true;
+
+                return std::move(bits);
+            }
 
         private:
             // Helper method to find a specific component allocator
@@ -216,7 +227,20 @@ yaget::comp::Coordinator<P>::Coordinator()
 template<typename P>
 yaget::comp::Coordinator<P>::~Coordinator()
 {
-    YAGET_ASSERT(mItems.empty(), "Coordinator still has outstanding '%d' component(s): [%s]", mItems.size(), conv::Combine(mItems, "], [").c_str());
+    if constexpr (internal::has_auto_cleanup<Policy>)
+    {
+        comp::ItemIds items;
+        for (const auto& [id, row] : mItems)
+        {
+            items.insert(id);
+        }
+
+        RemoveItems(items);
+    }
+    else
+    {
+        YAGET_ASSERT(mItems.empty(), "Coordinator still has outstanding '%d' component(s): [%s]", mItems.size(), conv::Combine(mItems, "], [").c_str());
+    }
 }
 
 template<typename P>

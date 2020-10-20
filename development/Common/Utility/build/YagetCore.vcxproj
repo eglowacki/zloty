@@ -173,6 +173,7 @@
     <ClInclude Include="..\include\Components\Component.h" />
     <ClInclude Include="..\include\Components\ComponentTypes.h" />
     <ClInclude Include="..\include\Components\Coordinator.h" />
+    <ClInclude Include="..\include\Components\CoordinatorSet.h" />
     <ClInclude Include="..\include\Components\GameCoordinator.h" />
     <ClInclude Include="..\include\Components\GameCoordinatorGenerator.h" />
     <ClInclude Include="..\include\Components\GameSystem.h" />
@@ -211,6 +212,7 @@
     <ClInclude Include="..\include\Logger\YLog.h" />
     <ClInclude Include="..\include\MemoryManager\PoolAllocator.h" />
     <ClInclude Include="..\include\Meta\CompilerAlgo.h" />
+    <ClInclude Include="..\include\Meta\Hana.h" />
     <ClInclude Include="..\include\Metrics\Concurrency.h" />
     <ClInclude Include="..\include\Metrics\Gather.h" />
     <ClInclude Include="..\include\Metrics\Performance.h" />
@@ -259,6 +261,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\BuildRules\Natvis\yaget.Core.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{07303B2D-746E-4E66-9F3E-E0C5D4A31D80}</ProjectGuid>

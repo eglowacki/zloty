@@ -37,12 +37,6 @@ namespace yaget
 
     namespace internal
     {
-        //template <typename T>
-        //struct HasSetCoordinators
-        //{
-        //    enum { value = false };
-        //};
-
         template<typename T>
         concept has_set_coordinators = requires { typename T::set_coordinators; };
     }
@@ -68,6 +62,8 @@ namespace yaget
     //};
 
 
+    //! TODO Consider removing IGameCoordinator class. I don't like virtual functions and dynamic dispatch, since
+    //! rest of systems are compile time
     class IGameCoordinator
     {
     public:
@@ -103,22 +99,20 @@ namespace yaget
         using EntityCoordinator = comp::Coordinator<Entity>;
         using Coordinators = std::tuple<GlobalCoordinator, EntityCoordinator>;
 
+        // this will generate compile time error if Global component is in Entity and vice-versa
+        static constexpr int holderE = meta::for_each_type<typename Entity::Row>([]<typename T0>(const T0&)
+        {
+            constexpr std::size_t index = meta::tuple_element_not_index_v<T0, typename Global::Row>;
+        });
+        static constexpr int holderG = meta::for_each_type<typename Global::Row>([]<typename T0>(const T0&)
+        {
+            constexpr std::size_t index = meta::tuple_element_not_index_v<T0, typename Entity::Row>;
+        });
+
         GameCoordinator(RenderCallback renderCallback, S... args) 
             : mRenderCallback(renderCallback)
             , mSystems(args...)
-        {
-            meta::for_each_type<typename Entity::Row>([]<typename T0>(const T0&)
-            {
-                typename Global::Row row{};
-                YAGET_ASSERT(!meta::check_for_type<T0>(row), "You can not have same types of row property between Global and Entity Coordinators. Type: '%s'.", meta::ViewToString(meta::type_name<T0>()).c_str());
-            });
-
-            meta::for_each_type<typename Global::Row>([]<typename T0>(const T0&)
-            {
-                typename Entity::Row row{};
-                YAGET_ASSERT(!meta::check_for_type<T0>(row), "You can not have same types of row property between Entity and Global Coordinators. Type: '%s'.", meta::ViewToString(meta::type_name<T0>()).c_str());
-            });
-        }
+        {}
 
         GameCoordinator(S... args)
             : GameCoordinator([](const time::GameClock&, metrics::Channel&) {}, args...)
@@ -176,6 +170,7 @@ void yaget::GameCoordinator<P, S...>::GameUpdate(const time::GameClock& gameCloc
     {
         if (gameSystem)
         {
+            // TODO mCoordinators param will be replaced by CoordinatorSet
             gameSystem->Update(gameClock, channel, std::get<gameSystem->COORDINATOR_ID>(mCoordinators));
         }
     });

@@ -569,6 +569,12 @@
     <ClInclude Include="..\include\Components\PersistentBaseComponent.h">
       <Filter>Component Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Components\CoordinatorSet.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Meta\Hana.h">
+      <Filter>Meta Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\source\Win32\CommandLineArgs.inl">
@@ -586,5 +592,10 @@
     <ResourceCompile Include="Resource.rc">
       <Filter>PCH Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\BuildRules\Natvis\yaget.Core.natvis">
+      <Filter>Debugging Files</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

@@ -63,6 +63,13 @@ namespace yaget
                 YAGET_ASSERT(mUpdateFunctor, "Callback is nullptr, not allowed in GameSystem: '%s'.", mNiceName.c_str());
             }
 
+
+            template <typename T>
+            constexpr static bool IsComponent()
+            {
+                return meta::tuple_is_element_v<T, Row>;
+            }
+
             template <typename T>
             void Initialize(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/, comp::Coordinator<T>& /*coordinator*/)
             {

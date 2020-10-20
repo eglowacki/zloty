@@ -12,7 +12,23 @@
 #include "VTS/ToolVirtualTransportSystem.h"
 #include "HashUtilities.h"
 
+#include "App/ConsoleApplication.h"
+
 #include "Items/ItemsDirector.h"
+
+#include "Meta/CompilerAlgo.h"
+#include "Components/CoordinatorSet.h"
+
+//namespace std
+//{
+//    template <class _Ty>
+//    struct is_literal_type : bool_constant<__is_literal_type(_Ty)> {
+//        // determine whether _Ty is a literal type
+//    };
+//
+//}
+//
+//#include <boost/hana.hpp>
 
 
 namespace yaget::ylog
@@ -31,13 +47,16 @@ namespace yaget::ylog
 
 YAGET_BRAND_NAME_F("Beyond Limits")
 
-YAGET_USER_STRIP_KEYWORDS_F(defaultSet)
-{
-    using namespace yaget;
+#define YAGET_CUSTOMIZE_STRIP_KEYWORDS(set) \
+    YAGET_USER_STRIP_KEYWORDS_F(defaultSet) \
+    { \
+        using namespace yaget; \
+ \
+        static Initer initer(defaultSet, set); \
+        return initer.mKeywords.c_str(); \
+    }
 
-    static Initer initer(defaultSet, ",::ttt,ttt::,::bc,bc::,::ivc,ivc::,::pic,pic::,::pc,pc::");
-    return initer.mKeywords.c_str();
-}
+YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::ttt,ttt::,::bc,bc::,::ivc,ivc::,::pic,pic::,::pc,pc::")
 
 
 
@@ -70,94 +89,44 @@ namespace yaget::comp::db
 }
 
 
-#include <concepts>
-
-//template<typename T>
-//concept has_barV = requires(const T & t)
-//{
-//    t.BarV;
-//};
+//using GlobalEntity = yaget::comp::RowPolicy<BoardComponent*, ScoreComponent*>;
+//
+////! This represents allowable components that can form entity
+////! For this game, we will have player consist of:
+////! Input, Player, Inventory
+////!
+////! and entities representing pieces on a board, which are own by player inventory until placed on a board by player
+////! Piece
+//
+//using Entity = yaget::comp::RowPolicy<InputComponent*, PlayerComponent*, InventoryComponent*, PieceComponent*>;
+//
+////The actual coordinator of our game which uses RowPolicy outlined above
+//using GamePolicy = yaget::comp::CoordinatorPolicy<Entity, GlobalEntity>;
 //
 //
-//template<typename T>
-//concept has_bar = requires(const T & t)
-//{
-//    t.Bar();
-//};
+//using Entity = typename P::Entity;
+//using Global = typename P::Global;
+//using Systems = std::tuple<S...>;
+//using RenderCallback = std::function<void(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/)>;
 //
-//struct Foo
-//{
-//    float BarV2 = 0;
-//    void Bar() const {}
-//
-//    int z = 0;
-//};
-//
-//bool r = has_bar<Foo>;
-//bool r1 = has_barV<Foo>;
-
-//
-//template<typename T>
-//concept HasCompRow = requires (T)
-//{
-//    T::Row;
-//};
-//
-////template <typename T> requires HasCompRow<T>
-////struct Foo
-////{
-////    using Row = typename T::Row;
-////
-////    Row mRow{};
-////};
+//using GlobalCoordinator = comp::Coordinator<Global>;
+//using EntityCoordinator = comp::Coordinator<Entity>;
+//using Coordinators = std::tuple<GlobalCoordinator, EntityCoordinator>;
 //
 //
-//template <typename T>
-//auto GetPropRow()
-//{
-//    if constexpr (HasCompRow<T>)
-//    {
-//        struct Foo
-//        {
-//            using Row = typename T::Row;
-//        };
-//
-//        return Foo{};
-//    }
-//    else
-//    {
-//        struct Foo
-//        {
-//            using Row = char;
-//        };
-//
-//        return Foo{};
-//    }
-//}
-//
-//template <typename T>
-//struct PropAlias
-//{
-//    using Type = typename decltype(GetPropRow<T>())::Row;
-//};
-//
-//struct Bar
-//{
-//    using Row = int;
-//};
-//
-//struct Bar2
-//{
-//};
+//using GlobalCoordinator = comp::Coordinator<GlobalEntity>;
+//using EntityCoordinator = comp::Coordinator<Entity>;
+//using Coordinators = std::tuple<GlobalCoordinator, EntityCoordinator>;
 
 
 
-YAGET_COMPILE_SUPRESS_START(4100, "'': unreferenced local variable")
+YAGET_COMPILE_WARNING_LEVEL_START(3, "Development of CoordinatorSet class")
 
 int ttt::game::Run(yaget::args::Options& options)
 {
     using namespace yaget;
 
+    // basic initialization of console application
     const io::VirtualTransportSystem::AssetResolvers resolvers = {
         { "JSON", io::ResolveAsset<yaget::io::JsonAsset> }
     };
@@ -165,21 +134,53 @@ int ttt::game::Run(yaget::args::Options& options)
     const auto& vtsConfig = dev::CurrentConfiguration().mInit.mVTSConfig;
 
     io::tool::VirtualTransportSystemDefault vts(vtsConfig, resolvers, "$(DatabaseFolder)/vts.sqlite");
+    items::DefaultDirector<GameCoordinator> director;
+    app::DefaultConsole app("Yaget.Tic-Tac-Toe", director, vts, options);
 
-    int64_t schemaVersion = Database::NonVersioned;
-    const auto& pongerSchema = comp::db::GenerateGameDirectorSchema<GameCoordinator>(schemaVersion);
-    items::Director director("$(DatabaseFolder)/director.sqlite", pongerSchema, schemaVersion);
+    // starting game initialization and setup
+    using GlobalCoordinator = comp::Coordinator<ttt::GlobalEntity>;
+    using EntityCoordinator = comp::Coordinator<ttt::Entity>;
 
-    BoardSystem boardSystem;
-    ScoreSystem scoreSystem;
+    using GameCoordinatorSet = comp::CoordinatorSet<GlobalCoordinator, EntityCoordinator>;
 
-    GameCoordinator gameCoordinator(&boardSystem, &scoreSystem);
+    GameCoordinatorSet coordinatorSet;
+    auto& globalCoordinator = coordinatorSet.GetCoordinator<ttt::GlobalEntity>();
+    auto& entityCoordinator = coordinatorSet.GetCoordinator<ttt::Entity>();
+
+    // add global components
+    auto id = app.IdCache.GetId(IdGameCache::IdType::itBurnable);
+    globalCoordinator.AddComponent<ttt::BoardComponent>(id, 3, 3);
+
+
+    // add regular world entities components
+    id = app.IdCache.GetId(IdGameCache::IdType::itBurnable);
+    entityCoordinator.AddComponent<ttt::InputComponent>(id);
+
+    id = app.IdCache.GetId(IdGameCache::IdType::itBurnable);
+    entityCoordinator.AddComponent<ttt::InputComponent>(id);
+
+    //coordinatorSet.ForEach<ttt::InputComponent*, ttt::PlayerComponent*, ttt::InventoryComponent*, ttt::PieceComponent*>([](ttt::InputComponent*, ttt::PlayerComponent*, ttt::InventoryComponent*, ttt::PieceComponent*)
+
+    //using TreeEntity = std::tuple<ttt::InputComponent*, ttt::ScoreComponent*, ttt::InventoryComponent*>;
+    using TreeEntity = std::tuple<ttt::BoardComponent*, ttt::InputComponent*>;
+
+    coordinatorSet.ForEach<TreeEntity>([](comp::Id_t id, auto&& param)
+    {
+        int z = 0;
+
+        return true;
+    });
+
+    //BoardSystem boardSystem;
+    //ScoreSystem scoreSystem;
+
+    //GameCoordinator gameCoordinator(&boardSystem, &scoreSystem);
+
 
     return 0;
 }
 
-YAGET_COMPILE_SUPRESS_END
-
+YAGET_COMPILE_WARNING_LEVEL_END
 
 //const io::VirtualTransportSystem::AssetResolvers resolvers = {
 //    { "JSON", io::ResolveAsset<io::JsonAsset> }

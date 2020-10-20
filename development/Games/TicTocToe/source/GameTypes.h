@@ -31,7 +31,12 @@ namespace ttt
     enum class PieceType {Blank, X, O };
 
     //! We only have one board and score hud per match
-    using GlobalEntity = yaget::comp::RowPolicy<BoardComponent*, ScoreComponent*>;
+    //using set_coordinators = bool;
+    struct GlobalEntity : yaget::comp::RowPolicy<BoardComponent*, ScoreComponent*>
+    {
+        using AutoCleanup = bool;
+        using Global = bool;
+    };
 
     //! This represents allowable components that can form entity
     //! For this game, we will have player consist of:
@@ -40,7 +45,10 @@ namespace ttt
     //! and entities representing pieces on a board, which are own by player inventory until placed on a board by player
     //! Piece
 
-    using Entity = yaget::comp::RowPolicy<InputComponent*, PlayerComponent*, InventoryComponent*, PieceComponent*>;
+    struct Entity : yaget::comp::RowPolicy<InputComponent*, PlayerComponent*, InventoryComponent*, PieceComponent*>
+    {
+        using AutoCleanup = bool;
+    };
 
     //The actual coordinator of our game which uses RowPolicy outlined above
     using GamePolicy = yaget::comp::CoordinatorPolicy<Entity, GlobalEntity>;

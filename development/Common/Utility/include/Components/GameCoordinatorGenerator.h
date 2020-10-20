@@ -190,7 +190,7 @@ namespace yaget::comp::db
 
             Columns columns;
 
-            auto callback = [&columns]<typename T0>(const T0& element)
+            auto callback = [&columns]<typename T0>(const T0&)
             {
                 using BaseType = meta::strip_qualifiers_t<T0>;
 
@@ -218,7 +218,7 @@ namespace yaget::comp::db
         }
 
         template <typename T>
-        std::string MakeTable(int64_t& schemaVersion, const std::string& tableName, std::set<std::string>& propertyNames, Columns& schemeTableData, int coordinatorId)
+        std::string MakeTable(const std::string& tableName, std::set<std::string>& propertyNames, Columns& schemeTableData, int coordinatorId)
         {
             auto command{ fmt::format("CREATE TABLE '{}' ('Id' INTEGER, ", tableName) };
             command += "'Name' TEXT DEFAULT '', ";
@@ -258,14 +258,14 @@ namespace yaget::comp::db
         std::set<std::string> propertyNames;
         internal::Columns schemaTableData;
 
-        meta::for_each_type<Coordinators>([&schemaVersion, &propertyNames, &resultSchema, &schemaTableData]<typename T0>(const T0& element)
+        meta::for_each_type<Coordinators>([&propertyNames, &resultSchema, &schemaTableData]<typename T0>(const T0&)
         {
             using BaseType = meta::strip_qualifiers_t<T0>;
 
             constexpr auto tableName = CoordinatorName<BaseType>::Name();
             constexpr int coordinatorId = CoordinatorId<BaseType>::Value();
 
-            auto command = internal::MakeTable<BaseType::Row>(schemaVersion, tableName, propertyNames, schemaTableData, coordinatorId);
+            auto command = internal::MakeTable<BaseType::Row>(tableName, propertyNames, schemaTableData, coordinatorId);
             resultSchema.emplace_back(command);
         });
 

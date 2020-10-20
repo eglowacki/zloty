@@ -37,6 +37,17 @@ namespace yaget
             return !(id == INVALID_ID || id == END_ID_MARKER);
         }
 
+        // provides layout and types of entity components (Item)
+        // IS... var args represent list of classes that one item represents at it's fullest
+        // Not all items will have all components fill in
+        // Ex: RowPolicy<Location, Physics, Script>
+        //      most likely all components will have location, majority will have Physics and few if any may contain Script
+        template <typename... IS>
+        struct RowPolicy
+        {
+            using Row = std::tuple<IS...>;
+        };
+
         // game system
         namespace gs
         {
