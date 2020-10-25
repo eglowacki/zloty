@@ -22,17 +22,49 @@
 #include <any>
 
 
-
 namespace yaget
 {
     namespace comp
     {
         namespace internal
         {
+            // compile time switch to run auto cleanup on left over items during destruction
             template<typename T>
             concept has_auto_cleanup = requires { typename T::AutoCleanup; };
 
+
+            // Return tuple of Allocators for each component
+            template <std::size_t TupleIndex, std::size_t MaxTupleSize, typename Tuple>
+            constexpr auto coordinator_allocator_combine()
+            {
+                using ComponentType = typename std::tuple_element<TupleIndex, Tuple>::type;
+
+                using CompType = typename meta::strip_qualifiers_t<ComponentType>;
+                std::tuple<memory::PoolAllocator<CompType>> currentRow;
+
+                if constexpr (TupleIndex + 1 < MaxTupleSize)
+                {
+                    auto nextRow = std::move(coordinator_allocator_combine<TupleIndex + 1, MaxTupleSize, Tuple>());
+                    return std::tuple_cat(currentRow, nextRow);
+
+                }
+                else
+                {
+                    return currentRow;
+                }
+            }
+
         }
+
+        template <typename Tuple>
+        struct coordinator_allocator_combine
+        {
+            using type = decltype(internal::coordinator_allocator_combine<0, std::tuple_size_v<std::remove_reference_t<Tuple>>, Tuple>());
+        };
+
+        template<typename Tuple>
+        using coordinator_allocator_combine_t = typename coordinator_allocator_combine<Tuple>::type;
+
 
         // Coordinator stores map of items (keyed on item guid), manages creation, storage and deletion of components.
         // It uses PoolAllocator as a storage for components.
@@ -41,10 +73,9 @@ namespace yaget
         {
         public:
             using Policy = P;
-            using Row = typename Policy::Row;
+            using FullRow = typename Policy::Row;
 
-            static constexpr size_t NumComponents = std::tuple_size_v<std::remove_reference_t<Row>>;
-            static_assert(NumComponents > 0, "Policy must have at least one Component");
+            static constexpr size_t NumComponents = Policy::NumComponents;
 
             using PatternSet = std::bitset<NumComponents>;
 
@@ -75,7 +106,7 @@ namespace yaget
             T* FindComponent(comp::Id_t id) const;
 
             // Return full item if one exist
-            Row FindItem(comp::Id_t id) const;
+            FullRow FindItem(comp::Id_t id) const;
 
             // Return item if one exist but only for specified components in RowPolicy param R (comp::RowPolicy<...>)
             template<typename R>
@@ -94,16 +125,6 @@ namespace yaget
             template<typename R>
             std::size_t ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
 
-            template<typename T>
-            PatternSet GetPattern() const
-            {
-                PatternSet bits = 0;
-                auto bp = GetBitPosition<T>();
-                bits[bp] = true;
-
-                return std::move(bits);
-            }
-
         private:
             // Helper method to find a specific component allocator
             template<typename T>
@@ -113,51 +134,25 @@ namespace yaget
             std::any FindAllocator(const std::type_index& allocId) const;
 
             template<typename T>
-            constexpr uint32_t GetBitPosition() const
+            constexpr meta::bits_t MakeBit() const
             {
-                constexpr auto index = meta::Index<T*, Row>::value;
-                return index;
-
-                //using CompType = typename std::remove_pointer<std::decay_t<T>>::type();
-
-                //auto it = mItemBitsMapping.find(std::type_index(typeid(CompType)));
-                //YAGET_ASSERT(mItemBitsMapping.find(std::type_index(typeid(CompType))) != mItemBitsMapping.end(), "Requested Component: '%s' does not exist in this Coordinator as an Item.", typeid(T).name());
-
-                //constexpr auto index = meta::Index<T*, Row>::value;
-                //index;
-                //Row row{};
-                //row;
-                //T* t = nullptr;
-                //t;
-                //return it->second;
-            }
-
-            template<typename R>
-            PatternSet MakeBits() const
-            {
-                using Item = R;
-                PatternSet bits = 0;
-
-                meta::for_each_type<Item>([&bits, this](const auto& compType)
-                {
-                    using CompType = std::decay_t<decltype(*compType)>;
-                    bits[GetBitPosition<CompType>()] = true;;
-                });
-
-                return bits;
+                // You can use this pattern before passing T: using CompType = typename meta::strip_qualifiers_t<T>;
+                static_assert(std::is_pointer_v<T> == false, "template T must not be a pointer");
+                return static_cast<meta::bits_t>(1) << meta::Index<T*, FullRow>::value;
             }
 
             template<typename... Args>
-            PatternSet GetValidBits(const std::tuple<Args...>& item) const
+            constexpr meta::bits_t GetValidBits(const std::tuple<Args...>& item) const
             {
-                PatternSet bits = 0;
+                meta::bits_t bits = 0;
 
-                meta::for_each(item, [this, &bits](auto& compType)
+                meta::for_each(item, [this, &bits]<typename T0>(T0& compType)
                 {
                     if (compType)
                     {
-                        using CompType = std::decay_t<decltype(*compType)>;
-                        bits[GetBitPosition<CompType>()] = true;
+                        using CompType = typename meta::strip_qualifiers_t<T0>;
+
+                        bits = bits | MakeBit<CompType>();
                     }
                 });
 
@@ -168,17 +163,11 @@ namespace yaget
             AllocatorsList mComponentAllocators;
 
             // Actual item created from PoolAllocator
-            std::map<comp::Id_t, Row> mItems;
+            std::map<comp::Id_t, FullRow> mItems;
 
             // map from unique bits to all id's which contain that specific set of components
             using Patterns = std::unordered_map<PatternSet, std::set<comp::Id_t>>;
             Patterns mPatterns;
-
-            // This associates each type in a Row with bit position.
-            // Used in creating bit pattern of components, 
-            // which in turn helps to find a specific set of items.
-            using ItemBits = std::unordered_map<std::type_index, uint32_t>;
-            ItemBits mItemBitsMapping;
 
             const Strings mComponentNames;
         };
@@ -212,12 +201,6 @@ template<typename P>
 yaget::comp::Coordinator<P>::Coordinator()
     : mComponentNames(comp::db::GetPolicyRowNames<P::Row>())
 {
-    int counter = 0;
-    meta::for_each_type<P::Row>([this, &counter](const auto& logType)
-    {
-        using LogType = typename std::remove_pointer<std::decay_t<decltype(*logType)>>::type();
-        mItemBitsMapping.insert(std::make_pair(std::type_index(typeid(LogType)), counter++));
-    });
 }
 
 template<typename P>
@@ -263,13 +246,12 @@ T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
         mComponentAllocators.insert(std::make_pair(std::type_index(typeid(T)), anyAllocator));
     }
 
-    Row row = FindItem(id);
-    PatternSet currentBits = GetValidBits(row);
-    using NewComp = std::tuple<T*>;
-    PatternSet newBit = MakeBits<NewComp>();
+    FullRow row = FindItem(id);
+    meta::bits_t currentBits = GetValidBits(row);
+    const meta::bits_t newBit = MakeBit<T>();
     YAGET_ASSERT((currentBits & newBit) != newBit, "Reqested new component of type: '%s' for Item: '%d' already exist in Coordinator.", typeid(T).name(), id);
 
-    if (currentBits.any())
+    if (currentBits)
     {
         mPatterns[currentBits].erase(id);
         if (mPatterns[currentBits].empty())
@@ -282,7 +264,7 @@ T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
 
     std::get<T*>(mItems[id]) = newComponenet;
 
-    Row newRow = FindItem(id);
+    FullRow newRow = FindItem(id);
     PatternSet newBits = GetValidBits(newRow);
     YAGET_ASSERT(newBits.any(), "Adding new Component to an item did not create any new pattern bits.");
     mPatterns[newBits].insert(id);
@@ -300,7 +282,7 @@ void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
     memory::PoolAllocator<T>* componentAllocator = FindAllocator<T>();
     YAGET_ASSERT(componentAllocator, "Did not find pool allocotor for: '%s'.", typeid(T).name());
 
-    Row row = FindItem(id);
+    FullRow row = FindItem(id);
     PatternSet currentBits = GetValidBits(row);
     mPatterns[currentBits].erase(id);
 
@@ -308,14 +290,14 @@ void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
     std::get<T*>(mItems[id]) = nullptr;
     component = nullptr;
 
-    if (mItems[id] == Row())
+    if (mItems[id] == FullRow())
     {
         mItems.erase(id);
         mPatterns.erase(currentBits);
     }
     else
     {
-        Row newRow = FindItem(id);
+        FullRow newRow = FindItem(id);
         PatternSet newBits = GetValidBits(newRow);
         if (newBits.any())
         {
@@ -339,7 +321,7 @@ void yaget::comp::Coordinator<P>::RemoveComponents(comp::Id_t id)
     auto it = mItems.find(id);
     YAGET_ASSERT(it != mItems.end(), "Item id: '%d' does not exist in collection.", id);
 
-    Row row = it->second;
+    FullRow row = it->second;
     meta::for_each(row, [this, id](auto& item)
     {
         if (item)
@@ -361,7 +343,7 @@ void yaget::comp::Coordinator<P>::RemoveItems(const comp::ItemIds& ids)
 }
 
 template<typename P>
-typename yaget::comp::Coordinator<P>::Row yaget::comp::Coordinator<P>::FindItem(comp::Id_t id) const
+typename yaget::comp::Coordinator<P>::FullRow yaget::comp::Coordinator<P>::FindItem(comp::Id_t id) const
 {
     auto it = mItems.find(id);
     if (it != mItems.end())
@@ -369,14 +351,14 @@ typename yaget::comp::Coordinator<P>::Row yaget::comp::Coordinator<P>::FindItem(
         return it->second;
     }
 
-    return Row();
+    return FullRow();
 }
 
 template<typename P>
 template<typename R>
 typename R::Row yaget::comp::Coordinator<P>::FindItem(comp::Id_t id) const
 {
-    if constexpr (std::is_same_v<R::Row, Row>)
+    if constexpr (std::is_same_v<R::Row, FullRow>)
     {
         return FindItem(id);
     }
@@ -387,10 +369,10 @@ typename R::Row yaget::comp::Coordinator<P>::FindItem(comp::Id_t id) const
         typename R::Row requestedComponents;
         constexpr size_t numComponents = std::tuple_size_v<std::remove_reference_t<R::Row>>;
         static_assert(numComponents > 0, "At least one user requested component required");
-        static_assert(numComponents <= std::tuple_size_v<std::remove_reference_t<Row>>, "Number of user requested components must be no larger then actual item components.");
+        static_assert(numComponents <= std::tuple_size_v<std::remove_reference_t<FullRow>>, "Number of user requested components must be no larger then actual item components.");
 
-        Row itemComponents = FindItem(id);
-        internal::RowCopy<numComponents, R::Row, Row>(requestedComponents, itemComponents);
+        FullRow itemComponents = FindItem(id);
+        internal::RowCopy<numComponents, typename R::Row, FullRow>(requestedComponents, itemComponents);
 
         return requestedComponents;
     }
@@ -402,7 +384,7 @@ typename yaget::comp::ItemIds yaget::comp::Coordinator<P>::GetItemIds() const
 {
     std::set<yaget::comp::Id_t> results;
 
-    PatternSet requestBits = MakeBits<typename R::Row>();
+    PatternSet requestBits = meta::tuple_bit_pattern_v<FullRow, typename R::Row>;
     if (requestBits.any())
     {
         for (const auto& it : mPatterns)

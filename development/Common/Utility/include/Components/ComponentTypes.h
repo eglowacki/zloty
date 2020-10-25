@@ -55,7 +55,9 @@ namespace yaget
         struct RowPolicy
         {
             using Row = std::tuple<IS...>;
-            static_assert(std::tuple_size_v<std::remove_reference_t<Row>> > 0, "Policy must have at least one Element.");
+            static constexpr size_t NumComponents = std::tuple_size_v<std::remove_reference_t<Row>>;
+
+            static_assert(NumComponents > 0, "Policy must have at least one Element.");
             static_assert(meta::tuple_is_unique_v<Row>, "Duplicate element types in Policy");
         };
 

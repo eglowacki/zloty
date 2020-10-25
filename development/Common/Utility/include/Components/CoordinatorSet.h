@@ -45,7 +45,7 @@ namespace yaget::comp
         template <std::size_t TupleIndex, std::size_t MaxTupleSize, typename... Tuple>
         constexpr auto coordinator_row_combine()
         {
-            using Tuples = std::tuple<typename Tuple::Row...>;
+            using Tuples = std::tuple<typename Tuple::FullRow...>;
 
             constexpr auto currentRow = std::get<TupleIndex>(Tuples{});
             if constexpr (TupleIndex + 1 < MaxTupleSize)
@@ -102,7 +102,7 @@ namespace yaget::comp
             meta::for_each(mCoordinators, [&rows, &templateRow]<typename C>(C& coordinator)
             {
                 using CoordType = C;
-                using CoordinatorRow = decltype(hana::to_tuple(typename CoordType::Row{}));
+                using CoordinatorRow = decltype(hana::to_tuple(typename CoordType::FullRow{}));
 
                 // filter user request row by which coordinator posses that component. There is a guaranty of no duplicate types between coordinators
                 constexpr auto transformedRow = hana::filter(hana::to_tuple(RequestRow{}), []<typename RR>(const RR&)

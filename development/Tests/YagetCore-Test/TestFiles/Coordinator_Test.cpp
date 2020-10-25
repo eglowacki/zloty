@@ -249,7 +249,7 @@ TEST_F(Coordinator, Runtime)
 
     EXPECT_EQ(coordinator.FindComponent<comp::PhysicsWorldComponent>(itemId_10), physicsWorld);
     EXPECT_EQ(coordinator.FindComponent<comp::LocationComponent>(itemId_10), locationComponent);
-    EXPECT_TRUE(coordinator.FindItem(itemId_10) == ItemCoordinator::Row(locationComponent, nullptr, physicsWorld));
+    EXPECT_TRUE(coordinator.FindItem(itemId_10) == ItemCoordinator::FullRow(locationComponent, nullptr, physicsWorld));
 
     // create item with couple components, delete them all at once
     comp::LocationComponent* locationComponent_20 = coordinator.AddComponent<comp::LocationComponent>(itemId_20);
@@ -264,8 +264,8 @@ TEST_F(Coordinator, Runtime)
     comp::PhysicsComponent* physicsComponent = coordinator.AddComponent<comp::PhysicsComponent>(itemId_20, physicsWorld, params);
     EXPECT_TRUE(physicsComponent);
     EXPECT_EQ(physicsComponent->Id(), itemId_20);
-    EXPECT_TRUE(coordinator.FindItem(itemId_20) == ItemCoordinator::Row(locationComponent_20, physicsComponent, nullptr));
-    EXPECT_TRUE(coordinator.FindItem(noItemId) == ItemCoordinator::Row());
+    EXPECT_TRUE(coordinator.FindItem(itemId_20) == ItemCoordinator::FullRow(locationComponent_20, physicsComponent, nullptr));
+    EXPECT_TRUE(coordinator.FindItem(noItemId) == ItemCoordinator::FullRow());
 
     YLOG_ERROR("TEST", "Physics comnponent does not update location of it's position, BROKEN!!!");
     //// connect Location and Physics for update
@@ -338,15 +338,15 @@ TEST_F(Coordinator, Runtime)
     // clear one at the time for id 20
     coordinator.RemoveComponent(physicsComponent->Id(), physicsComponent);
     EXPECT_TRUE(physicsComponent == nullptr);
-    EXPECT_TRUE(coordinator.FindItem(itemId_20) == ItemCoordinator::Row(locationComponent_20, nullptr, nullptr));
+    EXPECT_TRUE(coordinator.FindItem(itemId_20) == ItemCoordinator::FullRow(locationComponent_20, nullptr, nullptr));
 
     coordinator.RemoveComponent(locationComponent_20->Id(), locationComponent_20);
     EXPECT_TRUE(locationComponent_20 == nullptr);
-    EXPECT_TRUE(coordinator.FindItem(itemId_20) == ItemCoordinator::Row());
+    EXPECT_TRUE(coordinator.FindItem(itemId_20) == ItemCoordinator::FullRow());
 
     // clear all at one for item 10
     coordinator.RemoveComponents(itemId_10);
-    EXPECT_TRUE(coordinator.FindItem(itemId_10) == ItemCoordinator::Row());
+    EXPECT_TRUE(coordinator.FindItem(itemId_10) == ItemCoordinator::FullRow());
 
     {
         std::string message = fmt::format("Remove {} Components", kNumComponents);
