@@ -2,9 +2,7 @@
 #include "Debugging/DevConfiguration.h"
 
 
-using namespace yaget;
-
-Application::Application(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
+yaget::Application::Application(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
     : Options(options)
     , IdCache(&director)
     , mDirector(director)
@@ -15,7 +13,7 @@ Application::Application(const std::string& title, items::Director& director, io
     YLOG_INFO("INIT", "Created Application '%s'.", title.c_str());
 }
 
-void Application::onRenderTask(UpdateCallback_t renderCallback)
+void yaget::Application::onRenderTask(const yaget::Application::UpdateCallback_t& renderCallback)
 {
     dev::CurrentThreadIds().RefreshRender(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Render, "RENDER");
@@ -26,14 +24,15 @@ void Application::onRenderTask(UpdateCallback_t renderCallback)
     {
         metrics::Channel rChannel("RenderTick", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-        renderCallback(*this, mGameClock, rChannel);
+        renderCallback(*this, mApplicationClock, rChannel);
         std::this_thread::yield();
     }
 
     dev::CurrentThreadIds().RefreshRender(0);
 }
 
-void Application::onLogicTask(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback)
+void yaget::Application::onLogicTask(const yaget::Application::UpdateCallback_t& logicCallback, const yaget::Application::UpdateCallback_t&
+                                     shutdownLogicCallback)
 {
     dev::CurrentThreadIds().RefreshLogic(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Logic, "LOGIC");
@@ -44,7 +43,7 @@ void Application::onLogicTask(UpdateCallback_t logicCallback, UpdateCallback_t s
     const time::Microsecond_t kFixedDeltaTime = time::GetDeltaTime(dev::CurrentConfiguration().mInit.LogicTick);
     metrics::PerformancePolicy defaultPerformancePolicy;
 
-    mGameClock.Resync();
+    mApplicationClock.Resync();
     time::Microsecond_t startTime = platform::GetRealTime(time::kMicrosecondUnit);
     time::Microsecond_t currentTickTime = startTime;
     time::Microsecond_t tickAccumulator = 0;
@@ -65,10 +64,10 @@ void Application::onLogicTask(UpdateCallback_t logicCallback, UpdateCallback_t s
             metrics::Channel gChannel("GameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
 
             const time::Microsecond_t startProcessTime = platform::GetRealTime(time::kMicrosecondUnit);
-            const uint64_t tickCounter = mGameClock.GetTickCounter();
+            const uint64_t tickCounter = mApplicationClock.GetTickCounter();
 
-            mGameClock.Tick(kFixedDeltaTime);
-            /*uint32_t numInputs =*/ mInputDevice.Tick(mGameClock, defaultPerformancePolicy, gChannel);
+            mApplicationClock.Tick(kFixedDeltaTime);
+            /*uint32_t numInputs =*/ mInputDevice.Tick(mApplicationClock, defaultPerformancePolicy, gChannel);
 
             tickAccumulator -= kFixedDeltaTime;
 
@@ -76,7 +75,7 @@ void Application::onLogicTask(UpdateCallback_t logicCallback, UpdateCallback_t s
             {
                 metrics::Channel gChannel("Callback", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-                logicCallback(*this, mGameClock, gChannel);
+                logicCallback(*this, mApplicationClock, gChannel);
             }
 
             const time::Microsecond_t actualProcessTime = platform::GetRealTime(time::kMicrosecondUnit) - startProcessTime;
@@ -112,13 +111,25 @@ void Application::onLogicTask(UpdateCallback_t logicCallback, UpdateCallback_t s
 
     if (shutdownLogicCallback)
     {
-        shutdownLogicCallback(*this, mGameClock, channel);
+        shutdownLogicCallback(*this, mApplicationClock, channel);
     }
 
     dev::CurrentThreadIds().RefreshLogic(0);
 }
 
-int Application::Run(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback, UpdateCallback_t renderCallback, StatusCallback_t idleCallback, StatusCallback_t quitCallback)
+int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRender /*= nullptr*/, const TickIdle& tickIdle /*= nullptr*/)
+{
+    auto tickWrapper = [this, &tickLogic](Application&, const time::GameClock& gameClock, metrics::Channel& channel) { tickLogic(gameClock, channel); };
+    UpdateCallback_t renderWrapper = [this, &tickRender](Application&, const time::GameClock& gameClock, metrics::Channel& channel) { tickRender(gameClock, channel); };
+    if (!tickRender)
+    {
+        renderWrapper = nullptr;
+    }
+
+    return Run(tickWrapper, nullptr, renderWrapper, tickIdle, nullptr);
+}
+
+int yaget::Application::Run(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback, UpdateCallback_t renderCallback, StatusCallback_t idleCallback, StatusCallback_t quitCallback)
 {
     // kick off separate thread for rendering
     YAGET_ASSERT(mGeneralPoolThread, "Can not call Run second time.");
@@ -133,7 +144,7 @@ int Application::Run(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLo
     {
         //metrics::Channel channel("Message Pump", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-        onMessagePump(mGameClock);
+        onMessagePump(mApplicationClock);
         if (idleCallback)
         {
             idleCallback();
@@ -154,24 +165,16 @@ int Application::Run(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLo
     mGeneralPoolThread.reset();
     YLOG_DEBUG("APP", "Application.Run mGeneralPoolThread stopped and cleared.");
     Cleanup();
-    while (onMessagePump(mGameClock))
+    while (onMessagePump(mApplicationClock))
         ;
 
     YLOG_DEBUG("APP", "Application.Run returning back to caller!");
     return 0;
 }
 
-void Application::RequestQuit()
+void yaget::Application::RequestQuit()
 {
     mRequestQuit = true;
-}
-
-void Application::AddTask(const mt::JobProcessor::Task_t& task)
-{
-    if (mGeneralPoolThread)
-    {
-        mGeneralPoolThread->AddTask(task);
-    }
 }
 
 void yaget::Application::ChangeVideoSettings(const VideoOptions& /*videoOptions*/)

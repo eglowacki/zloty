@@ -26,7 +26,7 @@ namespace ttt
         using Storage = std::tuple<>;
     }
 
-    class InputComponent : public yaget::comp::db::PersistentBaseComponent<ic::Types, ic::Storage, 4>
+    class InputComponent : public yaget::comp::db::PersistentBaseComponent<ic::Types, ic::Storage, yaget::comp::SmallPoolSize>
     {
     public:
         InputComponent(yaget::comp::Id_t id);

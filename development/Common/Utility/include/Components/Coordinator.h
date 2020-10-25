@@ -16,18 +16,10 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
 #include "Components/ComponentTypes.h"
 #include "Components/GameCoordinatorGenerator.h"
-#include "MemoryManager/PoolAllocator.h"
-#include "Meta/CompilerAlgo.h"
 
 #include <any>
-#include <functional>
-#include <map>
-#include <tuple>
-#include <typeindex>
-#include <type_traits>
 
 
 
@@ -37,14 +29,9 @@ namespace yaget
     {
         namespace internal
         {
-            //template <typename T>
-            //struct HasSetCoordinators
-            //{
-            //    enum { value = false };
-            //};
-
             template<typename T>
             concept has_auto_cleanup = requires { typename T::AutoCleanup; };
+
         }
 
         // Coordinator stores map of items (keyed on item guid), manages creation, storage and deletion of components.
@@ -126,14 +113,23 @@ namespace yaget
             std::any FindAllocator(const std::type_index& allocId) const;
 
             template<typename T>
-            uint32_t GetBitPosition() const
+            constexpr uint32_t GetBitPosition() const
             {
-                using CompType = typename std::remove_pointer<std::decay_t<T>>::type();
+                constexpr auto index = meta::Index<T*, Row>::value;
+                return index;
 
-                auto it = mItemBitsMapping.find(std::type_index(typeid(CompType)));
-                YAGET_ASSERT(mItemBitsMapping.find(std::type_index(typeid(CompType))) != mItemBitsMapping.end(), "Requested Component: '%s' does not exist in this Coordinator as an Item.", typeid(T).name());
+                //using CompType = typename std::remove_pointer<std::decay_t<T>>::type();
 
-                return it->second;
+                //auto it = mItemBitsMapping.find(std::type_index(typeid(CompType)));
+                //YAGET_ASSERT(mItemBitsMapping.find(std::type_index(typeid(CompType))) != mItemBitsMapping.end(), "Requested Component: '%s' does not exist in this Coordinator as an Item.", typeid(T).name());
+
+                //constexpr auto index = meta::Index<T*, Row>::value;
+                //index;
+                //Row row{};
+                //row;
+                //T* t = nullptr;
+                //t;
+                //return it->second;
             }
 
             template<typename R>
@@ -229,6 +225,11 @@ yaget::comp::Coordinator<P>::~Coordinator()
 {
     if constexpr (internal::has_auto_cleanup<Policy>)
     {
+        YLOG_CWARNING("GSYS", mItems.empty(), "Coordinator [%s] still has outstanding '%d' component(s): [%s]",
+            conv::Combine(mComponentNames, ", ").c_str(),
+            mItems.size(), 
+            conv::Combine(mItems, "], [").c_str());
+
         comp::ItemIds items;
         for (const auto& [id, row] : mItems)
         {

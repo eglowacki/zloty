@@ -50,7 +50,4 @@ namespace ttt
         using AutoCleanup = bool;
     };
 
-    //The actual coordinator of our game which uses RowPolicy outlined above
-    using GamePolicy = yaget::comp::CoordinatorPolicy<Entity, GlobalEntity>;
-
 }

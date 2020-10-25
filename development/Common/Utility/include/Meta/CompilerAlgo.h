@@ -124,15 +124,26 @@ namespace yaget::meta
         }
     }
 
-    template<typename S, typename T, int N = std::tuple_size_v<std::remove_reference_t<S>>>
+    struct TupleCopyPolicy
+    {
+        template <typename TS, typename TT>
+        static constexpr TS Copy(TS source, TT target)
+        {
+            return source ? source : target;
+        }
+    };
+
+    // Copy tuple from Source to Target, if Source element is false/nullptr, it will skip and preserve value in Target
+    template<typename S, typename T, typename P = TupleCopyPolicy, int N = std::tuple_size_v<std::remove_reference_t<S>>>
     void tuple_copy(const S& source, T& target)
     {
         using ET = typename std::tuple_element<N - 1, S>::type;
 
-        std::get<ET>(target) = std::get<ET>(source) ? std::get<ET>(source) : std::get<ET>(target);
+        std::get<ET>(target) = P::template Copy<ET>(std::get<ET>(source), std::get<ET>(target));
+
         if constexpr (N - 1 > 0)
         {
-            tuple_copy<S, T, N - 1>(source, target);
+            tuple_copy<S, T, P, N - 1>(source, target);
         }
     }
 
@@ -155,7 +166,7 @@ namespace yaget::meta
     template <class T, class U, class... Types>
     struct Index<T, std::tuple<U, Types...>>
     {
-        static const std::size_t value = 1 + Index<T, std::tuple<Types...>>::value;
+        static constexpr std::size_t value = 1 + Index<T, std::tuple<Types...>>::value;
     };
 
 
@@ -229,7 +240,109 @@ namespace yaget::meta
     template<typename T, typename Tuple>
     inline constexpr bool tuple_is_element_v = tuple_is_element<T, Tuple>::value;
 
+    using bits_t = std::size_t;
+    namespace internal
+    {
+        template<typename T, typename U, int N = std::tuple_size_v<std::remove_reference_t<U>>>
+        constexpr bits_t tuple_bits()
+        {
+            static_assert(std::tuple_size_v<std::remove_reference_t<T>> <= std::numeric_limits<bits_t>::digits, "Number of components in T exceeds bits_t ");
+            using Template = T;
+            using UserRow = U;
 
+            using UserElementType = typename std::tuple_element<N - 1, UserRow>::type;
+
+            constexpr bits_t result = 1 << yaget::meta::Index<UserElementType, Template>::value;
+
+            if constexpr (N - 1 > 0)
+            {
+                return result | tuple_bits<T, U, N - 1>();
+            }
+            else
+            {
+                return result;
+            }
+        }
+        template <std::size_t TupleIndex, std::size_t MaxTupleSize, typename... Tuple>
+        constexpr auto tuple_combine()
+        {
+            using Tuples = std::tuple<Tuple...>;
+
+            constexpr auto currentRow = std::get<TupleIndex>(Tuples{});
+            if constexpr (TupleIndex + 1 < MaxTupleSize)
+            {
+                constexpr auto nextRow = tuple_combine<TupleIndex + 1, MaxTupleSize, Tuple...>();
+                return std::tuple_cat(currentRow, nextRow);
+            }
+            else
+            {
+                return currentRow;
+            }
+        }
+
+        template <
+            size_t Index = 0
+            , typename TTuple
+            , size_t Size = std::tuple_size_v<std::remove_reference_t<TTuple>>
+        >
+        constexpr bool tuple_is_unique()
+        {
+            if constexpr (Index < Size)
+            {
+                using ThisType = std::tuple_element_t<Index, TTuple>;
+                yaget::meta::tuple_is_element_v<ThisType, TTuple>;
+
+                if constexpr (Index + 1 < Size)
+                {
+                    return tuple_is_unique<Index + 1, TTuple>();
+                }
+
+                return true;
+            }
+        }
+
+    }
+
+    // return bit pattern representing where types from T are located in R
+    // Like give me components that represent location of any entity (Tree)
+    // using Location = std::tuple<int, bool);
+    // using Tree = std::tuple<float, const char*, bool, double, int>;
+    // auto bits = tuple_bit_pattern<Location, Tree>::value;
+    // auto bits = tuple_bit_pattern_v<Location, Tree>;
+    // note that tuple position is from left to right, but bit representation follows least significant
+    // 00000
+    // 10100 
+    template <typename T, typename U>
+    struct tuple_bit_pattern
+    {
+        static constexpr bits_t value = internal::tuple_bits<T, U>();
+    };
+
+    template<typename T, typename U = T>
+    inline constexpr bits_t tuple_bit_pattern_v = tuple_bit_pattern<T, U>::value;
+
+    // samples:
+    //using TestOne = std::tuple<int, bool, float, char>;
+    //using TestTwo = std::tuple<float, char, int, char>;
+    //using Row = meta::tuple_combine_t<TestOne, TestTwo>;
+    //EXPECT_EQ(typeid(Row), typeid(std::tuple<int, bool, float, char, float, char, int, char>));
+
+    template <typename... Tuple>
+    struct tuple_combine
+    {
+        using type = decltype(internal::tuple_combine<0, std::tuple_size_v<std::remove_reference_t<std::tuple<Tuple...>>>, Tuple...>());
+    };
+
+    template<typename... Tuple>
+    using tuple_combine_t = typename tuple_combine<Tuple...>::type;
+
+    // Compile time error check if any value types are duplicated in tuple
+    // using Test1 = std::tuple<int, char>;
+    // meta::tuple_is_unique_v<Test1>;
+    // using Test2 = std::tuple<int, char, int>;
+    // meta::tuple_is_unique_v<Test2>;  // <-- compile error 'error C2338: type appears more than once in tuple'
+    template <typename T>
+    inline constexpr auto tuple_is_unique_v = internal::tuple_is_unique<0, T>();
 
     //-------------------------------------------------------------------------------------------------
     // used to create array of visitor objects

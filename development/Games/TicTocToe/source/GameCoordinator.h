@@ -16,6 +16,7 @@
 #pragma once
 
 #include "GameTypes.h"
+#include "Components/GameSystemsCoordinator.h"
 
 
 namespace ttt
@@ -23,7 +24,13 @@ namespace ttt
     class BoardSystem;
     class ScoreSystem;
 
-    using GameCoordinator = yaget::GameCoordinator<GamePolicy, BoardSystem*, ScoreSystem*>;
+    //using GameCoordinator = yaget::GameCoordinator<GamePolicy>;
+
+    using GlobalCoordinator = yaget::comp::Coordinator<GlobalEntity>;
+    using EntityCoordinator = yaget::comp::Coordinator<Entity>;
+    using GameCoordinatorSet = yaget::comp::CoordinatorSet<GlobalCoordinator, EntityCoordinator>;
+
+    using GameSystemsCoordinator = yaget::comp::gs::GameSystemsCoordinator<GameCoordinatorSet, BoardSystem, ScoreSystem>;
 
 }
 

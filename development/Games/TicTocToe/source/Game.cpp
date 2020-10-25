@@ -1,8 +1,8 @@
 ﻿#include "Game.h"
-#include "GameCoordinator.h"
-#include "BoardSystem.h"
-#include "ScoreSystem.h"
 #include "BoardComponent.h"
+#include "BoardSystem.h"
+#include "GameCoordinator.h"
+#include "ScoreSystem.h"
 #include "ScoreComponent.h"
 #include "InputComponent.h"
 #include "PlayerComponent.h"
@@ -18,7 +18,9 @@
 
 #include "Meta/CompilerAlgo.h"
 #include "Components/CoordinatorSet.h"
+#include "Components/GameSystemsCoordinator.h"
 
+#include <concepts>
 //namespace std
 //{
 //    template <class _Ty>
@@ -60,33 +62,33 @@ YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::ttt,ttt::,::bc,bc::,::ivc,ivc::,::pic,pic::,:
 
 
 
-namespace yaget::comp::db
-{
-    template <>
-    struct CoordinatorName <ttt::GameCoordinator::GlobalCoordinator>
-    {
-        static constexpr const char* Name() { return "Globals"; }
-    };
-
-    template <>
-    struct CoordinatorName <ttt::GameCoordinator::EntityCoordinator>
-    {
-        static constexpr const char* Name() { return "Entities"; }
-    };
-
-    template <>
-    struct CoordinatorId <ttt::GameCoordinator::GlobalCoordinator>
-    {
-        static constexpr int Value() { return ttt::GameCoordinator::GLOBAL_ID; }
-    };
-
-    template <>
-    struct CoordinatorId <ttt::GameCoordinator::EntityCoordinator>
-    {
-        static constexpr int Value() { return ttt::GameCoordinator::ENTITY_ID; }
-    };
-
-}
+//namespace yaget::comp::db
+//{
+//    template <>
+//    struct CoordinatorName <ttt::GameCoordinator::GlobalCoordinator>
+//    {
+//        static constexpr const char* Name() { return "Globals"; }
+//    };
+//
+//    template <>
+//    struct CoordinatorName <ttt::GameCoordinator::EntityCoordinator>
+//    {
+//        static constexpr const char* Name() { return "Entities"; }
+//    };
+//
+//    template <>
+//    struct CoordinatorId <ttt::GameCoordinator::GlobalCoordinator>
+//    {
+//        static constexpr int Value() { return ttt::GameCoordinator::GLOBAL_ID; }
+//    };
+//
+//    template <>
+//    struct CoordinatorId <ttt::GameCoordinator::EntityCoordinator>
+//    {
+//        static constexpr int Value() { return ttt::GameCoordinator::ENTITY_ID; }
+//    };
+//
+//}
 
 
 //using GlobalEntity = yaget::comp::RowPolicy<BoardComponent*, ScoreComponent*>;
@@ -119,12 +121,14 @@ namespace yaget::comp::db
 //using Coordinators = std::tuple<GlobalCoordinator, EntityCoordinator>;
 
 
-
 YAGET_COMPILE_WARNING_LEVEL_START(3, "Development of CoordinatorSet class")
 
 int ttt::game::Run(yaget::args::Options& options)
 {
     using namespace yaget;
+
+    //auto Row12 = tuple_combine2<0, 2, GlobalCoordinator, EntityCoordinator>();
+
 
     // basic initialization of console application
     const io::VirtualTransportSystem::AssetResolvers resolvers = {
@@ -134,47 +138,60 @@ int ttt::game::Run(yaget::args::Options& options)
     const auto& vtsConfig = dev::CurrentConfiguration().mInit.mVTSConfig;
 
     io::tool::VirtualTransportSystemDefault vts(vtsConfig, resolvers, "$(DatabaseFolder)/vts.sqlite");
-    items::DefaultDirector<GameCoordinator> director;
+    items::BlankDefaultDirector director;
     app::DefaultConsole app("Yaget.Tic-Tac-Toe", director, vts, options);
 
     // starting game initialization and setup
-    using GlobalCoordinator = comp::Coordinator<ttt::GlobalEntity>;
-    using EntityCoordinator = comp::Coordinator<ttt::Entity>;
+    ttt::GameSystemsCoordinator gameSystemsCoordinator;
+    auto& globalCoordinator = gameSystemsCoordinator.GetCoordinator<ttt::GlobalEntity>();
+    auto& entityCoordinator = gameSystemsCoordinator.GetCoordinator<ttt::Entity>();
 
-    using GameCoordinatorSet = comp::CoordinatorSet<GlobalCoordinator, EntityCoordinator>;
-
-    GameCoordinatorSet coordinatorSet;
-    auto& globalCoordinator = coordinatorSet.GetCoordinator<ttt::GlobalEntity>();
-    auto& entityCoordinator = coordinatorSet.GetCoordinator<ttt::Entity>();
-
-    // add global components
     auto id = app.IdCache.GetId(IdGameCache::IdType::itBurnable);
     globalCoordinator.AddComponent<ttt::BoardComponent>(id, 3, 3);
 
 
-    // add regular world entities components
-    id = app.IdCache.GetId(IdGameCache::IdType::itBurnable);
-    entityCoordinator.AddComponent<ttt::InputComponent>(id);
+    metrics::Channel channel(nullptr, nullptr, 0);
+    time::GameClock gameClock;
 
-    id = app.IdCache.GetId(IdGameCache::IdType::itBurnable);
-    entityCoordinator.AddComponent<ttt::InputComponent>(id);
+    gameSystemsCoordinator.Tick(gameClock, channel);
 
-    //coordinatorSet.ForEach<ttt::InputComponent*, ttt::PlayerComponent*, ttt::InventoryComponent*, ttt::PieceComponent*>([](ttt::InputComponent*, ttt::PlayerComponent*, ttt::InventoryComponent*, ttt::PieceComponent*)
+    //app.Run(gameClock, channel);
 
-    //using TreeEntity = std::tuple<ttt::InputComponent*, ttt::ScoreComponent*, ttt::InventoryComponent*>;
-    using TreeEntity = std::tuple<ttt::BoardComponent*, ttt::InputComponent*>;
 
-    coordinatorSet.ForEach<TreeEntity>([](comp::Id_t id, auto&& param)
-    {
-        int z = 0;
 
-        return true;
-    });
 
-    //BoardSystem boardSystem;
-    //ScoreSystem scoreSystem;
+    //GameCoordinatorSet coordinatorSet;
+    //auto& globalCoordinator = coordinatorSet.GetCoordinator<ttt::GlobalEntity>();
+    //auto& entityCoordinator = coordinatorSet.GetCoordinator<ttt::Entity>();
 
-    //GameCoordinator gameCoordinator(&boardSystem, &scoreSystem);
+    //// add global components
+    //auto id = app.IdCache.GetId(IdGameCache::IdType::itBurnable);
+    //globalCoordinator.AddComponent<ttt::BoardComponent>(id, 3, 3);
+
+
+    //// add regular world entities components
+    //id = app.IdCache.GetId(IdGameCache::IdType::itBurnable);
+    //entityCoordinator.AddComponent<ttt::InputComponent>(id);
+
+    //id = app.IdCache.GetId(IdGameCache::IdType::itBurnable);
+    //entityCoordinator.AddComponent<ttt::InputComponent>(id);
+
+    ////coordinatorSet.ForEach<ttt::InputComponent*, ttt::PlayerComponent*, ttt::InventoryComponent*, ttt::PieceComponent*>([](ttt::InputComponent*, ttt::PlayerComponent*, ttt::InventoryComponent*, ttt::PieceComponent*)
+
+    ////using TreeEntity = std::tuple<ttt::InputComponent*, ttt::ScoreComponent*, ttt::InventoryComponent*>;
+    //using TreeEntity = std::tuple<ttt::BoardComponent*, ttt::InputComponent*>;
+
+    //coordinatorSet.ForEach<TreeEntity>([](comp::Id_t id, auto&& param)
+    //{
+    //    int z = 0;
+
+    //    return true;
+    //});
+
+    ////BoardSystem boardSystem;
+    ////ScoreSystem scoreSystem;
+
+    ////GameCoordinator gameCoordinator(&boardSystem, &scoreSystem);
 
 
     return 0;

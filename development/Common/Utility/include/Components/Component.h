@@ -34,6 +34,10 @@ namespace yaget
     {
         class Component;
 
+        constexpr int DefaultPoolSize = 64;
+        constexpr int GlobalPoolSize = 1;
+        constexpr int SmallPoolSize = 4;
+
         namespace db
         {
             namespace internal
@@ -78,7 +82,7 @@ namespace yaget
         }
 
         // just provide basic template when using components. This does not add virtual table (vpt).
-        template <int Cap = 64>
+        template <int Cap = DefaultPoolSize>
         class BaseComponent : public Noncopyable<BaseComponent<Cap>>
         {
         public:

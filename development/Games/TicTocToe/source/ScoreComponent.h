@@ -26,7 +26,7 @@ namespace ttt
         using Storage = std::tuple<>;
     }
 
-    class ScoreComponent : public yaget::comp::db::PersistentBaseComponent<sc::Types, sc::Storage, 4>
+    class ScoreComponent : public yaget::comp::db::PersistentBaseComponent<sc::Types, sc::Storage, yaget::comp::GlobalPoolSize>
     {
     public:
         ScoreComponent(yaget::comp::Id_t id);

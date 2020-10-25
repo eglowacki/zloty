@@ -28,7 +28,7 @@ namespace ttt
         using Storage = std::tuple<int>;
     }
 
-    class InventoryComponent : public yaget::comp::db::PersistentBaseComponent<ivc::Types, ivc::Storage, 4>
+    class InventoryComponent : public yaget::comp::db::PersistentBaseComponent<ivc::Types, ivc::Storage, yaget::comp::SmallPoolSize>
     {
     public:
         InventoryComponent(yaget::comp::Id_t id, int numPieces);

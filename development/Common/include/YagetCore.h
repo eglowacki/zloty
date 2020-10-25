@@ -129,8 +129,7 @@ __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] Changed Warn
 #define YAGET_COMPILE_WARNING_LEVEL_END YAGET_COMPILE_SUPRESS_END
 
 
-
-// Support for custom functions to provide extra log tags
+// Support for custom functions to provide brand name of product and extra log tags
 #define YAGET_GET_BRAND_FUNCTION_NAME GetBrandName
 #define YAGET_GET_BRAND_FUNCTION_STRING YAGET_STRINGIZE(YAGET_GET_BRAND_FUNCTION_NAME)
 typedef const char* (*YagetFuncBrandName) (void);
@@ -146,7 +145,8 @@ typedef const char* (*YagetFuncUserStripKeywords) (const char*);
 
 #define YAGET_USER_STRIP_KEYWORDS_F(name) extern "C" __declspec(dllexport) const char* YAGET_USER_STRIP_KEYWORDS_FUNCTION_NAME(const char* name)
 
-// Helper define to simplyfy adding user strip keywords
+// Helper define to simplify adding user strip keywords
+// YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::ttt,ttt::")
 #define YAGET_CUSTOMIZE_STRIP_KEYWORDS(set)     \
     YAGET_USER_STRIP_KEYWORDS_F(defaultSet)     \
     {                                           \

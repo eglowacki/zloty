@@ -58,7 +58,7 @@ namespace yaget
         public:
             BlankApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
 
-            const yaget::time::GameClock& GameClock() const { return mGameClock; }
+            const yaget::time::GameClock& GameClock() const { return mApplicationClock; }
 
             app::DisplaySurface GetSurface() const override { return app::DisplaySurface{ nullptr, app::SurfaceState::Shared }; };
 

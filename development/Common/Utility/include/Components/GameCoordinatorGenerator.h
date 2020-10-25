@@ -381,6 +381,13 @@ namespace yaget::comp::db
         InsertComponent<T>(db, row);
     }
 
+    struct EmptySchema {};
+
+    template <>
+    inline Strings GenerateGameDirectorSchema<EmptySchema>(int64_t&)
+    {
+        return {};
+    }
 
 
 }

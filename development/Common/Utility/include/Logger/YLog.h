@@ -40,20 +40,25 @@ namespace yaget
 
         struct Tagger
         {
-            Tagger(const char* tag) : Tag(*(uint32_t *)tag)
+            Tagger(const char* tag)
             {
-                for (int i = 0; i < 4; ++i)
+                YAGET_ASSERT(tag[0] != '\0', "Log tag must be at least one letter long");
+
+                mCharTag[0] = tag[0];
+                if (tag[1] != '\0')
                 {
-                    if (tag[i])
+                    mCharTag[1] = tag[1];
+
+                    if (tag[2] != '\0')
                     {
-                        mCharTag[i] = tag[i];
-                    }
-                    else
-                    {
-                        mCharTag[i] = ' ';
+                        mCharTag[2] = tag[2];
+
+                        if (tag[3] != '\0')
+                        {
+                            mCharTag[3] = tag[3];
+                        }
                     }
                 }
-                mCharTag[4] = '\0';
             }
 
             operator uint32_t() const { return Tag; }

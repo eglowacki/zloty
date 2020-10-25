@@ -15,22 +15,22 @@
 //! \file
 #pragma once
 
-#include "Components/GameSystem.h"
 
+#include "Components/CoordinatorSet.h"
+#include "Components/GameSystem.h"
+#include "GameCoordinator.h"
 
 namespace ttt
 {
     class BoardComponent;
 
-    class BoardSystem : public yaget::comp::GameSystem<yaget::NoEndMarkerGlobal, BoardComponent*>
+    class BoardSystem : public yaget::comp::gs::GameSystem<yaget::NoEndMarkerGlobal, BoardComponent*>
     {
     public:
         BoardSystem();
 
     private:
-        void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, BoardComponent* boardComponent);
-
+        void OnUpdate(yaget::comp::Id_t id, BoardComponent* boardComponent);
     };
 
 }
-

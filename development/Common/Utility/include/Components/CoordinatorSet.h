@@ -25,7 +25,8 @@
 #pragma once
 
 
-#include "ComponentTypes.h"
+//#include "ComponentTypes.h"
+#include "Components/Coordinator.h"
 #include "Meta/Hana.h"
 #include <boost/hana/ext/std/tuple.hpp>
 #include <functional>
@@ -39,16 +40,50 @@ namespace yaget::comp
     {
         template<typename T>
         concept is_global = requires { typename T::Policy::Global; };
+
+
+        template <std::size_t TupleIndex, std::size_t MaxTupleSize, typename... Tuple>
+        constexpr auto coordinator_row_combine()
+        {
+            using Tuples = std::tuple<typename Tuple::Row...>;
+
+            constexpr auto currentRow = std::get<TupleIndex>(Tuples{});
+            if constexpr (TupleIndex + 1 < MaxTupleSize)
+            {
+                constexpr auto nextRow = coordinator_row_combine<TupleIndex + 1, MaxTupleSize, Tuple...>();
+                return std::tuple_cat(currentRow, nextRow);
+            }
+            else
+            {
+                return currentRow;
+            }
+        }
+
     }
+
+    template <typename... Tuple>
+    struct coordinator_row_combine
+    {
+        using type = decltype(internal::coordinator_row_combine<0, std::tuple_size_v<std::remove_reference_t<std::tuple<Tuple...>>>, Tuple...>());
+    };
+
+    template<typename... Tuple>
+    using coordinator_row_combine_t = typename coordinator_row_combine<Tuple...>::type;
 
 
     template <typename... T>
     class CoordinatorSet
     {
     public:
+        using FullRow = coordinator_row_combine_t<T...>;
+        static_assert(meta::tuple_is_unique_v<FullRow>, "Duplicate element types in CoordinatorSet FullRow");
+
         template <typename R>
         std::size_t ForEach(std::function<bool(Id_t id, R components)> callback)
         {
+            FullRow fullRow;
+            fullRow;
+
             namespace hana = boost::hana;
             using RequestRow = R;
 
@@ -114,6 +149,12 @@ namespace yaget::comp
                     });
                 }
             });
+
+            if (rows.empty() && templateRow != RequestRow{})
+            {
+                rows[GLOBAL_ID_MARKER] = templateRow;
+                
+            }
 
             // Now,call call back for each element in rows
             int itemCounter = 0;

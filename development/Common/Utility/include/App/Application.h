@@ -49,9 +49,16 @@ namespace yaget
 
         virtual ~Application() = default;
 
+        // DEPRECATED block of Run callbacks
         using StatusCallback_t = std::function<void()>;
         using UpdateCallback_t = std::function<void(Application&, const time::GameClock&, metrics::Channel&)>;
         int Run(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback, UpdateCallback_t renderCallback, StatusCallback_t idleCallback, StatusCallback_t quitCallback);
+
+        using TickLogic = std::function<void(const time::GameClock&, metrics::Channel&)>;
+        using TickRender = TickLogic;
+        using TickIdle = std::function<void()>;
+        int Run(const TickLogic& tickLogic, const TickRender& tickRender = nullptr, const TickIdle& tickIdle = nullptr);
+
         void RequestQuit();
         input::InputDevice& Input() {return mInputDevice;}
 
@@ -61,9 +68,6 @@ namespace yaget
         const io::VirtualTransportSystem& VTS() const { return mVTS; }
         items::Director& Director() { return mDirector; }
         const items::Director& Director() const { return mDirector; }
-
-        // add generic task to get it done by app pool. If pool does not exist, it will silently drop the task
-        void AddTask(const mt::JobProcessor::Task_t& task);
 
         struct VideoOptions
         {
@@ -88,15 +92,15 @@ namespace yaget
         items::Director& mDirector;
         std::atomic_bool mQuit{ false };
         bool mLastKeyState[256] = { false };
-        time::GameClock mGameClock;
+        time::GameClock mApplicationClock;
         input::InputDevice mInputDevice;
         std::unique_ptr<Mouse> mLastMouseInput;
 
     private:
         virtual bool onMessagePump(const time::GameClock& gameClock) = 0;
         virtual void Cleanup() = 0;
-        void onRenderTask(UpdateCallback_t renderCallback);
-        void onLogicTask(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback);
+        void onRenderTask(const UpdateCallback_t& renderCallback);
+        void onLogicTask(const UpdateCallback_t& logicCallback, const UpdateCallback_t& shutdownLogicCallback);
 
         // when user request quit, this will be processed on the next frame, to make sure orderly exit
         std::atomic_bool mRequestQuit{ false };

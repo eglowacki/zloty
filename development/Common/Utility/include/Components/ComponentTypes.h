@@ -29,8 +29,9 @@ namespace yaget
 
         using ItemIds = std::set<comp::Id_t>;
 
-        static const Id_t INVALID_ID = 0;
-        static const Id_t END_ID_MARKER = std::numeric_limits<Id_t>::max() - 1;
+        static constexpr const Id_t INVALID_ID = 0;
+        static constexpr const Id_t END_ID_MARKER = std::numeric_limits<Id_t>::max() - 1;
+        static constexpr const Id_t GLOBAL_ID_MARKER = std::numeric_limits<Id_t>::max();
 
         inline bool IsIdValid(Id_t id)
         {
@@ -38,14 +39,24 @@ namespace yaget
         }
 
         // provides layout and types of entity components (Item)
-        // IS... var args represent list of classes that one item represents at it's fullest
+        // IS... var args represent list of classes (aka components) that one item represents at it's fullest
         // Not all items will have all components fill in
         // Ex: RowPolicy<Location, Physics, Script>
         //      most likely all components will have location, majority will have Physics and few if any may contain Script
+        //
+        // You can use this type of pattern to decorate RowPolicy
+        //struct GlobalEntity : yaget::comp::RowPolicy<BoardComponent*, ScoreComponent*>
+        //{
+        //    using AutoCleanup = bool;
+        //    using Global = bool;
+        //};
+        //
         template <typename... IS>
         struct RowPolicy
         {
             using Row = std::tuple<IS...>;
+            static_assert(std::tuple_size_v<std::remove_reference_t<Row>> > 0, "Policy must have at least one Element.");
+            static_assert(meta::tuple_is_unique_v<Row>, "Duplicate element types in Policy");
         };
 
         // game system

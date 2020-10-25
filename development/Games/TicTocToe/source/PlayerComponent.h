@@ -29,7 +29,7 @@ namespace ttt
         using Storage = std::tuple<int, PieceType>;
     }
 
-    class PlayerComponent : public yaget::comp::db::PersistentBaseComponent<pc::Types, pc::Storage, 4>
+    class PlayerComponent : public yaget::comp::db::PersistentBaseComponent<pc::Types, pc::Storage, yaget::comp::SmallPoolSize>
     {
     public:
         PlayerComponent(yaget::comp::Id_t id, PieceType sideControl);

@@ -90,6 +90,7 @@ namespace yaget
             inline static int64_t mSchemaVersion = 0;
         };
 
+        using BlankDefaultDirector = DefaultDirector<comp::db::EmptySchema>;
 
     } // namespace items
 } // namespace yaget
