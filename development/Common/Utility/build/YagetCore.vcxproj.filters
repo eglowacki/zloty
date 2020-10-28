@@ -278,7 +278,7 @@
     <ClCompile Include="..\source\Components\PersistentBaseComponent.cpp">
       <Filter>Component Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\Components\GameSystemsCoordinator.cpp">
+    <ClCompile Include="..\include\Components\SystemsCoordinator.cpp">
       <Filter>Logger Files\LoggerCpp Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -578,10 +578,10 @@
     <ClInclude Include="..\include\Meta\Hana.h">
       <Filter>Meta Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Components\GameSystemsCoordinator.h">
+    <ClInclude Include="..\include\Components\GameSystemDeprecated.h">
       <Filter>Component Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Components\GameSystemDeprecated.h">
+    <ClInclude Include="..\include\Components\SystemsCoordinator.h">
       <Filter>Component Files</Filter>
     </ClInclude>
   </ItemGroup>

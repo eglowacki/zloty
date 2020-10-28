@@ -31,8 +31,7 @@ void yaget::Application::onRenderTask(const yaget::Application::UpdateCallback_t
     dev::CurrentThreadIds().RefreshRender(0);
 }
 
-void yaget::Application::onLogicTask(const yaget::Application::UpdateCallback_t& logicCallback, const yaget::Application::UpdateCallback_t&
-                                     shutdownLogicCallback)
+void yaget::Application::onLogicTask(const UpdateCallback_t& logicCallback, const UpdateCallback_t& shutdownLogicCallback)
 {
     dev::CurrentThreadIds().RefreshLogic(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Logic, "LOGIC");
@@ -129,7 +128,7 @@ int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRe
     return Run(tickWrapper, nullptr, renderWrapper, tickIdle, nullptr);
 }
 
-int yaget::Application::Run(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback, UpdateCallback_t renderCallback, StatusCallback_t idleCallback, StatusCallback_t quitCallback)
+int yaget::Application::Run(const UpdateCallback_t& logicCallback, const UpdateCallback_t& shutdownLogicCallback, const UpdateCallback_t& renderCallback, const StatusCallback_t& idleCallback, const StatusCallback_t& quitCallback)
 {
     // kick off separate thread for rendering
     YAGET_ASSERT(mGeneralPoolThread, "Can not call Run second time.");
@@ -137,7 +136,7 @@ int yaget::Application::Run(UpdateCallback_t logicCallback, UpdateCallback_t shu
     {
         mGeneralPoolThread->AddTask([this, renderCallback]() { onRenderTask(renderCallback); });
     }
-    mGeneralPoolThread->AddTask([this, logicCallback, shutdownLogicCallback]() { onLogicTask(logicCallback, shutdownLogicCallback); });
+    mGeneralPoolThread->AddTask([this, &logicCallback, shutdownLogicCallback]() { onLogicTask(logicCallback, shutdownLogicCallback); });
 
     YLOG_DEBUG("APP", "Application.Run pump started.");
     while (!mRequestQuit)

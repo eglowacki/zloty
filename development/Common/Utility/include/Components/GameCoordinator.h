@@ -63,7 +63,7 @@ namespace yaget
 
 
     //! DEPRECATED
-    //! Replaced by Components/GameSystemsCoordinator.h
+    //! Replaced by Components/SystemsCoordinator.h
     //! TODO Consider removing IGameCoordinator class. I don't like virtual functions and dynamic dispatch, since
     //! rest of systems are compile time
     class IGameCoordinator

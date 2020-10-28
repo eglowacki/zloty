@@ -16,7 +16,6 @@
 #pragma once
 
 
-#include "Components/CoordinatorSet.h"
 #include "Components/GameSystem.h"
 #include "GameCoordinator.h"
 
@@ -30,7 +29,7 @@ namespace ttt
         BoardSystem();
 
     private:
-        void OnUpdate(yaget::comp::Id_t id, BoardComponent* boardComponent);
+        void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, BoardComponent* boardComponent);
     };
 
 }

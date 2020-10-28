@@ -86,7 +86,11 @@ yaget::items::IdBatch yaget::items::Director::GetNextBatch()
         bool result = true;
         using Row = std::tuple<uint64_t /*marker*/, uint64_t /*batchSize*/, uint64_t /*nextId*/>;
         auto nextBatch = database.GetRowTuple<Row>("SELECT Marker, BatchSize, NextId FROM IdCache;", &result);
-        YAGET_UTIL_THROW_ASSERT("DIRE", result, fmt::format("Did not get next Batch from db. %s.", ParseErrors(database)));
+        if (!result)
+        {
+            transaction.Rollback();
+            YAGET_UTIL_THROW_ASSERT("DIRE", result, fmt::format("Did not get next Batch from db. %s.", ParseErrors(database)));
+        }
 
         const std::string command = fmt::format("REPLACE INTO 'IdCache' (Marker, BatchSize, NextId) VALUES({}, {}, {});", std::get<0>(nextBatch) , std::get<1>(nextBatch), std::get<2>(nextBatch) + std::get<1>(nextBatch));//nextBatch.Result2 + nextBatch.Result1);
         database.ExecuteStatement(command, nullptr);

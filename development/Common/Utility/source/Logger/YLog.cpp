@@ -9,9 +9,9 @@
 #include "YagetVersion.h"
 
 #if YAGET_LOG_ENABLED == 1
-    #pragma message("======== Yaget Log Included ========")
+    YAGET_COMPILE_GLOBAL_SETTINGS("Log Included")
 #else
-    #pragma message("======== Yaget Log NOT Included ========")
+    YAGET_COMPILE_GLOBAL_SETTINGS("Log NOT Included")
 #endif // YAGET_LOG_ENABLED
 
 namespace

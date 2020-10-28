@@ -25,6 +25,7 @@ namespace ttt
     class PlayerComponent;
     class InventoryComponent;
     class PieceComponent;
+    class RenderComponent;
 
     // Represents type of pieces we have between players
     // It also serves as side control for player
@@ -49,5 +50,11 @@ namespace ttt
     {
         using AutoCleanup = bool;
     };
+
+    struct RenderEntity : yaget::comp::RowPolicy<RenderComponent*>
+    {
+        using AutoCleanup = bool;
+    };
+
 
 }

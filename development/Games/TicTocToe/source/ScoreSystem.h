@@ -29,7 +29,7 @@ namespace ttt
         ScoreSystem();
 
     private:
-        void OnUpdate(yaget::comp::Id_t id, ScoreComponent* boardComponent);
+        void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, ScoreComponent* boardComponent);
     };
 
 

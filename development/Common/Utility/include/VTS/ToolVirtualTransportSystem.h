@@ -57,8 +57,8 @@ namespace yaget::io::tool
     class VirtualTransportSystemDefault : public io::tool::VirtualTransportSystem
     {
     public:
-        VirtualTransportSystemDefault(dev::Configuration::Init::VTSConfigList configList, const AssetResolvers& assetResolvers, const std::string& fileName)
-            : VirtualTransportSystem(configList, assetResolvers, fileName, RuntimeMode::Default)
+        VirtualTransportSystemDefault(dev::Configuration::Init::VTSConfigList configList, const AssetResolvers& assetResolvers, const std::string& fileName = "$(DatabaseFolder)/vts.sqlite")
+            : VirtualTransportSystem(std::move(configList), assetResolvers, fileName, RuntimeMode::Default)
         {}
     };
     
@@ -66,7 +66,7 @@ namespace yaget::io::tool
     class VirtualTransportSystemReset : public io::tool::VirtualTransportSystem
     {
     public:
-        VirtualTransportSystemReset(dev::Configuration::Init::VTSConfigList configList, const AssetResolvers& assetResolvers, const std::string& fileName)
+        VirtualTransportSystemReset(dev::Configuration::Init::VTSConfigList configList, const AssetResolvers& assetResolvers, const std::string& fileName = "$(DatabaseFolder)/vts.sqlite")
             : VirtualTransportSystem(configList, assetResolvers, fileName, RuntimeMode::Reset)
         {}
     };

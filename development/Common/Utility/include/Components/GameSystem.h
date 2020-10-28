@@ -21,6 +21,12 @@
 #include <functional>
 
 
+namespace yaget
+{
+    namespace metrics { class Channel; }
+    namespace time { class GameClock; }
+}
+
 namespace yaget::comp::gs
 {
     // TODO add timers support for entities
@@ -32,16 +38,16 @@ namespace yaget::comp::gs
         using RowPolicy = comp::RowPolicy<Comps...>;
         using Row = typename RowPolicy::Row;
 
-        using UpdateFunctor = std::function<void(yaget::comp::Id_t id, Comps&... args)>;
+        using UpdateFunctor = std::function<void(yaget::comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, Comps&... args)>;
 
         // framework calls this on same cadence (every tick...)
-        // In default case that is GameSystemsCoordinator class
+        // In default case that is SystemsCoordinator class
         template <typename CS>
-        void Tick(CS& coordinatorSet)
+        void Tick(CS& coordinatorSet, const time::GameClock& gameClock, metrics::Channel& channel)
         {
-            coordinatorSet.template ForEach<Row>([this](yaget::comp::Id_t id, const auto& row)
+            coordinatorSet.template ForEach<Row>([this, &gameClock, &channel](yaget::comp::Id_t id, const auto& row)
             {
-                Update(id, row);
+                Update(id, gameClock, channel, row);
                 return true;
             });
         }
@@ -54,9 +60,9 @@ namespace yaget::comp::gs
 
 
     private:
-        void Update(yaget::comp::Id_t id, const Row& row)
+        void Update(yaget::comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const Row& row)
         {
-            auto newRow = std::tuple_cat(std::tie(id), row);
+            auto newRow = std::tuple_cat(std::tie(id, gameClock, channel), row);
             std::apply(mUpdateFunctor, newRow);
         };
 

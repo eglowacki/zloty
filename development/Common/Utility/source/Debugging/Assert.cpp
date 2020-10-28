@@ -48,9 +48,9 @@
 #pragma warning (disable : 4996)  // warning C4996: 'freopen': This function or variable may be unsafe. Consider using freopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 
 #if YAGET_ASSERT_ENABLED == 1
-    #pragma message("======== Yaget Asserts Included ========")
+    YAGET_COMPILE_GLOBAL_SETTINGS("Asserts Included")
 #else
-    #pragma message("======== Yaget Asserts NOT Included ========")
+    YAGET_COMPILE_GLOBAL_SETTINGS("Asserts NOT Included")
 #endif // YAGET_ASSERT_ENABLED
 
 

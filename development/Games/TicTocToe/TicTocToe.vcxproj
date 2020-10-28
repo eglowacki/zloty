@@ -25,6 +25,8 @@
     <ClCompile Include="source\InventoryComponent.cpp" />
     <ClCompile Include="source\PieceComponent.cpp" />
     <ClCompile Include="source\PlayerComponent.cpp" />
+    <ClCompile Include="source\RenderComponent.cpp" />
+    <ClCompile Include="source\RenderSystem.cpp" />
     <ClCompile Include="source\ScoreSystem.cpp" />
     <ClCompile Include="source\TicTocToe.cpp" />
   </ItemGroup>
@@ -54,6 +56,8 @@
     <ClInclude Include="source\InventoryComponent.h" />
     <ClInclude Include="source\PieceComponent.h" />
     <ClInclude Include="source\PlayerComponent.h" />
+    <ClInclude Include="source\RenderComponent.h" />
+    <ClInclude Include="source\RenderSystem.h" />
     <ClInclude Include="source\ScoreComponent.h" />
     <ClCompile Include="source\ScoreComponent.cpp" />
     <ClInclude Include="source\ScoreSystem.h" />

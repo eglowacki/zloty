@@ -401,7 +401,7 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
         std::size_t numPadding = maxLen ? maxLen - env.first.length() : 0;
         std::string spacing(numPadding, ' ');
         std::string expendedAlias = util::ExpendEnv(env.first, nullptr);
-        message += fmt::format("\n   Alias: '{}'{} = '{}'", env.first, spacing, expendedAlias);
+        message += fmt::format("\n   Alias: '{}'{} = {}'{}'", env.first, spacing, (env.second.ReadOnly ? "R- " : "RW "), expendedAlias);
     }
 
     const dev::Configuration& configuration = dev::CurrentConfiguration();

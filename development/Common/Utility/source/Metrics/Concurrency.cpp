@@ -6,8 +6,8 @@
 #include "Debugging/DevConfiguration.h"
 
 #if YAGET_CONC_METRICS_ENABLED == 1
+    YAGET_COMPILE_GLOBAL_SETTINGS("Concurenty Metrics Included")
 
-#pragma message("======== Concurenty Metrics Enabled ========")
 #include "rad_tm.h"
 
 #include <cvmarkersobj.h>
@@ -248,7 +248,8 @@ void yaget::metrics::MarkEndTimeSpan(uint64_t spanId, const char* file, uint32_t
 }
 #else
 
-#pragma message("======== Concurenty Metrics Partialy NOT Included ========")
+YAGET_COMPILE_GLOBAL_SETTINGS("Concurenty Metrics Partialy NOT Included")
+//#pragma message("======== Concurenty Metrics Partialy NOT Included ========")
 
 void yaget::metrics::MarkStartThread(uint32_t threadId, const char* threadName)
 {

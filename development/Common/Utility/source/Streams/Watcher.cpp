@@ -10,9 +10,9 @@ namespace fs = std::filesystem;
 
 
 #if YAGET_WATCHER_ENABLED == 1
-    #pragma message("======== Yaget Watcher Enabled ========")
+    YAGET_COMPILE_GLOBAL_SETTINGS("IO Watcher Included")
 #else
-    #pragma message("======== Yaget Watcher NOT Enabled ========")
+    YAGET_COMPILE_GLOBAL_SETTINGS("IO Watcher NOT Included")
 #endif // YAGET_WATCHER_ENABLED
 
 

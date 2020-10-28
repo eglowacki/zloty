@@ -22,178 +22,171 @@
 #include <any>
 
 
-namespace yaget
+namespace yaget::comp
 {
-    namespace comp
+    namespace internal
     {
-        namespace internal
+        // compile time switch to run auto cleanup on left over items during destruction
+        template<typename T>
+        concept has_auto_cleanup = requires { typename T::AutoCleanup; };
+
+
+        // Return tuple of Allocators for each component
+        template <std::size_t TupleIndex, std::size_t MaxTupleSize, typename Tuple>
+        constexpr auto coordinator_allocator_combine()
         {
-            // compile time switch to run auto cleanup on left over items during destruction
-            template<typename T>
-            concept has_auto_cleanup = requires { typename T::AutoCleanup; };
+            using ComponentType = typename std::tuple_element<TupleIndex, Tuple>::type;
 
+            using CompType = typename meta::strip_qualifiers_t<ComponentType>;
+            std::tuple<memory::PoolAllocator<CompType>> currentRow;
 
-            // Return tuple of Allocators for each component
-            template <std::size_t TupleIndex, std::size_t MaxTupleSize, typename Tuple>
-            constexpr auto coordinator_allocator_combine()
+            if constexpr (TupleIndex + 1 < MaxTupleSize)
             {
-                using ComponentType = typename std::tuple_element<TupleIndex, Tuple>::type;
+                auto nextRow = std::move(coordinator_allocator_combine<TupleIndex + 1, MaxTupleSize, Tuple>());
+                return std::tuple_cat(std::move(currentRow), std::move(nextRow));
 
-                using CompType = typename meta::strip_qualifiers_t<ComponentType>;
-                std::tuple<memory::PoolAllocator<CompType>> currentRow;
-
-                if constexpr (TupleIndex + 1 < MaxTupleSize)
-                {
-                    auto nextRow = std::move(coordinator_allocator_combine<TupleIndex + 1, MaxTupleSize, Tuple>());
-                    return std::tuple_cat(currentRow, nextRow);
-
-                }
-                else
-                {
-                    return currentRow;
-                }
             }
-
+            else
+            {
+                return currentRow;
+            }
         }
 
-        template <typename Tuple>
-        struct coordinator_allocator_combine
+    }
+
+    template <typename Tuple>
+    struct coordinator_allocator_combine
+    {
+        using type = decltype(internal::coordinator_allocator_combine<0, std::tuple_size_v<std::remove_reference_t<Tuple>>, Tuple>());
+    };
+
+    template<typename Tuple>
+    using coordinator_allocator_combine_t = typename coordinator_allocator_combine<Tuple>::type;
+
+
+    // Coordinator stores map of items (keyed on item guid), manages creation, storage and deletion of components.
+    // It uses PoolAllocator as a storage for components.
+    template <typename P>
+    class Coordinator : public Noncopyable<Coordinator<P>>
+    {
+    public:
+        using Policy = P;
+        using FullRow = typename Policy::Row;
+
+        static constexpr size_t NumComponents = Policy::NumComponents;
+
+        using PatternSet = std::bitset<NumComponents>;
+        using Allocators = coordinator_allocator_combine_t<FullRow>;
+
+        Coordinator();
+        ~Coordinator();
+
+        // Add component to pool and collection.
+        // This will create a new instance of T component allocator
+        template<typename T, typename... Args>
+        T* AddComponent(comp::Id_t id, Args&&... args);
+
+        // Remove and delete component. It will set component to nullptr
+        template<typename T>
+        void RemoveComponent(comp::Id_t id, T*& component);
+
+        // Remove and delete component type from item id
+        template<typename T>
+        void RemoveComponent(comp::Id_t id);
+
+        // Remove all components with this id
+        void RemoveComponents(comp::Id_t id);
+
+        // Remove items 
+        void RemoveItems(const comp::ItemIds& ids);
+
+        // Return a component for specific item if one exist
+        template<typename T>
+        T* FindComponent(comp::Id_t id) const;
+
+        // Return full item if one exist
+        FullRow FindItem(comp::Id_t id) const;
+
+        // Return item if one exist but only for specified components in RowPolicy param R (comp::RowPolicy<...>)
+        template<typename R>
+        typename R::Row FindItem(comp::Id_t id) const;
+
+        // Return item id's for any item that matches components of R
+        template<typename R>
+        comp::ItemIds GetItemIds() const;
+
+        // Iterate over each item in ids collection and call callback on each item
+        template<typename R>
+        void ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
+
+        // Iterate over all items that conform to pattern R
+        // Return number of matched items, or 0 if none.
+        template<typename R>
+        std::size_t ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
+
+    private:
+        // Helper method to find a specific component allocator
+        template<typename T>
+        memory::PoolAllocator<T>& FindAllocator() const;
+
+        template<typename T>
+        constexpr meta::bits_t MakeBit() const
         {
-            using type = decltype(internal::coordinator_allocator_combine<0, std::tuple_size_v<std::remove_reference_t<Tuple>>, Tuple>());
-        };
+            // You can use this pattern before passing T: using CompType = typename meta::strip_qualifiers_t<T>;
+            static_assert(std::is_pointer_v<T> == false, "template T must not be a pointer");
+            return static_cast<meta::bits_t>(1) << meta::Index<T*, FullRow>::value;
+        }
 
-        template<typename Tuple>
-        using coordinator_allocator_combine_t = typename coordinator_allocator_combine<Tuple>::type;
-
-
-        // Coordinator stores map of items (keyed on item guid), manages creation, storage and deletion of components.
-        // It uses PoolAllocator as a storage for components.
-        template <typename P>
-        class Coordinator : public Noncopyable<Coordinator<P>>
+        template<typename... Args>
+        constexpr meta::bits_t GetValidBits(const std::tuple<Args...>& item) const
         {
-        public:
-            using Policy = P;
-            using FullRow = typename Policy::Row;
+            meta::bits_t bits = 0;
 
-            static constexpr size_t NumComponents = Policy::NumComponents;
-
-            using PatternSet = std::bitset<NumComponents>;
-
-            Coordinator();
-            ~Coordinator();
-
-            // Add component to pool and collection.
-            // This will create a new instance of T component allocator
-            template<typename T, typename... Args>
-            T* AddComponent(comp::Id_t id, Args&&... args);
-
-            // Remove and delete component. It will set component to nullptr
-            template<typename T>
-            void RemoveComponent(comp::Id_t id, T*& component);
-
-            // Remove and delete component type from item id
-            template<typename T>
-            void RemoveComponent(comp::Id_t id);
-
-            // Remove all components with this id
-            void RemoveComponents(comp::Id_t id);
-
-            // Remove items 
-            void RemoveItems(const comp::ItemIds& ids);
-
-            // Return a component for specific item if one exist
-            template<typename T>
-            T* FindComponent(comp::Id_t id) const;
-
-            // Return full item if one exist
-            FullRow FindItem(comp::Id_t id) const;
-
-            // Return item if one exist but only for specified components in RowPolicy param R (comp::RowPolicy<...>)
-            template<typename R>
-            typename R::Row FindItem(comp::Id_t id) const;
-
-            // Return item id's for any item that matches components of R
-            template<typename R>
-            comp::ItemIds GetItemIds() const;
-
-            // Iterate over each item in ids collection and call callback on each item
-            template<typename R>
-            void ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
-
-            // Iterate over all items that conform to pattern R
-            // Return number of matched items, or 0 if none.
-            template<typename R>
-            std::size_t ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
-
-        private:
-            // Helper method to find a specific component allocator
-            template<typename T>
-            memory::PoolAllocator<T>* FindAllocator() const;
-
-            // finds 'any' allocator. It's up to a user to cast it to correct type and handle any errors
-            std::any FindAllocator(const std::type_index& allocId) const;
-
-            template<typename T>
-            constexpr meta::bits_t MakeBit() const
+            meta::for_each(item, [this, &bits]<typename T0>(T0& compType)
             {
-                // You can use this pattern before passing T: using CompType = typename meta::strip_qualifiers_t<T>;
-                static_assert(std::is_pointer_v<T> == false, "template T must not be a pointer");
-                return static_cast<meta::bits_t>(1) << meta::Index<T*, FullRow>::value;
-            }
-
-            template<typename... Args>
-            constexpr meta::bits_t GetValidBits(const std::tuple<Args...>& item) const
-            {
-                meta::bits_t bits = 0;
-
-                meta::for_each(item, [this, &bits]<typename T0>(T0& compType)
+                if (compType)
                 {
-                    if (compType)
-                    {
-                        using CompType = typename meta::strip_qualifiers_t<T0>;
+                    using CompType = typename meta::strip_qualifiers_t<T0>;
 
-                        bits = bits | MakeBit<CompType>();
-                    }
-                });
-
-                return bits;
-            }
-
-            using AllocatorsList = std::map<std::type_index, std::any>;
-            AllocatorsList mComponentAllocators;
-
-            // Actual item created from PoolAllocator
-            std::map<comp::Id_t, FullRow> mItems;
-
-            // map from unique bits to all id's which contain that specific set of components
-            using Patterns = std::unordered_map<PatternSet, std::set<comp::Id_t>>;
-            Patterns mPatterns;
-
-            const Strings mComponentNames;
-        };
-
-        namespace internal
-        {
-            template<int N, typename To>
-            void RowCopy(To& to, const To& from)
-            {
-                to = from;
-            }
-
-            template<int N, typename To, typename From>
-            void RowCopy(To& to, const From& from)
-            {
-                auto element = std::get<std::tuple_element<N - 1, To>::type>(from);
-                std::get<N - 1>(to) = element;
-                if constexpr (N - 1 > 0)
-                {
-                    RowCopy<N - 1, To, From>(to, from);
+                    bits = bits | MakeBit<CompType>();
                 }
-            }
+            });
 
-        } // namespace internal
-        
-    } // namespace comp
+            return bits;
+        }
+
+        Allocators mAllocators;
+
+        // Actual item created from Allocators
+        std::map<comp::Id_t, FullRow> mItems;
+
+        // map from unique bits to all id's which contain that specific set of components
+        using Patterns = std::unordered_map<PatternSet, std::set<comp::Id_t>>;
+        Patterns mPatterns;
+
+        const Strings mComponentNames;
+    };
+
+    namespace internal
+    {
+        template<int N, typename To>
+        void RowCopy(To& to, const To& from)
+        {
+            to = from;
+        }
+
+        template<int N, typename To, typename From>
+        void RowCopy(To& to, const From& from)
+        {
+            auto element = std::get<std::tuple_element<N - 1, To>::type>(from);
+            std::get<N - 1>(to) = element;
+            if constexpr (N - 1 > 0)
+            {
+                RowCopy<N - 1, To, From>(to, from);
+            }
+        }
+
+    } // namespace internal
 } // namespace yaget
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -208,7 +201,7 @@ yaget::comp::Coordinator<P>::~Coordinator()
 {
     if constexpr (internal::has_auto_cleanup<Policy>)
     {
-        YLOG_CWARNING("GSYS", mItems.empty(), "Coordinator [%s] still has outstanding '%d' component(s): [%s]",
+        YLOG_CWARNING("GSYS", mItems.empty(), "Coordinator [%s] still has outstanding '%d' component(s): [%s], cleaning up...",
             conv::Combine(mComponentNames, ", ").c_str(),
             mItems.size(), 
             conv::Combine(mItems, "], [").c_str());
@@ -228,24 +221,9 @@ yaget::comp::Coordinator<P>::~Coordinator()
 }
 
 template<typename P>
-std::any yaget::comp::Coordinator<P>::FindAllocator(const std::type_index& allocI) const
-{
-    auto it = mComponentAllocators.find(allocI);
-    return it != mComponentAllocators.end() ? it->second : std::any();
-}
-
-template<typename P>
 template<typename T, typename... Args>
 T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
 {
-    memory::PoolAllocator<T>* componentAllocator = FindAllocator<T>();
-    if (!componentAllocator)
-    {
-        auto anyAllocator = std::make_shared<memory::PoolAllocator<T>>();
-        componentAllocator = anyAllocator.get();
-        mComponentAllocators.insert(std::make_pair(std::type_index(typeid(T)), anyAllocator));
-    }
-
     FullRow row = FindItem(id);
     meta::bits_t currentBits = GetValidBits(row);
     const meta::bits_t newBit = MakeBit<T>();
@@ -260,7 +238,8 @@ T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
         }
     }
 
-    T* newComponenet = componentAllocator->Allocate(std::forward<comp::Id_t>(id), std::forward<Args>(args)...);
+    memory::PoolAllocator<T>& componentAllocator = FindAllocator<T>();
+    T* newComponenet = componentAllocator.Allocate(std::forward<comp::Id_t>(id), std::forward<Args>(args)...);
 
     std::get<T*>(mItems[id]) = newComponenet;
 
@@ -279,18 +258,16 @@ void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
     YAGET_ASSERT(component, "Component parameter of type: '%s' is nulptr.", typeid(T).name());
     YAGET_ASSERT(mItems.find(id) != mItems.end(), "Item id: '%d' of type: '%s' does not exist in collection.", id, typeid(T).name());
 
-    memory::PoolAllocator<T>* componentAllocator = FindAllocator<T>();
-    YAGET_ASSERT(componentAllocator, "Did not find pool allocotor for: '%s'.", typeid(T).name());
-
     FullRow row = FindItem(id);
     PatternSet currentBits = GetValidBits(row);
     mPatterns[currentBits].erase(id);
 
-    componentAllocator->Free(component);
+    memory::PoolAllocator<T>& componentAllocator = FindAllocator<T>();
+    componentAllocator.Free(component);
     std::get<T*>(mItems[id]) = nullptr;
     component = nullptr;
 
-    if (mItems[id] == FullRow())
+    if (mItems[id] == FullRow{})
     {
         mItems.erase(id);
         mPatterns.erase(currentBits);
@@ -351,7 +328,7 @@ typename yaget::comp::Coordinator<P>::FullRow yaget::comp::Coordinator<P>::FindI
         return it->second;
     }
 
-    return FullRow();
+    return FullRow{};
 }
 
 template<typename P>
@@ -365,9 +342,8 @@ typename R::Row yaget::comp::Coordinator<P>::FindItem(comp::Id_t id) const
     else
     {
         // TODO: TEST: Verify that all R components are part of P
-        //             Verify compile asserts
         typename R::Row requestedComponents;
-        constexpr size_t numComponents = std::tuple_size_v<std::remove_reference_t<R::Row>>;
+        constexpr size_t numComponents = std::tuple_size_v<std::remove_reference_t<typename R::Row>>;
         static_assert(numComponents > 0, "At least one user requested component required");
         static_assert(numComponents <= std::tuple_size_v<std::remove_reference_t<FullRow>>, "Number of user requested components must be no larger then actual item components.");
 
@@ -409,23 +385,10 @@ T* yaget::comp::Coordinator<P>::FindComponent(comp::Id_t id) const
 
 template<typename P>
 template<typename T>
-yaget::memory::PoolAllocator<T>* yaget::comp::Coordinator<P>::FindAllocator() const
+yaget::memory::PoolAllocator<T>& yaget::comp::Coordinator<P>::FindAllocator() const
 {
-    std::any allocator = FindAllocator(std::type_index(typeid(T)));
-    if (allocator.has_value())
-    {
-        try
-        {
-            std::shared_ptr<memory::PoolAllocator<T>> componentAllocator = std::any_cast<std::shared_ptr<memory::PoolAllocator<T>>>(allocator);
-            return componentAllocator.get();
-        }
-        catch (const std::bad_any_cast& e)
-        {
-            YAGET_ASSERT(false, "Did not convert any pool allocator: '%s' to: '%s'. %s", allocator.type().name(), typeid(T).name(), e.what());
-        }
-    }
-
-    return nullptr;
+    using PA = memory::PoolAllocator<T>;
+    return const_cast<PA&>(std::get<PA>(mAllocators));
 }
 
 template<typename P>

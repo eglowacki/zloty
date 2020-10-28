@@ -52,7 +52,7 @@ namespace yaget
         // DEPRECATED block of Run callbacks
         using StatusCallback_t = std::function<void()>;
         using UpdateCallback_t = std::function<void(Application&, const time::GameClock&, metrics::Channel&)>;
-        int Run(UpdateCallback_t logicCallback, UpdateCallback_t shutdownLogicCallback, UpdateCallback_t renderCallback, StatusCallback_t idleCallback, StatusCallback_t quitCallback);
+        int Run(const UpdateCallback_t& logicCallback, const UpdateCallback_t& shutdownLogicCallback, const UpdateCallback_t& renderCallback, const StatusCallback_t& idleCallback, const StatusCallback_t& quitCallback);
 
         using TickLogic = std::function<void(const time::GameClock&, metrics::Channel&)>;
         using TickRender = TickLogic;

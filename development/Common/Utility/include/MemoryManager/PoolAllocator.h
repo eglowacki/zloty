@@ -55,6 +55,23 @@ namespace yaget
                     int mLineIndex;
                 };
 
+                PoolAllocatorLine(PoolAllocatorLine<T, E>&& other) noexcept
+                    : mFlags(std::move(other.mFlags))
+                    , mMemory(std::move(other.mMemory))
+                {}
+
+                PoolAllocatorLine& operator=(PoolAllocatorLine<T, E>&& other) noexcept
+                {
+                    if (this != &other)
+                    {
+                        mFlags = std::move(other.mFlags);
+                        mMemory = std::move(other.mMemory);
+                    }
+
+                    return *this;
+                }
+
+                PoolAllocatorLine() = default;
                 ~PoolAllocatorLine()
                 {
                     YAGET_ASSERT(mFlags.none(), "PoolAllocatorLine for '%s' still has outstanding '%d' allocation(s).", typeid(T).name(), mFlags.count());
@@ -177,7 +194,7 @@ namespace yaget
         //! TODO: Do we want to add some kind of compaction? This would mean that pointers would need
         //! to be changed,
         template <typename T, int E = T::Capacity>
-        class PoolAllocator
+        class PoolAllocator : public Noncopyable<PoolAllocator<T, E>>
         {
         public:
             using Type = T;
@@ -185,6 +202,23 @@ namespace yaget
 
             PoolAllocator() = default;
             ~PoolAllocator() = default;
+
+            PoolAllocator(PoolAllocator<T, E>&& other) noexcept
+                : mMemoryLines(std::move(other.mMemoryLines))
+                , mLastLineIndex(std::move(other.mLastLineIndex))
+            {
+            }
+
+            PoolAllocator& operator=(PoolAllocator<T, E>&& other) noexcept
+            {
+                if (this != &other)
+                {
+                    mMemoryLines = std::move(other.mMemoryLines);
+                    mLastLineIndex = std::move(other.mLastLineIndex);
+                }
+
+                return *this;
+            }
 
             template<typename... Args>
             T* Allocate(Args&&... args)
@@ -251,7 +285,12 @@ namespace yaget
             using PoolLine_t = internal::PoolAllocatorLine<T, E>;
             using PoolLinePtr_t = std::unique_ptr<PoolLine_t>;
             std::vector<PoolLinePtr_t> mMemoryLines;
-            int mLastLineIndex = PoolLine_t::INVALID_SLOT;;
+            int mLastLineIndex = PoolLine_t::INVALID_SLOT;
+
+
+            using PoolLine = internal::PoolAllocatorLine<T, E>;
+            using MemoryLines = std::vector<PoolLine>;
+            MemoryLines mMemoryLines2;
         };
 
         // Helper to create shared pointer with custom deleter

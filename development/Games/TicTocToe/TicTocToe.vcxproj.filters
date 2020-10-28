@@ -57,6 +57,12 @@
     <ClCompile Include="source\ScoreSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
+    <ClCompile Include="source\RenderComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\RenderSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="data\KeyBindings.json">
@@ -98,6 +104,12 @@
       <Filter>Source Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="source\ScoreSystem.h">
+      <Filter>Source Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="source\RenderComponent.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\RenderSystem.h">
       <Filter>Source Files\Systems</Filter>
     </ClInclude>
   </ItemGroup>

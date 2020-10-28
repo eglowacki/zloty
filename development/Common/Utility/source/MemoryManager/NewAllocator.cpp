@@ -2,7 +2,7 @@
 
 
 #if YAGET_NEW_ALLOCATOR_ENABLED == 1
-#pragma message("======== Yaget New Allocator Included ========")
+YAGET_COMPILE_GLOBAL_SETTINGS("Allocator Included")
 
 void* operator new  (std::size_t count)
 {
@@ -32,7 +32,7 @@ void* operator new[](std::size_t count, std::align_val_t al)
 
 }
 #else
-#pragma message("======== Yaget New Allocator NOT Included ========")
+YAGET_COMPILE_GLOBAL_SETTINGS("Allocator NOT Included")
 
 DISREGARD_LINKER_4221(COMPILER_VERIFICATION_NewAllocator_h)
 

@@ -32,8 +32,6 @@
 #include <functional>
 
 
-YAGET_COMPILE_WARNING_LEVEL_START(3, "Development of CoordinatorSet class")
-
 namespace yaget::comp
 {
     namespace internal
@@ -81,17 +79,8 @@ namespace yaget::comp
         template <typename R>
         std::size_t ForEach(std::function<bool(Id_t id, R components)> callback)
         {
-            FullRow fullRow;
-            fullRow;
-
             namespace hana = boost::hana;
             using RequestRow = R;
-
-            if constexpr (NumCoordinators == 1)
-            {
-                // nice optimization in case only 1 coordinator
-                return std::get<0>(mCoordinators).template ForEach<RequestRow>(callback);
-            }
 
             RequestRow templateRow{};
             using Rows = std::map<Id_t, RequestRow>;
@@ -99,7 +88,7 @@ namespace yaget::comp
 
             // walk over each coordinator and extract which RequestRow component belong to coordinator
             // and construct RowPolicy to be ingested by coordinator template args
-            meta::for_each(mCoordinators, [&rows, &templateRow]<typename C>(C& coordinator)
+            meta::for_each(mCoordinators, [&rows, &templateRow]<typename C>(C & coordinator)
             {
                 using CoordType = C;
                 using CoordinatorRow = decltype(hana::to_tuple(typename CoordType::FullRow{}));
@@ -130,7 +119,7 @@ namespace yaget::comp
                     });
                     using QueryRow = decltype(qrow);
 
-                    std::size_t numItems = coordinator.template ForEach<QueryRow>([&rows, &templateRow](comp::Id_t id, const auto& row)
+                    [[maybe_unused]] std::size_t numItems = coordinator.template ForEach<QueryRow>([&rows, &templateRow]([[maybe_unused]] comp::Id_t id, const auto& row)
                     {
                         if constexpr (internal::is_global<CoordType>)
                         {
@@ -150,10 +139,10 @@ namespace yaget::comp
                 }
             });
 
-            if (rows.empty() && templateRow != RequestRow{})
+            const bool validTemplateRow = templateRow != RequestRow{};
+            if (rows.empty() && validTemplateRow)
             {
-                rows[GLOBAL_ID_MARKER] = templateRow;
-                
+                rows[comp::GLOBAL_ID_MARKER] = templateRow;
             }
 
             // Now,call call back for each element in rows
@@ -163,7 +152,10 @@ namespace yaget::comp
                 ++itemCounter;
 
                 RequestRow requestRow = row;
-                meta::tuple_copy(templateRow, requestRow);
+                if (validTemplateRow)
+                {
+                    meta::tuple_copy(templateRow, requestRow);
+                }
 
                 if (!callback(id, requestRow))
                 {
@@ -208,5 +200,3 @@ namespace yaget::comp
         Coordinators mCoordinators;
     };
 }
-
-YAGET_COMPILE_WARNING_LEVEL_END

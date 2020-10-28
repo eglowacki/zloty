@@ -104,7 +104,7 @@ namespace yaget
 
         // Base class for all derive components. It exposes tick and id.
         // NOTE: Do we need anymore base class and virtual methods since we are relaying on pools?
-        class Component : public BaseComponent<64>
+        class Component : public BaseComponent<DefaultPoolSize>
         {
         public:
             virtual ~Component();

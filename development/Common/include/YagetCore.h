@@ -68,7 +68,7 @@ namespace yaget
 
     //// Notes about move
     //class Foo;
-    //class Move
+    //class Move : public Noncopyable<Foo> // optional if no copy allowed
     //{
     //public:
     //    Move(Move&& other)
@@ -128,6 +128,8 @@ __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] Changed Warn
 
 #define YAGET_COMPILE_WARNING_LEVEL_END YAGET_COMPILE_SUPRESS_END
 
+#define YAGET_COMPILE_GLOBAL_SETTINGS(m) \
+__pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] GLOBAL-SETTING ======== " m " ========"))
 
 // Support for custom functions to provide brand name of product and extra log tags
 #define YAGET_GET_BRAND_FUNCTION_NAME GetBrandName
