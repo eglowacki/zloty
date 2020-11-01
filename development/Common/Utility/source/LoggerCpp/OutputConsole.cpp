@@ -68,7 +68,7 @@ void OutputConsole::OnOutput(const Channel::Ptr& /*aChannelPtr*/, const Log& aLo
 
     // uses fprintf for atomic thread-safe operation
     SetConsoleTextAttribute(mConHandle, toWin32Attribute(aLog.getSeverity()) | backgroundAttrib);
-    fprintf(stdout, buffer.c_str());
+    fprintf(stdout, buffer);
     SetConsoleTextAttribute(mConHandle, forgroundAttrib | backgroundAttrib);
     fflush(stdout);
 }

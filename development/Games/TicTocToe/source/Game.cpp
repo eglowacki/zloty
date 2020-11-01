@@ -15,20 +15,9 @@
 #include "HashUtilities.h"
 #include "App/ConsoleApplication.h"
 #include "Items/ItemsDirector.h"
-
 #include "MemoryManager/PoolAllocator.h"
 
 #include <concepts>
-//namespace std
-//{
-//    template <class _Ty>
-//    struct is_literal_type : bool_constant<__is_literal_type(_Ty)> {
-//        // determine whether _Ty is a literal type
-//    };
-//
-//}
-//
-//#include <boost/hana.hpp>
 
 
 namespace yaget::ylog
@@ -46,16 +35,6 @@ namespace yaget::ylog
 }
 
 YAGET_BRAND_NAME_F("Beyond Limits")
-
-#define YAGET_CUSTOMIZE_STRIP_KEYWORDS(set) \
-    YAGET_USER_STRIP_KEYWORDS_F(defaultSet) \
-    { \
-        using namespace yaget; \
- \
-        static Initer initer(defaultSet, set); \
-        return initer.mKeywords.c_str(); \
-    }
-
 YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::ttt,ttt::,::bc,bc::,::ivc,ivc::,::pic,pic::,::pc,pc::")
 
 

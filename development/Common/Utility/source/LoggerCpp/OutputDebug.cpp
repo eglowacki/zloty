@@ -22,6 +22,6 @@ yaget::ylog::OutputDebug::OutputDebug(const Config::Ptr& aConfigPtr)
 void yaget::ylog::OutputDebug::OnOutput(const Channel::Ptr& /*aChannelPtr*/, const ylog::Log& aLog) const
 {
     const auto& buffer = aLog.FormatedMessage(m_bSplitLines);
-    OutputDebugStringA(buffer.c_str());
+    OutputDebugStringA(buffer);
 }
 #endif  // _WIN32

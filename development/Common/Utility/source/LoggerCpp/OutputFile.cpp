@@ -119,7 +119,7 @@ void OutputFile::OnOutput(const Channel::Ptr& /*aChannelPtr*/, const Log& aLog) 
     if (mpFile)
     {
         const auto& buffer = aLog.FormatedMessage(m_bSplitLines);
-        int nbWritten = fprintf(mpFile, buffer.c_str());
+        int nbWritten = fprintf(mpFile, buffer);
         fflush(mpFile);
         mSize += nbWritten;
     }

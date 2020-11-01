@@ -60,6 +60,7 @@
     <ClCompile Include="TestFiles\StringConverters_Test.cpp" />
     <ClCompile Include="TestFiles\StringHelpers_Test.cpp" />
     <ClCompile Include="TestFiles\VTS_Test.cpp" />
+    <ClCompile Include="TestFiles\YLog_Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

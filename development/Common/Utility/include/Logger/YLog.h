@@ -21,6 +21,7 @@
 #include "LoggerCpp/LoggerCpp.h"
 #include "LoggerCpp/Manager.h"
 #include "App/Args.h"
+#include <string.h>
 
 
 namespace yaget
@@ -40,28 +41,15 @@ namespace yaget
 
         struct Tagger
         {
-            Tagger(const char* tag)
+            explicit Tagger(uint32_t tag) : Tag(tag) { mCharTag[4] = '\0'; }
+            explicit Tagger(const char* tag)
             {
-                YAGET_ASSERT(tag[0] != '\0', "Log tag must be at least one letter long");
-
-                mCharTag[0] = tag[0];
-                if (tag[1] != '\0')
-                {
-                    mCharTag[1] = tag[1];
-
-                    if (tag[2] != '\0')
-                    {
-                        mCharTag[2] = tag[2];
-
-                        if (tag[3] != '\0')
-                        {
-                            mCharTag[3] = tag[3];
-                        }
-                    }
-                }
+                YAGET_ASSERT(tag && tag[0] != '\0', "Log tag must be at least one letter long");
+                strncpy_s(mCharTag, tag, 4);
             }
 
             operator uint32_t() const { return Tag; }
+            const char* c_str() const { return mCharTag; }
 
             union
             {

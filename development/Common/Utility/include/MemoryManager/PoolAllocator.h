@@ -225,19 +225,19 @@ namespace yaget
             {
                 YM_GATHER_PARENT(PoolAllocate);
 
-                PoolLine_t* currentLine = nullptr;
+                PoolLine* currentLine = nullptr;
                 {
                     YM_GATHER(FindLine);
 
-                    if (mLastLineIndex == PoolLine_t::INVALID_SLOT)
+                    if (mLastLineIndex == PoolLine::INVALID_SLOT)
                     {
-                        int lineIndex = PoolLine_t::INVALID_SLOT;
+                        int lineIndex = PoolLine::INVALID_SLOT;
 
                         // find first available line which is not full yet
-                        auto it = std::find_if(mMemoryLines.begin(), mMemoryLines.end(), [](const PoolLinePtr_t& line) { return !line->IsFull(); });
+                        auto it = std::find_if(mMemoryLines.begin(), mMemoryLines.end(), [](const PoolLinePtr& line) { return !line->IsFull(); });
                         if (it == mMemoryLines.end())
                         {
-                            mMemoryLines.push_back(std::make_unique<PoolLine_t>());
+                            mMemoryLines.emplace_back(std::make_unique<PoolLine>());
 
                             lineIndex = static_cast<int>(mMemoryLines.size() - 1);
                             currentLine = mMemoryLines.back().get();
@@ -262,35 +262,30 @@ namespace yaget
                 T* instance = currentLine->Allocate(std::forward<Args>(args)...);
 
                 YM_GATHER_PARENT(AllocateLine);
-                auto* blockHeader = PoolLine_t::GetBlockHeader(instance);
+                auto* blockHeader = PoolLine::GetBlockHeader(instance);
                 blockHeader->mLineIndex = mLastLineIndex;
 
                 // check if current line still has any slots left
-                mLastLineIndex = currentLine->IsFull() ? PoolLine_t::INVALID_SLOT : mLastLineIndex;
+                mLastLineIndex = currentLine->IsFull() ? PoolLine::INVALID_SLOT : mLastLineIndex;
                 return instance;
             }
 
             void Free(T* allocatedMemory)
             {
                 // Potential place to lock (if MT)
-                auto* blockHeader = PoolLine_t::GetBlockHeader(allocatedMemory);
-                YAGET_ASSERT(blockHeader->mLineIndex != PoolLine_t::INVALID_SLOT, "Invalid Component '%s' deletion (double-delete?).", typeid(T).name());
+                auto* blockHeader = PoolLine::GetBlockHeader(allocatedMemory);
+                YAGET_ASSERT(blockHeader->mLineIndex != PoolLine::INVALID_SLOT, "Invalid Component '%s' deletion (double-delete?).", typeid(T).name());
                 mMemoryLines[blockHeader->mLineIndex]->Free(allocatedMemory);
-                blockHeader->mLineIndex = PoolLine_t::INVALID_SLOT;
+                blockHeader->mLineIndex = PoolLine::INVALID_SLOT;
 
                 // TODO: If we want to handle removing empty lines, we will also need to adjust mLineIndex in BlockHeader
             }
 
         private:
-            using PoolLine_t = internal::PoolAllocatorLine<T, E>;
-            using PoolLinePtr_t = std::unique_ptr<PoolLine_t>;
-            std::vector<PoolLinePtr_t> mMemoryLines;
-            int mLastLineIndex = PoolLine_t::INVALID_SLOT;
-
-
             using PoolLine = internal::PoolAllocatorLine<T, E>;
-            using MemoryLines = std::vector<PoolLine>;
-            MemoryLines mMemoryLines2;
+            using PoolLinePtr = std::unique_ptr<PoolLine>;
+            std::vector<PoolLinePtr> mMemoryLines;
+            int mLastLineIndex = PoolLine::INVALID_SLOT;
         };
 
         // Helper to create shared pointer with custom deleter
@@ -298,11 +293,11 @@ namespace yaget
         std::shared_ptr<typename T::Type> New(T& poolAllocator, Args&&... args)
         {
             typename T::Type* newObject = poolAllocator.Allocate(std::forward<Args>(args)...);
-            auto objecttHandle = std::shared_ptr<T::Type>(newObject, [&poolAllocator](typename T::Type* oldObject)
+            auto objectHandle = std::shared_ptr<typename T::Type>(newObject, [&poolAllocator](typename T::Type* oldObject)
             {
                 poolAllocator.Free(oldObject);
             });
-            return objecttHandle;
+            return objectHandle;
         }
 
     } // namespace memory

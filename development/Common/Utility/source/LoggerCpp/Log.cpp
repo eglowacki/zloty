@@ -15,6 +15,11 @@
 #include <stdarg.h> 
 #include <cstring>
 #include <cassert>
+
+#include "STLHelper.h"
+
+
+#include "sqlite/SQLite.h"
 using namespace yaget;
 using namespace yaget::ylog;
 
@@ -34,11 +39,6 @@ Log::Log(const Logger& aLogger, Level aSeverity)
     : mLogger(aLogger)
     , mSeverity(aSeverity)
 {
-    //// Construct a stream only if the severity of the Log is above its Logger Log::Level
-    ////if (aSeverity >= aLogger.getLevel())
-    //{
-    //    mpStream = std::make_shared<std::ostringstream>();
-    //}
 }
 
 // Destructor : output the Log string stream
@@ -147,42 +147,23 @@ void Log::FormatLineMessage()
     const auto& channelName = mLogger.getName();
     const auto& severityText = Log::toString(getSeverity());
     const auto& streamText = getStream().str();
+    const ylog::Tagger tagger(GetTag());
 
-    char tag[5] = { '\0' };
-    *(reinterpret_cast<uint32_t*>(tag)) = GetTag();
-    constexpr std::size_t BufferSize = 1024 * 16;
-
-    mFormatedLineMessageSplit.resize(BufferSize);
-    char* buffer = mFormatedLineMessageSplit.data();
-
-    int result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%s] %s\n%s(%d) : %s\n", 
-        timeText.c_str(), channelName.c_str(),
-        severityText, tag[0] ? ":" : "", tag,
-        streamText.c_str(), GetFileName().c_str(), GetFileLine(), GetFunctionName().c_str());
-
-    if (result == -1)
+    for (int i = 0; i < 2; ++i)
     {
-        buffer[BufferSize - 5] = '.';
-        buffer[BufferSize - 4] = '.';
-        buffer[BufferSize - 3] = '.';
-        buffer[BufferSize - 2] = '\n';
-        buffer[BufferSize - 1] = '\0';
-    }
+        char* buffer = mFormatedBuffers[i];
+        int result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%s] %s%s%s(%d) : %s\n",
+            timeText.c_str(), channelName.c_str(),
+            severityText, ":", tagger.c_str(),
+            streamText.c_str(), SplitMarkers[i], GetFileName().c_str(), GetFileLine(), GetFunctionName().c_str());
 
-    mFormatedLineMessage.resize(BufferSize);
-    buffer = mFormatedLineMessage.data();
-
-    result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%s] %s ** %s(%d) : %s\n",
-        timeText.c_str(), channelName.c_str(),
-        severityText, tag[0] ? ":" : "", tag,
-        streamText.c_str(), GetFileName().c_str(), GetFileLine(), GetFunctionName().c_str());
-
-    if (result == -1)
-    {
-        buffer[BufferSize - 5] = '.';
-        buffer[BufferSize - 4] = '.';
-        buffer[BufferSize - 3] = '.';
-        buffer[BufferSize - 2] = '\n';
-        buffer[BufferSize - 1] = '\0';
+        if (result == -1)
+        {
+            buffer[BufferSize - 5] = '.';
+            buffer[BufferSize - 4] = '.';
+            buffer[BufferSize - 3] = '.';
+            buffer[BufferSize - 2] = '\n';
+            buffer[BufferSize - 1] = '\0';
+        }
     }
 }

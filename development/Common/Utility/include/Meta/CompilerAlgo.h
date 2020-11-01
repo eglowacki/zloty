@@ -17,10 +17,57 @@
 
 #include "YagetCore.h"
 #include <string_view>
+#include <array>
 
 
 namespace yaget::meta
 {
+    //-------------------------------------------------------------------------------------------------
+    // make_array_of provides initialization of arrays with saem value over all elements 
+    //// std::array<int, 4>{42, 42, 42, 42}
+    //constexpr auto test_array = make_array_of<4/*, int*/>(42);
+    //static_assert(test_array[0] == 42);
+    //static_assert(test_array[1] == 42);
+    //static_assert(test_array[2] == 42);
+    //static_assert(test_array[3] == 42);
+    //// static_assert(test_array[4] == 42); out of bounds
+    namespace internal
+    {
+        /// [3]
+        /// This functions's only purpose is to ignore the index given as the second
+        /// template argument and to always produce the value passed in.
+        template<class T, size_t /*ignored*/>
+        constexpr T identity_func(const T& value)
+        {
+            return value;
+        }
+
+        /// [2]
+        /// At this point, we have a list of indices that we can unfold
+        /// into an initializer list using the `identity_func` above.
+        template<class T, size_t... Indices>
+        constexpr std::array<T, sizeof...(Indices)>
+            make_array_of_impl(const T& value, std::index_sequence<Indices...>)
+        {
+            return { identity_func<T, Indices>(value)... };
+        }
+    }
+
+    //-------------------------------------------------------------------------------------------------
+    /// [1]
+    /// This is the user-facing function.
+    /// The template arguments are swapped compared to the order used
+    /// for std::array, this way we can let the compiler infer the type
+    /// from the given value but still define it explicitly if we want to.
+    template<size_t Size, class T>
+    constexpr std::array<T, Size>
+        make_array_of(const T& value)
+    {
+        using Indices = std::make_index_sequence<Size>;
+        return internal::make_array_of_impl(value, Indices{});
+    }
+
+
     //-------------------------------------------------------------------------------------------------
     // removes any cv, pointers and references qualifiers from T
     // using BaseType = typename meta::strip_qualifiers<T>::type;
