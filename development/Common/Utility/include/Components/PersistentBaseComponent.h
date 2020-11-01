@@ -45,7 +45,7 @@ namespace yaget::comp::db
         const auto& GetValue() const
         {
             // it's used to pass nice name of property, get the index
-            // and then ise that index into Storage tuple to get actual value.
+            // and then use that index into Storage tuple to get actual value.
             constexpr std::size_t index = meta::Index<T, Row>::value;
             return std::get<index>(mDataStorage);
         }
