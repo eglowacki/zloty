@@ -1,0 +1,43 @@
+{
+    "Description": {
+        "Items": [
+            [
+                {
+                    "Type": "Player",
+                    "Params": [ 417, 1 ]
+                },
+                {
+                    "Type": "Inventory",
+                    "Params": [ 5 ]
+                },
+                {
+                    "Type": "Input"
+                }
+            ],
+            [
+                {
+                    "Type": "Player",
+                    "Params": [ 1000, 2 ]
+                },
+                {
+                    "Type": "Inventory",
+                    "Params": [ 5 ]
+                },
+                {
+                    "Type": "Input"
+                }
+            ],
+            [
+                {
+                    "Type": "Board",
+                    "Params": [ 3, 3 ]
+                },
+                {
+                    "Type": "Score"
+                }
+            ]
+        ]
+    },
+    "Load": {
+    }
+}

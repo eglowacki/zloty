@@ -64,7 +64,7 @@ namespace yaget::comp
     using coordinator_allocator_combine_t = typename coordinator_allocator_combine<Tuple>::type;
 
 
-    // Coordinator stores map of items (keyed on item guid), manages creation, storage and deletion of components.
+    // Coordinator stores map of items (keyed on item id), manages creation, storage and deletion of components.
     // It uses PoolAllocator as a storage for components.
     template <typename P>
     class Coordinator : public Noncopyable<Coordinator<P>>
@@ -78,7 +78,6 @@ namespace yaget::comp
         using PatternSet = std::bitset<NumComponents>;
         using Allocators = coordinator_allocator_combine_t<FullRow>;
 
-        Coordinator();
         ~Coordinator();
 
         // Add component to pool and collection.
@@ -164,7 +163,7 @@ namespace yaget::comp
         using Patterns = std::unordered_map<PatternSet, std::set<comp::Id_t>>;
         Patterns mPatterns;
 
-        const Strings mComponentNames;
+        const Strings mComponentNames = comp::db::GetPolicyRowNames<P::Row>();
     };
 
     namespace internal
@@ -188,13 +187,6 @@ namespace yaget::comp
 
     } // namespace internal
 } // namespace yaget
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------
-template<typename P>
-yaget::comp::Coordinator<P>::Coordinator()
-    : mComponentNames(comp::db::GetPolicyRowNames<P::Row>())
-{
-}
 
 template<typename P>
 yaget::comp::Coordinator<P>::~Coordinator()

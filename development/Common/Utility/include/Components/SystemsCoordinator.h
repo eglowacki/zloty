@@ -28,7 +28,7 @@ namespace yaget {
 namespace yaget::comp::gs
 {
     // Create coordinator for system and call each for update
-    // T is GameCoordinatorSet and ...S are systems (classes that follow GameSystem
+    // T is GameCoordinatorSet and ...S are systems (classes that follow GameSystem)
     template <typename T, typename... S>
     class SystemsCoordinator
     {

@@ -27,13 +27,15 @@ namespace ttt
     {
         struct Side {};
         using Types = std::tuple<Side>;
-        using Storage = std::tuple<PieceType>;
+        using Storage = std::tuple<int>;
     }
 
     class PieceComponent : public yaget::comp::db::PersistentBaseComponent<pic::Types, pic::Storage>
     {
     public:
-        PieceComponent(yaget::comp::Id_t id, PieceType pieceType);
+        PieceComponent(yaget::comp::Id_t id, const pic::Storage& pieceType)
+        : PersistentBaseComponent(id, pieceType)
+        {}
     };
 
 }

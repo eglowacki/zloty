@@ -76,6 +76,12 @@ namespace yaget::json
         return defaultValue;
     }
 
+    template<typename T>
+    inline T GetValue(const nlohmann::json& block)
+    {
+        return block.get<T>();
+    }
+
     inline std::string PrettyPrint(const nlohmann::json& jasonBlock, int indent = 4)
     {
         std::ostringstream s;

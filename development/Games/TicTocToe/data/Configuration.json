@@ -2,7 +2,7 @@
 	"Configuration" : {
 		"Debug": {
 			"Logging": {
-				"Filters": [ "MULT", "POOL", "SQL", "FILE", "VTS", "IDS", "INPT", "INIT", "SPAM" ],
+				"Filters": [ "MULT", "POOL", "SQL", "FILE", "VTS", "IDS", "INPT", "INIT", "SPAM", "APP", "DIRE" ],
 				"Level": "DBUG",
 				"Outputs": {
 					"ylog::OutputDebug": {
@@ -17,25 +17,28 @@
 		},
 
 		"Init": {
+			"GameDirectorScript": "Settings@Director",
 			"Aliases": {
-			   "$(AssetsFolder)": {
+				"$(AssetsFolder)": {
 					"Path": "$(UserDataFolder)/Assets",
 					"ReadOnly": true
 				},
-			   "$(DatabaseFolder)": {
+				"$(DatabaseFolder)": {
 					"Path": "$(UserDataFolder)/Database",
 					"ReadOnly": true
 				}
 			},
-			"VTS" : [{
-				"Settings": {
-					"Converters": "JSON",
-					"Filters" : [ "*.json" ],
-					"Path" : [ "$(DataFolder)/Data", "$(AppFolder)" ],
-					"ReadOnly" : true,
-					"Recursive" : false
+			"VTS": [
+				{
+					"Settings": {
+						"Converters": "JSON",
+						"Filters": [ "*.json" ],
+						"Path": [ "$(DataFolder)/Data", "$(AppFolder)" ],
+						"ReadOnly": true,
+						"Recursive": false
+					}
 				}
-			}]
+			]
 		}
 	}
 }

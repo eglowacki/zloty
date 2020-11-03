@@ -62,6 +62,13 @@
     <ClCompile Include="source\ScoreComponent.cpp" />
     <ClInclude Include="source\ScoreSystem.h" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="data\Director.json">
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </CopyFileToFolders>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

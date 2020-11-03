@@ -8,9 +8,19 @@ using namespace yaget;
 
 namespace
 {
+    // NOTE: EG total unhappiness with this approach. If we do not request quit 
+    // windows will simply kill our app, hence this (g)lobal variable
+    yaget::Application* gConsoleApplication = nullptr;
     BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
     {
-        return dwCtrlType == CTRL_CLOSE_EVENT ? TRUE : FALSE;
+        const bool closeApp = dwCtrlType == CTRL_CLOSE_EVENT || dwCtrlType == CTRL_C_EVENT || dwCtrlType == CTRL_BREAK_EVENT || dwCtrlType == CTRL_LOGOFF_EVENT || dwCtrlType == CTRL_SHUTDOWN_EVENT;
+
+        if (closeApp && gConsoleApplication)
+        {
+            gConsoleApplication->RequestQuit();
+            return TRUE;
+        }
+        return FALSE;
     }
 
     HANDLE handle_cast(void* handle)
@@ -39,13 +49,17 @@ ConsoleApplication::ConsoleApplication(const std::string& title, items::Director
     //, mTerminal(std::make_unique<Term::Terminal>(true, false))
 {
     ::SetConsoleTitle(title.c_str());
+
+    gConsoleApplication = this;
     ::SetConsoleCtrlHandler(HandlerRoutine, TRUE);
     mOutputHandle = ::GetStdHandle(STD_OUTPUT_HANDLE);
     mInputHandle = ::GetStdHandle(STD_INPUT_HANDLE);
 }
 
 ConsoleApplication::~ConsoleApplication()
-{}
+{
+    gConsoleApplication = nullptr;
+}
 
 bool ConsoleApplication::onMessagePump(const time::GameClock& /*gameClock*/)
 {

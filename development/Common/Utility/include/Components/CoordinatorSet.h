@@ -75,6 +75,7 @@ namespace yaget::comp
     public:
         using FullRow = coordinator_row_combine_t<T...>;
         static_assert(meta::tuple_is_unique_v<FullRow>, "Duplicate element types in CoordinatorSet FullRow");
+        const Strings mComponentNames = comp::db::GetPolicyRowNames<FullRow>();
 
         template <typename R>
         std::size_t ForEach(std::function<bool(Id_t id, R components)> callback)
