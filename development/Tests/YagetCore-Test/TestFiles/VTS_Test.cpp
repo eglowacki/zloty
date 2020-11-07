@@ -89,12 +89,6 @@ namespace
 
 class VTS : public ::testing::Test
 {
-protected:
-    //void SetUp() override
-    //void TearDown() override
-
-private:
-    yaget::test::Environment mEnvironment{ configBlock, std::strlen(configBlock) };
 };
 
 TEST_F(VTS, Section)
@@ -184,9 +178,12 @@ TEST_F(VTS, Section)
 
 TEST_F(VTS, TransportSystem)
 {
+    yaget::test::Environment mEnvironment{ configBlock, std::strlen(configBlock) };
+
     using namespace yaget;
     using Options = io::tool::VirtualTransportSystem::Options;
     using Section = io::VirtualTransportSystem::Section;
+
 
     const char* vtsFile = "$(DatabaseFolder)/vts.sqlite";
     const Section blobFile("SourceDocs@Attach/foo.txt");
