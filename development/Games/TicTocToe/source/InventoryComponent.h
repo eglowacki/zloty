@@ -31,11 +31,9 @@ namespace ttt
     class InventoryComponent : public yaget::comp::db::PersistentBaseComponent<ivc::Types, ivc::Storage, yaget::comp::SmallPoolSize>
     {
     public:
-        InventoryComponent(yaget::comp::Id_t id, const ivc::Storage& numPieces)
-            : PersistentBaseComponent(id, numPieces)
+        InventoryComponent(yaget::comp::Id_t id, int numPieces)
+            : PersistentBaseComponent(id, std::tie(numPieces))
         {}
-
-        //ttt::InventoryComponent::InventoryComponent(yaget::comp::Id_t id, int numPieces)
     };
 
 }

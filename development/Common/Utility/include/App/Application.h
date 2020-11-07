@@ -63,7 +63,7 @@ namespace yaget
         input::InputDevice& Input() {return mInputDevice;}
 
         const args::Options Options;
-        IdGameCache IdCache;
+        IdGameCache& IdCache;
         io::VirtualTransportSystem& VTS() { return mVTS; }
         const io::VirtualTransportSystem& VTS() const { return mVTS; }
         items::Director& Director() { return mDirector; }

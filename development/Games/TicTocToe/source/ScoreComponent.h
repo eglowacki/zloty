@@ -29,8 +29,8 @@ namespace ttt
     class ScoreComponent : public yaget::comp::db::PersistentBaseComponent<sc::Types, sc::Storage, yaget::comp::GlobalPoolSize>
     {
     public:
-        ScoreComponent(yaget::comp::Id_t id, const sc::Storage& params)
-        : PersistentBaseComponent(id, params)
+        ScoreComponent(yaget::comp::Id_t id)
+        : PersistentBaseComponent(id)
         {}
     };
 

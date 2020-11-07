@@ -31,8 +31,8 @@ namespace ttt
     class BoardComponent : public yaget::comp::db::PersistentBaseComponent<bc::Types, bc::Storage, yaget::comp::GlobalPoolSize>
     {
     public:
-        BoardComponent(yaget::comp::Id_t id, const bc::Storage& params)
-        : PersistentBaseComponent(id, params)
+        BoardComponent(yaget::comp::Id_t id, int rows, int columns)
+            : PersistentBaseComponent(id, std::tie(rows, columns))
         {}
     };
 

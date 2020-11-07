@@ -14,7 +14,15 @@
     </Type>
 
     <Type Name="yaget::comp::BaseComponent&lt;*&gt;">
-        <DisplayString>{{ id= {mId} }}</DisplayString>
+        <DisplayString>{{ id={mId} }}</DisplayString>
+    </Type>
+
+    <Type Name="yaget::comp::db::PersistentBaseComponent&lt;*&gt;">
+        <DisplayString>{{ data={mDataStorage} }}</DisplayString>
+    </Type>
+
+    <Type Name="yaget::comp::gs::GameSystem&lt;*&gt;">
+        <DisplayString>{{ Name={mNiceName} }}</DisplayString>
     </Type>
 
 </AutoVisualizer>

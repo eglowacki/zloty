@@ -18,6 +18,7 @@
 #include "YagetCore.h"
 #include "Database/Database.h"
 #include "Components/GameCoordinatorGenerator.h"
+#include "IdGameCache.h"
 
 namespace yaget
 {
@@ -45,6 +46,8 @@ namespace yaget
             IdBatch GetNextBatch();
             SQLite& DB() { return mDatabase.DB(); }
             const SQLite& DB() const { return mDatabase.DB(); }
+
+            IdGameCache& IdCache() { return mIdGameCache; }
 
         private:
             //--------------------------------------------------------------------------------------------------
@@ -76,6 +79,7 @@ namespace yaget
 
             Database mDatabase;
             mutable std::mutex mDatabaseMutex;
+            IdGameCache mIdGameCache;
         };
 
         template <typename T>

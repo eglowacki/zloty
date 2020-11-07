@@ -1,10 +1,11 @@
 #include "App/Application.h"
 #include "Debugging/DevConfiguration.h"
+#include "Items/ItemsDirector.h"
 
 
 yaget::Application::Application(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
     : Options(options)
-    , IdCache(&director)
+    , IdCache(director.IdCache())
     , mDirector(director)
     , mInputDevice(vts)
     , mGeneralPoolThread(std::make_unique<mt::JobPool>("AppPool", yaget::dev::CurrentConfiguration().mDebug.mThreads.App))

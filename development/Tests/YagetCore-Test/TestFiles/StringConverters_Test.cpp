@@ -172,6 +172,8 @@ TEST(YagetCore, Util_StringConverters)
     VerifyConversion<size_t>();
     VerifyConversion<bool>();
     VerifyConversion<float>();
+    VerifyConversion<uint64_t>();
+    VerifyConversion<int64_t>();
     VerifyConversion<std::string>();
     VerifyConversion<yaget::Guid>();
     VerifyConversion<math3d::Vector3>();

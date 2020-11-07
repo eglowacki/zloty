@@ -33,8 +33,8 @@ namespace ttt
     class PieceComponent : public yaget::comp::db::PersistentBaseComponent<pic::Types, pic::Storage>
     {
     public:
-        PieceComponent(yaget::comp::Id_t id, const pic::Storage& pieceType)
-        : PersistentBaseComponent(id, pieceType)
+        PieceComponent(yaget::comp::Id_t id, int pieceType)
+        : PersistentBaseComponent(id, std::tie(pieceType))
         {}
     };
 

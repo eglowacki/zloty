@@ -32,13 +32,9 @@ namespace ttt
     class PlayerComponent : public yaget::comp::db::PersistentBaseComponent<pc::Types, pc::Storage, yaget::comp::SmallPoolSize>
     {                                                            
     public:
-        PlayerComponent(yaget::comp::Id_t id, const pc::Storage& params)
-            : PersistentBaseComponent(id, params)
+        PlayerComponent(yaget::comp::Id_t id, int side, int sideControl)
+            : PersistentBaseComponent(id, std::tie(side, sideControl))
         {}
-
-        //PlayerComponent(yaget::comp::Id_t id, int side, PieceType sideControl)
-        //    : PersistentBaseComponent(id, std::tie(side, sideControl))
-        //{}
     };
 
 }

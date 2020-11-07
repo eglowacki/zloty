@@ -16,6 +16,9 @@
 //! \file
 #pragma once
 
+#include <utility>
+
+
 #include "Components/Component.h"
 
 
@@ -62,9 +65,9 @@ namespace yaget::comp::db
             : PersistentBaseComponent(id, Types{})
         {}
 
-        PersistentBaseComponent(Id_t id, const Types& params)
+        PersistentBaseComponent(Id_t id, Types params)
             : BaseComponent<Cap>(id)
-            , mDataStorage(params)
+            , mDataStorage(std::move(params))
         {}
 
     private:

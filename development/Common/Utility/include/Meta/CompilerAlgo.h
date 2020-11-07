@@ -60,8 +60,7 @@ namespace yaget::meta
     /// for std::array, this way we can let the compiler infer the type
     /// from the given value but still define it explicitly if we want to.
     template<size_t Size, class T>
-    constexpr std::array<T, Size>
-        make_array_of(const T& value)
+    constexpr std::array<T, Size> make_array_of(const T& value)
     {
         using Indices = std::make_index_sequence<Size>;
         return internal::make_array_of_impl(value, Indices{});
@@ -80,6 +79,7 @@ namespace yaget::meta
     // Helper types
     // using BaseType = typename meta::strip_qualifiers_t<T>;
     template<typename T>
+    //using strip_qualifiers_t = typename std::remove_cvref<T>::type;
     using strip_qualifiers_t = typename strip_qualifiers<T>::type;
 
     // check if a specific type exist in tuple

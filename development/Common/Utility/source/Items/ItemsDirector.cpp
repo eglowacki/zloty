@@ -59,6 +59,7 @@ namespace
 
 yaget::items::Director::Director(const std::string& name, const Strings& additionalSchema, int64_t expectedVersion)
     : mDatabase(ResolveDatabaseName(name, false), CombineSchemas(additionalSchema, Strings{fmt::format("INSERT INTO VersionTables(Id) VALUES('{}');", expectedVersion)}, itemsSchema), YAGET_ITEMS_VERSION)
+    , mIdGameCache(this)
 {
     auto version = GetCell<int64_t>(mDatabase.DB(), "SELECT Id FROM VersionTables;");
     YAGET_UTIL_THROW_ASSERT("DIRE", (expectedVersion == Database::NonVersioned || (expectedVersion != Database::NonVersioned && version == expectedVersion)), 

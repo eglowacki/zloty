@@ -29,8 +29,8 @@ namespace ttt
     class InputComponent : public yaget::comp::db::PersistentBaseComponent<ic::Types, ic::Storage, yaget::comp::SmallPoolSize>
     {
     public:
-        InputComponent(yaget::comp::Id_t id, const ic::Storage& params)
-            : PersistentBaseComponent(id, params)
+        InputComponent(yaget::comp::Id_t id)
+            : PersistentBaseComponent(id)
         {}
     };
 
