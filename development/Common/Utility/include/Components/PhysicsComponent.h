@@ -106,28 +106,6 @@ namespace yaget
             math3d::Quaternion mOrientation;
         };
 
-        // DEPRECATED
-        class PhysicsComponentPool : public ComponentPool<PhysicsComponent, 1000>
-        {
-        public:
-            PhysicsComponentPool();
-            virtual ~PhysicsComponentPool();
-
-            virtual void Tick(const time::GameClock& gameClock) override;
-
-            Ptr New(Id_t id, const PhysicsComponent::Params& params);
-
-            void SetDebugDraw(btIDebugDraw* debugDraw);
-
-        private:
-            //std::unique_ptr<btDefaultCollisionConfiguration> mCollisionConfiguration;
-            //std::unique_ptr<btCollisionDispatcher> mDispatcher;
-            //std::unique_ptr<btBroadphaseInterface> mOverlappingPairCache;
-            //std::unique_ptr<btSequentialImpulseConstraintSolver> mSolver;
-            //std::unique_ptr<btDiscreteDynamicsWorld> mDynamicsWorld;
-            //std::unique_ptr<btIDebugDraw> mDebugDraw;
-        };
-
         namespace physics
         {
             constexpr int BoxShape = 1;
@@ -137,5 +115,4 @@ namespace yaget
         } // namespace physics
 
     } // namespace comp
-
 } // namespace yaget

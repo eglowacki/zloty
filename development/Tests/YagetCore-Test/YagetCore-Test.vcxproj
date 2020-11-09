@@ -55,6 +55,7 @@
     <ClCompile Include="TestFiles\File_Test.cpp" />
     <ClCompile Include="TestFiles\GameClock_Test.cpp" />
     <ClCompile Include="TestFiles\Guid_Test.cpp" />
+    <ClCompile Include="TestFiles\IdBatch_Test.cpp" />
     <ClCompile Include="TestFiles\JobPool_Test.cpp" />
     <ClCompile Include="TestFiles\PoolAllocator_Test.cpp" />
     <ClCompile Include="TestFiles\StringConverters_Test.cpp" />

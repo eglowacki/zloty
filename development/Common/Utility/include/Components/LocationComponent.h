@@ -67,33 +67,6 @@ namespace yaget
             math3d::Vector3 mScale;
         };
 
-
-        class LocationComponentPool : public ComponentPool<LocationComponent, 1000>
-        {
-        public:
-            LocationComponentPool()
-                : ComponentPool<LocationComponent, 1000>()
-            {}
-
-            virtual void Tick(const time::GameClock& /*gameClock*/) override { YAGET_ASSERT(false); };
-
-            struct TokenState
-            {
-                Id_t mId = 0;
-                math3d::Vector3 mPosition;
-                math3d::Quaternion mOrientation;
-            };
-
-            // NOTE: How do we deal with data from other components to be intertwine with this
-            // do we just provide stride?
-            //
-            // Tokenizes data from location components as an array of TokenState struct,
-            // stride is used to offset where the TokenState starts for each element
-            // returns number of tokens generated, this can be called with nullptr and 0 to just get number valid tokens
-            size_t TokenizeState(char* buffer, size_t size, size_t stride = sizeof(LocationComponentPool::TokenState), std::function<bool(comp::Id_t id)> isValidCB = [](comp::Id_t /*id*/) { return true; });
-            Ptr New(Id_t id);
-        };
-
     } // namespace comp
 } // namespace yaget
 

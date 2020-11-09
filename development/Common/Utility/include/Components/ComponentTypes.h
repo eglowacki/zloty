@@ -29,13 +29,33 @@ namespace yaget
 
         using ItemIds = std::set<comp::Id_t>;
 
-        static constexpr const Id_t INVALID_ID = 0;
-        static constexpr const Id_t END_ID_MARKER = std::numeric_limits<Id_t>::max() - 1;
-        static constexpr const Id_t GLOBAL_ID_MARKER = std::numeric_limits<Id_t>::max();
+        // Any id's that are marked as persistent, will have high bit set
+        static constexpr const Id_t PERSISTENT_ID_BIT = 0x8000000000000000;
 
-        inline bool IsIdValid(Id_t id)
+        static constexpr const Id_t INVALID_ID = 0;
+        static constexpr const Id_t END_ID_MARKER = (~PERSISTENT_ID_BIT) - 1;
+        static constexpr const Id_t GLOBAL_ID_MARKER = ~PERSISTENT_ID_BIT;
+
+        constexpr Id_t StripQualifiers(Id_t id)
         {
-            return !(id == INVALID_ID || id == END_ID_MARKER);
+            return ~PERSISTENT_ID_BIT & id;
+        }
+
+        constexpr bool IsIdValid(Id_t id)
+        {
+            const auto& sid = StripQualifiers(id);
+            return !(sid == INVALID_ID || sid == END_ID_MARKER || sid == GLOBAL_ID_MARKER || id == PERSISTENT_ID_BIT);
+        }
+
+        constexpr bool IsIdPersistent(Id_t id)
+        {
+            return IsIdValid(id) && (id & PERSISTENT_ID_BIT) == PERSISTENT_ID_BIT;
+        }
+
+        inline Id_t MarkAsPersistent(Id_t id)
+        {
+            YAGET_ASSERT(IsIdValid(id), "id: '%d' is invalid and can not be marked as persistent.", id);
+            return PERSISTENT_ID_BIT | id;
         }
 
         // provides layout and types of entity components (Item)

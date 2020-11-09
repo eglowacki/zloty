@@ -276,67 +276,61 @@ SimpleMath::Matrix comp::PhysicsComponent::GetMatrix() const
 }
 
 
-comp::PhysicsComponentPool::PhysicsComponentPool()
-    : ComponentPool<PhysicsComponent, 1000>()
-    //, mCollisionConfiguration(std::make_unique<btDefaultCollisionConfiguration>())
-    //, mDispatcher(std::make_unique<btCollisionDispatcher>(mCollisionConfiguration.get()))
-    //, mOverlappingPairCache(std::make_unique<btDbvtBroadphase>())
-    //, mSolver(std::make_unique<btSequentialImpulseConstraintSolver>())
-    //, mDynamicsWorld(std::make_unique<btDiscreteDynamicsWorld>(mDispatcher.get(), mOverlappingPairCache.get(), mSolver.get(), mCollisionConfiguration.get()))
-{
-    //mDynamicsWorld->setGravity(btVector3(0, -10, 0));
-}
-
-comp::PhysicsComponentPool::~PhysicsComponentPool()
-{
-    
-}
-
-void comp::PhysicsComponentPool::SetDebugDraw(btIDebugDraw* /*debugDraw*/)
-{
-    //mDebugDraw.reset(debugDraw);
-    //mDynamicsWorld->setDebugDrawer(mDebugDraw.get());
-}
-
-void comp::PhysicsComponentPool::Tick(const time::GameClock& gameClock)
-{
-    ComponentPool<PhysicsComponent, 1000>::Tick(gameClock);
-
-    //float stepInSeconds = time::FromTo<float>(gameClock.GetDeltaTime(), time::kMicrosecondUnit, time::kSecondUnit);
-    //mDynamicsWorld->stepSimulation(stepInSeconds);
-
-    //if (dev::CurrentConfiguration().mDebug.mFlags.Physics)
-    //{
-    //        //DBG_NoDebug = 0,
-    //        //DBG_DrawWireframe = 1,
-    //        //DBG_DrawAabb = 2,
-    //        //DBG_DrawFeaturesText = 4,
-    //        //DBG_DrawContactPoints = 8,
-    //        //DBG_NoDeactivation = 16,
-    //        //DBG_NoHelpText = 32,
-    //        //DBG_DrawText = 64,
-    //        //DBG_ProfileTimings = 128,
-    //        //DBG_EnableSatComparison = 256,
-    //        //DBG_DisableBulletLCP = 512,
-    //        //DBG_EnableCCD = 1024,
-    //        //DBG_DrawConstraints = (1 << 11),
-    //        //DBG_DrawConstraintLimits = (1 << 12),
-    //        //DBG_FastWireframe = (1 << 13),
-    //        //DBG_DrawNormals = (1 << 14),
-    //        //DBG_DrawFrames = (1 << 15),
-
-    //    //uint32_t flags = mBulletDebug.mWireFrame ? btIDebugDraw::DBG_DrawWireframe : 0;
-    //    //flags |= mBulletDebug.mAabb ? btIDebugDraw::DBG_DrawAabb : 0;
-    //    //mDebugDraw->setDebugMode(flags);
-    //    mDynamicsWorld->debugDrawWorld();
-    //}
-}
-
-comp::PhysicsComponentPool::Ptr comp::PhysicsComponentPool::New(Id_t id, const PhysicsComponent::Params& params)
-{
-    Ptr c = NewComponent(id, (PhysicsWorldComponent*)nullptr/*mDynamicsWorld.get()*/, params);
-    return c;
-}
+//comp::PhysicsComponentPool::PhysicsComponentPool()
+//    : ComponentPool<PhysicsComponent, 1000>()
+//    //, mCollisionConfiguration(std::make_unique<btDefaultCollisionConfiguration>())
+//    //, mDispatcher(std::make_unique<btCollisionDispatcher>(mCollisionConfiguration.get()))
+//    //, mOverlappingPairCache(std::make_unique<btDbvtBroadphase>())
+//    //, mSolver(std::make_unique<btSequentialImpulseConstraintSolver>())
+//    //, mDynamicsWorld(std::make_unique<btDiscreteDynamicsWorld>(mDispatcher.get(), mOverlappingPairCache.get(), mSolver.get(), mCollisionConfiguration.get()))
+//{
+//    //mDynamicsWorld->setGravity(btVector3(0, -10, 0));
+//}
+//
+//comp::PhysicsComponentPool::~PhysicsComponentPool()
+//{
+//    
+//}
+//
+//void comp::PhysicsComponentPool::SetDebugDraw(btIDebugDraw* /*debugDraw*/)
+//{
+//    //mDebugDraw.reset(debugDraw);
+//    //mDynamicsWorld->setDebugDrawer(mDebugDraw.get());
+//}
+//
+//void comp::PhysicsComponentPool::Tick(const time::GameClock& gameClock)
+//{
+//    ComponentPool<PhysicsComponent, 1000>::Tick(gameClock);
+//
+//    //float stepInSeconds = time::FromTo<float>(gameClock.GetDeltaTime(), time::kMicrosecondUnit, time::kSecondUnit);
+//    //mDynamicsWorld->stepSimulation(stepInSeconds);
+//
+//    //if (dev::CurrentConfiguration().mDebug.mFlags.Physics)
+//    //{
+//    //        //DBG_NoDebug = 0,
+//    //        //DBG_DrawWireframe = 1,
+//    //        //DBG_DrawAabb = 2,
+//    //        //DBG_DrawFeaturesText = 4,
+//    //        //DBG_DrawContactPoints = 8,
+//    //        //DBG_NoDeactivation = 16,
+//    //        //DBG_NoHelpText = 32,
+//    //        //DBG_DrawText = 64,
+//    //        //DBG_ProfileTimings = 128,
+//    //        //DBG_EnableSatComparison = 256,
+//    //        //DBG_DisableBulletLCP = 512,
+//    //        //DBG_EnableCCD = 1024,
+//    //        //DBG_DrawConstraints = (1 << 11),
+//    //        //DBG_DrawConstraintLimits = (1 << 12),
+//    //        //DBG_FastWireframe = (1 << 13),
+//    //        //DBG_DrawNormals = (1 << 14),
+//    //        //DBG_DrawFrames = (1 << 15),
+//
+//    //    //uint32_t flags = mBulletDebug.mWireFrame ? btIDebugDraw::DBG_DrawWireframe : 0;
+//    //    //flags |= mBulletDebug.mAabb ? btIDebugDraw::DBG_DrawAabb : 0;
+//    //    //mDebugDraw->setDebugMode(flags);
+//    //    mDynamicsWorld->debugDrawWorld();
+//    //}
+//}
 
 yaget::comp::PhysicsComponent::Params yaget::comp::physics::CreateInitState(int shape, const math3d::Vector3& /*halfExtents*/)
 {

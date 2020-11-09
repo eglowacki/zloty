@@ -6,7 +6,7 @@
 //  Maintained by: Edgar
 //
 //  NOTES:
-//      Storage and management of items in a game. This use sqlte on the back end
+//      Storage and management of items in a game. This uses sqlite on the back end
 //
 //
 //  #include "Items/ItemsDirector.h"
@@ -37,6 +37,8 @@ namespace yaget
         inline bool operator!=(const IdBatch& lh, const IdBatch& rh) { return !(lh == rh); }
 
         //-------------------------------------------------------------------------------------------------
+        // Manages overall scene like items-component, provides id cache wired to DB to assure unique
+        // persistent id's across runs of application, unless DB is deleted.
         class Director : public Noncopyable<Director>
         {
         public:
@@ -44,8 +46,6 @@ namespace yaget
             virtual ~Director();
 
             IdBatch GetNextBatch();
-            SQLite& DB() { return mDatabase.DB(); }
-            const SQLite& DB() const { return mDatabase.DB(); }
 
             IdGameCache& IdCache() { return mIdGameCache; }
 
@@ -82,6 +82,7 @@ namespace yaget
             IdGameCache mIdGameCache;
         };
 
+        // Provides unified naming convention for storing db location, taking CoordinatorSet type to generate initial schema.
         template <typename T>
         class DefaultDirector : public Director
         {
@@ -90,11 +91,27 @@ namespace yaget
                 : Director("$(DatabaseFolder)/director.sqlite", comp::db::GenerateGameDirectorSchema<T>(mSchemaVersion), Database::NonVersioned)
             {}
 
+        protected:
+            DefaultDirector(const char* name)
+                : Director("$(DatabaseFolder)/" + std::string(name) + std::string(".sqlite"), comp::db::GenerateGameDirectorSchema<T>(mSchemaVersion), Database::NonVersioned)
+            {}
+
         private:
             inline static int64_t mSchemaVersion = 0;
         };
 
+        // Just base support for id cache and version. 
         using BlankDefaultDirector = DefaultDirector<comp::db::EmptySchema>;
+
+        // Exposes custom name for director sqlite file on disk. Location and ext are automaticly added
+        template <typename T>
+        class NamedDirector : public DefaultDirector<T>
+        {
+        public:
+            NamedDirector(const char* name)
+                : DefaultDirector(name)
+            {}
+        };
 
     } // namespace items
 } // namespace yaget

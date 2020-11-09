@@ -60,9 +60,9 @@ namespace yaget::comp::gs
 
     }
 
-    // Helper to create game and render coordinators, systems and connect to app and run it
-    // It creates each Coordinator on the thread that will be run. In this case we have
-    // 2 threads, logic and render
+    // Helper to create game and render coordinator systems, connect to app and run it.
+    // It creates each Coordinator on the thread that it's run and Tick is called from.
+    // In this case we have 2 threads, logic and render.
     template <typename TG, typename TR, typename A>
     int RunGame(A& app)
     {
@@ -99,6 +99,8 @@ namespace yaget::comp::gs
         return mCoordinatorSet.template GetCoordinator<C>();
     }
 
+    // on the first call, we'll create system coordinator. This we it get's created on the same
+    // thread as it get's call Tick.
     template <typename T>
     void internal::Updater<T>::operator()(const time::GameClock& gameClock, metrics::Channel& channel)
     {

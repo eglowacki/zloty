@@ -132,33 +132,5 @@ namespace yaget
             uint64_t mDeviceSignature = 0;
         };
 
-
-
-        
-        //--------------------------------------------------------------------------------------------------
-        template <typename T, size_t S>
-        class RenderComponentPool : public comp::ComponentPool<T, S>
-        {
-        public:
-            ~RenderComponentPool() override
-            {}
-
-            virtual void Render(const RenderComponent::RenderBuffers_t& renderBuffers, const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix, const RenderComponent::RenderOptions* renderOptions)
-            {
-                for (const auto& it : renderBuffers)
-                {
-                    if (T* component = comp::ComponentPool<T, S>::Find(it.Id))
-                    {
-                        component->Render(it, viewMatrix, projectionMatrix, renderOptions);
-                    }
-                }
-            }
-
-        protected:
-            RenderComponentPool()
-                : comp::ComponentPool<T, S>()
-            {}
-        };
-
     } // namespace render
 } // namespace yaget

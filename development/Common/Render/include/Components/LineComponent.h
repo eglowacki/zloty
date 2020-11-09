@@ -11,10 +11,7 @@
 //
 /////////////////////////////////////////////////////////////////////////
 //! \file
-
 #pragma once
-#ifndef YAGET_RENDER_LINE_COMPONENT_H
-#define YAGET_RENDER_LINE_COMPONENT_H
 
 #include "Components/RenderComponent.h"
 #include "Components/PayloadStager.h"
@@ -76,20 +73,5 @@ namespace yaget
             Stager mLineStager;
         };
 
-
-        class LineComponentPool : public RenderComponentPool<LineComponent, 1000>
-        {
-        public:
-            LineComponentPool()
-                : RenderComponentPool<LineComponent, 1000>()
-            {}
-
-            void Tick(const time::GameClock& /*gameClock*/) override { YAGET_ASSERT(false); }
-
-            Ptr New(comp::Id_t id, Device& device, bool bScreenSpace);
-        };
-
     } // namespace render
 } // namespace yaget
-
-#endif // YAGET_RENDER_LINE_COMPONENT_H

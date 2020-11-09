@@ -12,6 +12,16 @@ namespace fs = std::filesystem;
 
 namespace
 {
+    // NOTES:
+    // UPDATE Products SET Price = Price + 50
+    // UPDATE Products SET Price = Price + 50 WHERE ProductID = 1
+    // UPDATE{ Table } SET{ Column } = { Column } + {Value} WHERE{ Condition }
+    //
+    //{Table} - table name
+    //{Column} - column name
+    //{Value} - a number by which column's value should be increased or decreased
+    //{Condition} - some condition if any
+    //
     std::vector<std::string> itemsSchema =
     {
         #include "Items/ItemsSchema.sqlite"

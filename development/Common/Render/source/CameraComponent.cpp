@@ -322,9 +322,3 @@ void render::CameraComponent::OnAction(const std::string& actionName, uint64_t /
         mCameraCalc.Input_Pitch(0.0f);
     }
 }
-
-render::CameraComponentPool::Ptr render::CameraComponentPool::New(comp::Id_t id, Device& device, comp::PhysicsComponent* physics)
-{
-    Ptr c = NewComponent(id, device, physics);
-    return c;
-}

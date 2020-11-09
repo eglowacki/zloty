@@ -11,10 +11,7 @@
 //
 /////////////////////////////////////////////////////////////////////////
 //! \file
-
 #pragma once
-#ifndef YAGET_RENDER_GRID_COMPONENT_H
-#define YAGET_RENDER_GRID_COMPONENT_H
 
 #include "RenderComponent.h"
 #include "PrimitiveBatch.h"
@@ -50,20 +47,5 @@ namespace yaget
             Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
         };
 
-
-        class GridComponentPool : public RenderComponentPool<GridComponent, 10>
-        {
-        public:
-            GridComponentPool()
-                : RenderComponentPool<GridComponent, 10>()
-            {}
-
-            void Tick(const time::GameClock& /*gameClock*/) override { YAGET_ASSERT(false); }
-
-            Ptr New(comp::Id_t id, Device& device);
-        };
-
     } // namespace render
 } // namespace yaget
-
-#endif // YAGET_RENDER_GRID_COMPONENT_H

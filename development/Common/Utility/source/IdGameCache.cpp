@@ -4,8 +4,8 @@
 
 namespace
 {
-    const uint64_t kBurnableMinRange = 1000;
-    const uint64_t kBurnableMaxRange = 1000000000;
+    const yaget::comp::Id_t kBurnableMinRange = 1000;
+    const yaget::comp::Id_t kBurnableMaxRange = 1000000000;
 
 } // namespace
 
@@ -19,13 +19,11 @@ IdGameCache::IdGameCache(items::Director* director)
     if (mDirector)
     {
         items::IdBatch idBatch = mDirector->GetNextBatch();
-        if (idBatch != items::IdBatch{})
-        {
-            mNextPersistentId = idBatch.mNextId;
-            mPersistentRange = std::make_pair(idBatch.mNextId, idBatch.mBatchSize);
+        YAGET_ASSERT(idBatch != items::IdBatch{}, "Initial batch of Id's is not valid. Got empty set.");
+        mNextPersistentId = idBatch.mNextId;
+        mPersistentRange = std::make_pair(idBatch.mNextId, idBatch.mBatchSize);
 
-            YLOG_INFO("IDS", "New Id Batch from: '%s' with '%llu' entries.", conv::ToThousandsSep(mPersistentRange.first).c_str(), mPersistentRange.second);
-        }
+        YLOG_INFO("IDS", "New Id Batch from: '%s' with '%llu' entries.", conv::ToThousandsSep(mPersistentRange.first).c_str(), mPersistentRange.second);
     }
 }
 
@@ -35,19 +33,19 @@ IdGameCache::~IdGameCache()
 }
 
 
-uint64_t IdGameCache::GetId(IdType idType)
+comp::Id_t IdGameCache::GetId(IdType idType)
 {
-    uint64_t result = 0;
-    if (idType == IdType::itBurnable)
+    comp::Id_t result = 0;
+    if (idType == IdType::Burnable)
     {
         YAGET_ASSERT(mNextBurnableId < mBurnableRange.second, "No more burnable id's available");
         result = mNextBurnableId++;
     }
-    else if (idType == IdType::itPersistent)
+    else if (idType == IdType::Persistent)
     {
         if (mDirector)
         {
-            const uint64_t topRange = mPersistentRange.first + mPersistentRange.second;
+            const auto topRange = mPersistentRange.first + mPersistentRange.second;
             if (mNextPersistentId == topRange)
             {
                 // we are out of id's, get some more. This will be blocking call
@@ -69,15 +67,15 @@ uint64_t IdGameCache::GetId(IdType idType)
 }
 
 
-uint64_t idspace::get_burnable(IdGameCache& idCache)
+comp::Id_t idspace::get_burnable(IdGameCache& idCache)
 {
-    return idCache.GetId(IdGameCache::IdType::itBurnable);
+    return idCache.GetId(IdGameCache::IdType::Burnable);
 }
 
 
-uint64_t idspace::get_persistent(IdGameCache& idCache)
+comp::Id_t idspace::get_persistent(IdGameCache& idCache)
 {
-    return idCache.GetId(IdGameCache::IdType::itPersistent);
+    return idCache.GetId(IdGameCache::IdType::Persistent);
 }
 
 

@@ -134,9 +134,3 @@ void render::GridComponent::OnRender(const RenderBuffer& renderBuffer, const Dir
 void render::GridComponent::OnGuiRender(const RenderBuffer& /*renderBuffer*/, const DirectX::SimpleMath::Matrix& /*viewMatrix*/, const DirectX::SimpleMath::Matrix& /*projectionMatrix*/)
 {
 }
-
-render::GridComponentPool::Ptr render::GridComponentPool::New(comp::Id_t id, Device& device)
-{
-    Ptr c = NewComponent(id, device);
-    return c;
-}

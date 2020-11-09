@@ -147,9 +147,3 @@ void render::LineComponent::OnRender(const RenderBuffer& renderBuffer, const Dir
 void render::LineComponent::OnGuiRender(const RenderBuffer& /*renderBuffer*/, const DirectX::SimpleMath::Matrix& /*viewMatrix*/, const DirectX::SimpleMath::Matrix& /*projectionMatrix*/)
 {
 }
-
-render::LineComponentPool::Ptr render::LineComponentPool::New(comp::Id_t id, Device& device, bool bScreenSpace)
-{
-    Ptr c = NewComponent(id, device, bScreenSpace);
-    return c;
-}

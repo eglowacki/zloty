@@ -13,7 +13,6 @@
 //! \file
 #pragma once
 
-#include "Base.h"
 #include "Components/RenderComponent.h"
 #include "MathFacade.h"
 #include "CommonStates.h"
@@ -57,8 +56,6 @@ namespace yaget
             void SetColor(const math3d::Color& color) { mColor = color; }
             math::Box BoundingBox() const;
 
-
-
             //--------------------------------------------------------------------------------------------------
             struct ShaderData
             {
@@ -94,20 +91,6 @@ namespace yaget
             mt::SmartVariable<GeometryResource> mGeometry;
             mt::SmartVariable<SkinShaderResource> mSkinShader;
         };
-
-
-
-        //--------------------------------------------------------------------------------------------------
-        class ModelComponentPool : public RenderComponentPool<ModelComponent, 1000>
-        {
-        public:
-            ModelComponentPool();
-
-            void Tick(const time::GameClock& /*gameClock*/) override { YAGET_ASSERT(false); }
-
-            Ptr New(comp::Id_t id, Device& device);
-        };
-
 
         class QuadComponent : public RenderComponent
         {
@@ -147,18 +130,6 @@ namespace yaget
             };
             math3d::Matrix mMatrix = math3d::Matrix::Identity;
             std::shared_ptr<TextureResource> mTextureResource;
-        };
-
-        class QuadComponentPool : public RenderComponentPool<QuadComponent, 10>
-        {
-        public:
-            QuadComponentPool()
-                : RenderComponentPool<QuadComponent, 10>()
-            {}
-
-            virtual void Tick(const time::GameClock& /*gameClock*/) override { YAGET_ASSERT(false); }
-
-            Ptr New(comp::Id_t id, Device& device, bool isVisible);
         };
 
     } // namespace render

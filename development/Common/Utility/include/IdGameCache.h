@@ -18,7 +18,7 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
+#include "Components/ComponentTypes.h"
 #include <atomic>
 
 
@@ -29,24 +29,24 @@ namespace yaget
     class IdGameCache
     {
     public:
-        enum class IdType {itBurnable, itPersistent};
+        enum class IdType {Burnable, Persistent};
 
         IdGameCache(items::Director* director);
         ~IdGameCache();
 
         //! Return next available id which will be burnable or persistent based on IdType parameter
-        uint64_t GetId(IdType idType);
+        comp::Id_t GetId(IdType idType);
 
     private:
         //! Burnable id's will only fall within this range
         //! first <= currentId < second
-        std::pair<uint64_t, uint64_t> mBurnableRange;
+        std::pair<comp::Id_t, comp::Id_t> mBurnableRange;
         //! next valid burnable id
         std::atomic_uint64_t mNextBurnableId;
         //! Next persistent id
         //! \note we need to get batch of id's from DB
         std::atomic_uint64_t mNextPersistentId;
-        std::pair<uint64_t, uint64_t> mPersistentRange;
+        std::pair<comp::Id_t, comp::Id_t> mPersistentRange;
 
         //! If not null, then it's used for persistent queries
         items::Director* mDirector;
@@ -55,8 +55,8 @@ namespace yaget
     namespace idspace
     {
         //! Convenient functions to get id's
-        uint64_t get_burnable(IdGameCache& idCache);
-        uint64_t get_persistent(IdGameCache& idCache);
+        comp::Id_t get_burnable(IdGameCache& idCache);
+        comp::Id_t get_persistent(IdGameCache& idCache);
 
     } // namespace idspace
 } // namespace yaget

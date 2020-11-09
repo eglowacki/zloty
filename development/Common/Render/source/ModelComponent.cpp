@@ -186,21 +186,6 @@ void render::ModelComponent::OnGuiRender(const RenderBuffer& /*renderBuffer*/, c
 }
 
 
-//--------------------------------------------------------------------------------------------------
-render::ModelComponentPool::ModelComponentPool()
-    : RenderComponentPool<ModelComponent, 1000>()
-{}
-
-
-//--------------------------------------------------------------------------------------------------
-render::ModelComponentPool::Ptr render::ModelComponentPool::New(comp::Id_t id, Device& device)
-{
-    Ptr c = NewComponent(id, device);
-    return c;
-}
-
-
-
 //------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -302,10 +287,4 @@ void render::QuadComponent::OnRender(const RenderBuffer& /*renderBuffer*/, const
 
 void render::QuadComponent::OnGuiRender(const RenderBuffer& /*renderBuffer*/, const DirectX::SimpleMath::Matrix& /*viewMatrix*/, const DirectX::SimpleMath::Matrix& /*projectionMatrix*/)
 {
-}
-
-render::QuadComponentPool::Ptr render::QuadComponentPool::New(comp::Id_t id, Device& device, bool /*isVisible*/)
-{
-    Ptr c = NewComponent(id, device);
-    return c;
 }

@@ -11,9 +11,6 @@
 //
 /////////////////////////////////////////////////////////////////////////
 //! \file
-
-#ifndef YAGET_RENDER_CAMERA_COMPONENT_H
-#define YAGET_RENDER_CAMERA_COMPONENT_H
 #pragma once
 
 #include "Components/RenderComponent.h"
@@ -76,18 +73,5 @@ namespace yaget
             bool mViewControlActive = false;
         };
 
-
-        class CameraComponentPool : public RenderComponentPool<CameraComponent, 50>
-        {
-        public:
-            CameraComponentPool()
-                : RenderComponentPool<CameraComponent, 50>()
-            {}
-
-            Ptr New(comp::Id_t id, Device& device, comp::PhysicsComponent* physics);
-        };
-
     } // namespace render
 } // namespace yaget
-
-#endif // YAGET_RENDER_CAMERA_COMPONENT_H
