@@ -32,11 +32,22 @@ namespace yaget
 
     namespace comp
     {
+        // This wraps Id_t type (in most cases it will be 64 bit, but it may expend to 128 bit number)
         class ItemId
         {
         public:
             ItemId(comp::Id_t id) : mId(id) {}
             operator comp::Id_t() const { return mId; }
+
+            std::string ToString() const
+            {
+                if (IsIdPersistent(mId))
+                {
+                    return "P:" + std::to_string(StripQualifiers(mId));
+                }
+
+                return "B:" + std::to_string(mId);
+            }
 
         private:
             comp::Id_t mId{ comp::INVALID_ID };

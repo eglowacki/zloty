@@ -7,7 +7,7 @@
 
 namespace fs = std::filesystem;
 
-#define YAGET_ITEMS_VERSION 1
+#define YAGET_ITEMS_VERSION 3
 
 
 namespace

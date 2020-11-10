@@ -19,11 +19,11 @@
 #pragma once
 
 #include "Components/ComponentTypes.h"
-#include <atomic>
 
 
 namespace yaget
 {
+    namespace mt { class JobPool; }
     namespace items { class Director; }
 
     class IdGameCache
@@ -51,6 +51,7 @@ namespace yaget
 
         //! If not null, then it's used for persistent queries
         items::Director* mDirector;
+        std::unique_ptr<mt::JobPool> mJob;
     };
 
     namespace idspace

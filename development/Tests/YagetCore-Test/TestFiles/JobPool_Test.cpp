@@ -26,11 +26,16 @@ namespace yaget::ylog
 } // namespace yaget::ylog 
 
 
-TEST(YagetCore, Threads_JobPool)
+class Threads : public ::testing::Test
+{
+private:
+    yaget::test::Environment mEnvironment;
+};
+
+
+TEST_F(Threads, JobPool)
 {
     using namespace yaget;
-
-    test::Environment environment;
 
     const int Iterations = 10000;
     const int MaxThreads = 4;
@@ -73,3 +78,33 @@ TEST(YagetCore, Threads_JobPool)
     YLOG_NOTICE("TEST", loadsMessage.c_str());
     EXPECT_EQ(counter, 0);
 }
+
+
+TEST_F(Threads, AsyncWait)
+{
+    using namespace yaget;
+
+    mt::JobPool job("AsyncWait", 1);
+
+    job.Join();
+
+    for (int i = 0; i < 2; ++i)
+    {
+        job.AddTask([]()
+        {
+            platform::BusySleep(100, time::kMilisecondUnit);
+        });
+
+        YLOG_NOTICE("TEST", "Should see this right away.");
+
+        job.Join();
+        YLOG_NOTICE("TEST", "About 100 miliseconds later.");
+
+        job.Join();
+        job.Join();
+        job.Join();
+        job.Join();
+        job.Join();
+    }
+}
+

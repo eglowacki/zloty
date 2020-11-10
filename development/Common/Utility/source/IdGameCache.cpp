@@ -1,12 +1,13 @@
 #include "IdGameCache.h"
 #include "Debugging/Assert.h"
 #include "Items/ItemsDirector.h"
+#include "ThreadModel/JobPool.h"
 
 namespace
 {
     const yaget::comp::Id_t kBurnableNexId = 1000;
     const yaget::comp::Id_t kMaxRange = 1000000000;
-    const yaget::comp::Id_t kPersistentNexId = kBurnableNexId + kMaxRange;
+    const yaget::comp::Id_t kPersistentNexId = kBurnableNexId;// +kMaxRange;
 
 } // namespace
 
@@ -20,11 +21,12 @@ IdGameCache::IdGameCache(items::Director* director)
 {
     if (mDirector)
     {
+        mJob = std::make_unique<mt::JobPool>("IdCache", 1);
         mPersistentRange = mDirector->GetNextBatch();
         mNextPersistentId = mPersistentRange.mNextId;
         mNextAvailablePersistentRange = mDirector->GetNextBatch();
 
-        YLOG_INFO("IDS", "New Id Batch from: '%s' with '%llu' entries.", conv::ToThousandsSep(mPersistentRange.mNextId).c_str(), mPersistentRange.mBatchSize);
+        YLOG_INFO("IDS", "Batch of id's with '%s' entries allocated, starting id: '%s'.", conv::ToThousandsSep(mPersistentRange.mBatchSize).c_str(), conv::ToThousandsSep(mPersistentRange.mNextId).c_str());
     }
 }
 
@@ -46,33 +48,27 @@ comp::Id_t IdGameCache::GetId(IdType idType)
     {
         if (mDirector)
         {
+            // are we run-out of id's in current batch
             if (!mPersistentRange.IsIdValid(mNextPersistentId))
             {
-                if (mNextAvailablePersistentRange != items::IdBatch{})
+                mJob->Join();
+                mPersistentRange = mNextAvailablePersistentRange;
+                mNextAvailablePersistentRange = {};
+                mJob->AddTask([this]()
                 {
-                    mPersistentRange = mNextAvailablePersistentRange;
-                    mNextAvailablePersistentRange = {};
-                    // we have valid next batch
-                }
-                else
-                {
-                    // this really should not have happen, since we should have gotten
-                    // callback from last request for next id batch.
-                    // we are out of id's, get some more. This will be blocking call
-                    mPersistentRange = mDirector->GetNextBatch();
-                }
+                    mNextAvailablePersistentRange = mDirector->GetNextBatch();
+                });
 
                 mNextPersistentId = mPersistentRange.mNextId;
-                YLOG_INFO("IDS", "New Id Batch from: '%s' with '%llu' entries.", conv::ToThousandsSep(mPersistentRange.mNextId).c_str(), mPersistentRange.mBatchSize);
+                YLOG_INFO("IDS", "Batch of id's with '%s' entries allocated, starting id: '%s'.", conv::ToThousandsSep(mPersistentRange.mBatchSize).c_str(), conv::ToThousandsSep(mPersistentRange.mNextId).c_str());
             }
-
-            // if we are 'close' to exhaustion of id, we need to request more from director
         }
 
         result = mNextPersistentId++;
+        result = comp::MarkAsPersistent(result);
     }
 
-    return comp::MarkAsPersistent(result);
+    return result;
 }
 
 

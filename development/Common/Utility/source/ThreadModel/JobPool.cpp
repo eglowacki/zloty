@@ -6,7 +6,9 @@
 yaget::mt::JobPool::JobPool(const char* poolName, uint32_t numThreads /*= 0*/, Behaviour behaviour /*= Behaviour::StartAsRun*/) 
     : mName(poolName) 
     , mBehaviour(behaviour) 
-{ 
+{
+    mEmptyCondition.Trigger();
+
     uint32_t maxThreads = numThreads; 
     if (numThreads == 0) 
     { 
@@ -28,7 +30,8 @@ void yaget::mt::JobPool::Clear()
     { 
         it.second.Clear(); 
     } 
-} 
+    mEmptyCondition.Trigger();
+}
  
  
 yaget::mt::JobPool::~JobPool() 
@@ -45,7 +48,8 @@ yaget::mt::JobPool::~JobPool()
 } 
  
 void yaget::mt::JobPool::AddTask(mt::JobProcessor::Task_t task) 
-{ 
+{
+    mEmptyCondition.Reset();
     { 
         std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex); 
         mTasks.push_back(task); 
@@ -60,11 +64,13 @@ void yaget::mt::JobPool::AddTask(mt::JobProcessor::Task_t task)
 void yaget::mt::JobPool::Join() 
 { 
     mEmptyCondition.Wait(); 
-} 
+    mEmptyCondition.Trigger();
+}
  
 void yaget::mt::JobPool::UnpauseAll() 
 { 
-    mBehaviour = Behaviour::StartAsRun; 
+    mEmptyCondition.Reset();
+    mBehaviour = Behaviour::StartAsRun;
  
     for (auto&& it : mThreads) 
     { 

@@ -42,6 +42,12 @@ namespace yaget
                 mRelease = false;
             }
 
+            void Reset()
+            {
+                std::lock_guard<std::mutex> locker(mMutex);
+                mRelease = false;
+            }
+
         private:
             std::mutex mMutex;
             std::condition_variable mCondition;

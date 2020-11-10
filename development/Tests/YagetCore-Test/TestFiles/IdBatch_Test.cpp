@@ -106,4 +106,12 @@ TEST_F(IdBatch, Persistent)
 			EXPECT_TRUE(itemIds.insert(itemId).second);
 		}
 	}
+
+	comp::ItemId bId = 1;
+	comp::ItemId pId = comp::MarkAsPersistent(1);
+
+	const auto& sb = bId.ToString();
+	const auto& sp = pId.ToString();
+	EXPECT_EQ("B:1", sb);
+	EXPECT_EQ("P:1", sp);
 }
