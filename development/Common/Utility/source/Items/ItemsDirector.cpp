@@ -91,23 +91,31 @@ yaget::items::IdBatch yaget::items::Director::GetNextBatch()
 {
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
+        using Batch = std::tuple<comp::Id_t, uint64_t>;
+
+        const std::string& nextBatchCommand = fmt::format("SELECT NextId, BatchSIze FROM IdCache WHERE Marker = {};", BatchIdMarker);
+        const std::string& updateBatchCommand = fmt::format("UPDATE IdCache SET NextId = NextId + BatchSize WHERE Marker = {};", BatchIdMarker);
+
         SQLite& database = databaseHandle->DB();
-        yaget::db::Transaction transaction(database);
+        db::Transaction transaction(database);
 
         bool result = true;
-        using Row = std::tuple<uint64_t /*marker*/, uint64_t /*batchSize*/, uint64_t /*nextId*/>;
-        auto nextBatch = database.GetRowTuple<Row>("SELECT Marker, BatchSize, NextId FROM IdCache;", &result);
+        auto nextBatch = database.GetRowTuple<Batch>(nextBatchCommand, &result);
         if (!result)
         {
             transaction.Rollback();
             YAGET_UTIL_THROW_ASSERT("DIRE", result, fmt::format("Did not get next Batch from db. %s.", ParseErrors(database)));
         }
 
-        const std::string command = fmt::format("REPLACE INTO 'IdCache' (Marker, BatchSize, NextId) VALUES({}, {}, {});", std::get<0>(nextBatch) , std::get<1>(nextBatch), std::get<2>(nextBatch) + std::get<1>(nextBatch));//nextBatch.Result2 + nextBatch.Result1);
-        database.ExecuteStatement(command, nullptr);
+        if (!database.ExecuteStatement(updateBatchCommand, nullptr))
+        {
+            transaction.Rollback();
+            YAGET_UTIL_THROW_ASSERT("DIRE", result, fmt::format("Did not update next Batch into db. %s.", ParseErrors(database)));
+        }
 
-        return items::IdBatch{ std::get<2>(nextBatch), std::get<1>(nextBatch) };
+        return items::IdBatch{ std::get<0>(nextBatch), std::get<1>(nextBatch) };
     }
 
+    YAGET_UTIL_THROW("DIRE", "Did not get locked db handle for Director's database");
     return{ 0, 0 };
 }

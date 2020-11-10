@@ -38,7 +38,8 @@ namespace yaget
             ItemId(comp::Id_t id) : mId(id) {}
             operator comp::Id_t() const { return mId; }
 
-            const comp::Id_t mId{ comp::INVALID_ID };
+        private:
+            comp::Id_t mId{ comp::INVALID_ID };
         };
 
         class Component;

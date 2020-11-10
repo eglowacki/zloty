@@ -27,21 +27,13 @@ namespace yaget
     namespace items
     {
         //-------------------------------------------------------------------------------------------------
-        struct IdBatch
-        {
-            uint64_t mNextId;
-            uint64_t mBatchSize;
-        };
-
-        inline bool operator==(const IdBatch& lh, const IdBatch& rh) { return lh.mBatchSize == rh.mBatchSize && lh.mNextId == rh.mNextId; }
-        inline bool operator!=(const IdBatch& lh, const IdBatch& rh) { return !(lh == rh); }
-
-        //-------------------------------------------------------------------------------------------------
         // Manages overall scene like items-component, provides id cache wired to DB to assure unique
         // persistent id's across runs of application, unless DB is deleted.
         class Director : public Noncopyable<Director>
         {
         public:
+            constexpr static int BatchIdMarker = 1;
+
             Director(const std::string& name, const Strings& additionalSchema, int64_t expectedVersion);
             virtual ~Director();
 

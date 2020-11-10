@@ -4,26 +4,27 @@
 
 namespace
 {
-    const yaget::comp::Id_t kBurnableMinRange = 1000;
-    const yaget::comp::Id_t kBurnableMaxRange = 1000000000;
+    const yaget::comp::Id_t kBurnableNexId = 1000;
+    const yaget::comp::Id_t kMaxRange = 1000000000;
+    const yaget::comp::Id_t kPersistentNexId = kBurnableNexId + kMaxRange;
 
 } // namespace
 
 using namespace yaget;
 IdGameCache::IdGameCache(items::Director* director)
-    : mBurnableRange(kBurnableMinRange, kBurnableMaxRange)
-    , mNextBurnableId(kBurnableMinRange)
-    , mNextPersistentId(kBurnableMaxRange)
+    : mBurnableRange({ kBurnableNexId, kMaxRange })
+    , mNextBurnableId(kBurnableNexId)
+    , mNextPersistentId(kPersistentNexId)
+    , mPersistentRange({ kPersistentNexId, kMaxRange })
     , mDirector(director)
 {
     if (mDirector)
     {
-        items::IdBatch idBatch = mDirector->GetNextBatch();
-        YAGET_ASSERT(idBatch != items::IdBatch{}, "Initial batch of Id's is not valid. Got empty set.");
-        mNextPersistentId = idBatch.mNextId;
-        mPersistentRange = std::make_pair(idBatch.mNextId, idBatch.mBatchSize);
+        mPersistentRange = mDirector->GetNextBatch();
+        mNextPersistentId = mPersistentRange.mNextId;
+        mNextAvailablePersistentRange = mDirector->GetNextBatch();
 
-        YLOG_INFO("IDS", "New Id Batch from: '%s' with '%llu' entries.", conv::ToThousandsSep(mPersistentRange.first).c_str(), mPersistentRange.second);
+        YLOG_INFO("IDS", "New Id Batch from: '%s' with '%llu' entries.", conv::ToThousandsSep(mPersistentRange.mNextId).c_str(), mPersistentRange.mBatchSize);
     }
 }
 
@@ -38,23 +39,31 @@ comp::Id_t IdGameCache::GetId(IdType idType)
     comp::Id_t result = 0;
     if (idType == IdType::Burnable)
     {
-        YAGET_ASSERT(mNextBurnableId < mBurnableRange.second, "No more burnable id's available");
+        YAGET_ASSERT(mBurnableRange.IsIdValid(mNextBurnableId), "No more burnable id's available");
         result = mNextBurnableId++;
     }
     else if (idType == IdType::Persistent)
     {
         if (mDirector)
         {
-            const auto topRange = mPersistentRange.first + mPersistentRange.second;
-            if (mNextPersistentId == topRange)
+            if (!mPersistentRange.IsIdValid(mNextPersistentId))
             {
-                // we are out of id's, get some more. This will be blocking call
-                items::IdBatch idBatch = mDirector->GetNextBatch();
-                YAGET_ASSERT(idBatch != items::IdBatch{}, "Next batch of Id's is not valid. Got empty set.");
+                if (mNextAvailablePersistentRange != items::IdBatch{})
+                {
+                    mPersistentRange = mNextAvailablePersistentRange;
+                    mNextAvailablePersistentRange = {};
+                    // we have valid next batch
+                }
+                else
+                {
+                    // this really should not have happen, since we should have gotten
+                    // callback from last request for next id batch.
+                    // we are out of id's, get some more. This will be blocking call
+                    mPersistentRange = mDirector->GetNextBatch();
+                }
 
-                mNextPersistentId = idBatch.mNextId;
-                mPersistentRange = std::make_pair(idBatch.mNextId, idBatch.mBatchSize);
-                YLOG_INFO("IDS", "New Id Batch from: '%s' with '%llu' entries.", conv::ToThousandsSep(mPersistentRange.first).c_str(), mPersistentRange.second);
+                mNextPersistentId = mPersistentRange.mNextId;
+                YLOG_INFO("IDS", "New Id Batch from: '%s' with '%llu' entries.", conv::ToThousandsSep(mPersistentRange.mNextId).c_str(), mPersistentRange.mBatchSize);
             }
 
             // if we are 'close' to exhaustion of id, we need to request more from director
@@ -63,7 +72,7 @@ comp::Id_t IdGameCache::GetId(IdType idType)
         result = mNextPersistentId++;
     }
 
-    return result;
+    return comp::MarkAsPersistent(result);
 }
 
 

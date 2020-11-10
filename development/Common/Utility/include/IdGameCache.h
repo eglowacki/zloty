@@ -40,13 +40,14 @@ namespace yaget
     private:
         //! Burnable id's will only fall within this range
         //! first <= currentId < second
-        std::pair<comp::Id_t, comp::Id_t> mBurnableRange;
+        items::IdBatch mBurnableRange;
         //! next valid burnable id
         std::atomic_uint64_t mNextBurnableId;
         //! Next persistent id
         //! \note we need to get batch of id's from DB
         std::atomic_uint64_t mNextPersistentId;
-        std::pair<comp::Id_t, comp::Id_t> mPersistentRange;
+        items::IdBatch mPersistentRange;
+        items::IdBatch mNextAvailablePersistentRange;
 
         //! If not null, then it's used for persistent queries
         items::Director* mDirector;

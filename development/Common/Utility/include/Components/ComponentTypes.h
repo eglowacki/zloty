@@ -111,8 +111,24 @@ namespace yaget
             struct EndMarkerNo : EndMarker<I, false> {};
 
         } // namespace gs
-
     } // namespace comp
+
+    namespace items
+    {
+        //-------------------------------------------------------------------------------------------------
+        struct IdBatch
+        {
+            comp::Id_t mNextId{ comp::INVALID_ID };
+            comp::Id_t mBatchSize{ 0 };
+
+            bool IsIdValid(comp::Id_t id) const { return id >= mNextId && id < mNextId + mBatchSize; }
+        };
+
+        inline bool operator==(const IdBatch& lh, const IdBatch& rh) { return lh.mBatchSize == rh.mBatchSize && lh.mNextId == rh.mNextId; }
+        inline bool operator!=(const IdBatch& lh, const IdBatch& rh) { return !(lh == rh); }
+
+    }
+
 } // namespace yaget
 
 
