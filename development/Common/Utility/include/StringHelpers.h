@@ -607,6 +607,23 @@ namespace yaget
         return conv::ToLower(elem1) == conv::ToLower(elem2);
     }
 
+
+    namespace internal
+    {
+        template<class TupType, size_t... I>
+        void print_tuple(const TupType& _tup, std::index_sequence<I...>, std::string& message)
+        {
+            (..., (message += (I == 0 ? "" : ", ") + typename conv::template Convertor<std::tuple_element_t<I, TupType>>::ToString(std::get<I>(_tup))));
+        }
+
+    }
+
+    template<class... T>
+    void print_tuple(const std::tuple<T...>& _tup, std::string& message)
+    {
+        internal::print_tuple(_tup, std::make_index_sequence<sizeof...(T)>(), message);
+    }
+
     //inline bool WildCompareISafe(const std::string& wild, const std::string& string)
     //{
     //    std::string pattern = NormalizePath(wild, false, false);

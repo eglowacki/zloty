@@ -34,14 +34,14 @@ namespace yaget
         public:
             constexpr static int BatchIdMarker = 1;
 
-            Director(const std::string& name, const Strings& additionalSchema, int64_t expectedVersion);
+            Director(const std::string& name, const Strings& additionalSchema, const Strings& loadout, int64_t expectedVersion);
             virtual ~Director();
-
-            IdBatch GetNextBatch();
 
             IdGameCache& IdCache() { return mIdGameCache; }
 
         private:
+            IdBatch GetNextBatch();
+
             //--------------------------------------------------------------------------------------------------
             // provides locking for DB for read/write, use LockDatabaseAccess() accessors to acquire one
             struct DatabaseLocker
@@ -79,31 +79,17 @@ namespace yaget
         class DefaultDirector : public Director
         {
         public:
-            DefaultDirector()
-                : Director("$(DatabaseFolder)/director.sqlite", comp::db::GenerateGameDirectorSchema<T>(mSchemaVersion), Database::NonVersioned)
+            DefaultDirector(io::VirtualTransportSystem& vts, const std::string& name = "Director")
+                : Director("$(DatabaseFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinatorSchema<T>(), comp::db::GenerateDirectorLoadout<T>(vts, "Settings@" + name), comp::db::GenerateSystemsCoordinatorVersion<T>())
             {}
 
-        protected:
-            DefaultDirector(const char* name)
-                : Director("$(DatabaseFolder)/" + std::string(name) + std::string(".sqlite"), comp::db::GenerateGameDirectorSchema<T>(mSchemaVersion), Database::NonVersioned)
+            DefaultDirector(const std::string& name = "Director")
+                : Director("$(DatabaseFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinatorSchema<T>(), {}, comp::db::GenerateSystemsCoordinatorVersion<T>())
             {}
-
-        private:
-            inline static int64_t mSchemaVersion = 0;
         };
 
         // Just base support for id cache and version. 
         using BlankDefaultDirector = DefaultDirector<comp::db::EmptySchema>;
-
-        // Exposes custom name for director sqlite file on disk. Location and ext are automaticly added
-        template <typename T>
-        class NamedDirector : public DefaultDirector<T>
-        {
-        public:
-            NamedDirector(const char* name)
-                : DefaultDirector(name)
-            {}
-        };
 
     } // namespace items
 } // namespace yaget

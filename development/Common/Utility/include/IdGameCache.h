@@ -18,20 +18,25 @@
 //! \file
 #pragma once
 
+#include <functional>
+
 #include "Components/ComponentTypes.h"
 
 
 namespace yaget
 {
     namespace mt { class JobPool; }
-    namespace items { class Director; }
 
     class IdGameCache
     {
     public:
+        // if we need to operate in persistent ids (backed by DB), pass
+        // callback of this signature to ctor, and return new batches from it
+        using GetNextBatch = std::function<items::IdBatch()>;
+
         enum class IdType {Burnable, Persistent};
 
-        IdGameCache(items::Director* director);
+        IdGameCache(const GetNextBatch& getNextBatch);
         ~IdGameCache();
 
         //! Return next available id which will be burnable or persistent based on IdType parameter
@@ -44,13 +49,14 @@ namespace yaget
         //! next valid burnable id
         std::atomic_uint64_t mNextBurnableId;
         //! Next persistent id
-        //! \note we need to get batch of id's from DB
         std::atomic_uint64_t mNextPersistentId;
+        // this keep track of current persistent range and get id's from it
+        // when we run out of id's, we switch with Next and request new batch async
         items::IdBatch mPersistentRange;
         items::IdBatch mNextAvailablePersistentRange;
 
         //! If not null, then it's used for persistent queries
-        items::Director* mDirector;
+        GetNextBatch mGetNextBatch;
         std::unique_ptr<mt::JobPool> mJob;
     };
 

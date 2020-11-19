@@ -12,19 +12,19 @@ namespace
 } // namespace
 
 using namespace yaget;
-IdGameCache::IdGameCache(items::Director* director)
+IdGameCache::IdGameCache(const GetNextBatch& getNextBatch)
     : mBurnableRange({ kBurnableNexId, kMaxRange })
     , mNextBurnableId(kBurnableNexId)
     , mNextPersistentId(kPersistentNexId)
     , mPersistentRange({ kPersistentNexId, kMaxRange })
-    , mDirector(director)
+    , mGetNextBatch(getNextBatch)
 {
-    if (mDirector)
+    if (mGetNextBatch)
     {
         mJob = std::make_unique<mt::JobPool>("IdCache", 1);
-        mPersistentRange = mDirector->GetNextBatch();
+        mPersistentRange = mGetNextBatch();
         mNextPersistentId = mPersistentRange.mNextId;
-        mNextAvailablePersistentRange = mDirector->GetNextBatch();
+        mNextAvailablePersistentRange = mGetNextBatch();
 
         YLOG_INFO("IDS", "Batch of id's with '%s' entries allocated, starting id: '%s'.", conv::ToThousandsSep(mPersistentRange.mBatchSize).c_str(), conv::ToThousandsSep(mPersistentRange.mNextId).c_str());
     }
@@ -46,7 +46,7 @@ comp::Id_t IdGameCache::GetId(IdType idType)
     }
     else if (idType == IdType::Persistent)
     {
-        if (mDirector)
+        if (mGetNextBatch)
         {
             // are we run-out of id's in current batch
             if (!mPersistentRange.IsIdValid(mNextPersistentId))
@@ -56,7 +56,7 @@ comp::Id_t IdGameCache::GetId(IdType idType)
                 mNextAvailablePersistentRange = {};
                 mJob->AddTask([this]()
                 {
-                    mNextAvailablePersistentRange = mDirector->GetNextBatch();
+                    mNextAvailablePersistentRange = mGetNextBatch();
                 });
 
                 mNextPersistentId = mPersistentRange.mNextId;

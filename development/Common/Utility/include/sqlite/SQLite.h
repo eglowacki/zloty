@@ -204,11 +204,10 @@ namespace yaget
     T GetCell(const SQLite& database, const std::string& command, const T& defaultValue = T())
     {
         using Row = std::tuple<T>;
-        Row result = Row(defaultValue);
+        bool foundValue = true;
+        Row result = database.GetRowTuple<Row>(command, &foundValue);
 
-        result = database.GetRowTuple<Row>(command, nullptr);
-
-        return std::get<0>(result);
+        return foundValue ? std::get<0>(result) : defaultValue;
     }
 
 

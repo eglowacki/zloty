@@ -9,3 +9,5 @@
 // Create id cache table, used for in game persistent items
 "CREATE TABLE 'IdCache' ('Marker' INTEGER UNIQUE, 'BatchSize' INTEGER, 'NextId' INTEGER, PRIMARY KEY('Marker'));",
 "INSERT INTO IdCache(Marker, BatchSize, NextId) VALUES('1', '200', '1000');",
+
+"CREATE TABLE 'Hashes' ('Key' STRING NOT NULL, 'Value' INTEGER, PRIMARY KEY('Key'));",

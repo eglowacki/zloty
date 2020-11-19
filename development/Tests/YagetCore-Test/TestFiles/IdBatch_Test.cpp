@@ -77,7 +77,7 @@ TEST_F(IdBatch, Persistent)
 {
 	using namespace yaget;
 
-	items::NamedDirector<comp::db::EmptySchema> director("Persistent");
+	items::BlankDefaultDirector director("Persistent");
 	auto& idGameCache = director.IdCache();
 
 	const auto MaxIterations = 10000;

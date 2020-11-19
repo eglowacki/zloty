@@ -76,10 +76,7 @@ namespace yaget::meta
         using type = typename std::remove_pointer<typename std::decay<T>::type>::type;
     };
 
-    // Helper types
-    // using BaseType = typename meta::strip_qualifiers_t<T>;
     template<typename T>
-    //using strip_qualifiers_t = typename std::remove_cvref<T>::type;
     using strip_qualifiers_t = typename strip_qualifiers<T>::type;
 
     // check if a specific type exist in tuple

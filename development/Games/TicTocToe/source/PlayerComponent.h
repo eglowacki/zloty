@@ -24,16 +24,16 @@ namespace ttt
     namespace pc
     {
         struct Side {};
-        struct SideControl {};
-        using Types = std::tuple<Side, SideControl>;
-        using Storage = std::tuple<int, int>;
+        struct Name {};
+        using Types = std::tuple<Side, Name>;
+        using Storage = std::tuple<int, std::string>;
     }
 
     class PlayerComponent : public yaget::comp::db::PersistentBaseComponent<pc::Types, pc::Storage, yaget::comp::SmallPoolSize>
     {                                                            
     public:
-        PlayerComponent(yaget::comp::Id_t id, int side, int sideControl)
-            : PersistentBaseComponent(id, std::tie(side, sideControl))
+        PlayerComponent(yaget::comp::Id_t id, int side, const std::string& name)
+            : PersistentBaseComponent(id, std::tie(side, name))
         {}
     };
 

@@ -7,7 +7,7 @@
 
 namespace fs = std::filesystem;
 
-#define YAGET_ITEMS_VERSION 3
+#define YAGET_ITEMS_VERSION 4
 
 
 namespace
@@ -67,9 +67,9 @@ namespace
 } // namespace
 
 
-yaget::items::Director::Director(const std::string& name, const Strings& additionalSchema, int64_t expectedVersion)
+yaget::items::Director::Director(const std::string& name, const Strings& additionalSchema, const Strings& loadout, int64_t expectedVersion)
     : mDatabase(ResolveDatabaseName(name, false), CombineSchemas(additionalSchema, Strings{fmt::format("INSERT INTO VersionTables(Id) VALUES('{}');", expectedVersion)}, itemsSchema), YAGET_ITEMS_VERSION)
-    , mIdGameCache(this)
+    , mIdGameCache([this]() { return GetNextBatch(); })
 {
     auto version = GetCell<int64_t>(mDatabase.DB(), "SELECT Id FROM VersionTables;");
     YAGET_UTIL_THROW_ASSERT("DIRE", (expectedVersion == Database::NonVersioned || (expectedVersion != Database::NonVersioned && version == expectedVersion)), 
@@ -78,7 +78,67 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
             expectedVersion, 
             version));
 
-    YLOG_INFO("DIRE", "Items Director opened.");
+    YLOG_INFO("DIRE", "Items Director initialized.");
+
+    if (!loadout.empty())
+    {
+        int64_t loadoutVersion = 0;
+        Strings sqlLoadout;
+        comp::Id_t itemId = comp::INVALID_ID;
+
+        for (const auto& command : loadout)
+        {
+            if (command == comp::db::NewItem_Token)
+            {
+                itemId = idspace::get_persistent(mIdGameCache);
+                continue;
+            }
+
+            YAGET_UTIL_THROW_ASSERT("DIRE", itemId != comp::INVALID_ID, fmt::format("ItemId is still invalid, is '{}' token as a first line in loadout is missing?", comp::db::NewItem_Token));
+            comp::db::hash_combine(loadoutVersion, command);
+            sqlLoadout.emplace_back(fmt::format(command, itemId));
+        }
+
+        const char* hashesTable = "Hashes";
+        const char* hashesKey = "loadout.start";
+
+        if (DatabaseHandle databaseHandle = LockDatabaseAccess())
+        {
+            SQLite& database = databaseHandle->DB();
+            // before we update current loadout, let's check version
+            const auto version = GetCell<int64_t>(database, fmt::format("SELECT Value FROM {} WHERE Key = '{}';", hashesTable, hashesKey));
+            if (version == 0)
+            {
+                db::Transaction transaction(database);
+
+                for (const auto& command : sqlLoadout)
+                {
+                    if (!database.ExecuteStatement(command, nullptr))
+                    {
+                        transaction.Rollback();
+                        YAGET_UTIL_THROW("DIRE", fmt::format("Could not execute sql query '{}'. {}.", command, ParseErrors(database)));
+                    }
+                }
+
+                std::string sqCommand = fmt::format("INSERT OR REPLACE INTO '{}' VALUES('{}', {});", hashesTable, hashesKey, loadoutVersion);
+                if (!database.ExecuteStatement(sqCommand, nullptr))
+                {
+                    transaction.Rollback();
+                    YAGET_UTIL_THROW("DIRE", fmt::format("Could not update {} '{}' sql query '{}'. {}.", hashesTable, sqCommand, ParseErrors(database)));
+                }
+
+                YLOG_INFO("DIRE", "Items Director's first loadout is done, added: '%d' items.", sqlLoadout.size());
+            }
+            else if (version == loadoutVersion)
+            {
+                YLOG_INFO("DIRE", "Items Director's loadout is same as incomming, ignoring.");
+            }
+            else
+            {
+                YAGET_UTIL_THROW("DIRE", fmt::format("Incomming loadout version: '{}' does not match one in db: '{}'.", loadoutVersion, version));
+            }
+        }
+    }
 }
 
 yaget::items::Director::~Director()
@@ -104,13 +164,13 @@ yaget::items::IdBatch yaget::items::Director::GetNextBatch()
         if (!result)
         {
             transaction.Rollback();
-            YAGET_UTIL_THROW_ASSERT("DIRE", result, fmt::format("Did not get next Batch from db. %s.", ParseErrors(database)));
+            YAGET_UTIL_THROW("DIRE", fmt::format("Did not get next Batch from db. %s.", ParseErrors(database)));
         }
 
         if (!database.ExecuteStatement(updateBatchCommand, nullptr))
         {
             transaction.Rollback();
-            YAGET_UTIL_THROW_ASSERT("DIRE", result, fmt::format("Did not update next Batch into db. %s.", ParseErrors(database)));
+            YAGET_UTIL_THROW("DIRE", fmt::format("Did not update next Batch into db. %s.", ParseErrors(database)));
         }
 
         return items::IdBatch{ std::get<0>(nextBatch), std::get<1>(nextBatch) };

@@ -19,7 +19,6 @@
 #include "Application.h"
 #include <string>
 
-namespace Term { class Terminal; }
 
 namespace yaget
 {
@@ -40,7 +39,6 @@ namespace yaget
 
         WindowHandle_t mOutputHandle = nullptr;
         WindowHandle_t mInputHandle = nullptr;
-        std::unique_ptr<Term::Terminal> mTerminal;
     };
 
     namespace app

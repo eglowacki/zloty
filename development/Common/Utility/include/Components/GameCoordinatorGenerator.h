@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////
-// Coordinator.h
+// GameCoordinatorGenerator.h
 //
-//  Copyright 6/16/2019 Edgar Glowacki
+//  Copyright 6/16/2020 Edgar Glowacki
 //
 //  Maintained by: Edgar
 //
@@ -27,6 +27,8 @@
 #include "StringHelpers.h"
 #include "sqlite/SQLite.h"
 #include "Components/Component.h"
+#include "VTS/ResolvedAssets.h"
+#include "VTS/VirtualTransportSystem.h"
 
 
 namespace yaget::comp::db
@@ -240,59 +242,6 @@ namespace yaget::comp::db
 
     }
 
-    // call this to generate db scheme representing GameCoordinator
-    template <typename T>
-    Strings GenerateGameDirectorSchema(int64_t& schemaVersion)
-    {
-        using namespace yaget;
-
-        using Entity = typename T::Entity;
-        using Global = typename T::Global;
-
-        using EntityRow = typename Entity::Row;
-        using GlobalRow = typename Global::Row;
-
-        using Coordinators = typename T::Coordinators;
-
-        Strings resultSchema;
-        std::set<std::string> propertyNames;
-        internal::Columns schemaTableData;
-
-        meta::for_each_type<Coordinators>([&propertyNames, &resultSchema, &schemaTableData]<typename T0>(const T0&)
-        {
-            using BaseType = meta::strip_qualifiers_t<T0>;
-
-            constexpr auto tableName = CoordinatorName<BaseType>::Name();
-            constexpr int coordinatorId = CoordinatorId<BaseType>::Value();
-
-            auto command = internal::MakeTable<BaseType::Row>(tableName, propertyNames, schemaTableData, coordinatorId);
-            resultSchema.emplace_back(command);
-        });
-
-        std::sort(schemaTableData.begin(), schemaTableData.end());
-        auto it = std::unique(schemaTableData.begin(), schemaTableData.end());
-        schemaTableData.resize(std::distance(schemaTableData.begin(), it));
-
-        for (const auto& componentTable : schemaTableData)
-        {
-            std::string columns;
-            auto it_name = std::begin(componentTable.mPropertyNames);
-            auto it_type = std::begin(componentTable.mPropertyTypes);
-            for (; it_name != std::end(componentTable.mPropertyNames); ++it_name, ++it_type)
-            {
-                columns += fmt::format("'{}' {}, ", *it_name, *it_type);
-            }
-
-            auto command = fmt::format("CREATE TABLE '{}' ('Id' INTEGER, {} PRIMARY KEY('Id'));", componentTable.mPropertyTableName, columns);
-            resultSchema.emplace_back(command);
-        }
-
-        std::hash<std::string> hasher;
-        schemaVersion = hasher(conv::Combine(resultSchema, ""));
-
-        return resultSchema;
-    }
-
     template <typename T>
     std::string GetTypeTableName()
     {
@@ -381,13 +330,173 @@ namespace yaget::comp::db
         InsertComponent<T>(db, row);
     }
 
+
+    // Generates sql schema for items composed of various components,
+    // each component composed of columns, which are properties of values (parameters to ctor)
+    template <typename T>
+    Strings GenerateSystemsCoordinatorSchema()
+    {
+        using namespace yaget;
+
+        using SystemsCoordinator = T;
+        using FullRow = typename SystemsCoordinator::CoordinatorSet::FullRow;
+
+        Strings results;
+        meta::for_each_type<FullRow>([&results]<typename T0>(const T0&)
+        {
+            using BaseType = meta::strip_qualifiers_t<T0>;
+            using ParameterNames = typename comp::db::RowDescription_t<BaseType>::Row;
+            using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
+            static_assert(std::tuple_size_v<ParameterNames> == std::tuple_size_v<ParameterPack>, "Names and types of Component properties must match in size");
+
+            const auto& tableName = internal::ResolveName<BaseType>();
+            const auto& columnNames = comp::db::GetPolicyRowNames<ParameterNames>();
+            const auto& typeNames = comp::db::GetPolicyRowTypes<ParameterPack>();
+
+            std::string sqlCommand = fmt::format("CREATE TABLE '{}' ('Id' {} CHECK(Id > 0) UNIQUE", tableName, internal::ResolveDatabaseType<comp::Id_t>());
+            if (!columnNames.empty())
+            {
+                auto cn_it = columnNames.begin();
+                auto tn_it = typeNames.begin();
+                for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
+                {
+                    sqlCommand += fmt::format(", '{}' {}", *cn_it, *tn_it);
+                }
+            }
+            sqlCommand += ", PRIMARY KEY('Id'));";
+            YLOG_NOTICE("TTT", "[%s]", sqlCommand.c_str());
+            results.emplace_back(sqlCommand);
+        });
+
+        return results;
+    };
+
+    template <typename T>
+    int64_t GenerateSystemsCoordinatorVersion()
+    {
+        using namespace yaget;
+
+        using SystemsCoordinator = T;
+        using FullRow = typename SystemsCoordinator::CoordinatorSet::FullRow;
+
+        int64_t schemaVersion = 0;
+        meta::for_each_type<FullRow>([&schemaVersion]<typename T0>(const T0&)
+        {
+            using BaseType = meta::strip_qualifiers_t<T0>;
+            using ParameterNames = typename comp::db::RowDescription_t<BaseType>::Row;
+            using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
+            static_assert(std::tuple_size_v<ParameterNames> == std::tuple_size_v<ParameterPack>, "Names and types of Component properties must match in size");
+
+            const auto& tableName = internal::ResolveName<BaseType>();
+            const auto& columnNames = comp::db::GetPolicyRowNames<ParameterNames>();
+            const auto& typeNames = comp::db::GetPolicyRowTypes<ParameterPack>();
+
+            hash_combine(schemaVersion, tableName);
+            if (!columnNames.empty())
+            {
+                auto cn_it = columnNames.begin();
+                auto tn_it = typeNames.begin();
+                for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
+                {
+                    hash_combine(schemaVersion, *cn_it, *tn_it);
+                }
+            }
+        });
+
+        return schemaVersion;
+    }
+
+    template <typename T>
+    Strings GenerateSystemsCoordinatorSchemaVersion(int64_t& schemaVersion)
+    {
+        Strings results = GenerateSystemsCoordinatorSchema<T>();
+        schemaVersion = GenerateSystemsCoordinatorVersion<T>();
+        return results;
+    }
+
     struct EmptySchema {};
 
     template <>
-    inline Strings GenerateGameDirectorSchema<EmptySchema>(int64_t&)
+    inline Strings GenerateSystemsCoordinatorSchema<EmptySchema>()
     {
         return {};
     }
 
+    template <>
+    inline int64_t GenerateSystemsCoordinatorVersion<EmptySchema>()
+    {
+        return 0;
+    }
+
+    template <>
+    inline Strings GenerateSystemsCoordinatorSchemaVersion<EmptySchema>(int64_t& schemaVersion)
+    {
+        Strings results = GenerateSystemsCoordinatorSchema<EmptySchema>();
+        schemaVersion = GenerateSystemsCoordinatorVersion<EmptySchema>();
+        return results;
+    }
+
+    struct PolicyName
+    {
+        constexpr static bool AutoComponent = true;
+    };
+
+    static constexpr const char* NewItem_Token = "NEW_ITEM";
+
+    template <typename T, typename PolicyName = PolicyName>
+    Strings GenerateDirectorLoadout(io::VirtualTransportSystem& vts, const std::string& name)
+    {
+        using namespace yaget;
+        using Section = io::VirtualTransportSystem::Section;
+
+        using SystemsCoordinator = T;
+        using FullRow = typename SystemsCoordinator::CoordinatorSet::FullRow;
+
+        Strings results;
+
+        const Section directorSection(name);
+        io::SingleBLobLoader<io::JsonAsset> directorBlobLoader(vts, directorSection);
+        if (auto asset = directorBlobLoader.GetAsset())
+        {
+            if (json::IsSectionValid(asset->root, "Description", "Items"))
+            {
+                const auto& itemsBlock = json::GetSection(asset->root, "Description", "Items");
+                for (const auto& itemBlock : itemsBlock)
+                {
+                    results.emplace_back(NewItem_Token);
+                    for (const auto& componentBlock : itemBlock)
+                    {
+                        auto componentName = json::GetValue<std::string>(componentBlock, "Type", {});
+                        YAGET_UTIL_THROW_ASSERT("TTT", !componentName.empty(), "Component Type can not be empty and must have one of game components names.");
+
+                        if (!componentName.ends_with("Component") && PolicyName::AutoComponent)
+                        {
+                            componentName += "Component";
+
+                            meta::for_each_type<FullRow>([&componentName, &componentBlock, &results]<typename T0>(const T0&)
+                            {
+                                using BaseType = meta::strip_qualifiers_t<T0>;
+                                using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
+
+                                const auto& tableName = internal::ResolveName<BaseType>();
+                                if (tableName == componentName)
+                                {
+                                    const auto componentParams = json::GetValue<ParameterPack>(componentBlock, "Params", {});
+                                    std::string message;
+                                    print_tuple(componentParams, message);
+
+                                    std::string sqCommand = fmt::format("INSERT INTO '{}' VALUES({{}}{}{});", tableName, message.empty() ? "" : ", ", message);
+                                    YLOG_NOTICE("TTT", "[%s] ", sqCommand.c_str());
+                                    results.emplace_back(sqCommand);
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        return results;
+    }
 
 }

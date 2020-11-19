@@ -29,8 +29,8 @@ namespace yaget
 
         using ItemIds = std::set<comp::Id_t>;
 
-        // Any id's that are marked as persistent, will have high bit set
-        static constexpr const Id_t PERSISTENT_ID_BIT = 0x8000000000000000;
+        // Any id's that are marked as persistent, will have high bit set, actual high bit 0x8000000000000000
+        static constexpr const Id_t PERSISTENT_ID_BIT = 0x800000000000;
 
         static constexpr const Id_t INVALID_ID = 0;
         static constexpr const Id_t END_ID_MARKER = (~PERSISTENT_ID_BIT) - 1;
@@ -130,8 +130,3 @@ namespace yaget
     }
 
 } // namespace yaget
-
-
-
-
-

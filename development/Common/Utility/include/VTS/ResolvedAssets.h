@@ -50,6 +50,101 @@ namespace yaget::io
         nlohmann::json root;
     };
 
+    template <typename... T>
+    class StructDataAsset : public JsonAsset
+    {
+    public:
+        std::string ToString() const
+        {
+            std::string message;
+            print_tuple(mFields, message);
+
+            return message;
+        }
+
+    protected:
+        using Section = yaget::io::VirtualTransportSystem::Section;
+        using Fields = std::tuple<T...>;
+        static constexpr size_t NumFields = std::tuple_size_v<std::remove_reference_t<Fields>>;
+
+        template<std::size_t I>
+        using Type = std::tuple_element_t<I, Fields>;
+        using Validate = std::function<bool()>;
+
+        template <typename... F>
+        StructDataAsset(const io::Tag& tag, io::Buffer buffer, const io::VirtualTransportSystem& vts, const char* rootName, Validate validate, F&&... args)
+            : JsonAsset(tag, buffer, vts)
+        {
+            if (mValid)
+            {
+                if (mBuffer.second)
+                {
+                    for (const auto& [key, node] : root.items())
+                    {
+                        if (key == rootName && node.is_object())
+                        {
+                            mValidSection = true;
+                            root = node;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    mValidSection = true;
+                }
+            }
+
+            std::string catchMessage;
+            if (mValidSection)
+            {
+                using Resolvers = std::tuple<F...>;
+                Resolvers resolvers = std::tuple<F...>(args...);
+                static_assert(NumFields == std::tuple_size_v<std::remove_reference_t<Resolvers>>);
+
+                try
+                {
+                    yaget::meta::tuple_clone<0>(mFields, resolvers);
+                    mValidSection = validate();
+                }
+                catch (const nlohmann::detail::exception& ex)
+                {
+                    std::string message;
+                    //io::render::internal::yaget_print(mFields, message);
+
+                    catchMessage = fmt::format("Unable to assign to mFields from json meta stream : '{}'.Fields : [{}].Error : {}.", tag.ResolveVTS().c_str(), message.c_str(), ex.what());
+                    mValidSection = false;
+                }
+            }
+
+            if (!mValidSection)
+            {
+                if (!catchMessage.empty())
+                {
+                    YLOG_ERROR("ASET", "'%s'", catchMessage.c_str());
+                }
+                else
+                {
+                    const auto& message = ToString();
+                    YLOG_ERROR("ASET", "MetaData Asset: '%s' with Root Name: '%s' failed data validation with values: '%s'.", tag.ResolveVTS().c_str(), rootName ? rootName : "", message.c_str());
+                }
+            }
+
+            mValid = mValidSection;
+        }
+
+        template <std::size_t I>
+        const Type<I>& Get() const
+        {
+            return std::get<I>(mFields);
+        }
+
+        Fields mFields;
+
+    private:
+        bool mValidSection = false;
+    };
+
 
     //PixelType mColorType = PixelType::None;
     //DataType mDataType = DataType::None;

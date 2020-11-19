@@ -4,7 +4,7 @@
   "Items": [
     {
       "Id": "b29e0f25-e1db-4d93-a951-8f780f04ee49",
-      "Command": "--log_filter=-VTS"
+      "Command": "--log_filter=-DIRE"
     },
     {
       "Id": "bd22da14-984a-4d19-9138-5e05d05b0703",

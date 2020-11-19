@@ -2,7 +2,6 @@
 #include "Logger/YLog.h"
 #include "Platform/WindowsLean.h"
 #include "Input/InputDevice.h"
-#include "cpp-terminal/terminal.h"
 
 using namespace yaget;
 
@@ -46,7 +45,6 @@ bool app::BlankApplication::onMessagePump(const time::GameClock& /*gameClock*/)
 
 ConsoleApplication::ConsoleApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
     : Application(title, director, vts, options)
-    //, mTerminal(std::make_unique<Term::Terminal>(true, false))
 {
     ::SetConsoleTitle(title.c_str());
 

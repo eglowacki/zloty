@@ -15,6 +15,7 @@
 #include "HashUtilities.h"
 #include "App/ConsoleApplication.h"
 #include "Items/ItemsDirector.h"
+#include "StringHelpers.h"
 #include "MemoryManager/PoolAllocator.h"
 
 #include <concepts>
@@ -138,6 +139,13 @@ namespace
         constexpr static bool AutoComponent = true;
     };
 
+    //template <typename T>
+    //struct Adder
+    //{
+    //    to adder = [](auto&&... params) { coordinator.AddComponent<T>(params...); };
+
+    //};
+
     void ReadDirectorFile(yaget::Application& app, const std::string& name)
     {
         using namespace yaget;
@@ -145,12 +153,11 @@ namespace
         using FullRow = ttt::GameSystemsCoordinator::CoordinatorSet::FullRow;
 
         const Section directorSection(name);
-        io::SingleBLobLoader< io::JsonAsset> directorBlobLoader(app.VTS(), directorSection);
+        io::SingleBLobLoader<io::JsonAsset> directorBlobLoader(app.VTS(), directorSection);
         if (auto asset = directorBlobLoader.GetAsset())
         {
             auto& idCache = app.IdCache;
             ttt::GameSystemsCoordinator gameSystemsCoordinator;
-            //auto& coordinator = gameSystemsCoordinator.GetCoordinator<ttt::Entity>();
 
             if (json::IsSectionValid(asset->root, "Description", ""))
             {
@@ -158,7 +165,7 @@ namespace
 
                 for (const auto& itemBlock: itemsBlock)
                 {
-                    const auto id = idCache.GetId(IdGameCache::IdType::itBurnable);
+                    const auto id = idCache.GetId(IdGameCache::IdType::Burnable);
                     for (const auto& componentBlock: itemBlock)
                     {
                         auto componentName = json::GetValue<std::string>(componentBlock, "Type", {});
@@ -179,83 +186,74 @@ namespace
                                 using ParameterNames = typename comp::db::RowDescription_t<BaseType>::Row;
                                 using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
 
-                                const auto& propNames = comp::db::GetPolicyRowNames<ParameterNames>();
-                                const auto& names = conv::Combine(propNames, ", ");
-                                const auto params = json::GetValue<ParameterPack>(componentBlock, "Params", {});
+                                const auto& names = conv::Combine(comp::db::GetPolicyRowNames<ParameterNames>(), ", ");
+                                const auto componentParams = json::GetValue<ParameterPack>(componentBlock, "Params", {});
 
-                                if constexpr (meta::tuple_is_element_v<T0, ttt::Entity::Row>)
-                                {
-                                    auto& coordinator = gameSystemsCoordinator.GetCoordinator<ttt::Entity>();
+                                auto idParam = std::make_tuple(id);
+                                auto newRow = std::tuple_cat(idParam, componentParams);
 
-                                    // this should be factorized out and templetized
-                                    if constexpr (std::is_same_v<BaseType, ttt::PlayerComponent>)
-                                    {
-                                        coordinator.AddComponent<ttt::PlayerComponent>(id, params);
-                                    }
-                                    else if constexpr (std::is_same_v<BaseType, ttt::InputComponent>)
-                                    {
-                                        coordinator.AddComponent<ttt::InputComponent>(id, params);
-                                    }
-                                    else if constexpr (std::is_same_v<BaseType, ttt::InventoryComponent>)
-                                    {
-                                        coordinator.AddComponent<ttt::InventoryComponent>(id, params);
-                                    }
-                                    else if constexpr (std::is_same_v<BaseType, ttt::PieceComponent>)
-                                    {
-                                        coordinator.AddComponent<ttt::PieceComponent>(id, params);
-                                    }
-                                }
-                                else if constexpr (meta::tuple_is_element_v<T0, ttt::GlobalEntity::Row>)
-                                {
-                                    // this should be factorized out and templetized
-                                    auto& coordinator = gameSystemsCoordinator.GetCoordinator<ttt::GlobalEntity>();
+                                //if constexpr (meta::tuple_is_element_v<T0, ttt::Entity::Row>)
+                                //{
+                                //    auto& coordinator = gameSystemsCoordinator.GetCoordinator<ttt::Entity>();
 
-                                    if constexpr (std::is_same_v<BaseType, ttt::BoardComponent>)
-                                    {
-                                        coordinator.AddComponent<ttt::BoardComponent>(id, params);
-                                    }
-                                    else if constexpr (std::is_same_v<BaseType, ttt::ScoreComponent>)
-                                    {
-                                        coordinator.AddComponent<ttt::ScoreComponent>(id, params);
-                                    }
-                                }
+                                //    // this should be factorized out and templetized
+                                //    if constexpr (std::is_same_v<BaseType, ttt::PlayerComponent>)
+                                //    {
+                                //        auto adder = [&coordinator](auto&&... params) { coordinator.AddComponent<ttt::PlayerComponent>(params...); };
+                                //        std::apply(adder, newRow);
+                                //    }
+                                //    else if constexpr (std::is_same_v<BaseType, ttt::InputComponent>)
+                                //    {
+                                //        auto adder = [&coordinator](auto&&... params) { coordinator.AddComponent<ttt::InputComponent>(params...); };
+                                //        std::apply(adder, newRow);
+                                //    }
+                                //    else if constexpr (std::is_same_v<BaseType, ttt::InventoryComponent>)
+                                //    {
+                                //        auto adder = [&coordinator](auto&&... params) { coordinator.AddComponent<ttt::InventoryComponent>(params...); };
+                                //        std::apply(adder, newRow);
+                                //    }
+                                //    else if constexpr (std::is_same_v<BaseType, ttt::PieceComponent>)
+                                //    {
+                                //        auto adder = [&coordinator](auto&&... params) { coordinator.AddComponent<ttt::PieceComponent>(params...); };
+                                //        std::apply(adder, newRow);
+                                //    }
+                                //}
+                                //else if constexpr (meta::tuple_is_element_v<T0, ttt::GlobalEntity::Row>)
+                                //{
+                                //    // this should be factorized out and templetized
+                                //    auto& coordinator = gameSystemsCoordinator.GetCoordinator<ttt::GlobalEntity>();
+
+                                //    if constexpr (std::is_same_v<BaseType, ttt::BoardComponent>)
+                                //    {
+                                //        auto adder = [&coordinator](auto&&... params) { coordinator.AddComponent<ttt::BoardComponent>(params...); };
+                                //        std::apply(adder, newRow);
+                                //    }
+                                //    else if constexpr (std::is_same_v<BaseType, ttt::ScoreComponent>)
+                                //    {
+                                //        auto adder = [&coordinator](auto&&... params) { coordinator.AddComponent<ttt::ScoreComponent>(params...); };
+                                //        std::apply(adder, newRow);
+                                //    }
+                                //}
 
                                 std::string message;
-                                internal::yaget_print(params, message);
-                                YLOG_NOTICE("TTT", "coordinator.AddComponent<%s>(%d, %s)", meta::ViewToString(meta::type_name<T0>()).c_str(), id, message.c_str());
+                                internal::yaget_print(newRow, message);
+                                //const auto foo = meta::type_name<T0>();
+                                const auto t0Name = meta::ViewToString(meta::type_name<T0>());
+                                YLOG_NOTICE("TTT", "coordinator.AddComponent<%s>(%s)", t0Name.c_str(), message.c_str());
 
                                 int z = 0;
                             }
                         });
                     }
-
-                    //auto componentName = json::GetValue<std::string>(item, "Type", {});
-
-                    //meta::for_each_type<FullRow>([id, &componentName, &coordinator]<typename T0>(const T0&)
-                    //{
-                    //});
-
-
-                    //const auto& componentName = item["Type"].get;
-                    int z = 0;
-
                 }
-
-
-                //using PlayerRow = std::tuple<int, std::string>;
-
-                //auto oneRow = json::GetValue<PlayerRow>(asset->root["Description"], "Params", {});
-                //int z = 0;
-
             }
             if (json::IsSectionValid(asset->root, "Load", ""))
             {
 
             }
-
         }
-
     }
+
 }
 
 
@@ -269,12 +267,15 @@ int ttt::game::Run(yaget::args::Options& options)
     };
 
     const auto& vtsConfig = dev::CurrentConfiguration().mInit.mVTSConfig;
-
     io::tool::VirtualTransportSystemDefault vts(vtsConfig, resolvers);
-    items::BlankDefaultDirector director;
+
+    auto loadout = comp::db::GenerateDirectorLoadout<GameSystemsCoordinator>(vts, dev::CurrentConfiguration().mInit.mGameDirectorScript);
+
+    items::DefaultDirector<GameSystemsCoordinator> director(vts);
     app::DefaultConsole app("Yaget.Tic-Tac-Toe", director, vts, options);
 
-    ReadDirectorFile(app, dev::CurrentConfiguration().mInit.mGameDirectorScript);
+    //ReadDirectorFile(app, dev::CurrentConfiguration().mInit.mGameDirectorScript);
+
 
     return comp::gs::RunGame<GameSystemsCoordinator, RenderSystemsCoordinator>(app);
 
@@ -284,7 +285,7 @@ int ttt::game::Run(yaget::args::Options& options)
     //auto& globalCoordinator = gameSystemsCoordinator.GetCoordinator<ttt::GlobalEntity>();
     //auto& entityCoordinator = gameSystemsCoordinator.GetCoordinator<ttt::Entity>();
 
-    //auto id = app.IdCache.GetId(IdGameCache::IdType::itBurnable);
+    //auto id = app.IdCache.GetId(IdGameCache::IdType::Burnable);
     //globalCoordinator.AddComponent<ttt::BoardComponent>(id, 3, 3);
     ////--<
 
