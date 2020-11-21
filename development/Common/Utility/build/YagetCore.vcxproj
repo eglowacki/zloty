@@ -342,7 +342,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

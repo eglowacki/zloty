@@ -46,7 +46,7 @@ namespace
             D3D11_SUBRESOURCE_DATA srd = { OurVertices, 0, 0 };
 
             HRESULT hr = device->CreateBuffer(&bd, &srd, &buffer);
-            YAGET_THROW_ON_RROR(hr, "Could not create vertex buffer");
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create vertex buffer");
 
             return buffer;
         }
@@ -62,7 +62,7 @@ namespace
             D3D11_SUBRESOURCE_DATA srd = { elements, 0, 0 };
 
             HRESULT hr = device->CreateBuffer(&bd, &srd, &buffers.first);
-            YAGET_THROW_ON_RROR(hr, "Could not create vertex buffer");
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create vertex buffer");
 
             YAGET_SET_DEBUG_NAME(buffers.first.Get(), debugName);
 
@@ -80,7 +80,7 @@ namespace
                 initIndexData.SysMemSlicePitch = 0;
 
                 hr = device->CreateBuffer(&bufferIndexDesc, &initIndexData, &buffers.second);
-                YAGET_THROW_ON_RROR(hr, "Could not create index buffer");
+                YAGET_UTIL_THROW_ON_RROR(hr, "Could not create index buffer");
 
                 YAGET_SET_DEBUG_NAME(buffers.second.Get(), debugName);
             }
@@ -142,7 +142,7 @@ yaget::render::GeometryResource::GeometryResource(Device& device, std::shared_pt
     rasterizerDesc.SlopeScaledDepthBias = 0.0f;
 
     HRESULT hr = hardwareDevice->CreateRasterizerState(&rasterizerDesc, &mWireRasterizerState);
-    YAGET_THROW_ON_RROR(hr, "Could not create wire rasterizer state");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create wire rasterizer state");
     YAGET_SET_DEBUG_NAME(mWireRasterizerState.Get(), asset->mTag.mName);
 
     std::size_t hashValue = asset->mTag.Hash();
@@ -203,7 +203,7 @@ yaget::render::GeometryResource::GeometryResource(Device& device, std::shared_pt
     rasterizerDesc.SlopeScaledDepthBias = 0.0f;
 
     HRESULT hr = hardwareDevice->CreateRasterizerState(&rasterizerDesc, &mWireRasterizerState);
-    YAGET_THROW_ON_RROR(hr, "Could not create wire rasterizer state");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create wire rasterizer state");
     YAGET_SET_DEBUG_NAME(mWireRasterizerState.Get(), asset->mTag.mName);
 
     std::size_t hashValue = asset->mTag.Hash();

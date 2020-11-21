@@ -27,15 +27,15 @@ namespace
     {
         ComPtr<IDXGIDevice> dxgDevice;
         HRESULT hr = hardwareDevice->QueryInterface(__uuidof(IDXGIDevice), &dxgDevice);
-        YAGET_THROW_ON_RROR(hr, "Could not get IDXG IDevice.");
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get IDXG IDevice.");
 
         ComPtr<IDXGIAdapter> dxgAdapter;
         hr = dxgDevice->GetAdapter(&dxgAdapter);
-        YAGET_THROW_ON_RROR(hr, "Could not get IDXG Adapter.");
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get IDXG Adapter.");
 
         ComPtr<IDXGIFactory> dxgFactory;
         hr = dxgAdapter->GetParent(__uuidof(IDXGIFactory), &dxgFactory);
-        YAGET_THROW_ON_RROR(hr, "Could not get IDXG Factor from IDXG Adapter.");
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get IDXG Factor from IDXG Adapter.");
         return dxgFactory;
     }
 
@@ -222,19 +222,19 @@ render::Device::Device(Application& app, const TagResourceResolvers& tagResolver
                                    &selectedFeatureLevel,
                                    &deviceContext);
 
-    YAGET_THROW_ON_RROR(hr, "Could not initialize DX11 render device");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not initialize DX11 render device");
 
     ComPtr<IDXGIDevice2> device2;
     hr = device->QueryInterface(__uuidof(IDXGIDevice2), &device2);
-    YAGET_THROW_ON_RROR(hr, "Device QueryInterface does not support DX11.2");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Device QueryInterface does not support DX11.2");
 
     ComPtr<IDXGIAdapter> adapter;
     hr = device2->GetParent(__uuidof(IDXGIAdapter), &adapter);
-    YAGET_THROW_ON_RROR(hr, "Could not initialize IDXGIAdapter from render device2");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not initialize IDXGIAdapter from render device2");
 
     ComPtr<IDXGIFactory2> factory;
     hr = adapter->GetParent(__uuidof(IDXGIFactory2), &factory);
-    YAGET_THROW_ON_RROR(hr, "Could not initialize IDXGIFactory2 from adapter");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not initialize IDXGIFactory2 from adapter");
 
     if (hWnd)
     {
@@ -263,16 +263,16 @@ render::Device::Device(Application& app, const TagResourceResolvers& tagResolver
                                              nullptr,
                                              &swapChain);
 
-        YAGET_THROW_ON_RROR(hr, "Could not create swap chain");
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create swap chain");
     }
 
     // DX11.2
     D3D11_FEATURE_DATA_D3D11_OPTIONS1 dx2caps;
     hr = device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS1, &dx2caps, sizeof(dx2caps));
-    YAGET_THROW_ON_RROR(hr, "Device does not support DX11.2");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Device does not support DX11.2");
 
     hr = device.As(&mHolder.mDevice);
-    YAGET_THROW_ON_RROR(hr, "Device does not support DX11.2 interface");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Device does not support DX11.2 interface");
     YAGET_SET_DEBUG_NAME(mHolder.mDevice.Get(), "Device");
 
     if (hWnd)
@@ -283,16 +283,16 @@ render::Device::Device(Application& app, const TagResourceResolvers& tagResolver
 
 #ifdef YAGET_DEBUG
     hr = mHolder.mDevice.As(&Device::DebugInterface);
-    YAGET_THROW_ON_RROR(hr, "Did not get debug DX11.2 interface");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Did not get debug DX11.2 interface");
 #endif // YAGET_DEBUG
 
     D3D11_FEATURE_DATA_THREADING thredData = {};
     hr = mHolder.mDevice->CheckFeatureSupport(D3D11_FEATURE_THREADING, &thredData, sizeof(D3D11_FEATURE_DATA_THREADING));
-    YAGET_THROW_ON_RROR(hr, "Check Feature Support failed");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Check Feature Support failed");
     YLOG_INFO("DEVV", "Current driver %s multithreading.", thredData.DriverConcurrentCreates ? "supports" : "does not support");
 
     hr = deviceContext.As(&mHolder.mDeviceContext);
-    YAGET_THROW_ON_RROR(hr, "Context does not support DX11.2 interface");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Context does not support DX11.2 interface");
     YAGET_SET_DEBUG_NAME(mHolder.mDeviceContext.Get(), "DeviceContext");
 
 //YAGET_COMPILE_SUPPRESS_START(4189, "'': local variable is initialized but not referenced")
@@ -325,17 +325,17 @@ render::Device::Device(Application& app, const TagResourceResolvers& tagResolver
     if (swapChain)
     {
         hr = swapChain.As(&mHolder.mSwapChain);
-        YAGET_THROW_ON_RROR(hr, "SwapChain does not support DX11.2 interface");
+        YAGET_UTIL_THROW_ON_RROR(hr, "SwapChain does not support DX11.2 interface");
     }
 
     // info only -BEGIN ==========================================================================================
     ComPtr<IDXGIDevice> dxgiDevice;
     hr = mHolder.mDevice.As(&dxgiDevice);
-    YAGET_THROW_ON_RROR(hr, "Did not get DXGI device");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Did not get DXGI device");
 
     DXGI_ADAPTER_DESC desc;
     hr = adapter->GetDesc(&desc);
-    YAGET_THROW_ON_RROR(hr, "Adapter could not get description");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Adapter could not get description");
 
     D3D_FEATURE_LEVEL featureLevel = mHolder.mDevice->GetFeatureLevel();
 
@@ -353,7 +353,7 @@ render::Device::~Device()
     if (mHolder.mSwapChain && mCurrentSurfaceState == app::SurfaceState::Exclusive)
     {
         HRESULT hr = mHolder.mSwapChain->SetFullscreenState(false, nullptr);
-        YAGET_THROW_ON_RROR(hr, "Could not SetFullscreenState to desktop.");
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not SetFullscreenState to desktop.");
     }
 }
 
@@ -483,10 +483,10 @@ void render::Device::SurfaceStateChange()
 
                 mCurrentSurfaceState = app::SurfaceState::Exclusive;
                 HRESULT hr = mHolder.mSwapChain->ResizeTarget(&modeDesc);
-                YAGET_THROW_ON_RROR(hr, "Could not ResizeTarget");
+                YAGET_UTIL_THROW_ON_RROR(hr, "Could not ResizeTarget");
 
                 hr = mHolder.mSwapChain->SetFullscreenState(true, nullptr);
-                YAGET_THROW_ON_RROR(hr, "Could not SetFullscreenState to Fullscreen");
+                YAGET_UTIL_THROW_ON_RROR(hr, "Could not SetFullscreenState to Fullscreen");
             }
             else if (mCurrentSurfaceState == app::SurfaceState::Exclusive)
             {
@@ -495,7 +495,7 @@ void render::Device::SurfaceStateChange()
                 mCurrentSurfaceState = app::SurfaceState::Shared;
 
                 HRESULT hr = mHolder.mSwapChain->SetFullscreenState(false, nullptr);
-                YAGET_THROW_ON_RROR(hr, "Could not SetFullscreenState to desktop");
+                YAGET_UTIL_THROW_ON_RROR(hr, "Could not SetFullscreenState to desktop");
             }
         });
     }
@@ -580,7 +580,7 @@ void render::Device::ResetDevice()
         }
         else
         {
-            YAGET_THROW_ON_RROR(hr, "Could not resize buffers");
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not resize buffers");
         }
 
         CreateRenderTarget("BackBuffer", RenderTarget::kDefaultSize, RenderTarget::kDefaultSize);

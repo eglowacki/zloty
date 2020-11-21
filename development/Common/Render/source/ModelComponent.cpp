@@ -61,7 +61,7 @@ namespace
             D3D11_SUBRESOURCE_DATA srd = { OurVertices, 0, 0 };
 
             HRESULT hr = device->CreateBuffer(&bd, &srd, &buffer);
-            YAGET_THROW_ON_RROR(hr, "Could not create vertex buffer");
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create vertex buffer");
 
             return buffer;
         }
@@ -77,7 +77,7 @@ namespace
             D3D11_SUBRESOURCE_DATA srd = { elements, 0, 0 };
 
             HRESULT hr = device->CreateBuffer(&bd, &srd, &buffers.first);
-            YAGET_THROW_ON_RROR(hr, "Could not create vertex buffer");
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create vertex buffer");
 
             if (indicies)
             {
@@ -93,7 +93,7 @@ namespace
                 initIndexData.SysMemSlicePitch = 0;
 
                 hr = device->CreateBuffer(&bufferIndexDesc, &initIndexData, &buffers.second);
-                YAGET_THROW_ON_RROR(hr, "Could not create index buffer");
+                YAGET_UTIL_THROW_ON_RROR(hr, "Could not create index buffer");
             }
 
             return buffers;
@@ -227,7 +227,7 @@ void render::QuadComponent::OnReset()
     D3D11_SUBRESOURCE_DATA vertexBufferData = { quadVertices, 0, 0 };
 
     HRESULT hr = d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &mVertexData[0].mVertexbuffer);
-    YAGET_THROW_ON_RROR(hr, "Could not create vertex buffer");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create vertex buffer");
 
     D3D11_BUFFER_DESC bufferIndexDesc = { 0 };
     bufferIndexDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -240,7 +240,7 @@ void render::QuadComponent::OnReset()
     initIndexData.pSysMem = indicies;
 
     hr = d3dDevice->CreateBuffer(&bufferIndexDesc, &initIndexData, &mVertexData[0].mIndexBuffer);
-    YAGET_THROW_ON_RROR(hr, "Could not create index buffer");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create index buffer");
 
     D3D11_RASTERIZER_DESC rasterizerDesc = {};
     rasterizerDesc.AntialiasedLineEnable = FALSE;
@@ -256,7 +256,7 @@ void render::QuadComponent::OnReset()
 
     // Create the rasterizer wire state object.
     hr = d3dDevice->CreateRasterizerState(&rasterizerDesc, &mRasterizerState);
-    YAGET_THROW_ON_RROR(hr, "Could not create rasterizer state");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create rasterizer state");
 }
 
 void render::QuadComponent::OnRender(const RenderBuffer& /*renderBuffer*/, const math3d::Matrix& /*viewMatrix*/, const math3d::Matrix& /*projectionMatrix*/)

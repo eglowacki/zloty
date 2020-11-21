@@ -27,7 +27,7 @@ yaget::render::state::RasterizerStateResource::RasterizerStateResource(Device& d
 
     // Create the rasterizer wire state object.
     HRESULT hr = hardwareDevice->CreateRasterizerState(&rasterizerDesc, &mState);
-    YAGET_THROW_ON_RROR(hr, "Could not create rasterizer state");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create rasterizer state");
     YAGET_SET_DEBUG_NAME(mState.Get(), asset->mTag.mName);
 
     std::size_t hashValue = conv::GenerateHash(rasterizerDesc);

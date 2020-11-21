@@ -46,7 +46,7 @@ void render::GridComponent::OnReset()
     HRESULT hr = d3dDevice->CreateInputLayout(VertexPositionColor::InputElements, VertexPositionColor::InputElementCount,
         shaderByteCode, byteCodeLength,
         mInputLayout.ReleaseAndGetAddressOf());
-    YAGET_THROW_ON_RROR(hr, "Could not create input layout for grid component");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create input layout for grid component");
 }
 
 render::GridComponent::~GridComponent()

@@ -27,23 +27,6 @@ void yaget::render::SetDebugName(ID3D11Device* d3dData, const std::string& messa
     d3dData->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(yagetMessage.length()), yagetMessage.c_str());
 }
 
-void render::ThrowOnError(long hr, const std::string& message, const char* file, unsigned line)
-{
-    if (FAILED(hr))
-    {
-        _com_error cr(hr);
-        const char* errorMessage = cr.ErrorMessage();
-        std::string textError = fmt::format("HRESULT = {}, {}. Error: {}\n{}({})", hr, message, errorMessage, (file ? file : "no_file"), line);
-        if (platform::IsDebuggerAttached())
-        {
-            YLOG_ERROR("REND", textError.c_str());
-            platform::DebuggerBreak();
-        }
-
-        throw yaget::ex::bad_init(textError);
-    }
-}
-
 void render::draw::BoundingBox(const math::Box& box, render::LineComponent* lineComponent)
 {
     render::LineComponent::LinesPtr_t lines = std::make_shared<render::LineComponent::Lines_t>();

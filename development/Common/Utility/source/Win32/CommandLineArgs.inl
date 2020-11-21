@@ -126,7 +126,8 @@ namespace
         memset(argv, ' ', buferSize);
         *((char *)argv + (buferSize - 1)) = 0;
         cmdline = (char*)(argv + argc + 1);
-        strcpy_s(cmdline, strlen(lpCmdline), lpCmdline);
+        strcpy(cmdline, lpCmdline);
+        //strcpy_s(cmdline, strlen(lpCmdline), lpCmdline);
 
         /* --- Then split and copy the arguments */
         argv[0] = d = cmdline;

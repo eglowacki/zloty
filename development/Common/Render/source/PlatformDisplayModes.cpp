@@ -12,7 +12,7 @@ namespace
     {
         ComPtr<IDXGIFactory> dxgFactory;
         HRESULT hr = ::CreateDXGIFactory(__uuidof(IDXGIFactory), &dxgFactory);
-        YAGET_THROW_ON_RROR(hr, "Could not get IDXG Factor from CreateDXGIFactory.");
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get IDXG Factor from CreateDXGIFactory.");
 
         return dxgFactory;
     }

@@ -45,7 +45,7 @@ yaget::render::state::BlendStateResource::BlendStateResource(Device& device, std
     }
 
     HRESULT hr = hardwareDevice->CreateBlendState(&blendDesc, &mState);
-    YAGET_THROW_ON_RROR(hr, "Could not create blender state");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create blender state");
     YAGET_SET_DEBUG_NAME(mState.Get(), asset->mTag.mName);
 
     std::size_t hashValue = conv::GenerateHash(blendDesc, mBlendFactor);

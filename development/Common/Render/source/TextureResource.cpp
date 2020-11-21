@@ -35,7 +35,7 @@ yaget::render::TextureImageResource::TextureImageResource(Device& device, std::s
 
         // Create the shader resource view.
         HRESULT hr = hardwareDevice->CreateShaderResourceView(textureMap, &shaderResourceViewDesc, &mTextureView);
-        YAGET_THROW_ON_RROR(hr, "CreateShaderResourceView for render target failed");
+        YAGET_UTIL_THROW_ON_RROR(hr, "CreateShaderResourceView for render target failed");
     }
     else
     {
@@ -72,16 +72,16 @@ yaget::render::TextureImageResource::TextureImageResource(Device& device, std::s
 
             Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
             HRESULT hr = hardwareDevice->CreateTexture2D(&desc, &data, texture.GetAddressOf());
-            YAGET_THROW_ON_RROR(hr, "Could not create 2D texture.");
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create 2D texture.");
 
             hr = hardwareDevice->CreateShaderResourceView(texture.Get(), nullptr, mTextureView.GetAddressOf());
-            YAGET_THROW_ON_RROR(hr, "Could not create texture view.");
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create texture view.");
         }
         else if (mImageHeader.mDataType == image::Header::DataType::DDS)
         {
             const io::Buffer& buffer = asset->mPixels;
             HRESULT hr = DirectX::CreateDDSTextureFromMemory(hardwareDevice, buffer.first.get(), buffer.second, nullptr, mTextureView.GetAddressOf());
-            YAGET_THROW_ON_RROR(hr, "Could not create texture view");
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create texture view");
         }
         else
         {
@@ -145,7 +145,7 @@ yaget::render::TextureMetaResource::TextureMetaResource(Device& device, std::sha
     sd.MaxLOD = std::clamp(asset->mMaxLOD, sd.MinLOD, D3D11_FLOAT32_MAX);
 
     HRESULT hr = hardwareDevice->CreateSamplerState(&sd, &mSamplerState);
-    YAGET_THROW_ON_RROR(hr, "Could not create sampler state for texture");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create sampler state for texture");
 
     YAGET_SET_DEBUG_NAME(mSamplerState.Get(), asset->mTag.mName);
 

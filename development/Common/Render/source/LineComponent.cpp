@@ -50,7 +50,7 @@ void render::LineComponent::OnReset()
     HRESULT hr = d3dDevice->CreateInputLayout(VertexPositionColor::InputElements, VertexPositionColor::InputElementCount,
         shaderByteCode, byteCodeLength,
         mInputLayout.ReleaseAndGetAddressOf());
-    YAGET_THROW_ON_RROR(hr, "Could not create input layout for line component");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create input layout for line component");
 }
 
 render::LineComponent::~LineComponent()

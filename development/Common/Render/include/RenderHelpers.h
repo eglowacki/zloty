@@ -30,8 +30,6 @@ namespace yaget
 
         class LineComponent;
 
-        void ThrowOnError(long hr, const std::string& message, const char* file = nullptr, unsigned line = 0);
-
         namespace draw
         {
             void BoundingBox(const math::Box& box, render::LineComponent* lineComponent);
@@ -42,5 +40,4 @@ namespace yaget
 } // namespace yaget
 
 
-#define YAGET_THROW_ON_RROR(hr, message) yaget::render::ThrowOnError(hr, message, __FILE__, __LINE__)
 #define YAGET_SET_DEBUG_NAME(d3dData, message) yaget::render::SetDebugName(d3dData, message)
