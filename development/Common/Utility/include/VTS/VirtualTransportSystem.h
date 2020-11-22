@@ -150,7 +150,7 @@ namespace yaget
             bool IsSectionValid(const Sections& sections) const;
 
             // Allows to provide already VTS asset, but wit local ones. It is not saved.
-            void AddOverride(std::shared_ptr<io::Asset> asset);
+            void AddOverride(const std::shared_ptr<io::Asset>& asset);
             // Remove local cached assets, but preserve entry in DB. Used to force reload from disk on next request/load blob
             void ClearAssets(const io::Tags& tags);
 
@@ -171,7 +171,7 @@ namespace yaget
             VirtualTransportSystem(VTSConfigList configList, DoneCallback doneCallback, const AssetResolvers& assetResolvers, const std::string& fileName, RuntimeMode reset);
             VirtualTransportSystem(RuntimeMode runtimeMode, const std::string& fileName);
 
-            std::shared_ptr<Asset> AddAsset(std::shared_ptr<Asset> asset);
+            std::shared_ptr<Asset> AddAsset(const std::shared_ptr<Asset>& asset);
             void RemoveAsset(const io::Tag& tag);
             std::shared_ptr<Asset> FindAsset(const io::Tag& tag) const;
             bool AttachTransientBlobNonMT(const std::vector<std::shared_ptr<io::Asset>>& assets, db::Transaction& transaction);
@@ -204,7 +204,7 @@ namespace yaget
             void onErrorBlobLoader(const std::string& filePathName, const std::string& errorMessage);
             void onEntriesCollected();
             std::shared_ptr<Asset> FindAssetNonMT(const io::Tag& tag) const;
-            std::shared_ptr<Asset> AddAssetNonMT(std::shared_ptr<Asset> asset);
+            std::shared_ptr<Asset> AddAssetNonMT(const std::shared_ptr<Asset>& asset);
 
             DoneCallback mDoneCallback;
 
@@ -212,7 +212,7 @@ namespace yaget
             const AssetResolvers mAssetResolvers;   // callbacks to parse incoming blob data into specific asset
             mutable std::mutex mMutexAssets;        // control write/read to preloaded assets
             std::map<io::Tag, std::shared_ptr<Asset>> mAssets;
-            std::map<io::Tag, std::shared_ptr<Asset>> mCashedAssets;
+            std::map<io::Tag, std::shared_ptr<Asset>> mOverrideAssets;
             Database mDatabase;                     // source of trues
             std::shared_ptr<SectionEntriesCollector> mSectionEntriesCollector;  // only used in gathering blobs on the disk and matching with db.
             BlobLoader mBlobLoader;                 // make sure that is always last in class here 

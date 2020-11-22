@@ -27,8 +27,8 @@ namespace yaget
     namespace io
     {
 
-        //! Class to handle loading of data from disk (file access) into buffer and then calls Convertor passing buffer.
-        //! It supports multiply files load requests. Internally it uses IO Completion ports. 
+        //! Class to handle loading of data from from some persistent storage (like file or network) into buffer and then calls Convertor with buffer as a parameter.
+        //! The actual loading and saving is done by DataLoader derived class.
         //! Expect calls to Convertor/ErrorCallback to be done from different thread.
         class BlobLoader : public Noncopyable<BlobLoader>
         {

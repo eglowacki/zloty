@@ -12,34 +12,31 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-namespace yaget
+namespace yaget::io
 {
-    namespace io
+    struct FileData
     {
-        struct FileData
-        {
-            static const uint32_t kStopKey = static_cast<uint32_t>(-1);
-            FileData(const std::string& name, HANDLE port, yaget::io::FileLoader::DoneCallback_t doneCallback);
-            FileData(uint32_t key);
-            ~FileData();
+        static const uint32_t kStopKey = static_cast<uint32_t>(-1);
+        FileData(const std::string& name, HANDLE port, yaget::io::FileLoader::DoneCallback_t doneCallback);
+        FileData(uint32_t key);
+        ~FileData();
 
-            // Return true if we still need more data to process,
-            // otherwise return false when we are done with results
-            bool Process(uint32_t bytesCopied) const;
+        // Return true if we still need more data to process,
+        // otherwise return false when we are done with results
+        bool Process(uint32_t bytesCopied) const;
 
-            std::string mName;
-            HANDLE mPort = nullptr;
-            HANDLE mHandle = nullptr;
-            uint32_t mKey = 0;
-            OVERLAPPED mOverlapped = { 0 };
-            yaget::io::Buffer mDataBuffer;
-            mutable uint32_t mBytesCopied = 0;
-            yaget::io::FileLoader::DoneCallback_t mDoneCallback;
+        std::string mName;
+        HANDLE mPort = nullptr;
+        HANDLE mHandle = nullptr;
+        uint32_t mKey = 0;
+        OVERLAPPED mOverlapped = { 0 };
+        yaget::io::Buffer mDataBuffer;
+        mutable uint32_t mBytesCopied = 0;
+        yaget::io::FileLoader::DoneCallback_t mDoneCallback;
 
-            static uint32_t mCounter;
-        };
+        static uint32_t mCounter;
+    };
 
-    } // io
 } // yaget
 
 uint32_t yaget::io::FileData::mCounter = 1;

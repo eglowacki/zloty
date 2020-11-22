@@ -596,6 +596,9 @@
     <None Include="..\source\Items\ItemsSchema.sqlite">
       <Filter>Items Files</Filter>
     </None>
+    <None Include="..\source\VTS\VirtualTransportSystemCollector.inl">
+      <Filter>VTS Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">

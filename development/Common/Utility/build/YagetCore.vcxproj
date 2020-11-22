@@ -259,6 +259,7 @@
   <ItemGroup>
     <None Include="..\include\VTS\VirtualTransportSystemSchema.sqlite" />
     <None Include="..\source\Items\ItemsSchema.sqlite" />
+    <None Include="..\source\VTS\VirtualTransportSystemCollector.inl" />
     <None Include="..\source\Win32\CommandLineArgs.inl" />
     <None Include="cpp.hint" />
   </ItemGroup>
