@@ -1,8 +1,8 @@
 ﻿#include "ScoreSystem.h"
 
 
-ttt::ScoreSystem::ScoreSystem()
-    : GameSystem("ScoreSystem", [this](auto&&... params) {OnUpdate(params...); })
+ttt::ScoreSystem::ScoreSystem(Messaging& messaging)
+    : GameSystem("ScoreSystem", messaging, [this](auto&&... params) {OnUpdate(params...); })
 {
 }
 

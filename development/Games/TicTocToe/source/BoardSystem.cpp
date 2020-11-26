@@ -2,8 +2,8 @@
 #include "BoardComponent.h"
 
 
-ttt::BoardSystem::BoardSystem()
-    : GameSystem("BoardSystem", [this](auto&&... params) {OnUpdate(params...); })
+ttt::BoardSystem::BoardSystem(Messaging& messaging)
+    : GameSystem("BoardSystem", messaging, [this](auto&&... params) {OnUpdate(params...); })
 {
     int z = 0;
     z;

@@ -78,7 +78,7 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
             expectedVersion, 
             version));
 
-    YLOG_INFO("DIRE", "Items Director initialized.");
+    YLOG_INFO("DIRE", "Items Director initialized '%s'.", util::ExpendEnv(name, nullptr).c_str());
 
     if (!loadout.empty())
     {

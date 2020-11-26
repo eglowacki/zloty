@@ -33,7 +33,6 @@
     <ClCompile Include="..\source\Components\Component.cpp" />
     <ClCompile Include="..\source\Components\ComponentTypes.cpp" />
     <ClCompile Include="..\source\Components\Coordinator.cpp" />
-    <ClCompile Include="..\source\Components\GameCoordinator.cpp" />
     <ClCompile Include="..\source\Components\GameCoordinatorGenerator.cpp" />
     <ClCompile Include="..\source\Components\GameSystem.cpp" />
     <ClCompile Include="..\source\Components\LocationComponent.cpp" />
@@ -45,6 +44,7 @@
     <ClCompile Include="..\source\Debugging\DevConfiguration.cpp">
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</InlineFunctionExpansion>
     </ClCompile>
+    <ClCompile Include="..\source\GameSystem\Messaging.cpp" />
     <ClCompile Include="..\source\IdGameCache.cpp" />
     <ClCompile Include="..\source\ImageLoaders\ImageProcessor.cpp" />
     <ClCompile Include="..\source\ImageLoaders\lodepng.cpp" />
@@ -175,10 +175,8 @@
     <ClInclude Include="..\include\Components\ComponentTypes.h" />
     <ClInclude Include="..\include\Components\Coordinator.h" />
     <ClInclude Include="..\include\Components\CoordinatorSet.h" />
-    <ClInclude Include="..\include\Components\GameCoordinator.h" />
     <ClInclude Include="..\include\Components\GameCoordinatorGenerator.h" />
     <ClInclude Include="..\include\Components\GameSystem.h" />
-    <ClInclude Include="..\include\Components\GameSystemDeprecated.h" />
     <ClInclude Include="..\include\Components\SystemsCoordinator.h" />
     <ClInclude Include="..\include\Components\LocationComponent.h" />
     <ClInclude Include="..\include\Components\PayloadStager.h" />
@@ -190,6 +188,7 @@
     <ClInclude Include="..\include\Debugging\DevConfiguration.h" />
     <ClInclude Include="..\include\Debugging\DevConfigurationParsers.h" />
     <ClInclude Include="..\include\Exception\Exception.h" />
+    <ClInclude Include="..\include\GameSystem\Messaging.h" />
     <ClInclude Include="..\include\HashUtilities.h" />
     <ClInclude Include="..\include\IdGameCache.h" />
     <ClInclude Include="..\include\ImageLoaders\ImageProcessor.h" />

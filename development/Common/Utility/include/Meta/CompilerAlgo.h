@@ -180,7 +180,7 @@ namespace yaget::meta
     // Copy tuple from Source to Target, if Source element is false/nullptr, it will skip and preserve value in Target
     // Use TupleCopyPolicy to customize how to copy element From To
     template<typename S, typename T, typename P = TupleCopyPolicy, int N = std::tuple_size_v<std::remove_reference_t<S>>>
-    void tuple_copy(const S& source, T& target)
+    constexpr void tuple_copy(const S& source, T& target)
     {
         using ET = typename std::tuple_element<N - 1, S>::type;
 
@@ -443,10 +443,11 @@ namespace yaget::meta
         return name;
     }
 
-    // meta::ViewToString(meta::type_name<>())
-    inline std::string ViewToString(const std::string_view& view)
+    template <typename T>
+    inline std::string type_name_v()
     {
-        return std::string(view.begin(), view.end());
+        constexpr auto n = type_name<T>();
+        return std::string(n.begin(), n.end());
     }
 
 } // namespace yaget::meta

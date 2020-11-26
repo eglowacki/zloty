@@ -142,7 +142,7 @@ namespace yaget::comp::db
         std::string ResolveName()
         {
             using BaseType = meta::strip_qualifiers_t<T>;
-            std::string typeName = meta::ViewToString(meta::type_name<BaseType>());
+            std::string typeName = meta::type_name_v<BaseType>();
 
             std::for_each(std::begin(internal::ResolveStripKeywords()), std::end(internal::ResolveStripKeywords()), [&typeName](const auto& element)
             {

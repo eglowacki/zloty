@@ -6,7 +6,7 @@
 //  Maintained by: Edgar
 //
 //  NOTES:
-//      System which iterates over board every tick and updates it's state
+//      This track current board status and generate status report
 //
 //
 //  #include "BoardSystem.h"
@@ -16,17 +16,17 @@
 #pragma once
 
 #include "Components/GameSystem.h"
-//#include "GameCoordinator.h"
+#include "GameTypes.h"
 
 
 namespace ttt
 {
     class ScoreComponent;
 
-    class ScoreSystem : public yaget::comp::gs::GameSystem<yaget::NoEndMarkerGlobal, ScoreComponent*>
+    class ScoreSystem : public yaget::comp::gs::GameSystem<NoEndMarker, Messaging, ScoreComponent*>
     {
     public:
-        ScoreSystem();
+        ScoreSystem(Messaging& messaging);
 
     private:
         void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, ScoreComponent* boardComponent);

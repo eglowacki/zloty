@@ -136,7 +136,7 @@ namespace yaget
                 if (!v.empty())
                 {
                     const auto res = std::from_chars(v.data(), v.data() + v.size(), result);
-                    YLOG_CWARNING("CONV", res.ec == std::errc(), "String conversion from: '%s' to type: '%s' failed with error code: '%d'.", value, meta::ViewToString(meta::type_name<T>()).c_str(), res.ec);
+                    YLOG_CWARNING("CONV", res.ec == std::errc(), "String conversion from: '%s' to type: '%s' failed with error code: '%d'.", value, meta::type_name_v<T>().c_str(), res.ec);
                 }
             }
 

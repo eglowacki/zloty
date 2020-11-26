@@ -5,7 +5,7 @@
 
 #include "IdGameCache.h"
 
-#include "Components/GameCoordinator.h"
+//#include "Components/GameCoordinator.h"
 #include "Components/GameSystem.h"
 #include "Components/LocationComponent.h"
 #include "Components/PhysicsComponent.h"
@@ -54,37 +54,37 @@ public:
 //template <typename T, typename... Us>
 //struct has_type<T, std::tuple<Us...>> : std::disjunction<std::is_same<T, Us>...> {};
 
-TEST_F(Coordinator, Multi)
-{
-    using namespace yaget;
-
-    using Entity = comp::RowPolicy<comp::LocationComponent*, comp::PhysicsComponent*>;
-    using GlobalEntity = comp::RowPolicy<comp::PhysicsWorldComponent*, DummyComp*, DummyComp2*>;
-
-    using GamePolicy = comp::CoordinatorPolicy<Entity, GlobalEntity>;
-
-    using PhysicsSystem = comp::GameSystem<comp::gs::EndMarkerNo<0>, comp::PhysicsWorldComponent*>;
-    using LocationGather = comp::GameSystem<comp::gs::EndMarkerYes<1>, comp::LocationComponent*>;
-
-    using namespace std::placeholders;
-    PhysicsSystem physWorldGameSystem("PhysicsSystem", [](comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& channel, comp::PhysicsWorldComponent* physWorld)
-    {
-        physWorld->Update(gameClock, channel);
-    });
-
-    LocationGather locationGameSystem("LocationGather", [](comp::Id_t /*id*/, const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/, comp::LocationComponent* /*locationComponent*/)
-    {
-            int z = 0;
-            z;
-    });
-
-    using GameCoordinator = GameCoordinator<GamePolicy, PhysicsSystem*, LocationGather*>;
-    metrics::Channel channel("Test.Dummy", YAGET_METRICS_CHANNEL_FILE_LINE);
-    time::GameClock gameClock;
-    GameCoordinator gameCoordinator(&physWorldGameSystem, &locationGameSystem);
-
-    gameCoordinator.GameUpdate(gameClock, channel);
-}
+//TEST_F(Coordinator, Multi)
+//{
+//    using namespace yaget;
+//
+//    using Entity = comp::RowPolicy<comp::LocationComponent*, comp::PhysicsComponent*>;
+//    using GlobalEntity = comp::RowPolicy<comp::PhysicsWorldComponent*, DummyComp*, DummyComp2*>;
+//
+//    using GamePolicy = comp::CoordinatorPolicy<Entity, GlobalEntity>;
+//
+//    using PhysicsSystem = comp::GameSystem<comp::gs::EndMarkerNo<0>, comp::PhysicsWorldComponent*>;
+//    using LocationGather = comp::GameSystem<comp::gs::EndMarkerYes<1>, comp::LocationComponent*>;
+//
+//    using namespace std::placeholders;
+//    PhysicsSystem physWorldGameSystem("PhysicsSystem", [](comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& channel, comp::PhysicsWorldComponent* physWorld)
+//    {
+//        physWorld->Update(gameClock, channel);
+//    });
+//
+//    LocationGather locationGameSystem("LocationGather", [](comp::Id_t /*id*/, const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/, comp::LocationComponent* /*locationComponent*/)
+//    {
+//            int z = 0;
+//            z;
+//    });
+//
+//    using GameCoordinator = GameCoordinator<GamePolicy, PhysicsSystem*, LocationGather*>;
+//    metrics::Channel channel("Test.Dummy", YAGET_METRICS_CHANNEL_FILE_LINE);
+//    time::GameClock gameClock;
+//    GameCoordinator gameCoordinator(&physWorldGameSystem, &locationGameSystem);
+//
+//    gameCoordinator.GameUpdate(gameClock, channel);
+//}
 
 
 TEST_F(Coordinator, HashBits)
@@ -284,13 +284,13 @@ TEST_F(Coordinator, Runtime)
     EXPECT_EQ(locationComponent_20, std::get<comp::LocationComponent*>(tree));
     EXPECT_EQ(std::get<comp::PhysicsWorldComponent*>(tree), nullptr);
 
-    // verify game system class
-    int counter = 0;
-    comp::GameSystem<comp::gs::EndMarkerNo<0>, comp::PhysicsWorldComponent*> gameSystem("PhysicsWorldSystem", [&counter](comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& channel, yaget::comp::PhysicsWorldComponent* physicsWorld)
-    {
-        counter++;
-        physicsWorld->Update(gameClock, channel);
-    });
+    //// verify game system class
+    //int counter = 0;
+    //comp::GameSystem<comp::gs::EndMarkerNo<0>, comp::PhysicsWorldComponent*> gameSystem("PhysicsWorldSystem", [&counter](comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& channel, yaget::comp::PhysicsWorldComponent* physicsWorld)
+    //{
+    //    counter++;
+    //    physicsWorld->Update(gameClock, channel);
+    //});
 
     using PhysicsItem = comp::RowPolicy<comp::PhysicsWorldComponent*>;
     PhysicsItem::Row physicsItem = coordinator.FindItem<PhysicsItem>(itemId_10);

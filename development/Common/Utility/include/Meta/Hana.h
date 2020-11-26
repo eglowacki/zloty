@@ -26,5 +26,6 @@ namespace std
 }
 
 #include <boost/hana.hpp>
+#include <boost/hana/ext/std/tuple.hpp>
 
 

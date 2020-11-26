@@ -28,7 +28,6 @@
 //#include "ComponentTypes.h"
 #include "Components/Coordinator.h"
 #include "Meta/Hana.h"
-#include <boost/hana/ext/std/tuple.hpp>
 #include <functional>
 
 

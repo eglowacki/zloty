@@ -23,10 +23,10 @@ namespace ttt
 {
     class BoardComponent;
 
-    class BoardSystem : public yaget::comp::gs::GameSystem<yaget::NoEndMarkerGlobal, BoardComponent*>
+    class BoardSystem : public yaget::comp::gs::GameSystem<NoEndMarker, Messaging, BoardComponent*>
     {
     public:
-        BoardSystem();
+        BoardSystem(Messaging& messaging);
 
     private:
         void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, BoardComponent* boardComponent);

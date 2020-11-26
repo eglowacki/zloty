@@ -20,6 +20,8 @@
 
 #include <concepts>
 
+#include "GameSystem/Messaging.h"
+
 
 namespace yaget::ylog
 {
@@ -145,7 +147,7 @@ namespace
     //    to adder = [](auto&&... params) { coordinator.AddComponent<T>(params...); };
 
     //};
-
+#if 0
     void ReadDirectorFile(yaget::Application& app, const std::string& name)
     {
         using namespace yaget;
@@ -253,6 +255,7 @@ namespace
             }
         }
     }
+#endif
 
 }
 
@@ -269,53 +272,11 @@ int ttt::game::Run(yaget::args::Options& options)
     const auto& vtsConfig = dev::CurrentConfiguration().mInit.mVTSConfig;
     io::tool::VirtualTransportSystemDefault vts(vtsConfig, resolvers);
 
-    auto loadout = comp::db::GenerateDirectorLoadout<GameSystemsCoordinator>(vts, dev::CurrentConfiguration().mInit.mGameDirectorScript);
-
     items::DefaultDirector<GameSystemsCoordinator> director(vts);
     app::DefaultConsole app("Yaget.Tic-Tac-Toe", director, vts, options);
 
-    //ReadDirectorFile(app, dev::CurrentConfiguration().mInit.mGameDirectorScript);
-
-
-    return comp::gs::RunGame<GameSystemsCoordinator, RenderSystemsCoordinator>(app);
-
-    //--> Testing only, any creation should be insode the logic tick
-    // starting game initialization and setup
-    //ttt::GameSystemsCoordinator gameSystemsCoordinator;
-    //auto& globalCoordinator = gameSystemsCoordinator.GetCoordinator<ttt::GlobalEntity>();
-    //auto& entityCoordinator = gameSystemsCoordinator.GetCoordinator<ttt::Entity>();
-
-    //auto id = app.IdCache.GetId(IdGameCache::IdType::Burnable);
-    //globalCoordinator.AddComponent<ttt::BoardComponent>(id, 3, 3);
-    ////--<
-
-    //auto gameUpdater = [&gameSystemsCoordinator](auto&&... params) { gameSystemsCoordinator.Tick(params...); };
-
-    //RenderSystemsCoordinator renderSystemsCoordinator;
-    //auto renderUpdater = [&renderSystemsCoordinator](auto&&... params) { renderSystemsCoordinator.Tick(params...); };
-
-    //app.Run(gameUpdater, renderUpdater);
-
-
-    //return 0;
+    Messaging messaging{};
+    return comp::gs::RunGame<GameSystemsCoordinator, RenderSystemsCoordinator>(messaging, app);
 }
 
 YAGET_COMPILE_WARNING_LEVEL_END
-
-//const io::VirtualTransportSystem::AssetResolvers resolvers = {
-//    { "JSON", io::ResolveAsset<io::JsonAsset> }
-//};
-
-//io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, resolvers, "$(DatabaseFolder)/vts.sqlite");
-
-//const int64_t schemaVersion = Database::NonVersioned;
-////const auto& pongerSchema = comp::db::GenerateGameDirectorSchema<pong::GameCoordinator>(schemaVersion);
-//items::Director director("$(DatabaseFolder)/director.sqlite", {}, schemaVersion);
-
-//app::DefaultConsole app("Yaget.Tic-Tac-Toe", director, vts, options);
-
-//GameDirector gameDirector;
-//auto logicCallback = [&gameDirector](auto&&... params) { gameDirector.GameLoop(params...); };
-
-//const auto result = app.Run(logicCallback, {}, {}, {}, {});
-//return result;

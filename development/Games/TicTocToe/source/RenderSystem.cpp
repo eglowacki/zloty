@@ -1,12 +1,8 @@
 ﻿#include "RenderSystem.h"
-
-
-//YAGET_COMPILE_SUPRESS_START(4244, "conversion from 'int' to 'char', possible loss of data")
 #include "cpp-terminal/terminal.h"
-//YAGET_COMPILE_SUPRESS_END
 
-ttt::RenderSystem::RenderSystem()
-    : GameSystem("RenderSystem", [this](auto&&... params) {OnUpdate(params...); })
+ttt::RenderSystem::RenderSystem(Messaging& messaging)
+    : GameSystem("RenderSystem", messaging, [this](auto&&... params) {OnUpdate(params...); })
     , mTerminal(std::make_unique<Term::Terminal>())
 {
     mTerminal->save_screen();

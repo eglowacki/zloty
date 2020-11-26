@@ -24,10 +24,10 @@ namespace ttt
 {
     class RenderComponent;
 
-    class RenderSystem : public yaget::comp::gs::GameSystem<yaget::EndMarkerEntity, RenderComponent*>
+    class RenderSystem : public yaget::comp::gs::GameSystem<EndMarker, Messaging, RenderComponent*>
     {
     public:
-        RenderSystem();
+        RenderSystem(Messaging& messaging);
         ~RenderSystem();
 
     private:

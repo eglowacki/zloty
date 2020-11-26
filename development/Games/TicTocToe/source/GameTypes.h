@@ -15,7 +15,7 @@
 //! \file
 #pragma once
 
-#include "Components/GameCoordinator.h"
+#include "GameSystem/Messaging.h"
 
 namespace ttt
 {
@@ -29,7 +29,7 @@ namespace ttt
 
     // Represents type of pieces we have between players
     // It also serves as side control for player
-    enum class PieceType {Blank, X, O };
+    enum class PieceType { Blank, X, O };
 
     //! We only have one board and score hud per match
     //using set_coordinators = bool;
@@ -56,5 +56,9 @@ namespace ttt
         using AutoCleanup = bool;
     };
 
+    struct NoEndMarker {};
+    struct EndMarker {};
+
+    using Messaging = yaget::comp::gs::Messaging<std::shared_ptr<char>>;
 
 }

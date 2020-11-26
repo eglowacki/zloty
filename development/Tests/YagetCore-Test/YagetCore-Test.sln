@@ -19,7 +19,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetRender", "..\..\Common
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TicTocToe", "..\..\Games\TicTocToe\TicTocToe.vcxproj", "{26AF90B1-D749-4BFD-95B3-BABA5C885C76}"
 	ProjectSection(ProjectDependencies) = postProject
-		{07303B2D-746E-4E66-9F3E-E0C5D4A31D80} = {07303B2D-746E-4E66-9F3E-E0C5D4A31D80}
+		{6C57825D-E4AA-43A5-89D7-52B97B0DCA76} = {6C57825D-E4AA-43A5-89D7-52B97B0DCA76}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetCore-Perf", "..\..\Perf\YagetCore-Perf\YagetCore-Perf.vcxproj", "{1D93FA71-6B51-4657-85C6-F2ACB572F1C5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6C57825D-E4AA-43A5-89D7-52B97B0DCA76} = {6C57825D-E4AA-43A5-89D7-52B97B0DCA76}
 	EndProjectSection
 EndProject
 Global
@@ -70,6 +75,14 @@ Global
 		{26AF90B1-D749-4BFD-95B3-BABA5C885C76}.Release|x64.Build.0 = Release|x64
 		{26AF90B1-D749-4BFD-95B3-BABA5C885C76}.Release|x86.ActiveCfg = Release|Win32
 		{26AF90B1-D749-4BFD-95B3-BABA5C885C76}.Release|x86.Build.0 = Release|Win32
+		{1D93FA71-6B51-4657-85C6-F2ACB572F1C5}.Debug|x64.ActiveCfg = Debug|x64
+		{1D93FA71-6B51-4657-85C6-F2ACB572F1C5}.Debug|x64.Build.0 = Debug|x64
+		{1D93FA71-6B51-4657-85C6-F2ACB572F1C5}.Debug|x86.ActiveCfg = Debug|Win32
+		{1D93FA71-6B51-4657-85C6-F2ACB572F1C5}.Debug|x86.Build.0 = Debug|Win32
+		{1D93FA71-6B51-4657-85C6-F2ACB572F1C5}.Release|x64.ActiveCfg = Release|x64
+		{1D93FA71-6B51-4657-85C6-F2ACB572F1C5}.Release|x64.Build.0 = Release|x64
+		{1D93FA71-6B51-4657-85C6-F2ACB572F1C5}.Release|x86.ActiveCfg = Release|Win32
+		{1D93FA71-6B51-4657-85C6-F2ACB572F1C5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

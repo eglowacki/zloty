@@ -29,12 +29,12 @@ namespace ttt
     using EntityCoordinator = yaget::comp::Coordinator<Entity>;
     using GameCoordinatorSet = yaget::comp::CoordinatorSet<GlobalCoordinator, EntityCoordinator>;
 
-    using GameSystemsCoordinator = yaget::comp::gs::SystemsCoordinator<GameCoordinatorSet, BoardSystem, ScoreSystem>;
+    using GameSystemsCoordinator = yaget::comp::gs::SystemsCoordinator<GameCoordinatorSet, Messaging, BoardSystem, ScoreSystem>;
 
     using RenderCoordinator = yaget::comp::Coordinator<RenderEntity>;
     using RenderCoordinatorSet = yaget::comp::CoordinatorSet<RenderCoordinator>;
 
-    using RenderSystemsCoordinator = yaget::comp::gs::SystemsCoordinator<RenderCoordinatorSet, RenderSystem>;
+    using RenderSystemsCoordinator = yaget::comp::gs::SystemsCoordinator<RenderCoordinatorSet, Messaging, RenderSystem>;
 
 }
 

@@ -30,11 +30,24 @@ namespace yaget
 namespace yaget::comp::gs
 {
     // TODO add timers support for entities
-    template <typename E, typename... Comps>
-    class GameSystem : public Noncopyable<GameSystem<E, Comps...>>
+    // Example:
+    //  class ScoreSystem : public yaget::comp::gs::GameSystem<NoEndMarker, Messaging, ScoreComponent*>
+    //  {
+    //  public:
+    //      ScoreSystem(Messaging& messaging)
+    //          : GameSystem("ScoreSystem", messaging, [this](auto&&... params) {OnUpdate(params...); })
+    //      {}
+    //
+    //  private:
+    //      void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, ScoreComponent* boardComponent);
+    //};
+    //
+    template <typename E, typename M, typename... Comps>
+    class GameSystem : public Noncopyable<GameSystem<E, M, Comps...>>
     {
     public:
         using EndMarker = E;
+        using Messaging = M;
         using RowPolicy = comp::RowPolicy<Comps...>;
         using Row = typename RowPolicy::Row;
 
@@ -53,11 +66,13 @@ namespace yaget::comp::gs
         }
 
     protected:
-        GameSystem(const char* niceName, UpdateFunctor updateFunctor)
-            : mNiceName(niceName)
+        GameSystem(const char* niceName, Messaging& messaging, UpdateFunctor updateFunctor)
+            : mMessaging(messaging)
+            , mNiceName(niceName)
             , mUpdateFunctor(updateFunctor)
         {}
 
+        Messaging& mMessaging;
 
     private:
         void Update(yaget::comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const Row& row)
@@ -120,4 +135,4 @@ namespace yaget::comp::gs
 //    }
 //}
 //#endif
-#include "Components/GameSystemDeprecated.h"
+//#include "Components/GameSystemDeprecated.h"

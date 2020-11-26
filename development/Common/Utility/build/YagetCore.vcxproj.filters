@@ -81,6 +81,9 @@
     <Filter Include="Test Utilities Files">
       <UniqueIdentifier>{1cf3d3db-a4da-49d2-b51f-bc53cbeac509}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameSystem Files">
+      <UniqueIdentifier>{1189b9fa-040d-4e7a-942b-aa9ab05fdf88}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
@@ -224,9 +227,6 @@
     <ClCompile Include="..\source\Components\CollisionShape.cpp">
       <Filter>Component Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\Components\GameCoordinator.cpp">
-      <Filter>Component Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\Components\Collectors.cpp">
       <Filter>Component Files</Filter>
     </ClCompile>
@@ -280,6 +280,9 @@
     </ClCompile>
     <ClCompile Include="..\include\Components\SystemsCoordinator.cpp">
       <Filter>Logger Files\LoggerCpp Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\GameSystem\Messaging.cpp">
+      <Filter>GameSystem Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -521,9 +524,6 @@
     <ClInclude Include="..\include\Components\PayloadStager.h">
       <Filter>Component Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Components\GameCoordinator.h">
-      <Filter>Component Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Components\Collectors.h">
       <Filter>Component Files</Filter>
     </ClInclude>
@@ -578,11 +578,11 @@
     <ClInclude Include="..\include\Meta\Hana.h">
       <Filter>Meta Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Components\GameSystemDeprecated.h">
-      <Filter>Component Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Components\SystemsCoordinator.h">
       <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GameSystem\Messaging.h">
+      <Filter>GameSystem Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
