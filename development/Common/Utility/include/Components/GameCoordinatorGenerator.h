@@ -33,56 +33,6 @@
 
 namespace yaget::comp::db
 {
-    //-------------------------------------------------------------------------------------------------
-    // specialize this to return friendly name
-    //template <>
-    //struct CoordinatorName <ttt::GameCoordinator::GlobalCoordinator>
-    //{
-    //    static constexpr const char* Name() { return "Globals"; }
-    //};
-    template <typename T>
-    struct CoordinatorName;
-
-    //-------------------------------------------------------------------------------------------------
-    // specialize this to return which id is used for specific coordinator (Global (0) or Entity (1)).
-    //template <>
-    //struct CoordinatorName <ttt::GameCoordinator::GlobalCoordinator>
-    //{
-    //    static constexpr const int Value() { return ttt::GameCoordinator::GLOBAL_ID; }
-    //};
-    template <typename T>
-    struct CoordinatorId;
-
-    // Sample of common implementation. Put this in cpp above where you call GenerateGameDirectorSchema 
-    //namespace yaget::comp::db
-    //{
-    //    template <>
-    //    struct CoordinatorName <ttt::GameCoordinator::GlobalCoordinator>
-    //    {
-    //        static constexpr const char* Name() { return "Globals"; }
-    //    };
-
-    //    template <>
-    //    struct CoordinatorName <ttt::GameCoordinator::EntityCoordinator>
-    //    {
-    //        static constexpr const char* Name() { return "Entities"; }
-    //    };
-
-    //    template <>
-    //    struct CoordinatorId <ttt::GameCoordinator::GlobalCoordinator>
-    //    {
-    //        static constexpr int Value() { return ttt::GameCoordinator::GLOBAL_ID; }
-    //    };
-
-    //    template <>
-    //    struct CoordinatorId <ttt::GameCoordinator::EntityCoordinator>
-    //    {
-    //        static constexpr int Value() { return ttt::GameCoordinator::ENTITY_ID; }
-    //    };
-
-    //}
-
-
 
     inline void hash_combine(int64_t& /*seed*/) { }
 
@@ -94,7 +44,7 @@ namespace yaget::comp::db
         hash_combine(seed, rest...);
     }
 
-    // forward declerations
+    // forward declarations
     template <typename T>
     Strings GetPolicyRowNames();
 
@@ -182,70 +132,7 @@ namespace yaget::comp::db
             auto typeName = internal::ResolveName<T>();
             return fmt::format("{}Properties", typeName);
         }
-       
-        using Columns = std::vector<ColumnData>;
 
-        template <typename T>
-        Columns CreateQuery()
-        {
-            using namespace yaget;
-
-            Columns columns;
-
-            auto callback = [&columns]<typename T0>(const T0&)
-            {
-                using BaseType = meta::strip_qualifiers_t<T0>;
-
-                auto typeName = internal::ResolveName<T0>();
-
-                const auto propertiesTable = fmt::format("{}Properties", typeName);
-
-                using rowType = typename RowDescription_t<BaseType>::Row;
-                using valueType = typename RowDescription_t<BaseType>::Types;
-                const auto& propNames = db::GetPolicyRowNames<rowType>();
-                const auto& propTypes = db::GetPolicyRowTypes<valueType>();
-                YAGET_ASSERT(propNames.size() == propTypes.size(), "propNames has '%d' elements, but propTypes does not match with '%d' elements.", propNames.size(), propTypes.size());
-                columns.emplace_back(ColumnData{
-                    .mName = typeName,
-                    .mPropertyTableName = propertiesTable,
-                    .mPropertyNames = propNames,
-                    .mPropertyTypes = propTypes
-                });
-            };
-
-            auto rowTemplate = T();
-            meta::for_each(rowTemplate, callback);
-
-            return columns;
-        }
-
-        template <typename T>
-        std::string MakeTable(const std::string& tableName, std::set<std::string>& propertyNames, Columns& schemeTableData, int coordinatorId)
-        {
-            auto command{ fmt::format("CREATE TABLE '{}' ('Id' INTEGER, ", tableName) };
-            command += "'Name' TEXT DEFAULT '', ";
-            command += "'Layer' INTEGER DEFAULT 0, ";
-            command += fmt::format("'Coordinator' INTEGER DEFAULT {}, ", coordinatorId);
-
-            const auto& table = CreateQuery<T>();
-            for (const auto& element : table)
-            {
-                command += fmt::format("'{}' INTEGER DEFAULT 0, ", element.mName);
-                propertyNames.insert(element.mPropertyTableName);
-
-                schemeTableData.push_back(element);
-            }
-            command += "PRIMARY KEY('Id'));";
-
-            return  command;
-        }
-
-    }
-
-    template <typename T>
-    std::string GetTypeTableName()
-    {
-        return internal::ResolveComponentTableName<T>();
     }
 
     template <typename T>
@@ -278,58 +165,6 @@ namespace yaget::comp::db
 
         return results;
     }
-
-    template <typename T>
-    struct ComponentRowDescription
-    {
-        using RowNames = typename RowDescription_t<T>::Row;
-        using RowTypes = typename RowDescription_t<T>::Types;
-    };
-
-    template <typename T>
-    std::string ItemQuery(comp::Id_t id)
-    {
-        const Strings names = GetPolicyRowNames<T>();
-        const auto& command = fmt::format("SELECT {} FROM Entities WHERE Id = {};", conv::Combine(names, ", "), id);
-
-        return command;
-    }
-
-    template <typename T>
-    void PreCacheInsertComponent(SQLite& db)
-    {
-        using CRT = ComponentRowDescription<T>;
-
-        const auto& tableName = GetTypeTableName<T>();
-        const auto& rowNames = GetPolicyRowNames<typename CRT::RowNames>();
-        if (!db.IsStatementCached("ComponentInsert" + tableName))
-        {
-            db.PreCacheStatementTuple<CRT::RowTypes>("ComponentInsert" + tableName, tableName, rowNames, SQLite::Behaviour::Insert);
-        }
-    }
-
-    template <typename T>
-    bool InsertComponent(SQLite& db, const typename ComponentRowDescription<T>::RowTypes& row)
-    {
-        const auto& tableName = GetTypeTableName<T>();
-        auto result = db.ExecuteStatementTuple("ComponentInsert" + tableName, row);
-    
-        return result;
-    }
-
-    template <typename T>
-    void InsertComponentTuple(SQLite& db, const typename ComponentRowDescription<T>::RowTypes& row)
-    {
-        const auto& tableName = GetTypeTableName<T>();
-
-        if (!db.IsStatementCached("ComponentInsert" + tableName))
-        {
-            PreCacheInsertComponent<T>(db);
-        }
-
-        InsertComponent<T>(db, row);
-    }
-
 
     // Generates sql schema for items composed of various components,
     // each component composed of columns, which are properties of values (parameters to ctor)

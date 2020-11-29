@@ -9,6 +9,7 @@
 #include "PlayerComponent.h"
 #include "InventoryComponent.h"
 #include "PieceComponent.h"
+#include "AssetComponent.h"
 #include "RenderComponent.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
@@ -39,7 +40,7 @@ namespace yaget::ylog
 }
 
 YAGET_BRAND_NAME_F("Beyond Limits")
-YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::ttt,ttt::,::bc,bc::,::ivc,ivc::,::pic,pic::,::pc,pc::")
+YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::ttt,ttt::,::bc,bc::,::ivc,ivc::,::pic,pic::,::pc,pc::,::ac,ac::")
 
 
 

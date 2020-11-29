@@ -22,6 +22,15 @@
     <Filter Include="Source Files\Components">
       <UniqueIdentifier>{335d901a-22ce-4d08-81d1-b6da826af2b3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\Asset Files">
+      <UniqueIdentifier>{c7d1ef76-6c48-4931-8d0e-d1f9af4ea021}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Asset Files\Descriptions">
+      <UniqueIdentifier>{4ef925cc-7db9-4258-b79f-38c168dc118f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Asset Files\Levels">
+      <UniqueIdentifier>{d1d5f15c-37cf-478b-8969-9dbee689661b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\TicTocToe.cpp">
@@ -61,6 +70,9 @@
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="source\RenderComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\AssetComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -115,5 +127,13 @@
     <ClInclude Include="source\RenderSystem.h">
       <Filter>Source Files\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="source\AssetComponent.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\Assets\Descriptions\Board.json">
+      <Filter>Data Files\Asset Files\Descriptions</Filter>
+    </None>
   </ItemGroup>
 </Project>

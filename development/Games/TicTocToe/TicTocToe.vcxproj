@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\AssetComponent.cpp" />
     <ClCompile Include="source\BoardSystem.cpp" />
     <ClCompile Include="source\GameCoordinator.cpp" />
     <ClCompile Include="source\InputComponent.cpp" />
@@ -46,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BoardComponent.cpp" />
+    <ClInclude Include="source\AssetComponent.h" />
     <ClInclude Include="source\BoardComponent.h" />
     <ClInclude Include="source\BoardSystem.h" />
     <ClCompile Include="source\Game.cpp" />
@@ -68,6 +70,9 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\Assets\Descriptions\Board.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

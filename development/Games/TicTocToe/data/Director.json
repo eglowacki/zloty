@@ -3,14 +3,19 @@
         "Items": [
             [
                 { "Type": "Player", "Params": [ 417, "'Edgar'" ] },
+                { "Type": "Asset", "Params": [ "'Descriptions@Player'" ] },
                 { "Type": "Inventory", "Params": [ 5 ] },
-                { "Type": "Input" } ],
+                { "Type": "Input" } 
+            ],
             [
                 { "Type": "Player", "Params": [ 1000, "'Zbigniew Zubrowski'" ] },
+                { "Type": "Asset", "Params": [ "'Descriptions@Player'" ] },
                 { "Type": "Inventory", "Params": [ 5 ] },
-                { "Type": "Input" } ],
+                { "Type": "Input" } 
+            ],
             [
                 { "Type": "Board", "Params": [ 3, 3 ] },
+                { "Type": "Asset", "Params": [ "'Descriptions@Board'" ] },
                 { "Type": "Score" }
             ]
         ]

@@ -37,6 +37,24 @@
 						"ReadOnly": true,
 						"Recursive": false
 					}
+				},
+				{
+					"Descriptions": {
+						"Converters": "JSON",
+						"Filters": [ "*.json" ],
+						"Path": [ "$(AssetsFolder)/Descriptions" ],
+						"ReadOnly": true,
+						"Recursive": true
+					}
+				},
+				{
+					"Levels": {
+						"Converters": "JSON",
+						"Filters": [ "*.json" ],
+						"Path": [ "$(AssetsFolder)/Levels" ],
+						"ReadOnly": true,
+						"Recursive": true
+					}
 				}
 			]
 		}

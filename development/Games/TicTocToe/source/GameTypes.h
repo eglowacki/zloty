@@ -26,6 +26,7 @@ namespace ttt
     class InventoryComponent;
     class PieceComponent;
     class RenderComponent;
+    class AssetComponent;
 
     // Represents type of pieces we have between players
     // It also serves as side control for player
@@ -46,7 +47,7 @@ namespace ttt
     //! and entities representing pieces on a board, which are own by player inventory until placed on a board by player
     //! Piece
 
-    struct Entity : yaget::comp::RowPolicy<InputComponent*, PlayerComponent*, InventoryComponent*, PieceComponent*>
+    struct Entity : yaget::comp::RowPolicy<InputComponent*, PlayerComponent*, InventoryComponent*, PieceComponent*, AssetComponent*>
     {
         using AutoCleanup = bool;
     };
