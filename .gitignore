@@ -58,3 +58,5 @@ development/Common/Render/source/Generated/
 *.exp
 
 *.lastcodeanalysissucceeded
+
+branch/zloty/development/bin/TicTocToe/x64.Debug/
