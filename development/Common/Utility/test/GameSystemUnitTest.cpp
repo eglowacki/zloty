@@ -149,8 +149,8 @@ TEST(GameSystem)
     time::GameClock gameClock;
 
     using namespace std::placeholders;
-    comp::GameSystem<comp::gs::EndMarkerYes<0>, comp::LocationComponent*> locationGameSystem("LocationSystem", [&renderCollector](auto&&... params) { renderCollector.Process(params...); });
-    comp::GameSystem<comp::gs::EndMarkerNo<0>, comp::PhysicsWorldComponent*> physWorldGameSystem("PhysicsWorldSystem", [](comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& channel, comp::PhysicsWorldComponent* physWorld)
+    comp::GameSystem<comp::gs::EndMarkerYes, comp::LocationComponent*> locationGameSystem("LocationSystem", [&renderCollector](auto&&... params) { renderCollector.Process(params...); });
+    comp::GameSystem<comp::gs::EndMarkerNo, comp::PhysicsWorldComponent*> physWorldGameSystem("PhysicsWorldSystem", [](comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& channel, comp::PhysicsWorldComponent* physWorld)
     {
         physWorld->Update(gameClock, channel);
     });

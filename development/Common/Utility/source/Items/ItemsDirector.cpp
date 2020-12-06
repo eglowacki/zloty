@@ -7,7 +7,7 @@
 
 namespace fs = std::filesystem;
 
-#define YAGET_ITEMS_VERSION 4
+#define YAGET_DIRECTOR_VERSION 5
 
 
 namespace
@@ -25,8 +25,20 @@ namespace
     std::vector<std::string> itemsSchema =
     {
         #include "Items/ItemsSchema.sqlite"
-        "CREATE TABLE 'VersionTables' ('Id' INTEGER NOT NULL DEFAULT 1, PRIMARY KEY('Id')) WITHOUT ROWID; "
+        "CREATE TABLE 'VersionTables' ('Id' INTEGER NOT NULL DEFAULT 1, PRIMARY KEY('Id')) WITHOUT ROWID;",
+        "CREATE TABLE 'Stages' ('Id' INTEGER NOT NULL UNIQUE, 'Name' TEXT NOT NULL UNIQUE, PRIMARY KEY('Id' AUTOINCREMENT));",
+        "CREATE TABLE 'StageItems' ('ItemId' INTEGER NOT NULL, 'StageId' INTEGER NOT NULL, FOREIGN KEY('StageId') REFERENCES 'Stages'('Id'));"
     };
+
+
+#if 0
+    INSERT INTO 'Stages' ('Name') VALUES('Level 1');
+    INSERT INTO 'Stages' ('Name') VALUES('Main Menu');
+
+    INSERT INTO 'StageItems' ('StageId', 'ItemId') VALUES(1, 417);
+
+    SELECT * FROM 'Stages';
+#endif
 
     std::string ResolveDatabaseName(const std::string& userFileName, bool reset)
     {
@@ -68,7 +80,7 @@ namespace
 
 
 yaget::items::Director::Director(const std::string& name, const Strings& additionalSchema, const Strings& loadout, int64_t expectedVersion)
-    : mDatabase(ResolveDatabaseName(name, false), CombineSchemas(additionalSchema, Strings{fmt::format("INSERT INTO VersionTables(Id) VALUES('{}');", expectedVersion)}, itemsSchema), YAGET_ITEMS_VERSION)
+    : mDatabase(ResolveDatabaseName(name, false), CombineSchemas(additionalSchema, Strings{fmt::format("INSERT INTO VersionTables(Id) VALUES('{}');", expectedVersion)}, itemsSchema), YAGET_DIRECTOR_VERSION)
     , mIdGameCache([this]() { return GetNextBatch(); })
 {
     auto version = GetCell<int64_t>(mDatabase.DB(), "SELECT Id FROM VersionTables;");
@@ -95,6 +107,7 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
             }
 
             YAGET_UTIL_THROW_ASSERT("DIRE", itemId != comp::INVALID_ID, fmt::format("ItemId is still invalid, is '{}' token as a first line in loadout is missing?", comp::db::NewItem_Token));
+
             comp::db::hash_combine(loadoutVersion, command);
             sqlLoadout.emplace_back(fmt::format(command, itemId));
         }
@@ -102,41 +115,38 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
         const char* hashesTable = "Hashes";
         const char* hashesKey = "loadout.start";
 
-        if (DatabaseHandle databaseHandle = LockDatabaseAccess())
+        SQLite& database = mDatabase.DB();
+        // before we update current loadout, let's check version
+        const auto version = GetCell<int64_t>(database, fmt::format("SELECT Value FROM {} WHERE Key = '{}';", hashesTable, hashesKey));
+        if (version == 0)
         {
-            SQLite& database = databaseHandle->DB();
-            // before we update current loadout, let's check version
-            const auto version = GetCell<int64_t>(database, fmt::format("SELECT Value FROM {} WHERE Key = '{}';", hashesTable, hashesKey));
-            if (version == 0)
+            db::Transaction transaction(database);
+
+            for (const auto& command : sqlLoadout)
             {
-                db::Transaction transaction(database);
-
-                for (const auto& command : sqlLoadout)
-                {
-                    if (!database.ExecuteStatement(command, nullptr))
-                    {
-                        transaction.Rollback();
-                        YAGET_UTIL_THROW("DIRE", fmt::format("Could not execute sql query '{}'. {}.", command, ParseErrors(database)));
-                    }
-                }
-
-                std::string sqCommand = fmt::format("INSERT OR REPLACE INTO '{}' VALUES('{}', {});", hashesTable, hashesKey, loadoutVersion);
-                if (!database.ExecuteStatement(sqCommand, nullptr))
+                if (!database.ExecuteStatement(command, nullptr))
                 {
                     transaction.Rollback();
-                    YAGET_UTIL_THROW("DIRE", fmt::format("Could not update {} '{}' sql query '{}'. {}.", hashesTable, sqCommand, ParseErrors(database)));
+                    YAGET_UTIL_THROW("DIRE", fmt::format("Could not execute sql query '{}'. {}.", command, ParseErrors(database)));
                 }
+            }
 
-                YLOG_INFO("DIRE", "Items Director's first loadout is done, added: '%d' items.", sqlLoadout.size());
-            }
-            else if (version == loadoutVersion)
+            std::string sqCommand = fmt::format("INSERT OR REPLACE INTO '{}' VALUES('{}', {});", hashesTable, hashesKey, loadoutVersion);
+            if (!database.ExecuteStatement(sqCommand, nullptr))
             {
-                YLOG_INFO("DIRE", "Items Director's loadout is same as incomming, ignoring.");
+                transaction.Rollback();
+                YAGET_UTIL_THROW("DIRE", fmt::format("Could not update {} '{}' sql query '{}'. {}.", hashesTable, sqCommand, ParseErrors(database)));
             }
-            else
-            {
-                YAGET_UTIL_THROW("DIRE", fmt::format("Incomming loadout version: '{}' does not match one in db: '{}'.", loadoutVersion, version));
-            }
+
+            YLOG_INFO("DIRE", "Items Director's first loadout is done, added: '%d' items.", sqlLoadout.size());
+        }
+        else if (version == loadoutVersion)
+        {
+            YLOG_INFO("DIRE", "Items Director's loadout is same as incomming, ignoring.");
+        }
+        else
+        {
+            YAGET_UTIL_THROW("DIRE", fmt::format("Incomming loadout version: '{}' does not match one in db: '{}'.", loadoutVersion, version));
         }
     }
 }

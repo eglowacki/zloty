@@ -88,27 +88,23 @@ namespace yaget
             // I - index slot used in GameCoordinator to use with this system. Current convention
             // is 0 Global, 1  is Entities
             // T how the last and end element iteration is handled
-            template <int I, bool T>
+            template <bool T>
             struct EndMarker
             {
                 static constexpr bool val = true;
-                static constexpr int id = I;
             };
 
-            template <int I>
-            struct EndMarker<I, false>
+            template <>
+            struct EndMarker<false>
             {
                 static constexpr bool val = false;
-                static constexpr int id = I;
             };
 
             // Used to specify how to handle end of items in GameSystem::Update method. 
             // If Yes, then call Update with comp::END_ID_MARKER, otherwise
             // skip that after iterating over all ids.
-            template <int I>
-            struct EndMarkerYes : EndMarker<I, true> {};
-            template <int I>
-            struct EndMarkerNo : EndMarker<I, false> {};
+            struct EndMarkerYes : EndMarker<true> {};
+            struct EndMarkerNo : EndMarker<false> {};
 
         } // namespace gs
     } // namespace comp

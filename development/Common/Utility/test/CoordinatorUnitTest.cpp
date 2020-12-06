@@ -41,8 +41,8 @@ TEST(CoordinatorMulti)
 
     using GamePolicy = comp::CoordinatorPolicy<Entity, GlobalEntity>;
 
-    using PhysicsSystem = comp::GameSystem<comp::gs::EndMarkerNo<0>, comp::PhysicsWorldComponent*>;
-    using LocationGather = comp::GameSystem<comp::gs::EndMarkerYes<1>, comp::LocationComponent*>;
+    using PhysicsSystem = comp::GameSystem<comp::gs::EndMarkerNo, comp::PhysicsWorldComponent*>;
+    using LocationGather = comp::GameSystem<comp::gs::EndMarkerYes, comp::LocationComponent*>;
 
     using namespace std::placeholders;
     PhysicsSystem physWorldGameSystem("PhysicsSystem", [](comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& channel, comp::PhysicsWorldComponent* physWorld)
@@ -260,7 +260,7 @@ TEST(Coordinator)
 
     // verify game system class
     int counter = 0;
-    comp::GameSystem<comp::gs::EndMarkerNo<0>, comp::PhysicsWorldComponent*> gameSystem("PhysicsWorldSystem", [&counter](comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& channel, yaget::comp::PhysicsWorldComponent* physicsWorld)
+    comp::GameSystem<comp::gs::EndMarkerNo, comp::PhysicsWorldComponent*> gameSystem("PhysicsWorldSystem", [&counter](comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& channel, yaget::comp::PhysicsWorldComponent* physicsWorld)
     {
         counter++;
         physicsWorld->Update(gameClock, channel);

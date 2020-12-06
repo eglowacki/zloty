@@ -44,13 +44,6 @@ namespace yaget::comp::db
         hash_combine(seed, rest...);
     }
 
-    // forward declarations
-    template <typename T>
-    Strings GetPolicyRowNames();
-
-    template <typename T>
-    Strings GetPolicyRowTypes();
-
     namespace internal
     {
         const Strings stripKeywords{
@@ -62,7 +55,6 @@ namespace yaget::comp::db
             "struct"
         };
 
-
         Strings ResolveUserStripKeywords(const Strings& defaultSet);
 
         inline const Strings& ResolveStripKeywords()
@@ -70,23 +62,6 @@ namespace yaget::comp::db
             static Strings keywords = ResolveUserStripKeywords(stripKeywords);
             return keywords;
         }
-
-        struct ColumnData
-        {
-            std::string mName;                  // name of the column, this defaults to class_name
-            std::string mPropertyTableName;
-            Strings mPropertyNames;
-            Strings mPropertyTypes;
-
-            bool operator<(const ColumnData& v) const
-            {
-                return mName < v.mName;
-            }
-            bool operator==(const ColumnData& v) const
-            {
-                return mName == v.mName;
-            }
-        };
 
         template <typename T>
         std::string ResolveName()
@@ -125,13 +100,6 @@ namespace yaget::comp::db
 
         template<>
         inline std::string ResolveDatabaseType<double>() { return "REAL"; }
-
-        template <typename T>
-        std::string ResolveComponentTableName()
-        {
-            auto typeName = internal::ResolveName<T>();
-            return fmt::format("{}Properties", typeName);
-        }
 
     }
 
@@ -302,6 +270,7 @@ namespace yaget::comp::db
                     for (const auto& componentBlock : itemBlock)
                     {
                         auto componentName = json::GetValue<std::string>(componentBlock, "Type", {});
+                        // TODO: Check against FullRow if that particular componentName exists/is_valid
                         YAGET_UTIL_THROW_ASSERT("TTT", !componentName.empty(), "Component Type can not be empty and must have one of game components names.");
 
                         if (!componentName.ends_with("Component") && PolicyName::AutoComponent)
@@ -328,6 +297,57 @@ namespace yaget::comp::db
                         }
                     }
                 }
+            }
+
+            if (json::IsSectionValid(asset->root, "Stages", ""))
+            {
+                Strings stageItems;
+                const auto sBlock = json::GetValue<std::map<std::string, nlohmann::json>>(asset->root, "Stages", {});
+
+                const auto& stagesBlock = json::GetSection(asset->root, "Stages", "");
+
+                auto stages = stagesBlock.get<std::map<std::string, std::vector<std::vector<nlohmann::json>>>>();
+                for (const auto& [key, value] : stages)
+                {
+                    std::string command = fmt::format("INSERT INTO 'Stages' ('Name') VALUES('{}');", key);
+                    stageItems.emplace_back(command);
+
+                    for (const auto& block : value)
+                    {
+                        for (const auto& item : block)
+                        {
+                            auto componentName = json::GetValue(item, "Type", std::string{});
+                            YAGET_UTIL_THROW_ASSERT("TTT", !componentName.empty(), "Component Type can not be empty and must have one of game components names.");
+
+                            if (!componentName.ends_with("Component") && PolicyName::AutoComponent)
+                            {
+                                componentName += "Component";
+
+                                meta::for_each_type<FullRow>([&componentName, &item, &stageItems]<typename T0>(const T0&)
+                                {
+                                    using BaseType = meta::strip_qualifiers_t<T0>;
+                                    using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
+
+                                    const auto& tableName = internal::ResolveName<BaseType>();
+                                    if (tableName == componentName)
+                                    {
+                                        const auto componentParams = json::GetValue<ParameterPack>(item, "Params", {});
+                                        std::string message;
+                                        print_tuple(componentParams, message);
+
+                                        std::string sqCommand = fmt::format("INSERT INTO '{}' VALUES({{}}{}{});", tableName, message.empty() ? "" : ", ", message);
+                                        YLOG_NOTICE("TTT", "[%s] ", sqCommand.c_str());
+                                        stageItems.emplace_back(sqCommand);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                int z = 0;
+                z;
+                //return stageItems;
             }
         }
 

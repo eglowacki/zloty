@@ -2,24 +2,100 @@
     "Description": {
         "Items": [
             [
-                { "Type": "Player", "Params": [ 417, "'Edgar'" ] },
-                { "Type": "Asset", "Params": [ "'Descriptions@Player'" ] },
-                { "Type": "Inventory", "Params": [ 5 ] },
-                { "Type": "Input" } 
+                {
+                    "Type": "Player",
+                    "Params": [ 417, "'Edgar'" ]
+                },
+                {
+                    "Type": "Asset",
+                    "Params": [ "'Descriptions@Player'" ]
+                },
+                {
+                    "Type": "Inventory",
+                    "Params": [ 5 ]
+                },
+                { "Type": "Input" }
             ],
             [
-                { "Type": "Player", "Params": [ 1000, "'Zbigniew Zubrowski'" ] },
-                { "Type": "Asset", "Params": [ "'Descriptions@Player'" ] },
-                { "Type": "Inventory", "Params": [ 5 ] },
-                { "Type": "Input" } 
+                {
+                    "Type": "Player",
+                    "Params": [ 1000, "'Zbigniew Zubrowski'" ]
+                },
+                {
+                    "Type": "Asset",
+                    "Params": [ "'Descriptions@Player'" ]
+                },
+                {
+                    "Type": "Inventory",
+                    "Params": [ 5 ]
+                },
+                { "Type": "Input" }
             ],
             [
-                { "Type": "Board", "Params": [ 3, 3 ] },
-                { "Type": "Asset", "Params": [ "'Descriptions@Board'" ] },
+                {
+                    "Type": "Board",
+                    "Params": [ 3, 3 ]
+                },
+                {
+                    "Type": "Asset",
+                    "Params": [ "'Descriptions@Board'" ]
+                },
                 { "Type": "Score" }
             ]
         ]
     },
-    "Load": {
+    "Stages": {
+        "Level 1": [
+            [
+                {
+                    "Type": "Player",
+                    "Params": [ 417, "'Edgar'" ]
+                },
+                {
+                    "Type": "Asset",
+                    "Params": [ "'Descriptions@Player'" ]
+                },
+                {
+                    "Type": "Inventory",
+                    "Params": [ 5 ]
+                },
+                { "Type": "Input" }
+            ],
+            [
+                {
+                    "Type": "Player",
+                    "Params": [ 1000, "'Zbigniew Zubrowski'" ]
+                },
+                {
+                    "Type": "Asset",
+                    "Params": [ "'Descriptions@Player'" ]
+                },
+                {
+                    "Type": "Inventory",
+                    "Params": [ 5 ]
+                },
+                { "Type": "Input" }
+            ],
+            [
+                {
+                    "Type": "Board",
+                    "Params": [ 3, 3 ]
+                },
+                {
+                    "Type": "Asset",
+                    "Params": [ "'Descriptions@Board'" ]
+                },
+                { "Type": "Score" }
+            ]
+        ],
+        "Main Menu": [
+            [
+                {
+                    "Type": "Asset",
+                    "Params": [ "'Descriptions@MainMenu'" ]
+                },
+                { "Type": "Input" }
+            ]
+        ]
     }
 }
