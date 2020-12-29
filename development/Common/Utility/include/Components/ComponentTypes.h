@@ -68,7 +68,6 @@ namespace yaget
         //struct GlobalEntity : yaget::comp::RowPolicy<BoardComponent*, ScoreComponent*>
         //{
         //    using AutoCleanup = bool;
-        //    using Global = bool;
         //};
         //
         template <typename... IS>
@@ -86,7 +85,6 @@ namespace yaget
         {
             // Used a as policy in GameSystem to handle last entity/item during iteration
             // I - index slot used in GameCoordinator to use with this system. Current convention
-            // is 0 Global, 1  is Entities
             // T how the last and end element iteration is handled
             template <bool T>
             struct EndMarker

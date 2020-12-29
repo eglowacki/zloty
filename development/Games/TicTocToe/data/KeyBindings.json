@@ -1,4 +1,11 @@
 {
+    "Quit App": {
+        "Action": "Quit App",
+        "ContextName": "",
+        "DisplayName": "ESC",
+        "Flags": "ButtonDown",
+        "Value": "ESC"
+    },
     "New Game": {
         "Action": "New Game",
         "ContextName": "MENU",

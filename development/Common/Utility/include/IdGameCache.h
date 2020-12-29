@@ -18,9 +18,9 @@
 //! \file
 #pragma once
 
-#include <functional>
-
 #include "Components/ComponentTypes.h"
+#include <functional>
+#include <atomic>
 
 
 namespace yaget

@@ -266,25 +266,20 @@
     <ClCompile Include="..\source\VTS\RenderStateResolvedAssets.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\source\Generated\geometry_stream.fbs">
+    <CustomBuild Include="..\source\FbTemplates\geometry_stream.fbs">
       <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(YAGET_DEPENDENCIES_PATH)\flatbuffers-1.11.0\builds\$(Configuration)\flatc.exe -o %(RelativeDir) --cpp %(FullPath)
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(YAGET_DEPENDENCIES_PATH)\flatbuffers-1.11.0\builds\$(Configuration)\flatc.exe -o %(RelativeDir) --cpp %(FullPath)
+</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compile flatbuffers schema</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compile flatbuffers schema</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(YAGET_ROOT_FOLDER)\Modules\flatbuffers-master\builds\$(Configuration)\flatc.exe -o %(RelativeDir) --cpp %(FullPath)
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(YAGET_ROOT_FOLDER)\Modules\flatbuffers-master\builds\$(Configuration)\flatc.exe -o %(RelativeDir) --cpp %(FullPath)</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)%(Filename)_generated.h</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)%(Filename)_generated.h</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </AdditionalInputs>
       <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ClInclude</OutputItemType>
       <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ClInclude</OutputItemType>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
