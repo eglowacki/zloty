@@ -34,7 +34,15 @@ namespace yaget
         public:
             constexpr static int BatchIdMarker = 1;
 
-            Director(const std::string& name, const Strings& additionalSchema, const Strings& loadout, int64_t expectedVersion);
+            //! Default    - default values
+            //! Optimum    - optimized, used in runtime game (NOT USED)
+            //! Diagnostic - report diagnostic health of vts data (NOT USED)
+            //! Fix        - fix any vts data issues (NOT USED)
+            //! Reset      - reset vts data and initialize as new 
+            enum class RuntimeMode { Default, Optimum, Diagnostic, Fix, Reset };
+
+
+            Director(const std::string& name, const Strings& additionalSchema, const Strings& loadout, int64_t expectedVersion, RuntimeMode runtimeMode);
             virtual ~Director();
 
             IdGameCache& IdCache() { return mIdGameCache; }
@@ -47,7 +55,7 @@ namespace yaget
             struct DatabaseLocker
             {
                 DatabaseLocker(Director& director) : mDatabase(director.mDatabase) {}
-                virtual ~DatabaseLocker() {}
+                virtual ~DatabaseLocker() = default;
 
                 const SQLite& DB() const { return mDatabase.DB(); }
                 SQLite& DB() { return mDatabase.DB(); }
@@ -79,12 +87,12 @@ namespace yaget
         class DefaultDirector : public Director
         {
         public:
-            DefaultDirector(io::VirtualTransportSystem& vts, const std::string& name = "Director")
-                : Director("$(DatabaseFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinatorSchema<T>(), comp::db::GenerateDirectorLoadout<T>(vts, "Settings@" + name), comp::db::GenerateSystemsCoordinatorVersion<T>())
+            DefaultDirector(io::VirtualTransportSystem& vts, const std::string& name = "Director", RuntimeMode runTimeMode = RuntimeMode::Default)
+                : Director("$(DatabaseFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinatorSchema<T>(), comp::db::GenerateDirectorLoadout<T>(vts, "Settings@" + name), comp::db::GenerateSystemsCoordinatorVersion<T>(), runTimeMode)
             {}
 
-            DefaultDirector(const std::string& name = "Director")
-                : Director("$(DatabaseFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinatorSchema<T>(), {}, comp::db::GenerateSystemsCoordinatorVersion<T>())
+            DefaultDirector(const std::string& name = "Director", RuntimeMode runTimeMode = RuntimeMode::Default)
+                : Director("$(DatabaseFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinatorSchema<T>(), {}, comp::db::GenerateSystemsCoordinatorVersion<T>(), runTimeMode)
             {}
         };
 

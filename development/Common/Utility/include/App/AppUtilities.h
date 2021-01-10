@@ -25,7 +25,7 @@ namespace yaget
     namespace util
     {
         //! Unique application id, persistent only for the duration of application execution
-        Guid ApplicationId();
+        Guid ApplicationRuntimeId();
 
         //! built in environment variables available at the start (examples for vts_test.exe project)
         //!  $(BuildConfiguration)  = Build configuration:                                                  Debug, Release, Shipping (and possibly other variations like Performance)

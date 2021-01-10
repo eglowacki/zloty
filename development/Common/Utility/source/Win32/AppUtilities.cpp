@@ -260,7 +260,7 @@ namespace
 
 
 //--------------------------------------------------------------------------------------------------
-yaget::Guid yaget::util::ApplicationId()
+yaget::Guid yaget::util::ApplicationRuntimeId()
 {
     static Guid appGuid = NewGuid();
     return appGuid;

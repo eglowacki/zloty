@@ -1,5 +1,7 @@
 //VirtualTransportSystemCollector.inl
 
+#include "HashUtilities.h"
+
 namespace
 {
     const char* DatabasePathName = "$(DatabaseFolder)/$(AppName)/vts.sqlite";
@@ -19,30 +21,36 @@ namespace
         {
             yaget::Strings verifiedPath;
             std::copy_if(section.Path.begin(), section.Path.end(), std::back_inserter(verifiedPath), [](const std::string& pathName)
+            {
+                std::string potentialPath = yaget::util::ExpendEnv(pathName, nullptr);
+                if (!potentialPath.empty())
                 {
-                    std::string potentialPath = yaget::util::ExpendEnv(pathName, nullptr);
-                    if (!potentialPath.empty())
+                    if (fs::is_directory(potentialPath) || fs::is_regular_file(potentialPath))
                     {
-                        if (fs::is_directory(potentialPath) || fs::is_regular_file(potentialPath))
+                        return true;
+                    }
+                    else if (!fs::path(potentialPath).has_extension())
+                    {
+                        const auto& [result, errorMessage] = yaget::io::file::AssureDirectories(potentialPath + "/");
+                        if (result)
                         {
                             return true;
                         }
-                        else if (!fs::path(potentialPath).has_extension())
-                        {
-                            const auto& [result, errorMessage] = yaget::io::file::AssureDirectories(potentialPath + "/");
-                            if (result)
-                            {
-                                return true;
-                            }
-                        }
                     }
+                }
 
-                    YLOG_ERROR("VTS", "Path Alias: '%s' expended to: '%s' is not valid, skipping.", pathName.c_str(), potentialPath.c_str());
-                    return false;
-                });
+                YLOG_ERROR("VTS", "Path Alias: '%s' expended to: '%s' is not valid, skipping.", pathName.c_str(), potentialPath.c_str());
+                return false;
+            });
 
             if (!verifiedPath.empty())
             {
+                if (!section.ReadOnly && section.Path.size() > 1)
+                {
+                    YLOG_ERROR("VTS", "Section '%s' is marked writeable but it has '%d' [%s] path entries. Only 1 allowed, skipping.", section.Name.c_str(), section.Path.size(), yaget::conv::Combine(section.Path, "],[").c_str());
+                    continue;;
+                }
+
                 yaget::dev::Configuration::Init::VTS verifiedSection = section;
                 std::swap(verifiedSection.Path, verifiedPath);
                 validSections.insert(verifiedSection);

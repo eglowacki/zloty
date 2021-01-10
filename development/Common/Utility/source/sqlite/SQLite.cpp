@@ -272,7 +272,7 @@ void yaget::SQLite::Log(const std::string& messageType, const std::string& messa
 {
     using LogRecord = std::tuple<std::string /*Type*/, std::string /*Message*/, std::string /*SessionId*/>;
 
-    LogRecord logRecord(messageType, message, util::ApplicationId().str());
+    LogRecord logRecord(messageType, message, util::ApplicationRuntimeId().str());
     ExecuteStatementTuple("MessageAdd", "Logs", logRecord,  { "Type", "Message", "SessionId" }, SQLite::Behaviour::Insert, SQLite::TimeStamp::Yes);
 }
 
