@@ -116,7 +116,7 @@ namespace yaget
             static void RegisterOutputTypes()
             {
                 using LogOutputs = std::tuple<Args...>;
-                meta::for_each_type<LogOutputs>([](const auto& logType)
+                meta::template for_each_type<LogOutputs>([](const auto& logType)
                 {
                     using LogType = std::decay_t<decltype(*logType)>;
                     RegisterOutputType<LogType>(&ylog::CreateOutputInstance<LogType>);

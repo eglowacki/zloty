@@ -15,7 +15,8 @@
 
 #pragma once
 
-#include <Base.h>
+#include "YagetCore.h"
+#include <unordered_set>
 
 namespace yaget
 {

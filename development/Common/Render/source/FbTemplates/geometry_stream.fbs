@@ -1,0 +1,41 @@
+namespace yaget.io.fb;
+
+file_identifier "GLOW";
+
+struct Vec3
+{
+x:float;
+y:float;
+z:float;
+}
+
+table Tag
+{
+    Name:string;
+    Guid:string;
+    VTSKey:string;
+}
+
+table GeometryStream
+{
+    MaterialTag:Tag;
+    Position: [float] ;
+    UV: [float] ;
+    Indices: [uint32] ;
+
+    MatrixUp:Vec3;
+    MatrixRight:Vec3;
+    MatrixBackward:Vec3;
+    MatrixTranslation:Vec3;
+
+    BoundingMin:Vec3;
+    BoundingMax:Vec3;
+}
+
+table Mesh
+{
+    MeshTag:Tag;
+    Streams: [GeometryStream] ;
+    BoundingMin:Vec3;
+    BoundingMax:Vec3;
+}

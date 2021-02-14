@@ -47,7 +47,7 @@ namespace
             {
                 if (!section.ReadOnly && section.Path.size() > 1)
                 {
-                    YLOG_ERROR("VTS", "Section '%s' is marked writeable but it has '%d' [%s] path entries. Only 1 allowed, skipping.", section.Name.c_str(), section.Path.size(), yaget::conv::Combine(section.Path, "],[").c_str());
+                    YLOG_ERROR("VTS", "Section '%s' is marked writeable but it has '%d' [%s] path entries. Only 1 is allowed, skipping.", section.Name.c_str(), section.Path.size(), yaget::conv::Combine(section.Path, "],[").c_str());
                     continue;;
                 }
 

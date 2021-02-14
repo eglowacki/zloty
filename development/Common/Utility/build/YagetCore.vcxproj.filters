@@ -284,6 +284,9 @@
     <ClCompile Include="..\source\GameSystem\Messaging.cpp">
       <Filter>GameSystem Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\STLHelper.cpp">
+      <Filter>Platform Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">

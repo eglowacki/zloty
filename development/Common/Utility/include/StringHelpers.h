@@ -619,9 +619,11 @@ namespace yaget
     }
 
     template<class... T>
-    void print_tuple(const std::tuple<T...>& _tup, std::string& message)
+    std::string print_tuple(const std::tuple<T...>& _tup)
     {
+        std::string message;
         internal::print_tuple(_tup, std::make_index_sequence<sizeof...(T)>(), message);
+        return message;
     }
 
     //inline bool WildCompareISafe(const std::string& wild, const std::string& string)

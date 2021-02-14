@@ -231,13 +231,13 @@ namespace yaget::comp::db
         return 0;
     }
 
-    template <>
-    inline Strings GenerateSystemsCoordinatorSchemaVersion<EmptySchema>(int64_t& schemaVersion)
-    {
-        Strings results = GenerateSystemsCoordinatorSchema<EmptySchema>();
-        schemaVersion = GenerateSystemsCoordinatorVersion<EmptySchema>();
-        return results;
-    }
+    //template <>
+    //inline Strings GenerateSystemsCoordinatorSchemaVersion<EmptySchema>(int64_t& schemaVersion)
+    //{
+    //    Strings results = GenerateSystemsCoordinatorSchema<EmptySchema>();
+    //    schemaVersion = GenerateSystemsCoordinatorVersion<EmptySchema>();
+    //    return results;
+    //}
 
     struct PolicyName
     {
@@ -286,8 +286,7 @@ namespace yaget::comp::db
                                 if (tableName == componentName)
                                 {
                                     const auto componentParams = json::GetValue<ParameterPack>(componentBlock, "Params", {});
-                                    std::string message;
-                                    print_tuple(componentParams, message);
+                                    std::string message = print_tuple(componentParams);
 
                                     std::string sqCommand = fmt::format("INSERT INTO '{}' VALUES({{}}{}{});", tableName, message.empty() ? "" : ", ", message);
                                     YLOG_NOTICE("TTT", "[%s] ", sqCommand.c_str());
@@ -332,8 +331,7 @@ namespace yaget::comp::db
                                     if (tableName == componentName)
                                     {
                                         const auto componentParams = json::GetValue<ParameterPack>(item, "Params", {});
-                                        std::string message;
-                                        print_tuple(componentParams, message);
+                                        std::string message = print_tuple(componentParams);
 
                                         std::string sqCommand = fmt::format("INSERT INTO '{}' VALUES({{}}{}{});", tableName, message.empty() ? "" : ", ", message);
                                         YLOG_NOTICE("TTT", "[%s] ", sqCommand.c_str());
