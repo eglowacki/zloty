@@ -6,10 +6,8 @@
 *.lo
 *.o
 *.obj
-development/obj/
+**/obj
 **/.vs/
-**/build/packages/
-development/Tests/**/x64/
 
 # Precompiled Headers
 *.gch
@@ -43,20 +41,12 @@ development/Tests/**/x64/
 *.user
 *.ilk
 
-development/bin/YagetCore-Test/x64.Release/
-
-development/bin/
-
-development/Tests/YagetCore-Test/packages/
-
+# yaget exclusions
+**/x64.*
+**/Microsoft.googletest*
 *.idb
-
 *.recipe
 
-development/Common/Render/source/Generated/
-
+**/Generated
 *.exp
-
 *.lastcodeanalysissucceeded
-
-branch/zloty/development/bin/TicTocToe/x64.Debug/
