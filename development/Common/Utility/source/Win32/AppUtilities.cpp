@@ -705,9 +705,9 @@ void yaget::util::DefaultOptions(args::Options& options)
 //---------------------------------------------------------------------------------------------------------------------------------
 void* yaget::util::ResolveFunction(const char* name)
 {
-    if (HINSTANCE handle = ::GetModuleHandle(nullptr))
+    if (HMODULE handle = ::GetModuleHandle(nullptr))
     {
-        if (const auto resolvedFunction = (void *)::GetProcAddress((HMODULE)handle, name))
+        if (const auto resolvedFunction = (void *)::GetProcAddress(handle, name))
         {
             return resolvedFunction;
         }

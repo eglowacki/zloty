@@ -4,9 +4,9 @@ file_identifier "GLOW";
 
 struct Vec3
 {
-x:float;
-y:float;
-z:float;
+    x:float;
+    y:float;
+    z:float;
 }
 
 table Tag
@@ -39,3 +39,5 @@ table Mesh
     BoundingMin:Vec3;
     BoundingMax:Vec3;
 }
+
+root_type Mesh;

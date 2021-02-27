@@ -273,11 +273,11 @@ int ttt::game::Run(yaget::args::Options& options)
     const auto& vtsConfig = dev::CurrentConfiguration().mInit.mVTSConfig;
     io::tool::VirtualTransportSystemDefault vts(vtsConfig, resolvers);
 
-    items::DefaultDirector<GameSystemsCoordinator> director(vts);
+    items::DefaultDirector<ttt::GameSystemsCoordinator> director(vts);
     app::DefaultConsole app("Yaget.Tic-Tac-Toe", director, vts, options);
 
-    Messaging messaging{};
-    return comp::gs::RunGame<GameSystemsCoordinator, RenderSystemsCoordinator>(messaging, app);
+    ttt::Messaging messaging{};
+    return comp::gs::RunGame<ttt::GameSystemsCoordinator, ttt::RenderSystemsCoordinator>(messaging, app);
 }
 
 YAGET_COMPILE_WARNING_LEVEL_END
