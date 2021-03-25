@@ -23,7 +23,7 @@
 namespace yaget::meta
 {
     //-------------------------------------------------------------------------------------------------
-    // make_array_of provides initialization of arrays with saem value over all elements 
+    // make_array_of provides initialization of arrays with same value over all elements 
     //// std::array<int, 4>{42, 42, 42, 42}
     //constexpr auto test_array = make_array_of<4/*, int*/>(42);
     //static_assert(test_array[0] == 42);
@@ -47,7 +47,7 @@ namespace yaget::meta
         /// into an initializer list using the `identity_func` above.
         template<class T, size_t... Indices>
         constexpr std::array<T, sizeof...(Indices)>
-            make_array_of_impl(const T& value, std::index_sequence<Indices...>)
+        make_array_of_impl(const T& value, std::index_sequence<Indices...>)
         {
             return { identity_func<T, Indices>(value)... };
         }
@@ -76,6 +76,8 @@ namespace yaget::meta
         using type = typename std::remove_pointer<typename std::decay<T>::type>::type;
     };
 
+    // removes any cv, pointers and references qualifiers from T
+    // using BaseType = meta::strip_qualifiers_t<T>;
     template<typename T>
     using strip_qualifiers_t = typename strip_qualifiers<T>::type;
 

@@ -9,6 +9,10 @@
 //      Wrapper for Intel concurrency sdk visualizer
 //      #define YAGET_CONC_METRICS_ENABLED 1
 //
+//      https://docs.microsoft.com/en-us/archive/blogs/visualizeparallel/concurrency-visualizer-sdk-advanced-visualization-techniques
+//      https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/profiling/concurrency-visualizer.md
+//      https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/debugger/allocation-hook-functions.md
+//
 //
 //  #include "Metrics/Concurrency.h"
 //

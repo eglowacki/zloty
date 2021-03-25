@@ -121,10 +121,11 @@ namespace
                     YAGET_UTIL_THROW("VTS", message);
                 }
 
-                for (const auto& it : configList)
+                //VTS::VTSConfigList
+                mCounter = std::accumulate(configList.begin(), configList.end(), static_cast<size_t>(0), [](const auto& runningTotal , const auto& vtsConfig)
                 {
-                    mCounter += it.Path.size();
-                }
+                    return runningTotal + vtsConfig.Path.size();
+                });
 
                 std::string command = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly, Recursive FROM Sections ORDER BY Name;");
                 VTS::VTSConfigList sectionRecords = mDatabase.DB().GetRowsTuple<VTS::VTS, SectionRecord, VTS::VTSConfigList>(command, [](const SectionRecord& record)

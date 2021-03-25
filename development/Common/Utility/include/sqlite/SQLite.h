@@ -30,14 +30,11 @@ namespace yaget
     class SQLite;
 
     // Used in SQLite::Row to bind NULL to bindable parameter in prepared statement
-    typedef struct null_marker
+    struct null_marker
     {
-        bool operator==(const null_marker& /*other*/) const
-        {
-            return true;
-        }
-
-    } null_marker_t;
+        bool operator==(const null_marker& /*other*/) const { return true; }
+    };
+    using null_marker_t = null_marker;
 
     //-----------------------------------------------------------------------------------------------------------------------------------------------
     std::string ParseErrors(const SQLite& database);
