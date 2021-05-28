@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////
-// Aplication.h
+// FileUtilities.h
 //
 //  Copyright 3/18/2018 Edgar Glowacki
 //
@@ -46,6 +46,8 @@ namespace yaget::io::file
     //! filter - Functor to filter which file to process. Return true to include the file, otherwise skip it .
     //! Return vector of strings where each entry is absolute path to each file found under sourceLocation, and recursively under all sub-folders.
     Strings GetFileNames(const std::string& sourceLocation, bool recursive, std::function<bool(const std::string & fileName)> filter);
+    //! Helper function to simply pass wild card filter rather then lambda
+    Strings GetFileNames(const std::string& sourceLocation, bool recursive, const std::string& filter);
 
     //! Creates search path for config (json) file
     //! Order of searches, .json extension is added to name
@@ -70,6 +72,7 @@ namespace yaget::io::file
     //! usage example:
     //!     const auto& [result, errorMessage] = file::RemoveFile("file.txt");
     FileOpResult RemoveFile(const std::string& fileName);
+    std::vector<FileOpResult> RemoveFiles(const Strings& fileNames);
 
     //! Save data in buffer to a file
     FileOpResult SaveFile(const std::string& fileName, const io::Buffer& buffer);

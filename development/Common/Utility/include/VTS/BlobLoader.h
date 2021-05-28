@@ -34,24 +34,32 @@ namespace yaget
         {
         public:
             using ErrorCallback = std::function<void(const std::string& filePathName, const std::string& errorMessage)>;
-    
-            BlobLoader(ErrorCallback errorCallback);
-    
             using Convertor = std::function<void(const io::Buffer& fileData)>;
-    
+
+            BlobLoader(bool loadAllFiles, ErrorCallback errorCallback);
+            ~BlobLoader();
+
             bool Save(const io::Buffer& dataBuffer, const std::string& fileName);
+
+            // Process all fileNames and call converter for each one. fileNames.size() == convertors.size()
             void AddTask(const Strings& fileNames, const std::vector<Convertor>& convertors);
+            // Allows to have just one converter applied to all file names
+            void AddTask(const Strings& fileNames, Convertor convertor);
+            // Process one file and apply converter
             void AddTask(const std::string& fileName, Convertor convertor);
+
             size_t CurrentCounter() const { return mCounter; }
-    
+
         private:
             // called by file loader when data is ready to be processed. This is called from different thread that this object was created on.
             void onDataPayload(const io::Buffer& dataBuffer, const std::string& fileName, Convertor convertor);// , );
-    
-            mt::JobPool mJobPool;
-            std::unique_ptr<io::DataLoader> mFileLoader;
+
             ErrorCallback mErrorCallback;
             std::atomic_size_t mCounter{ 0 };
+            mt::JobPool mJobPool;
+            std::unique_ptr<io::DataLoader> mFileLoader;
+            // on destruction, if true, it will process all the files before fully exiting.
+            const bool mLoadAllFiles = false;
         };
 
     } // namespace io

@@ -32,6 +32,8 @@ namespace yaget::io
     public:
         using DoneCallback_t = std::function<void(const io::Buffer& fileData, const std::string& fileName)>;
 
+        virtual ~DataLoader() = default;
+
         void Load(const std::string& filePath, DoneCallback_t doneCallback) { Load(std::vector<std::string>{ filePath }, std::vector<DoneCallback_t>{ doneCallback }); };
 
         virtual void Load(const Strings& filePathList, const std::vector<DoneCallback_t>& doneCallbacks) = 0;
@@ -47,7 +49,7 @@ namespace yaget::io
     {
     public:
         FileLoader();
-        ~FileLoader();
+        virtual ~FileLoader();
 
         void Start();
 

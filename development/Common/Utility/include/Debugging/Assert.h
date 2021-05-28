@@ -69,7 +69,7 @@
 #endif
 
 #if !defined(YAGET_ASSERT_DEFAULT_LEVEL)
-    #define YAGET_ASSERT_DEFAULT_LEVEL Debug
+    #define YAGET_ASSERT_DEFAULT_LEVEL Error
 #endif
 
 // -- implementation -----------------------------------------------------------

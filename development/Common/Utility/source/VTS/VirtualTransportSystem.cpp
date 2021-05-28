@@ -23,7 +23,7 @@ yaget::io::VirtualTransportSystem::VirtualTransportSystem(dev::Configuration::In
     , mAssetResolvers(assetResolvers)
     , mDatabase(ResolveDatabaseName(fileName, reset == RuntimeMode::Reset), vtsSchema, YAGET_VTS_VERSION)
     , mSectionEntriesCollector(std::make_shared<SectionEntriesCollector>(configList, mDatabase, [this]() { onEntriesCollected(); }))
-    , mBlobLoader([this](auto&&... params) { onErrorBlobLoader(params...); })
+    , mBlobLoader(false, [this](auto&&... params) { onErrorBlobLoader(params...); })
 {
 }
 
@@ -32,7 +32,7 @@ yaget::io::VirtualTransportSystem::VirtualTransportSystem(RuntimeMode runtimeMod
     : mRuntimeMode(runtimeMode)
     , mRequestPool("vts.Request", 1)
     , mDatabase(ResolveDatabaseName(fileName, false), vtsSchema, YAGET_VTS_VERSION)
-    , mBlobLoader([this](auto&&... params) { onErrorBlobLoader(params...); })
+    , mBlobLoader(false, [this](auto&&... params) { onErrorBlobLoader(params...); })
 {
 }
 

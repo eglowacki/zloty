@@ -8,7 +8,7 @@
     },
     {
       "Id": "ee6f596d-443a-4cb5-bdd0-56434d22845f",
-      "Command": " --gtest_filter=Coordinator.*"
+      "Command": " --gtest_filter=BlobLoader.*"
     },
     {
       "Id": "cbea5305-77d8-48b2-be52-10b7a4be3e95",

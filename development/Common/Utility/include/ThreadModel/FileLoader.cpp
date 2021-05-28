@@ -192,23 +192,31 @@ void yaget::io::FileLoader::Start()
     }
 }
 
-
 void yaget::io::FileLoader::Load(const Strings& filePathList, const std::vector<DoneCallback_t>& doneCallbacks)
 {
-    std::unique_lock<std::mutex> locker(mListMutex);
-    auto callback = doneCallbacks.begin();
-    for (auto&& it : filePathList)
+    YAGET_ASSERT((filePathList.size() == doneCallbacks.size()) || (filePathList.size() > 1 && doneCallbacks.size() == 1),
+        "File names and doneCallbacks arrays did not match. Both must be the same size OR doneCallbacks must be 1. FileNames: '%d', DoneCallbacks: '%d'", filePathList.size(), doneCallbacks.size());
+
+    if (!doneCallbacks.empty())
     {
-        YAGET_ASSERT(io::file::IsFileExists(it), "File: '%s' does not exist.", it.c_str());
-        FileDataPtr fileData = std::make_unique<io::FileData>(it, mIOPort, *callback);
-        ++callback;
-        mFilesToProcess.insert(std::move(fileData));
+        std::unique_lock<std::mutex> locker(mListMutex);
+        auto callback = doneCallbacks.begin();
+        const bool isOneCallback = doneCallbacks.size() == filePathList.size() ? false : true;
+        for (const auto& it : filePathList)
+        {
+            YAGET_ASSERT(io::file::IsFileExists(it), "File: '%s' does not exist.", it.c_str());
+            FileDataPtr fileData = std::make_unique<io::FileData>(it, mIOPort, *callback);
+
+            callback = isOneCallback ? callback : ++callback;
+            mFilesToProcess.insert(std::move(fileData));
+        }
     }
 }
 
-
 bool yaget::io::FileLoader::Save(const io::Buffer& dataBuffer, const std::string& fileName)
 {
+    //::PostQueuedCompletionStatus(mIOPort, 0, io::FileData::kSaveFileKey, nullptr);
+
     const auto& [result, errorMessage] = io::file::SaveFile(fileName, dataBuffer);
     return result;
 }

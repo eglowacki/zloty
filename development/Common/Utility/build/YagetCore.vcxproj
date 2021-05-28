@@ -333,7 +333,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\Extensions\xwsx55s0.r1e\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\program files (x86)\microsoft visual studio\2019\community\common7\ide\extensions\jcn3iwfw.vp2\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\Extensions\xwsx55s0.r1e\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -344,7 +344,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\program files (x86)\microsoft visual studio\2019\community\common7\ide\extensions\jcn3iwfw.vp2\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -356,7 +356,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\Extensions\xwsx55s0.r1e\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\program files (x86)\microsoft visual studio\2019\community\common7\ide\extensions\jcn3iwfw.vp2\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\Extensions\xwsx55s0.r1e\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -370,7 +370,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\program files (x86)\microsoft visual studio\2019\community\common7\ide\extensions\jcn3iwfw.vp2\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -43,6 +43,9 @@
     <ClCompile Include="TestFiles\IdBatch_Test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="TestFiles\BlobLoader_Test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Test Files">

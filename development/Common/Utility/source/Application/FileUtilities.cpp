@@ -102,6 +102,15 @@ yaget::Strings yaget::io::file::GetFileNames(const std::string& sourceLocation, 
     return foundFiles;
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------
+yaget::Strings yaget::io::file::GetFileNames(const std::string& sourceLocation, bool recursive, const std::string& filter)
+{
+    return GetFileNames(sourceLocation, recursive, [&filter](const auto& fileName)
+    {
+        const bool result = WildCompareI(filter, fileName);
+        return result;
+    });
+}
 
 //-------------------------------------------------------------------------------------------------------------------------------
 yaget::Strings yaget::io::file::GenerateConfigSearchPath(const std::string& name, bool addAppName, const args::Options* options) // KeyBindings, Configuration 
@@ -206,6 +215,20 @@ yaget::io::file::FileOpResult yaget::io::file::RemoveFile(const std::string& fil
     }
 
     return { true, "" };
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------
+std::vector<yaget::io::file::FileOpResult> yaget::io::file::RemoveFiles(const Strings& fileNames)
+{
+    std::vector<FileOpResult> results;
+
+    for (const auto& fileName : fileNames)
+    {
+        results.emplace_back(RemoveFile(fileName));
+    }
+
+    return results;
 }
 
 
