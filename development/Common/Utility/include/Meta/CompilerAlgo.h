@@ -452,6 +452,12 @@ namespace yaget::meta
         return std::string(n.begin(), n.end());
     }
 
+    //std::uintptr_t
+    template <typename P, typename T = std::uintptr_t>
+    T pointer_cast(P p)
+    {
+        return reinterpret_cast<T>(p);
+    }
 } // namespace yaget::meta
 
 

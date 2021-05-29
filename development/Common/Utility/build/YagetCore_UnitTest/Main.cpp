@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 
     dev::CurrentConfiguration().mDebug.Refresh(true, 1);
 
-    platform::SetThreadName("y.main", platform::CurrentThreadId());
+    metrics::MarkStartThread(platform::CurrentThreadId(), "y.test_main");
 
     ylog::Manager::RegisterOutputType<ylog::OutputDebug>(&ylog::CreateOutputInstance<ylog::OutputDebug>);
     ylog::Manager::RegisterOutputType<ylog::OutputConsole>(&ylog::CreateOutputInstance<ylog::OutputConsole>);

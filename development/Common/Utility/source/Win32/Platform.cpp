@@ -622,9 +622,18 @@ bool platform::ParseArgs(args::Options& options, std::string* errorMessage)
     return ParseArgs(cl, options, errorMessage);
 }
 
+namespace
+{
+    bool mDisregardAttachedDebugger = false;
+}
+void platform::DisregardAttachedDebugger()
+{
+    mDisregardAttachedDebugger = true;
+}
+
 bool platform::IsDebuggerAttached()
 {
-    return ::IsDebuggerPresent();
+    return ::IsDebuggerPresent() && !mDisregardAttachedDebugger;
 }
 
 void platform::DebuggerBreak()

@@ -19,7 +19,7 @@ yaget::mt::JobPool::JobPool(const char* poolName, uint32_t numThreads /*= 0*/, B
  
     for (uint32_t i = 0; i < maxThreads; ++i) 
     { 
-        std::string threadName = maxThreads > 1 ? fmt::format("{}_{}", mName, i + 1) : mName; 
+        std::string threadName = maxThreads > 1 ? fmt::format("{}_{}/{}", mName, i + 1, maxThreads) : mName;
         mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); }))); 
     } 
 } 

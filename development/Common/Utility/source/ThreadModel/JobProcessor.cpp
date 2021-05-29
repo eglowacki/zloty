@@ -67,7 +67,7 @@ yaget::mt::JobProcessor::~JobProcessor()
 void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask) 
 { 
     mPauseCondition.Wait(); 
-    metrics::Channel channel("Thread Lifetime", YAGET_METRICS_CHANNEL_FILE_LINE); 
+    metrics::Channel channel("T." + mThreadName, YAGET_METRICS_CHANNEL_FILE_LINE); 
  
     while (true) 
     { 

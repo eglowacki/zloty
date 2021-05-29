@@ -233,6 +233,19 @@ std::vector<yaget::io::file::FileOpResult> yaget::io::file::RemoveFiles(const St
 
 
 //-------------------------------------------------------------------------------------------------------------------------------
+yaget::io::file::FileOpResult yaget::io::file::RenameFile(const std::string& oldFileName, const std::string& newFileName)
+{
+    if (int result = std::rename(oldFileName.c_str(), newFileName.c_str()))
+    {
+        std::string message = fmt::format("Rename file from: '{}' to: '{} failed. {}", oldFileName, newFileName, std::strerror(result));
+        return { false, message };
+    }
+
+    return { true, "" };
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------
 yaget::io::file::FileOpResult yaget::io::file::SaveFile(const std::string& fileName, const io::Buffer& buffer)
 {
     fs::path sourcePath = fs::path(util::ExpendEnv(fileName, nullptr));

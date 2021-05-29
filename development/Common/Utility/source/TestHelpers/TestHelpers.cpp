@@ -42,6 +42,7 @@ namespace
 
 void yaget::test::InitializeEnvironment(const char* configBlockData /*= nullptr*/, std::size_t size /*= 0*/)
 {
+    platform::DisregardAttachedDebugger();
     // since this is run only in test environment, do not output to console (cout, cerr)
     // let debugger catch log messages and allow file log
     ylog::Manager::RegisterOutputTypes<ylog::OutputDebug, ylog::OutputFile>();
@@ -67,7 +68,7 @@ void yaget::test::InitializeEnvironment(const char* configBlockData /*= nullptr*
     std::string block = json::PrettyPrint(jsonBlock);
 
     system::InitializeSetup(block.c_str(), block.size(), true);
-    //metrics::MarkStartThread(platform::CurrentThreadId(), "MAIN");
+    metrics::MarkStartThread(platform::CurrentThreadId(), "MAIN");
 }
 
 void yaget::test::ResetEnvironment()

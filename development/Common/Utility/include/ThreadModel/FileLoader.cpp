@@ -34,6 +34,8 @@ namespace yaget::io
         mutable uint32_t mBytesCopied = 0;
         yaget::io::FileLoader::DoneCallback_t mDoneCallback;
 
+        yaget::metrics::TimeSpan mTimeSpan;
+
         static uint32_t mCounter;
     };
 
@@ -52,6 +54,7 @@ yaget::io::FileData::FileData(const std::string& name, HANDLE port, FileLoader::
     , mPort(port)
     , mKey(mCounter++)
     , mDoneCallback(doneCallback)
+    , mTimeSpan(yaget::meta::pointer_cast(this), "file_disk_read", YAGET_METRICS_CHANNEL_FILE_LINE)
 {
     mDataBuffer = io::CreateBuffer(fs::file_size(mName));
     mHandle = ::CreateFile(mName.c_str(), FILE_READ_DATA, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
@@ -66,6 +69,7 @@ yaget::io::FileData::FileData(const std::string& name, HANDLE port, FileLoader::
 
 yaget::io::FileData::FileData(uint32_t key)
     : mKey(key)
+    , mTimeSpan(0, "", nullptr, 0)
 {
 }
 
@@ -107,6 +111,7 @@ bool yaget::io::FileData::Process(uint32_t bytesCopied) const
     YAGET_ASSERT(mBytesCopied <= mDataBuffer.second, "Received more bytes then initial file size. Total received: '%d', total allocated: '%d', last bytes: '%d'.", mBytesCopied, mDataBuffer.second, bytesCopied);
     if (mBytesCopied == mDataBuffer.second)
     {
+        mTimeSpan.AddMessage("File fully loaded");
         mDoneCallback(mDataBuffer, mName);
         // we are done with data processing
         return false;
@@ -148,22 +153,26 @@ void yaget::io::FileLoader::Start()
         ULONG_PTR completionKey = 0;
         OVERLAPPED* overlappedPointer = nullptr;
 
-        bool bResult = ::GetQueuedCompletionStatus(mIOPort, &bytesCopied, &completionKey, &overlappedPointer, INFINITE) != 0;
-        if (mQuit)
         {
-            break;
-        }
+            metrics::Channel channel("L.Waiting...", YAGET_METRICS_CHANNEL_FILE_LINE);
+            bool bResult = ::GetQueuedCompletionStatus(mIOPort, &bytesCopied, &completionKey, &overlappedPointer, INFINITE) != 0;
+            if (mQuit)
+            {
+                break;
+            }
 
-        YAGET_UTIL_THROW_ON_RROR(bResult, fmt::format("Did not get queued io port for file to load assets from."));
-        if (completionKey == io::FileData::kStopKey && bytesCopied == 0 && !overlappedPointer)
-        {
-            break;
+            YAGET_UTIL_THROW_ON_RROR(bResult, fmt::format("Did not get queued io port for file to load assets from."));
+            if (completionKey == io::FileData::kStopKey && bytesCopied == 0 && !overlappedPointer)
+            {
+                break;
+            }
         }
 
         FileLoader::FileDataPtr fileDataQuery = std::make_unique<io::FileData>(static_cast<uint32_t>(completionKey));
 
         const io::FileData *nextFile = nullptr;
         {
+            metrics::Channel channel("L.Finding...", YAGET_METRICS_CHANNEL_FILE_LINE);
             std::unique_lock<std::mutex> locker(mListMutex);
             FilesToProcess::iterator it = mFilesToProcess.find(fileDataQuery);
             if (it != mFilesToProcess.end())
@@ -174,7 +183,7 @@ void yaget::io::FileLoader::Start()
 
         if (nextFile)
         {
-            metrics::Channel span(fmt::format("FileLoader.Data-{}b", conv::ToThousandsSep(bytesCopied)).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel span(fmt::format("Processing {} b", conv::ToThousandsSep(bytesCopied)).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
 
             // if Process returns false, no need for more processing, otherwise, do not remove it from mFilesToProcess
             if (!nextFile->Process(bytesCopied))

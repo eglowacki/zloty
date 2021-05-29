@@ -74,6 +74,8 @@ namespace yaget::io::file
     FileOpResult RemoveFile(const std::string& fileName);
     std::vector<FileOpResult> RemoveFiles(const Strings& fileNames);
 
+    FileOpResult RenameFile(const std::string& oldFileName, const std::string& newFileName);
+
     //! Save data in buffer to a file
     FileOpResult SaveFile(const std::string& fileName, const io::Buffer& buffer);
 

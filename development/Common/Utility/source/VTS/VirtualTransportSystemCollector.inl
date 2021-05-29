@@ -72,7 +72,7 @@ namespace
         using DoneCallback = yaget::io::VirtualTransportSystem::DoneCallback;
 
         SectionEntriesCollector(yaget::dev::Configuration::Init::VTSConfigList configList, yaget::Database& database, DoneCallback doneCallback)
-            : mTimeSpan("VTS Entries Collector", YAGET_METRICS_CHANNEL_FILE_LINE)
+            : mTimeSpan(yaget::meta::pointer_cast(this), "VTS Entries Collector", YAGET_METRICS_CHANNEL_FILE_LINE)
             , mDatabase(database)
             , mDoneCallback(std::move(doneCallback))
             , mRequestPool("INDX", yaget::dev::CurrentConfiguration().mDebug.mThreads.VTSSections)

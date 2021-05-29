@@ -5,7 +5,18 @@
 #include "YagetVersion.h"
 #include "Debugging/DevConfiguration.h"
 
+#include <filesystem>
+
+#include <boost/hana/functional/id.hpp>
+
+
+#include "HashUtilities.h"
+
+#include "App/FileUtilities.h"
+namespace fs = std::filesystem;
+
 #if YAGET_CONC_METRICS_ENABLED == 1
+#if 0
     YAGET_COMPILE_GLOBAL_SETTINGS("Concurenty Metrics Included")
 
 #include "rad_tm.h"
@@ -246,7 +257,354 @@ void yaget::metrics::MarkEndTimeSpan(uint64_t spanId, const char* file, uint32_t
 {
     tmEndTimeSpanEx(CaptureMask, spanId, file, line);
 }
-#else
+#endif // if 0
+
+//#include "cvmarkersobj.h"
+//using namespace Concurrency::diagnostic;
+
+#include <atlbase.h>
+
+YAGET_COMPILE_GLOBAL_SETTINGS("(WIP) Concurenty Metrics Included")
+
+
+//_Check_return_ HRESULT CvInitProvider(
+//    _In_ const GUID* pGuid, "8d4925ab-505a-483b-a7e0-6f824a07a6f0"
+//    _Out_ PCV_PROVIDER* ppProvider);
+
+namespace
+{
+    //GUID GuidFromString(const char* text)
+    //{
+    //    GUID guid;
+    //    ::GUIDFromString(text, &guid);
+
+    //    return guid;
+    //}
+    //
+    //GUID StringToGuid(const std::string& str)
+    //{
+    //    static GUID guid;
+    //    sscanf(str.c_str(),
+    //        "{%8x-%4hx-%4hx-%2hhx%2hhx-%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx}",
+    //        &guid.Data1, &guid.Data2, &guid.Data3,
+    //        &guid.Data4[0], &guid.Data4[1], &guid.Data4[2], &guid.Data4[3],
+    //        &guid.Data4[4], &guid.Data4[5], &guid.Data4[6], &guid.Data4[7]);
+
+    //    return guid;
+    //}
+    //
+
+    //yaget::Guid providerGui("8d4925ab-505a-483b-a7e0-6f824a07a6f0");
+    //PCV_PROVIDER provider = nullptr;
+
+    //const GUID* GetProvider()
+    //{
+    //    //_Check_return_ HRESULT CvInitProvider(
+    //    //    _In_ const GUID* pGuid, "8d4925ab-505a-483b-a7e0-6f824a07a6f0"
+    //    //    _Out_ PCV_PROVIDER* ppProvider);
+
+    //    const GUID* guid = reinterpret_cast<const GUID*>(&providerGui.bytes()[0]);
+
+    //    HRESULT result = CvInitProvider(guid, &provider);
+    //    result;
+    //    int z = 0;
+    //    z;
+
+    //    return guid;
+    //}
+
+    struct ProfileResult
+    {
+        enum class Event { Complete, Instant, AsyncBegin, AsyncEnd, Async };
+
+        std::string mName;
+        yaget::time::TimeUnits_t mStart = 0;
+        yaget::time::TimeUnits_t mEnd = 0;
+        std::size_t mThreadID = 0;
+        Event mEvent = Event::Complete;
+        std::size_t mId = 0;
+    };
+
+    struct ProfSaver
+    {
+        ProfSaver()
+            : mFilePathName(fs::path(yaget::util::ExpendEnv("$(Temp)/results.json", nullptr)).generic_string())
+        {
+            using namespace yaget;
+
+            if (io::file::IsFileExists(mFilePathName))
+            {
+                int lastFileIndex = 0;
+                const auto logNames = io::file::GetFileNames(fs::path(yaget::util::ExpendEnv("$(Temp)", nullptr)).generic_string(), false, "*results-????.json");
+                for (const auto& name : logNames)
+                {
+                    std::string_view v{ name };
+                    v.remove_prefix(v.size() - 9);
+                    v.remove_suffix(5);
+
+                    std::string value(v.begin(), v.end());
+                    int fileIndex = conv::AtoN<int>(value.c_str());
+                    lastFileIndex = std::max(lastFileIndex, fileIndex);
+                }
+
+                const std::string postfix = fmt::format("-{:04}.json", lastFileIndex + 1);
+                const std::string newName = fs::path(yaget::util::ExpendEnv("$(Temp)/results" + postfix, nullptr)).generic_string();
+
+                const auto& [result, errorMessage] = io::file::RenameFile(mFilePathName, newName);
+            }
+        }
+
+        ~ProfSaver()
+        {
+            ProfileStamps profileStamps;
+            {
+                std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
+                std::swap(profileStamps, mProfileStamps);
+            }
+
+            if (!profileStamps.empty())
+            {
+                std::ofstream outputStream(mFilePathName.c_str());
+
+                outputStream << "{\"otherData\": {";
+                    outputStream << "\"Application\": \"Yaget-Test-Core\",";
+                    outputStream << "\"Date\": \"Saturday May 29, 2021. 12:59PM\"";
+                    outputStream << "},";
+
+                outputStream << "\"traceEvents\":[";
+
+                int profileCount = 0;
+                for (const auto& profileStamp : profileStamps)
+                {
+                    std::string name = profileStamp.mName;
+                    std::replace(name.begin(), name.end(), '"', '\'');
+
+                    switch (profileStamp.mEvent)
+                    {
+                    case ProfileResult::Event::Complete:
+                        if (profileCount++ > 0)
+                        {
+                            outputStream << ",";
+                        }
+                        outputStream << "{";
+                        outputStream << "\"cat\": \"function\",";
+                        outputStream << "\"dur\": " << (profileStamp.mEnd - profileStamp.mStart) << ',';
+                        outputStream << "\"name\": \"" << name << "\",";
+                        outputStream << "\"ph\": \"X\",";
+                        outputStream << "\"pid\": 0,";
+                        outputStream << "\"tid\": " << profileStamp.mThreadID << ",";
+                        outputStream << "\"ts\": " << profileStamp.mStart;
+                        outputStream << "}";
+
+                        break;
+                    case ProfileResult::Event::AsyncBegin:
+                        if (profileCount++ > 0)
+                        {
+                            outputStream << ",";
+                        }
+                        outputStream << "{";
+                        outputStream << "\"cat\": \"async\",";
+                        outputStream << "\"name\": \"" << name << "\",";
+                        outputStream << "\"id\": " << profileStamp.mId << ",";
+                        outputStream << "\"ph\": \"b\",";
+                        outputStream << "\"pid\": 0,";
+                        outputStream << "\"tid\": " << profileStamp.mThreadID << ",";
+                        outputStream << "\"ts\": " << profileStamp.mStart << ",";
+                        outputStream << "\"args\": {";
+                        outputStream << "\"name\": " << "\"~/.bashrc\"" << "}";
+                        outputStream << "}";
+
+                        break;
+                    case ProfileResult::Event::AsyncEnd:
+                        if (profileCount++ > 0)
+                        {
+                            outputStream << ",";
+                        }
+                        outputStream << "{";
+                        outputStream << "\"cat\": \"async\",";
+                        outputStream << "\"name\": \"" << name << "\",";
+                        outputStream << "\"tid\": " << profileStamp.mThreadID << ",";
+                        outputStream << "\"id\": " << profileStamp.mId << ",";
+                        outputStream << "\"pid\": 0,";
+                        outputStream << "\"ts\": " << profileStamp.mEnd << ",";
+                        outputStream << "\"ph\": \"e\"";
+                        outputStream << "}";
+
+                        break;
+                    case ProfileResult::Event::Async:
+                        if (profileCount++ > 0)
+                        {
+                            outputStream << ",";
+                        }
+                        outputStream << "{";
+                        outputStream << "\"cat\": \"async\",";
+                        outputStream << "\"name\": \"" << name << "\",";
+                        outputStream << "\"tid\": " << profileStamp.mThreadID << ",";
+                        outputStream << "\"id\": " << profileStamp.mId << ",";
+                        outputStream << "\"pid\": 0,";
+                        outputStream << "\"ts\": " << profileStamp.mStart << ",";
+                        outputStream << "\"ph\": \"n\"";
+                        outputStream << "}";
+
+                        break;
+                    }
+
+                    //if (profileCount == 500)
+                    //{
+                    //    outputStream << ",";
+                    //    outputStream << "{";
+                    //    outputStream << "\"name\": \"500 Ping\",";
+                    //    outputStream << "\"ph\": \"i\",";
+                    //    outputStream << "\"pid\": 0,";
+                    //    outputStream << "\"tid\": " << profileStamp.ThreadID << ",";
+                    //    outputStream << "\"ts\": " << profileStamp.Start << ",";
+                    //    outputStream << "\"s\": \"t\"";
+                    //    outputStream << "}";
+                    //}
+                }
+
+                for (const auto& [id, name] : mThreadNames)
+                {
+                    if (profileCount++ > 0)
+                    {
+                        outputStream << ",";
+                    }
+
+                    outputStream << "{";
+                    outputStream << "\"name\": \"thread_name\",";
+                    outputStream << "\"ph\": \"M\",";
+                    outputStream << "\"pid\": 0,";
+                    outputStream << "\"tid\": " << id << ",";
+                    outputStream << "\"args\": {";
+                    outputStream << "\"name\": \"" << name << "\"}";
+                    outputStream << "}";
+                }
+
+                outputStream << "]}";
+                outputStream.flush();
+            }
+        }
+
+        void AddProfileStamp(ProfileResult&& result)
+        {
+            std::size_t num = 0;
+            {
+                std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
+                mProfileStamps.emplace_back(std::move(result));
+                num = mProfileStamps.size();
+            }
+
+            const int capacityChecker = 1000;
+            if (num % capacityChecker == 0)
+            {
+                const std::string bytes = yaget::conv::ToThousandsSep(num * sizeof(ProfileStamps::value_type));
+                YLOG_DEBUG("METR", "Accumulated profile results: '%d' results using '%s' bytes of memory.", num, bytes.c_str());
+            }
+        }
+
+        void SetThreadName(const char* threadName, std::size_t t)
+        {
+            std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
+            mThreadNames[t] = threadName ? threadName : "";
+        }
+
+        std::mutex mmProfileStampMutex;
+        using ProfileStamps = std::vector<ProfileResult>;
+        ProfileStamps mProfileStamps;
+        const std::string mFilePathName;
+
+        using ThreadNames = std::unordered_map<std::size_t, std::string>;
+        ThreadNames mThreadNames;
+    };
+
+    ProfSaver& GetSaver()
+    {
+        static ProfSaver profSaver;
+
+        return profSaver;
+    }
+}
+
+
+yaget::metrics::internal::Metric::Metric(const std::string& message, const char* file, uint32_t line)
+    : mMessage(message)
+    , mFileName(file ? file : "Unknown")
+    , mLineNumber(line)
+    , mStart(platform::GetRealTime(yaget::time::kMicrosecondUnit))
+{}
+
+yaget::metrics::Channel::Channel(const std::string& message, const char* file, uint32_t line)
+    : internal::Metric(message, file, line)
+{
+}
+
+
+yaget::metrics::Channel::~Channel()
+{
+    const std::size_t threadID = platform::CurrentThreadId();
+    GetSaver().AddProfileStamp({ mMessage, mStart, platform::GetRealTime(yaget::time::kMicrosecondUnit), threadID, ProfileResult::Event::Complete });
+}
+
+
+yaget::metrics::TimeSpan::TimeSpan(std::size_t id, const char* message, const char* file, uint32_t line)
+    : internal::Metric(message, file, line)
+    , mId(id)
+{
+    if (mId)
+    {
+        const std::size_t threadID = platform::CurrentThreadId();
+        GetSaver().AddProfileStamp({ mMessage, mStart, platform::GetRealTime(yaget::time::kMicrosecondUnit), threadID, ProfileResult::Event::AsyncBegin, mId });
+    }
+}
+
+
+yaget::metrics::TimeSpan::~TimeSpan()
+{
+    if (mId)
+    {
+        const std::size_t threadID = platform::CurrentThreadId();
+        GetSaver().AddProfileStamp({ mMessage, mStart, platform::GetRealTime(yaget::time::kMicrosecondUnit), threadID, ProfileResult::Event::AsyncEnd, mId });
+    }
+}
+
+
+void yaget::metrics::TimeSpan::AddMessage(const char* message) const
+{
+    if (mId)
+    {
+        const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+        const std::size_t threadID = platform::CurrentThreadId();
+        GetSaver().AddProfileStamp({ message, currentTime, currentTime, threadID, ProfileResult::Event::Async, mId });
+    }
+}
+
+void yaget::metrics::MarkStartThread(uint32_t threadId, const char* threadName)
+{
+    //tmThreadName(CaptureMask, threadId, threadName);
+    platform::SetThreadName(threadName, threadId);
+    GetSaver().SetThreadName(threadName, threadId);
+}
+
+
+void yaget::metrics::MarkStartThread(std::thread& t, const char* threadName)
+{
+    MarkStartThread(platform::GetThreadId(t), threadName);
+}
+
+
+std::string yaget::metrics::MarkGetThreadName(std::thread& thread)
+{
+    return MarkGetThreadName(platform::GetThreadId(thread));
+}
+
+
+std::string yaget::metrics::MarkGetThreadName(uint32_t threadId)
+{
+    return platform::GetThreadName(threadId);
+}
+
+
+#else // YAGET_CONC_METRICS_ENABLED
 
 YAGET_COMPILE_GLOBAL_SETTINGS("Concurenty Metrics Partialy NOT Included")
 //#pragma message("======== Concurenty Metrics Partialy NOT Included ========")

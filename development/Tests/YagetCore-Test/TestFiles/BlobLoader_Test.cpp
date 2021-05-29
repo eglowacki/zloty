@@ -4,10 +4,11 @@
 #include "StringHelpers.h"
 #include "App/FileUtilities.h"
 #include "TestHelpers/TestHelpers.h"
-
-#include <filesystem>
+#include "Metrics/Concurrency.h"
 
 #include "Platform/Support.h"
+
+#include <filesystem>
 namespace fs = std::filesystem;
 
 namespace
@@ -33,7 +34,8 @@ namespace
         const Strings oldFiles = io::file::GetFileNames(destFolder.generic_string(), false, fileFilter);
         io::file::RemoveFiles(oldFiles);
 
-        const auto dataBuffer = io::CreateBuffer("417");
+        //const auto dataBuffer = io::CreateBuffer("417");
+        const auto dataBuffer = io::CreateBuffer(1024 * 1024 * 10);
 
         Strings filesToTest;
         for (int i = 0; i < maxNumFiles; ++i)
@@ -58,12 +60,16 @@ TEST_F(BlobLoader, LoadConvert)
 {
     using namespace yaget;
 
+    metrics::Channel channel("Main.BlobLoader", YAGET_METRICS_CHANNEL_FILE_LINE);
+
     const int kMaxNumFiles = 100;
 
     const Strings filesToTest = CleanupAndSetup(kMaxNumFiles);
 
     int counter = 0;
     {
+        metrics::Channel vChannel("Wait For Results", YAGET_METRICS_CHANNEL_FILE_LINE);
+
         io::BlobLoader blobLoader(true, nullptr);
 
         // first, validate some input assumptions and make sure that loader
@@ -81,19 +87,23 @@ TEST_F(BlobLoader, LoadConvert)
         YLOG_NOTICE("TEST", "There are '%d' files to process.", filesToTest.size());
         EXPECT_NO_THROW(blobLoader.AddTask(filesToTest, [&counter](const auto& fileData)
         {
-                ++counter;
+            ++counter;
+            platform::Sleep(1, time::kMilisecondUnit);
         }));
     }
     EXPECT_EQ(counter, kMaxNumFiles);
 
     counter = 0;
     {
+        metrics::Channel aChannel("Cancel", YAGET_METRICS_CHANNEL_FILE_LINE);
+
         io::BlobLoader blobLoader(false, nullptr);
 
         YLOG_NOTICE("TEST", "There are '%d' files to process.", filesToTest.size());
         blobLoader.AddTask(filesToTest, [&counter](const auto& fileData)
         {
             ++counter;
+            platform::Sleep(1, time::kMilisecondUnit);
         });
     }
     EXPECT_LE(counter, kMaxNumFiles);

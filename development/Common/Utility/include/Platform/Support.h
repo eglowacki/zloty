@@ -66,6 +66,7 @@ namespace yaget
         void LogLastError(const std::string& userMessage);
         std::string LastErrorMessage();
 
+        void DisregardAttachedDebugger();
         bool IsDebuggerAttached();
         void DebuggerBreak();
         void DebuggerOutput(const std::string& message);
