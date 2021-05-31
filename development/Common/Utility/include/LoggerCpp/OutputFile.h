@@ -43,25 +43,8 @@ namespace yaget
             void open() const;
             /// @brief Close the log file
             void close() const;
-            /// @brief Rotate the log file : close, remove, rename, open
-            void rotate() const;
 
             mutable FILE* mpFile; ///< @brief File pointer (mutable to be modified in the const output method)
-            mutable long mSize; ///< @brief Current size of the log file (mutable to be modified in the const output method)
-
-            /**
-             * @brief "max_startup_size" : Size of the file above which to create a new file instead of appending to it (at startup).
-             *
-             * Default (0) creates a new file at each startup (never append to an existing one).
-            */
-            long mMaxStartupSize;
-
-            /**
-             * @brief "max_size" : Size of the file above which to create a new file instead of appending to it (at runtime).
-             *
-             * Default (1024*1024=1Mo) creates a new file each time the current one grow above 1Mo.
-            */
-            long mMaxSize;
 
             /**
              * @brief "filename" : Name of the log file
@@ -71,9 +54,11 @@ namespace yaget
             /**
              * @brief "filename_old" : Name of the log file renamed after max_size is reach
              */
-            std::string mFilenameOld;
+            //std::string mFilenameOld;
 
             bool m_bSplitLines = false;
+
+            static int mInstanceCounter;
         };
 
     } //  // namespace ylog

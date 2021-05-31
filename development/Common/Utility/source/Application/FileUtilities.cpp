@@ -10,7 +10,6 @@
 #include <Dbghelp.h>
 
 #include <unordered_set>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -352,6 +351,20 @@ yaget::io::file::FileOpResult yaget::io::file::AssureDirectories(const std::stri
     }
 
     return { true, "" };
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------
+yaget::io::file::FileComponents yaget::io::file::SplitComponents(const std::filesystem::path& filePath)
+{
+    FileComponents fileComponents
+    {
+        filePath.parent_path().generic_string(),
+        filePath.stem().generic_string(),
+        filePath.extension().generic_string()
+    };
+
+    return fileComponents;
 }
 
 

@@ -17,7 +17,6 @@
 #pragma once
 
 #include "Base.h"
-#include "Debugging/Assert.h"
 #include "Logger/YLog.h"
 #include <vector>
 
@@ -46,7 +45,8 @@ namespace yaget
         InitializationResult InitializeSetup(const char* configData = nullptr, size_t configSize = 0, bool skipOptions = false);
 
         //! Call this to initialize dev, runtime and logging sub-systems. This will set engine state to valid.
-        //! Only call this if you need fine control over options and custom error handling, prefer InitializeSetup variant  
+        //! Only call this if you need fine control over options and custom error handling,
+        // otherwise prefer InitializeSetup variants  
         void Initialize(const args::Options& options, const char* configData, size_t configSize);
 
     } // namespace yaget
@@ -180,3 +180,14 @@ namespace yaget
     };
 
 }
+
+// get size of struct at compile time
+// define YAGET_GET_STRUCT_SIZE before calling ANY headers (do that in your cpp at the top of the file)
+// and then call print_size_at_compile and errors out
+// If YAGET_GET_STRUCT_SIZE is not define, print_size_at_compile does nothing
+// Output (using TraceRecord struct with 80 bytes in size as an example):
+// 1>Meta\CompilerAlgo.h(467,1): error C2440: 'initializing': cannot convert from 'int' to 'char (*)[80]'
+// 1>PerformanceTracer.cpp(4): message : see reference to function template instantiation 'int yaget::meta::print_size_at_compile<TraceRecord>(void)' being compiled
+
+//#define YAGET_GET_STRUCT_SIZE
+//const int holder = yaget::meta::print_size_at_compile<yaget::metrics::TraceRecord>();

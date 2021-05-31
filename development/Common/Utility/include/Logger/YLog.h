@@ -20,6 +20,7 @@
 
 #include "LoggerCpp/LoggerCpp.h"
 #include "LoggerCpp/Manager.h"
+#include "Debugging/Assert.h"
 #include "App/Args.h"
 #include <string.h>
 

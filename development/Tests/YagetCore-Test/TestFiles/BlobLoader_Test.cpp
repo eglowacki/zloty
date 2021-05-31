@@ -23,18 +23,27 @@ namespace
 
         return length;
     }
-    yaget::Strings CleanupAndSetup(int maxNumFiles)
+
+    void CleanTestFiles()
     {
         using namespace yaget;
 
         const fs::path destFolder = util::ExpendEnv("$(Temp)", nullptr);
-        const std::string fileNumber = fmt::format("blob_file-{{:0{}}}.bin", GetNumDigits(maxNumFiles));
 
         const std::string fileFilter = { "*blob_file-*.bin" };
         const Strings oldFiles = io::file::GetFileNames(destFolder.generic_string(), false, fileFilter);
         io::file::RemoveFiles(oldFiles);
+    }
 
-        //const auto dataBuffer = io::CreateBuffer("417");
+    yaget::Strings CleanupAndSetup(int maxNumFiles)
+    {
+        using namespace yaget;
+
+        CleanTestFiles();
+
+        const fs::path destFolder = util::ExpendEnv("$(Temp)", nullptr);
+        const std::string fileNumber = fmt::format("blob_file-{{:0{}}}.bin", GetNumDigits(maxNumFiles));
+
         const auto dataBuffer = io::CreateBuffer(1024 * 1024 * 10);
 
         Strings filesToTest;
@@ -47,6 +56,7 @@ namespace
 
         return filesToTest;
     }
+
 }
 
 //CHECK_EQUAL(expected, actual);
@@ -72,8 +82,7 @@ TEST_F(BlobLoader, LoadConvert)
 
         io::BlobLoader blobLoader(true, nullptr);
 
-        // first, validate some input assumptions and make sure that loader
-        // throws on error
+        // first, validate some input assumptions and make sure that loader throws on error
         auto testConverters = std::vector<io::BlobLoader::Convertor>{};
 
         EXPECT_NO_THROW(blobLoader.AddTask({}, testConverters));
@@ -84,7 +93,6 @@ TEST_F(BlobLoader, LoadConvert)
         testConverters.push_back({});
         EXPECT_ANY_THROW(blobLoader.AddTask(filesToTest, testConverters));
 
-        YLOG_NOTICE("TEST", "There are '%d' files to process.", filesToTest.size());
         EXPECT_NO_THROW(blobLoader.AddTask(filesToTest, [&counter](const auto& fileData)
         {
             ++counter;
@@ -99,12 +107,13 @@ TEST_F(BlobLoader, LoadConvert)
 
         io::BlobLoader blobLoader(false, nullptr);
 
-        YLOG_NOTICE("TEST", "There are '%d' files to process.", filesToTest.size());
         blobLoader.AddTask(filesToTest, [&counter](const auto& fileData)
         {
             ++counter;
             platform::Sleep(1, time::kMilisecondUnit);
         });
     }
-    EXPECT_LE(counter, kMaxNumFiles);
+    EXPECT_LT(counter, kMaxNumFiles);
+
+    CleanTestFiles();
 }

@@ -97,5 +97,7 @@ namespace yaget
             Behaviour mBehaviour = Behaviour::StartAsRun;
             mt::Condition mEmptyCondition;
         };
+
+        std::string GenerateNextName(const std::string& name);
     } // namespace mt
 } // namespace yaget

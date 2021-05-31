@@ -480,6 +480,74 @@ std::string yaget::util::ValidatePath(const std::string potentialPath)
 }
 
 
+namespace
+{
+    int ExtractNumber(const std::string& name)
+    {
+        const std::string fileName = fs::path(name).stem().generic_string();
+        if (fileName.size() > 4)
+        {
+            std::string_view v{ fileName };
+            v.remove_prefix(v.size() - 4);
+
+            const std::string value(v.begin(), v.end());
+            return yaget::conv::AtoN<int>(value.c_str());
+        }
+
+        return 0;
+    }
+}
+
+
+//---------------------------------------------------------------------------------------------------------------------------------
+bool yaget::util::FileCycler(const std::string& folder, const std::string& fileName, const std::string& extension, int maxFiles /*= 10*/)
+{
+    using namespace yaget;
+
+    fs::path fp = fs::path(folder) / fs::path(fileName);
+    fp.replace_extension(extension);
+    const std::string filePathName = fs::path(ExpendEnv(fp.generic_string(), nullptr)).generic_string();
+
+    if (io::file::IsFileExists(filePathName))
+    {
+        int lastFileIndex = 0;
+        fs::path filterFile = "*" + fileName + "-????";
+        filterFile.replace_extension(extension);
+
+        const std::string folderNameText = fs::path(ExpendEnv(folder, nullptr)).generic_string();
+        const std::string filterText = fs::path(ExpendEnv(filterFile.generic_string(), nullptr)).generic_string();
+
+        const auto logNames = io::file::GetFileNames(folderNameText, false, filterText);
+        for (const auto& name : logNames)
+        {
+            int fileIndex = ExtractNumber(name);
+            lastFileIndex = std::max(lastFileIndex, fileIndex);
+        }
+
+        std::string partialName = fs::path(fs::path(folder) / fs::path(fileName)).generic_string();
+        partialName += fmt::format("-{:04}", lastFileIndex + 1);
+
+        const std::string newName = fs::path(ExpendEnv(partialName, extension.c_str())).generic_string();
+        const auto& [result, errorMessage] = io::file::RenameFile(filePathName, newName);
+
+        auto leftNames = io::file::GetFileNames(folderNameText, false, filterText);
+        if (leftNames.size() > maxFiles)
+        {
+            std::sort(leftNames.begin(), leftNames.end(), [](const std::string& elem1, const std::string& elem2)
+            {
+                return ExtractNumber(elem1) < ExtractNumber(elem2);
+            });
+
+            io::file::RemoveFiles({ leftNames.rbegin() + maxFiles, leftNames.rend() });
+        }
+
+        return result;
+    }
+
+    return true;
+}
+
+
 //---------------------------------------------------------------------------------------------------------------------------------
 bool yaget::util::IsExtension(const std::string& name, const std::string& extension)
 {

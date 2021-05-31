@@ -16,6 +16,7 @@
 #pragma once
 
 #include "YagetCore.h"
+#include "Meta/CompilerAlgo.h"
 #include <set>
 
 

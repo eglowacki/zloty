@@ -15,7 +15,6 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
 #include <string_view>
 #include <array>
 
@@ -458,6 +457,18 @@ namespace yaget::meta
     {
         return reinterpret_cast<T>(p);
     }
+
+    // It will generate compile error but will print
+    // sizef of a structure
+    template <typename T>
+    int print_size_at_compile()
+    {
+#ifdef YAGET_GET_STRUCT_SIZE
+        char(*__kaboom)[sizeof(T)] = 1;
+#endif
+        return 0;
+    }
+
 } // namespace yaget::meta
 
 

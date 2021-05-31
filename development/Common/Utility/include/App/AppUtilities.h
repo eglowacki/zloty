@@ -45,7 +45,7 @@ namespace yaget::util
     //!  $(ScreenshotsFolder)   = Location of saved screenshots                                         $(UserDataFolder)/Screenshots   (old folder: %USERPROFILE%/Pictures/Screenshots/$(Brand)/$(AppName) : Windows Id: FOLDERID_Screenshots)
     //!  $(LogFolder)           = Location of all log files.                                            $(UserDataFolder)/Logs
     //!  $(SaveDataFolder)      = Location of saved game data.                                          $(UserDataFolder)/Saves
-    //!  $(Brand)               = Name of company or brand used as prefix to application specific folders (default: Yaget). There is macro below YAGET_BRAND_NAME_F to customize brand name per project.
+    //!  $(Brand)               = Name of company or brand used as prefix to application specific folders (default: Yaget). There is macro YAGET_BRAND_NAME_F to customize brand name per project.
     //!
     //!  $(AssetsFolder)        = Location to assets folder for application                             "$(AppDataFolder)/Assets"       Both of these aliases default under $(AppDataFolder),
     //!  $(DatabaseFolder)      = Location to database folder for application                           "$(AppDataFolder)/Database"     but since it's not visible by default, during development
@@ -65,6 +65,13 @@ namespace yaget::util
 
     bool IsExtension(const std::string& name, const std::string& extension);
     std::string ValidatePath(const std::string potentialPath);
+
+    // Check for if file exist folder/fileName.extension exist
+    // rename to folder/fileName-0000.extension
+    // // where 0000 will be replace with hightest number from all files fallowing
+    // // pattern: folder/fileName-????.extension
+    // maxFiles will cap number of renamed files. It will leave hightest numbered files
+    bool FileCycler(const std::string& folder, const std::string& fileName, const std::string& extension, int maxFiles = 10);
 
     std::string SelectSaveFileName(const char* filter, const char* dialogTitle);
     void DisplayDialog(const char* title, const char* message);

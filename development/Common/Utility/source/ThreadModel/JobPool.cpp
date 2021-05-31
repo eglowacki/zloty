@@ -1,10 +1,70 @@
 #include "ThreadModel/JobPool.h" 
+
+#include "HashUtilities.h"
+
+#include "Debugging/DevConfiguration.h"
+
+
 #include "Logger/YLog.h" 
 #include "fmt/format.h" 
 #include "Platform/Support.h" 
- 
+
+
+namespace
+{
+    class NameIndexer
+    {
+    public:
+        std::string GetNextName(const std::string& name)
+        {
+            int value = 0;
+            {
+                std::lock_guard<std::mutex> mutexLock(mMutex);
+                value = ++mCounters[name];
+            }
+
+            return GenerateName(name, value);
+        }
+
+        std::string GetLastName(const std::string& name) const
+        {
+            std::string result;
+            std::lock_guard<std::mutex> mutexLock(mMutex);
+            auto it = mCounters.find(name);
+            if (it != mCounters.end())
+            {
+                return GenerateName(it->first, it->second);
+            }
+
+            return name;
+        }
+
+    private:
+        std::string GenerateName(const std::string& name, int index) const
+        {
+            return name + "." + yaget::conv::Convertor<int>::ToString(index);
+        }
+
+        using Counters = std::unordered_map<std::string, int>;
+        Counters mCounters;
+
+        mutable std::mutex mMutex;
+    };
+
+    NameIndexer& Indexer()
+    {
+        static NameIndexer nameIndexer;
+
+        return nameIndexer;
+    }
+}
+std::string yaget::mt::GenerateNextName(const std::string& name)
+{
+    return Indexer().GetNextName(name);
+}
+
 yaget::mt::JobPool::JobPool(const char* poolName, uint32_t numThreads /*= 0*/, Behaviour behaviour /*= Behaviour::StartAsRun*/) 
-    : mName(poolName) 
+    : mName(GenerateNextName(poolName))
     , mBehaviour(behaviour) 
 {
     mEmptyCondition.Trigger();

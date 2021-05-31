@@ -20,12 +20,13 @@
 #include <sys/stat.h>
 
 #include <filesystem>
-
-
+namespace fs = std::filesystem;
 
 using namespace yaget;
 using namespace yaget::ylog;
-namespace fs = std::filesystem;
+
+
+int OutputFile::OutputFile::mInstanceCounter = 0;
 
 // Open the output file
 OutputFile::OutputFile(const Config::Ptr& aConfigPtr)
@@ -34,37 +35,38 @@ OutputFile::OutputFile(const Config::Ptr& aConfigPtr)
 {
     assert(aConfigPtr);
 
-    std::string logPathName = util::ExpendEnv(aConfigPtr->get("filename", "$(LogFolder)/$(AppName).txt"), nullptr);
-    io::file::AssureDirectories(logPathName);
-    logPathName = fs::weakly_canonical(logPathName).string();
+    const fs::path logFileName(aConfigPtr->get("filename", "$(LogFolder)/$(AppName).log"));
 
-    std::string ext = fs::path(logPathName).extension().string();
-
-    fs::path p(logPathName);
-    p.replace_extension(".old" + ext);
-    std::string logOldPathName = p.string();
-
-    mMaxStartupSize = aConfigPtr->get("max_startup_size", static_cast<long>(0));
-    mMaxSize = aConfigPtr->get("max_size", static_cast<long>(1024) * 1024);
-    mFilename = logPathName;
-    mFilenameOld = logOldPathName;
-
-    // Test the size of the existing log file, rename it and open a new one if needed
-    struct stat statFile;
-    int ret = stat(mFilename.c_str(), &statFile);
-    if (0 == ret)
+    // used to re-use the same log file if this is the same instance but user re-configured log system
+    static Guid runtimeId;
+    if (runtimeId != util::ApplicationRuntimeId())
     {
-        mSize = statFile.st_size;
-    }
+        runtimeId = util::ApplicationRuntimeId();
 
-    if (mSize > mMaxStartupSize)
-    {
-        rotate();
+        const std::string folderName = logFileName.has_parent_path() ? logFileName.parent_path().generic_string() : "$(LogFolder)";
+        const std::string fileName = logFileName.stem().generic_string();
+        const std::string extension = logFileName.has_extension() ? logFileName.extension().generic_string() : "log";
+
+        util::FileCycler(folderName, fileName, extension);
+
+        fs::path fp = fs::path(folderName) / fs::path(fileName);
+        fp.replace_extension(extension);
+
+        const std::string logPathName = fs::path(util::ExpendEnv(fp.generic_string(), nullptr)).generic_string();
+
+        io::file::AssureDirectories(logPathName);
+        mFilename = logPathName;
     }
     else
     {
-        open();
+        const std::string logPathName = fs::path(util::ExpendEnv(logFileName.generic_string(), nullptr)).generic_string();
+
+        io::file::AssureDirectories(logPathName);
+        mFilename = logPathName;
     }
+
+    ++mInstanceCounter;
+    open();
 }
 
 // Close the file
@@ -81,7 +83,12 @@ void OutputFile::open() const
     mpFile = fopen(mFilename.c_str(), "at");
     if (!mpFile)
     {
-        LOGGER_THROW("file \"" << mFilename << "\" not opened");
+        LOGGER_THROW("file '" << mFilename << "' not opened");
+    }
+    else if (mInstanceCounter > 1)
+    {
+        fprintf(mpFile, "Instance Run No: '%d' ---------------------------------------------------------\n", mInstanceCounter);
+        fflush(mpFile);
     }
 }
 #pragma warning(pop) 
@@ -93,34 +100,16 @@ void OutputFile::close() const
     {
         fclose(mpFile);
         mpFile = nullptr;
-        mSize = 0;
     }
-}
-
-// Rotate a file : close, remove, rename, open
-void OutputFile::rotate() const
-{
-    close();
-
-    remove(mFilenameOld.c_str());
-    rename(mFilename.c_str(), mFilenameOld.c_str());
-
-    open();
 }
 
 // Output the Log to the standard console using printf
 void OutputFile::OnOutput(const Channel::Ptr& /*aChannelPtr*/, const Log& aLog) const
 {
-    if (mSize > mMaxSize)
-    {
-        rotate();
-    }
-
     if (mpFile)
     {
         const auto& buffer = aLog.FormatedMessage(m_bSplitLines);
-        int nbWritten = fprintf(mpFile, buffer);
+        fprintf(mpFile, buffer);
         fflush(mpFile);
-        mSize += nbWritten;
     }
 }

@@ -16,7 +16,7 @@
     },
     {
       "Id": "5869dbec-0b19-4c61-90bd-08658a645c6d",
-      "Command": "--gtest_filter=Time.Sleep"
+      "Command": "--gtest_filter=File.LogCycler"
     },
     {
       "Id": "b9427494-e860-480f-a11f-38e48e6335e3",

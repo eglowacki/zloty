@@ -26,230 +26,138 @@
 #include <functional>
 
 
-namespace yaget
+namespace yaget::metrics
 {
-    namespace metrics
-    {
 #if YAGET_CONC_METRICS_ENABLED == 1
 
-#if 0
-        //--------------------------------------------------------------------------------------------------------------
-        // Marks thread span
-        class Channel : public yaget::Noncopyable<Channel>
+    namespace internal
+    {
+        class Metric : public yaget::Noncopyable<Metric>
         {
         public:
-            Channel(const char* message, const char* file, uint32_t line);
-            ~Channel();
+            virtual ~Metric() = default;
+
+        protected:
+            Metric(const std::string& message, const char* file, uint32_t line);
+
+            std::string mMessage;
+            const char* mFileName = nullptr;
+            uint32_t mLineNumber = 0;
+            time::TimeUnits_t mStart = 0;
         };
+    }
 
-        //--------------------------------------------------------------------------------------------------------------
-        // Marks start and end time (with span) regardless of which thread started and which one ended
-        class TimeSpan : public yaget::Noncopyable<TimeSpan>
-        {
-        public:
-            TimeSpan(const char* message, const char* file, uint32_t line);
-            ~TimeSpan();
+    class Channel : public internal::Metric
+    {
+    public:
 
-        private:
-            uint32_t mZoneId;
-        };
+        Channel(const std::string& message, const char* file, uint32_t line);
+        ~Channel() override;
+    };
 
-        //--------------------------------------------------------------------------------------------------------------
-        namespace internal
-        {
-            class PerfLocker : public Noncopyable<PerfLocker>
-            {
-            public:
-                using Mutext = std::mutex;
+    //--------------------------------------------------------------------------------------------------------------
+    // Marks start and end time (with span) regardless of which thread started and which one ended
+    class TimeSpan : public internal::Metric
+    {
+    public:
+        TimeSpan(std::size_t id, const std::string& message, const char* file, uint32_t line);
+        ~TimeSpan() override;
 
-                PerfLocker(Mutext& mutex, const char* message, const char* file, uint32_t line);
-                virtual ~PerfLocker();
+        void AddMessage(const char* message) const;
 
-            protected:
-                Mutext& mMutex;
-            };
-        } // namespace internal
+    private:
+        std::size_t mId = 0;
+    };
 
-        //--------------------------------------------------------------------------------------------------------------
-        class Locker : public internal::PerfLocker
-        {
-        public:
-            //using Mutext = internal::PerfLocker::Mutext;
+    //--------------------------------------------------------------------------------------------------------------
+    class Locker
+    {
+    public:
+        Locker(std::mutex&, const char*, const char*, uint32_t) {}
+    };
 
-            Locker(Mutext& mutex, const char* message, const char* file, uint32_t line);
+    //--------------------------------------------------------------------------------------------------------------
+    class LockerSpan : public Locker
+    {
+    public:
+        LockerSpan(std::mutex& mutex, const char* message, const char* file, uint32_t line)
+            : Locker(mutex, message, file, line)
+        {}
+    };
+    //--------------------------------------------------------------------------------------------------------------
+    inline void Initialize(const args::Options&) {}
 
-        private:
-            std::unique_lock<Mutext> mLock;
-        };
+    // putting back intel concurrency functionality
+    void MarkStartThread(std::thread& thread, const char* name);
+    void MarkStartThread(uint32_t threadId, const char* name);
 
-        //--------------------------------------------------------------------------------------------------------------
-        class LockerSpan : public Locker
-        {
-        public:
-            LockerSpan(Mutext& mutex, const char* message, const char* file, uint32_t line)
-                : Locker(mutex, message, file, line)
-                , mSpan(message, file, line)
-            {}
-
-        private:
-            metrics::Channel mSpan;
-        };
-
-        ////--------------------------------------------------------------------------------------------------------------
-        //class LockerMarker : public Noncopyable<LockerMarker>
-        //{
-        //public:
-        //    using LockOperation = std::function<void()>;
-        //    LockerMarker(void* mutex, const char* message, LockOperation lockOperation, const char* file, uint32_t line);
-        //    virtual ~LockerMarker();
-
-        //private:
-        //    void* mMutex;
-        //};
-
-        //--------------------------------------------------------------------------------------------------------------
-        void Initialize(const args::Options& options);
-
-        void MarkStartThread(std::thread& t, const char* threadName);
-        void MarkEndThread(std::thread& t);
-        void MarkStartThread(uint32_t threadId, const char* threadName);
-        void MarkEndThread(uint32_t threadId);
-
-        void MarkStartTimeSpan(uint64_t spanId, const char* message, const char* file, uint32_t line);
-        void MarkEndTimeSpan(uint64_t spanId, const char* file, uint32_t line);
-
-        void Tick();
-#endif // if 0
-
-        namespace internal
-        {
-            class Metric : public yaget::Noncopyable<Metric>
-            {
-            public:
-                virtual ~Metric() = default;
-
-            protected:
-                Metric(const std::string& message, const char* file, uint32_t line);
-
-                std::string mMessage;
-                const char* mFileName = nullptr;
-                uint32_t mLineNumber = 0;
-                time::TimeUnits_t mStart = 0;
-            };
-        }
-
-        class Channel : public internal::Metric
-        {
-        public:
-
-            Channel(const std::string& message, const char* file, uint32_t line);
-            ~Channel() override;
-        };
-
-        //--------------------------------------------------------------------------------------------------------------
-        // Marks start and end time (with span) regardless of which thread started and which one ended
-        class TimeSpan : public internal::Metric
-        {
-        public:
-            TimeSpan(std::size_t id, const char* message, const char* file, uint32_t line);
-            ~TimeSpan() override;
-
-            void AddMessage(const char* message) const;
-
-        private:
-            std::size_t mId = 0;
-        };
-
-        //--------------------------------------------------------------------------------------------------------------
-        class Locker
-        {
-        public:
-            Locker(std::mutex&, const char*, const char*, uint32_t) {}
-        };
-
-        //--------------------------------------------------------------------------------------------------------------
-        class LockerSpan : public Locker
-        {
-        public:
-            LockerSpan(std::mutex& mutex, const char* message, const char* file, uint32_t line)
-                : Locker(mutex, message, file, line)
-            {}
-        };
-        //--------------------------------------------------------------------------------------------------------------
-        inline void Initialize(const args::Options&) {}
-
-        // putting back intel concurrency functionality
-        void MarkStartThread(std::thread& thread, const char* name);
-        void MarkStartThread(uint32_t threadId, const char* name);
-
-        std::string MarkGetThreadName(std::thread& thread);
-        std::string MarkGetThreadName(uint32_t threadId);
+    std::string MarkGetThreadName(std::thread& thread);
+    std::string MarkGetThreadName(uint32_t threadId);
 
 
-        // not converted yet
-        inline void MarkEndThread(std::thread&) {}
-        inline void MarkEndThread(uint32_t) {}
+    // not converted yet
+    inline void MarkEndThread(std::thread&) {}
+    inline void MarkEndThread(uint32_t) {}
 
-        inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
-        inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
+    inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
+    inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
 
-        inline void Tick() {}
+    inline void Tick() {}
 
 #else // YAGET_CONC_METRICS_ENABLED
 
-        class Channel
-        {
-        public:
-            Channel(const char*, const char*, uint32_t) {}
-        };
+    class Channel
+    {
+    public:
+        Channel(const char*, const char*, uint32_t) {}
+    };
 
-        //--------------------------------------------------------------------------------------------------------------
-        // Marks start and end time (with span) regardless of which thread started and which one ended
-        class TimeSpan
-        {
-        public:
-            TimeSpan(const char*, const char*, uint32_t) {}
-        };
+    //--------------------------------------------------------------------------------------------------------------
+    // Marks start and end time (with span) regardless of which thread started and which one ended
+    class TimeSpan
+    {
+    public:
+        TimeSpan(const char*, const char*, uint32_t) {}
+    };
 
-        //--------------------------------------------------------------------------------------------------------------
-        class Locker
-        {
-        public:
-            Locker(std::mutex&, const char*, const char*, uint32_t) {}
-        };
+    //--------------------------------------------------------------------------------------------------------------
+    class Locker
+    {
+    public:
+        Locker(std::mutex&, const char*, const char*, uint32_t) {}
+    };
 
-        //--------------------------------------------------------------------------------------------------------------
-        class LockerSpan : public Locker
-        {
-        public:
-            LockerSpan(std::mutex& mutex, const char* message, const char* file, uint32_t line)
-                : Locker(mutex, message, file, line)
-            {}
-        };
-        //--------------------------------------------------------------------------------------------------------------
-        inline void Initialize(const args::Options&) {}
+    //--------------------------------------------------------------------------------------------------------------
+    class LockerSpan : public Locker
+    {
+    public:
+        LockerSpan(std::mutex& mutex, const char* message, const char* file, uint32_t line)
+            : Locker(mutex, message, file, line)
+        {}
+    };
+    //--------------------------------------------------------------------------------------------------------------
+    inline void Initialize(const args::Options&) {}
 
-        // putting back intel concurrency functionality
-        void MarkStartThread(std::thread& thread, const char* name);
-        void MarkStartThread(uint32_t threadId, const char* name);
+    // putting back intel concurrency functionality
+    void MarkStartThread(std::thread& thread, const char* name);
+    void MarkStartThread(uint32_t threadId, const char* name);
 
-        std::string MarkGetThreadName(std::thread& thread);
-        std::string MarkGetThreadName(uint32_t threadId);
+    std::string MarkGetThreadName(std::thread& thread);
+    std::string MarkGetThreadName(uint32_t threadId);
 
 
-        // not converted yet
-        inline void MarkEndThread(std::thread&) {}
-        inline void MarkEndThread(uint32_t) {}
+    // not converted yet
+    inline void MarkEndThread(std::thread&) {}
+    inline void MarkEndThread(uint32_t) {}
 
-        inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
-        inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
+    inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
+    inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
 
-        inline void Tick() {}
+    inline void Tick() {}
 
 #endif // YAGET_CONC_METRICS_ENABLED
 
-    } // namespace metric
-} // namespace yaget
+} // namespace yaget::metrics
 
 
 #define YAGET_METRICS_CHANNEL_FILE_LINE __FILE__, __LINE__

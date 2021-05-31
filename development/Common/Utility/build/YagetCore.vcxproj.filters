@@ -287,6 +287,9 @@
     <ClCompile Include="..\source\STLHelper.cpp">
       <Filter>Platform Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Metrics\PerformanceTracer.cpp">
+      <Filter>Metric Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -586,6 +589,9 @@
     </ClInclude>
     <ClInclude Include="..\include\GameSystem\Messaging.h">
       <Filter>GameSystem Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Metrics\PerformanceTracer.h">
+      <Filter>Metric Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

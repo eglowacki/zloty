@@ -18,6 +18,7 @@
 
 #include "YagetCore.h"
 #include "Streams/Buffers.h"
+#include <filesystem>
 #include <streambuf>
 
 
@@ -92,6 +93,18 @@ namespace yaget::io::file
     //! the string must end with a backslash character.
     FileOpResult AssureDirectories(const std::string& pathName);
 
+    // Splits filePath into three components:
+    // folderName
+    // fileName
+    // extension
+    using FileComponents = std::tuple<std::string /*folderName*/, std::string /*fileName*/, std::string /*extension*/>;
+    namespace FileComp
+    {
+        constexpr int Path = 0;
+        constexpr int File = 1;
+        constexpr int Extension = 2;
+    }
+    FileComponents SplitComponents(const std::filesystem::path& filePath);
 
     enum class Traverse { Deep, Flat };
     void EnumerateDirectoryContent(std::vector<std::string>& foundFiles, const std::string& sourceLocation, Traverse traverse, std::function<bool(const std::string & fileName)> filter);

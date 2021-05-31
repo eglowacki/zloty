@@ -53,17 +53,17 @@ yaget::io::FileData::FileData(const std::string& name, HANDLE port, FileLoader::
     : mName(name)
     , mPort(port)
     , mKey(mCounter++)
-    , mDoneCallback(doneCallback)
-    , mTimeSpan(yaget::meta::pointer_cast(this), "file_disk_read", YAGET_METRICS_CHANNEL_FILE_LINE)
+    , mDoneCallback(std::move(doneCallback))
+    , mTimeSpan(yaget::meta::pointer_cast(this), fs::path(name).filename().generic_string(), YAGET_METRICS_CHANNEL_FILE_LINE)
 {
     mDataBuffer = io::CreateBuffer(fs::file_size(mName));
-    mHandle = ::CreateFile(mName.c_str(), FILE_READ_DATA, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
+    mHandle = ::CreateFile(mName.c_str(), FILE_READ_DATA, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
     YAGET_UTIL_THROW_ON_RROR(mHandle != INVALID_HANDLE_VALUE, fmt::format("Did not open file '{}'.", mName));
 
     HANDLE ioPort = ::CreateIoCompletionPort(mHandle, mPort, mKey, 0);
     YAGET_UTIL_THROW_ON_RROR(ioPort != nullptr, fmt::format("Did not create io port for file '{}'.", mName));
 
-    bool bResult = ::ReadFile(mHandle, mDataBuffer.first.get(), static_cast<DWORD>(mDataBuffer.second), 0, &mOverlapped) != 0;
+    bool bResult = ::ReadFile(mHandle, mDataBuffer.first.get(), static_cast<DWORD>(mDataBuffer.second), nullptr, &mOverlapped) != 0;
     YAGET_UTIL_THROW_ON_RROR(bResult, fmt::format("ReadFile for '{}' failed.", mName));
 }
 
@@ -122,7 +122,7 @@ bool yaget::io::FileData::Process(uint32_t bytesCopied) const
 }
 
 yaget::io::FileLoader::FileLoader()
-    : mIOPort(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0))
+    : mIOPort(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0))    // note: last param represents how many threads to create for io (0 os is managing)
 {
     YAGET_UTIL_THROW_ON_RROR(mIOPort != nullptr, "Did not create IO Completion Port for File Loader.");
     mLoaderThread->AddTask([this]() { Start(); });
