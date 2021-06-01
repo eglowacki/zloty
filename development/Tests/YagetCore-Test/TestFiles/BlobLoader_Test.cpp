@@ -72,15 +72,14 @@ TEST_F(BlobLoader, LoadConvert)
 
     metrics::Channel channel("Main.BlobLoader", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-    const int kMaxNumFiles = 100;
-
+    const int kMaxNumFiles = 90;
     const Strings filesToTest = CleanupAndSetup(kMaxNumFiles);
 
     int counter = 0;
     {
-        metrics::Channel vChannel("Wait For Results", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel vChannel("Input Validation", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-        io::BlobLoader blobLoader(true, nullptr);
+        io::BlobLoader blobLoader(true, {});
 
         // first, validate some input assumptions and make sure that loader throws on error
         auto testConverters = std::vector<io::BlobLoader::Convertor>{};
@@ -92,25 +91,32 @@ TEST_F(BlobLoader, LoadConvert)
         testConverters.push_back({});
         testConverters.push_back({});
         EXPECT_ANY_THROW(blobLoader.AddTask(filesToTest, testConverters));
+    }
+
+    {
+        metrics::Channel vChannel("Process All Requests", YAGET_METRICS_CHANNEL_FILE_LINE);
+
+        io::BlobLoader blobLoader(true, {});
 
         EXPECT_NO_THROW(blobLoader.AddTask(filesToTest, [&counter](const auto& fileData)
         {
             ++counter;
-            platform::Sleep(1, time::kMilisecondUnit);
+            platform::BusySleep(6, time::kMilisecondUnit);
         }));
     }
+
     EXPECT_EQ(counter, kMaxNumFiles);
 
     counter = 0;
     {
-        metrics::Channel aChannel("Cancel", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel aChannel("Cancel All Requests", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-        io::BlobLoader blobLoader(false, nullptr);
+        io::BlobLoader blobLoader(false, {});
 
         blobLoader.AddTask(filesToTest, [&counter](const auto& fileData)
         {
             ++counter;
-            platform::Sleep(1, time::kMilisecondUnit);
+            platform::BusySleep(1, time::kMilisecondUnit);
         });
     }
     EXPECT_LT(counter, kMaxNumFiles);

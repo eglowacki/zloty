@@ -32,18 +32,37 @@ yaget::metrics::internal::Metric::Metric(const std::string& message, const char*
     , mFileName(file ? file : "Unknown")
     , mLineNumber(line)
     , mStart(platform::GetRealTime(yaget::time::kMicrosecondUnit))
+    , mTreadID(platform::CurrentThreadId())
 {}
+
+
+yaget::metrics::internal::Metric::~Metric()
+{
+}
+
 
 yaget::metrics::Channel::Channel(const std::string& message, const char* file, uint32_t line)
     : internal::Metric(message, file, line)
 {
+    GetSaver().AddProfileStamp({ mMessage, mStart, mStart, mTreadID, TraceRecord::Event::Begin, 0, "Channel" });
 }
 
 
 yaget::metrics::Channel::~Channel()
 {
-    const std::size_t threadID = platform::CurrentThreadId();
-    GetSaver().AddProfileStamp({ mMessage, mStart, platform::GetRealTime(yaget::time::kMicrosecondUnit), threadID, yaget::metrics::TraceRecord::Event::Complete });
+    YAGET_ASSERT(mTreadID == platform::CurrentThreadId());
+
+    const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+    GetSaver().AddProfileStamp({ mMessage, currentTime, currentTime, mTreadID, TraceRecord::Event::End, 0, "Channel" });
+}
+
+
+void yaget::metrics::Channel::AddMessage(const std::string& message) const
+{
+    YAGET_ASSERT(mTreadID == platform::CurrentThreadId());
+
+    const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+    GetSaver().AddProfileStamp({ message, currentTime, currentTime, mTreadID, TraceRecord::Event::Instant, 0, "Note" });
 }
 
 
@@ -53,8 +72,7 @@ yaget::metrics::TimeSpan::TimeSpan(std::size_t id, const std::string& message, c
 {
     if (mId)
     {
-        const std::size_t threadID = platform::CurrentThreadId();
-        GetSaver().AddProfileStamp({ mMessage, mStart, mStart, threadID, yaget::metrics::TraceRecord::Event::AsyncBegin, mId });
+        GetSaver().AddProfileStamp({ mMessage, mStart, mStart, mTreadID, TraceRecord::Event::FlowBegin, mId, "Tracker" });
     }
 }
 
@@ -65,24 +83,54 @@ yaget::metrics::TimeSpan::~TimeSpan()
     {
         const std::size_t threadID = platform::CurrentThreadId();
         const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
-        GetSaver().AddProfileStamp({ mMessage, currentTime, currentTime, threadID, yaget::metrics::TraceRecord::Event::AsyncEnd, mId });
+        GetSaver().AddProfileStamp({ mMessage, currentTime, currentTime, threadID, TraceRecord::Event::FlowEnd, mId, "Tracker" });
     }
 }
 
 
-void yaget::metrics::TimeSpan::AddMessage(const char* message) const
+void yaget::metrics::TimeSpan::AddMessage(const std::string& message) const
 {
     if (mId)
     {
-        const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
         const std::size_t threadID = platform::CurrentThreadId();
-        GetSaver().AddProfileStamp({ message, currentTime, currentTime, threadID, yaget::metrics::TraceRecord::Event::Async, mId });
+        const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+        GetSaver().AddProfileStamp({ message, currentTime, currentTime, threadID, TraceRecord::Event::FlowPoint, mId, "Tracker" });
     }
 }
 
+
+yaget::metrics::Lock::Lock(const std::string& message, const char* file, uint32_t line)
+    : internal::Metric(message, file, line)
+    , mChannel(message, file, line)
+{
+    GetSaver().AddProfileStamp({ "Acquiring." + mMessage, mStart, mStart, mTreadID, TraceRecord::Event::Begin, 0, "Channel" });
+}
+
+
+//yaget::metrics::Lock::~Lock()
+//{
+//}
+
+
+yaget::metrics::UniqueLock::UniqueLock(std::mutex& mutex, const std::string& message, const char* file, uint32_t line)
+    : Lock("Mutex:" + message, file, line)
+    , mlocker(mutex)
+{
+    const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+    //GetSaver().AddProfileStamp({ "Acquiring." + mMessage, mStart, currentTime, mTreadID, TraceRecord::Event::Complete, 0, "Channel" });
+    GetSaver().AddProfileStamp({ "Acquiring." + mMessage, currentTime, currentTime, mTreadID, TraceRecord::Event::End, 0, "Channel" });
+}
+
+//yaget::metrics::UniqueLock::~UniqueLock()
+//{
+//    //const std::size_t threadID = platform::CurrentThreadId();
+//    //const auto releasedTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+//    //GetSaver().AddProfileStamp({ mMessage, mStart, releasedTime, threadID, TraceRecord::Event::Lock, 0, "Lock" });
+//}
+
+
 void yaget::metrics::MarkStartThread(uint32_t threadId, const char* threadName)
 {
-    //tmThreadName(CaptureMask, threadId, threadName);
     platform::SetThreadName(threadName, threadId);
     GetSaver().SetThreadName(threadName, threadId);
 }

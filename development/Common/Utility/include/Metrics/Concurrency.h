@@ -35,7 +35,7 @@ namespace yaget::metrics
         class Metric : public yaget::Noncopyable<Metric>
         {
         public:
-            virtual ~Metric() = default;
+            virtual ~Metric();
 
         protected:
             Metric(const std::string& message, const char* file, uint32_t line);
@@ -44,6 +44,7 @@ namespace yaget::metrics
             const char* mFileName = nullptr;
             uint32_t mLineNumber = 0;
             time::TimeUnits_t mStart = 0;
+            const std::size_t mTreadID = 0;
         };
     }
 
@@ -53,6 +54,8 @@ namespace yaget::metrics
 
         Channel(const std::string& message, const char* file, uint32_t line);
         ~Channel() override;
+
+        void AddMessage(const std::string& message) const;
     };
 
     //--------------------------------------------------------------------------------------------------------------
@@ -63,12 +66,35 @@ namespace yaget::metrics
         TimeSpan(std::size_t id, const std::string& message, const char* file, uint32_t line);
         ~TimeSpan() override;
 
-        void AddMessage(const char* message) const;
+        void AddMessage(const std::string& message) const;
 
     private:
         std::size_t mId = 0;
     };
 
+    class Lock : public internal::Metric
+    {
+    protected:
+        Lock(const std::string& message, const char* file, uint32_t line);
+        ~Lock() override = default;
+
+    private:
+        Channel mChannel;
+    };
+
+    //--------------------------------------------------------------------------------------------------------------
+    class UniqueLock : public Lock
+    {
+    public:
+        UniqueLock(std::mutex& mutex, const std::string& message, const char* file, uint32_t line);
+        ~UniqueLock() override = default;
+
+    private:
+        std::unique_lock<std::mutex> mlocker;
+    };
+
+    //--------------------------------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------------------------------
     class Locker
     {
@@ -84,6 +110,7 @@ namespace yaget::metrics
             : Locker(mutex, message, file, line)
         {}
     };
+
     //--------------------------------------------------------------------------------------------------------------
     inline void Initialize(const args::Options&) {}
 
@@ -110,6 +137,7 @@ namespace yaget::metrics
     {
     public:
         Channel(const char*, const char*, uint32_t) {}
+        void AddMessage(const std::string&) const;
     };
 
     //--------------------------------------------------------------------------------------------------------------
@@ -118,6 +146,14 @@ namespace yaget::metrics
     {
     public:
         TimeSpan(const char*, const char*, uint32_t) {}
+        void AddMessage(const std::string&) const;
+    };
+
+    //--------------------------------------------------------------------------------------------------------------
+    class UniqueLock
+    {
+    public:
+        UniqueLock(std::mutex& mutex, const std::string&, const char*, uint32_t) { std::unique_lock<std::mutex> locker(mutex); }
     };
 
     //--------------------------------------------------------------------------------------------------------------

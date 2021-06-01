@@ -31,7 +31,7 @@ yaget::io::BlobLoader::~BlobLoader()
                 const double nowTime = platform::GetRealTime();
             if (nowTime - startDestroyTime > MaxTimeToWait)
             {
-                YAGET_ASSERT(false, "Waiting for BlobLoader to finish on files: '%d' from VTS dtor.", counter);
+                YAGET_ASSERT(false, "Waiting for BlobLoader to finish on files: '%d'.", counter);
                 return false;
             }
 

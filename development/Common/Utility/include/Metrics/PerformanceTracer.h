@@ -23,7 +23,7 @@ namespace yaget::metrics
 {
     struct TraceRecord
     {
-        enum class Event { Complete, Instant, AsyncBegin, AsyncEnd, Async };
+        enum class Event { Begin, End, Complete, Instant, AsyncBegin, AsyncEnd, AsyncPoint, Lock, FlowBegin, FlowEnd, FlowPoint };
 
         std::string mName;
         yaget::time::TimeUnits_t mStart = 0;
@@ -31,6 +31,7 @@ namespace yaget::metrics
         std::size_t mThreadID = 0;
         Event mEvent = Event::Complete;
         std::size_t mId = 0;
+        std::string mCategory;
     };
 
     using ThreadNames = std::map<std::size_t, std::string>;

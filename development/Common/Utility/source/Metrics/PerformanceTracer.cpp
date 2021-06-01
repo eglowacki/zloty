@@ -10,6 +10,25 @@ namespace fs = std::filesystem;
 
 const int holder = yaget::meta::print_size_at_compile<yaget::metrics::TraceRecord>();
 
+namespace
+{
+    //enum class Event { Begin, End, Complete, Instant, AsyncBegin, AsyncEnd, AsyncPoint, Lock, FlowBegin, FlowEnd, FlowPoint };
+    const char* PH[]
+    {
+        "B",    // Begin
+        "E",    // End
+        "X",    // Complete
+        "i",    // Instant
+        "b",    // AsyncBegin
+        "e",    // AsyncEnd
+        "n",    // AsyncPoint
+        "X",    // Lock
+        "s",    // FlowBegin
+        "f",    // FlowEnd
+        "t"     // FlowPoint
+    };
+}
+
 namespace yaget::metrics
 {
     inline void to_json(nlohmann::json& j, const yaget::metrics::TraceRecord& profileStamp)
@@ -18,32 +37,32 @@ namespace yaget::metrics
         j["pid"] = 0;
         j["tid"] = profileStamp.mThreadID;
         j["ts"] = profileStamp.mStart;
+        j["ph"] = PH[static_cast<int>(profileStamp.mEvent)];
+        j["cat"] = profileStamp.mCategory;
 
         switch (profileStamp.mEvent)
         {
         case yaget::metrics::TraceRecord::Event::Complete:
-            j["cat"] = "function";
             j["dur"] = profileStamp.mEnd - profileStamp.mStart;
-            j["ph"] = "X";
 
             break;
-        case yaget::metrics::TraceRecord::Event::AsyncBegin:
-            j["cat"] = "async";
-            j["id"] = profileStamp.mId;
-            j["ph"] = "b";
-            j["args"]["name"] = "~/.bashrc";
-
-            break;
+        case yaget::metrics::TraceRecord::Event::Begin:
+        case yaget::metrics::TraceRecord::Event::End:
         case yaget::metrics::TraceRecord::Event::AsyncEnd:
-            j["cat"] = "async";
+        case yaget::metrics::TraceRecord::Event::FlowEnd:
+        case yaget::metrics::TraceRecord::Event::AsyncPoint:
+        case yaget::metrics::TraceRecord::Event::FlowPoint:
+        case yaget::metrics::TraceRecord::Event::AsyncBegin:
+        case yaget::metrics::TraceRecord::Event::FlowBegin:
             j["id"] = profileStamp.mId;
-            j["ph"] = "e";
 
             break;
-        case yaget::metrics::TraceRecord::Event::Async:
-            j["cat"] = "async";
-            j["id"] = profileStamp.mId;
-            j["ph"] = "n";
+        case yaget::metrics::TraceRecord::Event::Instant:
+
+            break;
+        case yaget::metrics::TraceRecord::Event::Lock:
+            j["dur"] = profileStamp.mEnd - profileStamp.mStart;
+            //j["cname"] = "terrible";
 
             break;
         }

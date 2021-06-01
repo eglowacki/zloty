@@ -73,7 +73,7 @@ namespace yaget::io
 
         FilesToProcess mFilesToProcess;
         std::mutex mListMutex;
-        std::unique_ptr<mt::JobPool> mLoaderThread{ std::make_unique<mt::JobPool>("FileLoader", 1) };
+        std::unique_ptr<mt::JobPool> mLoaderThread{ std::make_unique<mt::JobPool>("FileLoader", 1/*, mt::JobPool::Behaviour::StartAsPause*/) };
         std::atomic_bool mQuit{ false };
     };
 
