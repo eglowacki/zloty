@@ -3,6 +3,10 @@
   "Id": "6c57825d-e4aa-43a5-89d7-52b97b0dca76",
   "Items": [
     {
+      "Id": "3ffd2741-dee1-48d1-9333-0b2cdd2484fe",
+      "Command": "--log_filter=POOL"
+    },
+    {
       "Id": "dd075bf7-7db8-49ad-98a1-2ea11037b9b3",
       "Command": "--options_view"
     },
@@ -12,7 +16,7 @@
     },
     {
       "Id": "cbea5305-77d8-48b2-be52-10b7a4be3e95",
-      "Command": " --gtest_filter=VTS.*"
+      "Command": " --gtest_filter=Threads.JobPool"
     },
     {
       "Id": "5869dbec-0b19-4c61-90bd-08658a645c6d",

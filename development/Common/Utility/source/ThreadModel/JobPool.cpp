@@ -1,13 +1,10 @@
-#include "ThreadModel/JobPool.h" 
-
-#include "HashUtilities.h"
-
+#include "ThreadModel/JobPool.h"
 #include "Debugging/DevConfiguration.h"
+#include "Logger/YLog.h"
+#include "ThreadModel/Variables.h"
+#include "fmt/format.h"
+#include <algorithm>
 
-
-#include "Logger/YLog.h" 
-#include "fmt/format.h" 
-#include "Platform/Support.h" 
 
 
 namespace
@@ -24,19 +21,6 @@ namespace
             }
 
             return GenerateName(name, value);
-        }
-
-        std::string GetLastName(const std::string& name) const
-        {
-            std::string result;
-            std::lock_guard<std::mutex> mutexLock(mMutex);
-            auto it = mCounters.find(name);
-            if (it != mCounters.end())
-            {
-                return GenerateName(it->first, it->second);
-            }
-
-            return name;
         }
 
     private:
@@ -57,39 +41,64 @@ namespace
 
         return nameIndexer;
     }
+
+    void StopThreads(yaget::mt::JobPool::Threads_t& threads)
+    {
+        for (auto&& it : threads)
+        {
+            it.second.Clear();
+        }
+    }
+
+    uint32_t CalculateMaxNumThreads(uint32_t numThreads)
+    {
+        uint32_t maxThreads = numThreads;
+        if (numThreads == 0)
+        {
+            maxThreads = std::thread::hardware_concurrency() > 1 ? std::thread::hardware_concurrency() - 1 : 1;
+        }
+
+        return maxThreads;
+    }
+
 }
+
+
 std::string yaget::mt::GenerateNextName(const std::string& name)
 {
     return Indexer().GetNextName(name);
 }
 
+
 yaget::mt::JobPool::JobPool(const char* poolName, uint32_t numThreads /*= 0*/, Behaviour behaviour /*= Behaviour::StartAsRun*/) 
     : mName(GenerateNextName(poolName))
-    , mBehaviour(behaviour) 
+    , mBehaviour(behaviour)
+    , mDynamicThreads(false)
+    , mMaxNumThreads(CalculateMaxNumThreads(numThreads))
 {
     mEmptyCondition.Trigger();
 
-    uint32_t maxThreads = numThreads; 
-    if (numThreads == 0) 
+    YLOG_DEBUG("POOL", "Creating JobPool '%s' with '%d' threads.", mName.c_str(), mMaxNumThreads);
+
+    const auto numThreadsToCreate = mDynamicThreads ? 0 : mMaxNumThreads;
+    for (uint32_t i = 0; i < numThreadsToCreate; ++i)
     { 
-        maxThreads = std::thread::hardware_concurrency() > 1 ? std::thread::hardware_concurrency() - 1 : 1; 
-    } 
- 
-    YLOG_DEBUG("POOL", "Creating JobPool '%s' with '%d' threads.", mName.c_str(), maxThreads); 
- 
-    for (uint32_t i = 0; i < maxThreads; ++i) 
-    { 
-        std::string threadName = maxThreads > 1 ? fmt::format("{}_{}/{}", mName, i + 1, maxThreads) : mName;
+        std::string threadName = mMaxNumThreads > 1 ? fmt::format("{}_{}/{}", mName, i + 1, mMaxNumThreads) : mName;
         mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); }))); 
     } 
 } 
- 
+
+
 void yaget::mt::JobPool::Clear() 
-{ 
-    for (auto&& it : mThreads) 
-    { 
-        it.second.Clear(); 
-    } 
+{
+    {
+        mt::unique_lock mutexLock = mDynamicThreads ? mt::unique_lock(mThreadListMutext) : mt::unique_lock{};
+        for (auto&& it : mThreads)
+        {
+            it.second.Clear();
+        }
+    }
+
     mEmptyCondition.Trigger();
 }
  
@@ -102,52 +111,133 @@ yaget::mt::JobPool::~JobPool()
         mTasks.clear(); 
     } 
  
-    Clear(); 
-    mThreads.clear(); 
+    Clear();
+
+    mt::unique_lock mutexLock = mDynamicThreads ? mt::unique_lock(mThreadListMutext) : mt::unique_lock{};
+    mThreads.clear();
     YLOG_DEBUG("POOL", "Done deleting threads for JobPool '%s'.", mName.c_str()); 
-} 
- 
+}
+
+
+void yaget::mt::JobPool::UpdateThreadPool(size_t numTasksLeft)
+{
+    if (mDynamicThreads && numTasksLeft)
+    {
+        mt::unique_lock mutexLock = mt::unique_lock(mThreadListMutext);
+        const auto threadListSize = mThreads.size();
+
+        // looks like we have tasks left, let check to see if we reached man number of threads
+        // and if not, are all busy?
+        if (threadListSize < mMaxNumThreads)
+        {
+            // https://app.gitkraken.com/glo/view/card/c09a1b0ebde34dfd96f0a8737d446677 (KAR-41)
+            const bool allBusy = std::ranges::all_of(mThreads.begin(), mThreads.end(), [](auto itr)
+            {
+                return itr.second.IsBusy();
+            });
+
+            if (allBusy)
+            {
+                // spawn another thread
+                std::string threadName = mMaxNumThreads > 1 ? fmt::format("{}_{}/{}", mName, threadListSize + 1, mMaxNumThreads) : mName;
+                mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); })));
+            }
+        }
+    }
+}
+
 void yaget::mt::JobPool::AddTask(mt::JobProcessor::Task_t task) 
 {
+    size_t numTasksLeft = 0;
     mEmptyCondition.Reset();
-    { 
-        std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex); 
-        mTasks.push_back(task); 
-    } 
- 
+    {
+        std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
+        mTasks.push_back(task);
+        numTasksLeft = mTasks.size();
+    }
+
+    UpdateThreadPool(numTasksLeft);
+
     if (mBehaviour == Behaviour::StartAsRun) 
     { 
         UnpauseAll(); 
     } 
 } 
- 
+
+
 void yaget::mt::JobPool::Join() 
 { 
     mEmptyCondition.Wait(); 
     mEmptyCondition.Trigger();
 }
- 
+
+
 void yaget::mt::JobPool::UnpauseAll() 
-{ 
+{
+    if (mDynamicThreads && mBehaviour == Behaviour::StartAsPause)
+    {
+        size_t numTasksLeft = 0;
+        {
+            std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
+            numTasksLeft = mTasks.size();
+        }
+
+        UpdateThreadPool(numTasksLeft);
+    }
+
     mEmptyCondition.Reset();
     mBehaviour = Behaviour::StartAsRun;
  
-    for (auto&& it : mThreads) 
+    mt::unique_lock mutexLock = mDynamicThreads ? mt::unique_lock(mThreadListMutext) : mt::unique_lock{};
+    for (auto&& it : mThreads)
     { 
         it.second.StartProcessing(); 
     } 
 } 
- 
+
+
 yaget::mt::JobProcessor::Task_t yaget::mt::JobPool::PopNextTask()
 {
-    std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
-    if (!mTasks.empty())
-    { 
-        JobProcessor::Task_t task = *mTasks.begin();
-        mTasks.pop_front();
- 
+    JobProcessor::Task_t task = {};
+    //size_t numTasksLeft = 0;
+    {
+        std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
+        if (!mTasks.empty())
+        {
+            task = *mTasks.begin();
+            mTasks.pop_front();
+            //numTasksLeft = mTasks.size();
+        }
+    }
+
+    //if (mDynamicThreads && numTasksLeft)
+    //{
+    //    mt::unique_lock mutexLock = mt::unique_lock(mThreadListMutext);
+
+    //    // looks like we have tasks left, let check to see if we reached man number of threads
+    //    // and if not, are all busy?
+    //    if (mThreads.size() < mMaxNumThreads)
+    //    {
+    //        // https://app.gitkraken.com/glo/view/card/c09a1b0ebde34dfd96f0a8737d446677 (KAR-41)
+    //        const bool allBusy = std::ranges::all_of(mThreads.begin(), mThreads.end(), [](auto itr)
+    //        {
+    //            return itr.second.IsBusy();
+    //        });
+
+    //        if (allBusy)
+    //        {
+    //            // spawn another thread
+    //            std::string threadName = mMaxNumThreads > 1 ? fmt::format("{}_{}/{}", mName, mThreads.size() + 1, mMaxNumThreads) : mName;
+    //            auto it = mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); })));
+    //            it.first->second.StartProcessing();
+    //        }
+    //    }
+    //}
+
+    if (task)
+    {
         return task;
-    } 
+    }
  
     mEmptyCondition.Trigger(); 
     return JobProcessor::Task_t(); 

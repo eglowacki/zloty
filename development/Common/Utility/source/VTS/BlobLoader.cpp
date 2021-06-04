@@ -1,17 +1,15 @@
 #include "VTS/BlobLoader.h"
+#include "Debugging/DevConfiguration.h"
 #include "Exception/Exception.h"
 #include "Metrics/Concurrency.h"
-#include "Debugging/DevConfiguration.h"
+#include "Platform/Support.h"
 
 #include <filesystem>
-
-#include "Platform/Support.h"
 namespace fs = std::filesystem;
 
 
 yaget::io::BlobLoader::BlobLoader(bool loadAllFiles, ErrorCallback errorCallback)
     : mErrorCallback(errorCallback ? errorCallback : [](const std::string&, const std::string&) {})
-    //, mCounter(0)
     , mJobPool("BlobLoader", dev::CurrentConfiguration().mDebug.mThreads.Blob)
     , mFileLoader(std::make_unique<io::FileLoader>())
     , mLoadAllFiles(loadAllFiles)

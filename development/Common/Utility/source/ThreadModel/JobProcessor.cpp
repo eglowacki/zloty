@@ -82,11 +82,6 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
  
         while (Task_t nextTask = popNextTask()) 
         { 
-            if (mQuit) 
-            { 
-                break; 
-            } 
- 
             try 
             { 
                 metrics::Channel channel("Task Lifetime", YAGET_METRICS_CHANNEL_FILE_LINE); 
@@ -100,7 +95,13 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
                 mTaskInProgress = false; 
                 YLOG_ERROR("MULT", "Task '%s' running on '%s' thread failed with exception: '%s'.", "some_task_description", mThreadName.c_str(), e.what());
             }
-        } 
+
+            // allows us to break even if there are more tasks to left
+            if (mQuit)
+            {
+                break;
+            }
+        }
     } 
 } 
  

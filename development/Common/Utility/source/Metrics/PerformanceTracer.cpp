@@ -1,5 +1,8 @@
 //#define YAGET_GET_STRUCT_SIZE
 #include "Metrics/PerformanceTracer.h"
+
+#include <cstdint>
+
 #include "App/AppUtilities.h"
 #include "App/FileUtilities.h"
 #include "StringHelpers.h"
@@ -43,6 +46,7 @@ namespace yaget::metrics
         switch (profileStamp.mEvent)
         {
         case yaget::metrics::TraceRecord::Event::Complete:
+        case yaget::metrics::TraceRecord::Event::Lock:
             j["dur"] = profileStamp.mEnd - profileStamp.mStart;
 
             break;
@@ -58,12 +62,6 @@ namespace yaget::metrics
 
             break;
         case yaget::metrics::TraceRecord::Event::Instant:
-
-            break;
-        case yaget::metrics::TraceRecord::Event::Lock:
-            j["dur"] = profileStamp.mEnd - profileStamp.mStart;
-            //j["cname"] = "terrible";
-
             break;
         }
     }

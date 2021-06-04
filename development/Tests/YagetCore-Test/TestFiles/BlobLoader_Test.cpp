@@ -39,12 +39,15 @@ namespace
     {
         using namespace yaget;
 
+        constexpr size_t fileSize = 1024 * 1024 * 10;
+        metrics::Channel channel(fmt::format("CleanupAndSetup '{}' files", maxNumFiles), YAGET_METRICS_CHANNEL_FILE_LINE);
+
         CleanTestFiles();
 
         const fs::path destFolder = util::ExpendEnv("$(Temp)", nullptr);
         const std::string fileNumber = fmt::format("blob_file-{{:0{}}}.bin", GetNumDigits(maxNumFiles));
 
-        const auto dataBuffer = io::CreateBuffer(1024 * 1024 * 10);
+        const auto dataBuffer = io::CreateBuffer(fileSize);
 
         Strings filesToTest;
         for (int i = 0; i < maxNumFiles; ++i)
@@ -101,7 +104,7 @@ TEST_F(BlobLoader, LoadConvert)
         EXPECT_NO_THROW(blobLoader.AddTask(filesToTest, [&counter](const auto& fileData)
         {
             ++counter;
-            platform::BusySleep(6, time::kMilisecondUnit);
+            platform::BusySleep(20, time::kMilisecondUnit);
         }));
     }
 

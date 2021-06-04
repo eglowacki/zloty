@@ -37,7 +37,9 @@ namespace yaget
                 Holder(const std::string& threadName, PopNextTask_t&& popNextTask); 
                 void StartProcessing(); 
  
-                void Clear(); 
+                void Clear();
+                // this thread is processing some task
+                [[nodiscard]] bool IsBusy() const { return mJobProcessor->mTaskInProgress == true; };
  
             private: 
                 std::shared_ptr<JobProcessor> mJobProcessor; 
@@ -52,7 +54,7 @@ namespace yaget
  
         private: 
             bool mQuit = false; 
-            std::string mThreadName; 
+            const std::string mThreadName; 
  
             std::thread mThread; 
             std::atomic_bool mTaskInProgress{ false }; 

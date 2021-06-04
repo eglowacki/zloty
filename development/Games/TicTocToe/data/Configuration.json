@@ -2,7 +2,7 @@
 	"Configuration" : {
 		"Debug": {
 			"Logging": {
-				"Filters": [ "MULT", "POOL", "SQL", "FILE", "VTS", "IDS", "INPT", "INIT", "SPAM", "APP", "DIRE" ],
+				"Filters": [ "MULT", "POOL", "SQL", "FILE", "VTS", "IDS", "INPT", "INIT", "SPAM", "APP", "DIRE", "METR" ],
 				"Level": "DBUG",
 				"Outputs": {
 					"ylog::OutputDebug": {

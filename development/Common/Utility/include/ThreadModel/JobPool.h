@@ -86,6 +86,7 @@ namespace yaget
 
         private:
             JobProcessor::Task_t PopNextTask();
+            void UpdateThreadPool(size_t numTasksLeft);
 
             Threads_t mThreads;
             typedef std::deque<JobProcessor::Task_t> Tasks_t;
@@ -93,9 +94,12 @@ namespace yaget
             std::condition_variable mTaskWaitCondition;
             std::mutex mTaskWaitMutex;
             std::mutex mPendingTasksMutex;
+            std::mutex mThreadListMutext;
             std::string mName;
             Behaviour mBehaviour = Behaviour::StartAsRun;
             mt::Condition mEmptyCondition;
+            const bool mDynamicThreads;
+            uint32_t mMaxNumThreads;
         };
 
         std::string GenerateNextName(const std::string& name);
