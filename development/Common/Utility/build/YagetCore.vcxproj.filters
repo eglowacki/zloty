@@ -290,6 +290,9 @@
     <ClCompile Include="..\source\Metrics\PerformanceTracer.cpp">
       <Filter>Metric Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Json\JsonHelpers.cpp">
+      <Filter>Json Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">

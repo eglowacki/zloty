@@ -16,6 +16,32 @@ private:
 };
 
 
+namespace
+{
+    // helper function to copy from T to json
+    // and back to T and return that
+    template <typename T>
+    T ReCopy(const T& original)
+    {
+        nlohmann::json createdBlock;
+        to_json(createdBlock, original);
+        T copy{};
+        from_json(createdBlock, copy);
+
+        return copy;
+    }
+
+    // helper function to copy from json T return that
+    template <typename T>
+    T Construct(const nlohmann::json& jsonBlock)
+    {
+        T copy{};
+        from_json(jsonBlock, copy);
+
+        return copy;
+    }
+}
+
 namespace json_blocks
 {
     using namespace yaget::dev;
@@ -121,10 +147,12 @@ namespace json_blocks
     const nlohmann::json metrics = R"({
         "AllowSocketConnection": true,
         "AllowFallbackToFile": true,
-        "SocketConnectionTimeout": -1
+        "SocketConnectionTimeout": -1,
+        "TraceFileName": "FooFileName",
+        "TraceOn": false
     })"_json;
 
-    const Configuration::Debug::Metrics expectedMetrics = { true, true, -1 };
+    const Configuration::Debug::Metrics expectedMetrics = { true, true, -1, "FooFileName", false };
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
     const nlohmann::json debug =
@@ -417,6 +445,9 @@ TEST_F(Configurator, Flags)
 
     from_json(jsonBlock, actualFlags);
     EXPECT_EQ(json_blocks::expectedFlags, actualFlags);
+
+    actualFlags = ReCopy(json_blocks::expectedFlags);
+    EXPECT_EQ(json_blocks::expectedFlags, actualFlags);
 }
 
 
@@ -438,6 +469,9 @@ TEST_F(Configurator, Logging)
 
     from_json(json_blocks::loggingCombineTwo, actualLogging);
     EXPECT_EQ(json_blocks::expectedLoggingCombineTwo, actualLogging);
+
+    actualLogging = ReCopy(json_blocks::expectedLogging);
+    EXPECT_EQ(json_blocks::expectedLogging, actualLogging);
 }
 
 
@@ -452,7 +486,11 @@ TEST_F(Configurator, Threads)
 
     from_json(jsonBlock, actualThreads);
     EXPECT_EQ(json_blocks::expectedThreads, actualThreads);
+
+    actualThreads = ReCopy(json_blocks::expectedThreads);
+    EXPECT_EQ(json_blocks::expectedThreads, actualThreads);
 }
+
 
 
 TEST_F(Configurator, Metrics)
@@ -460,11 +498,10 @@ TEST_F(Configurator, Metrics)
     using namespace yaget;
     using namespace yaget::dev;
 
-    Configuration::Debug::Metrics actualMetrics;
+    auto actualMetrics = ReCopy(json_blocks::expectedMetrics);
+    EXPECT_EQ(json_blocks::expectedMetrics, actualMetrics);
 
-    const nlohmann::json& jsonBlock = json_blocks::metrics;
-
-    from_json(jsonBlock, actualMetrics);
+    actualMetrics = Construct<Configuration::Debug::Metrics>(json_blocks::metrics);
     EXPECT_EQ(json_blocks::expectedMetrics, actualMetrics);
 }
 
@@ -486,6 +523,9 @@ TEST_F(Configurator, Debug)
 
     from_json(json_blocks::debugCombineTwo, actualDebug);
     EXPECT_EQ(json_blocks::expectedDebugCombineTwo, actualDebug);
+
+    actualDebug = ReCopy(json_blocks::expectedDebug);
+    EXPECT_EQ(json_blocks::expectedDebug, actualDebug);
 }
 
 
@@ -544,6 +584,9 @@ TEST_F(Configurator, Init)
 
     from_json(json_blocks::initCombineOne, actualInit);
     EXPECT_EQ(json_blocks::expectedInitCombineOne, actualInit);
+
+    actualInit = ReCopy(json_blocks::expectedInit);
+    EXPECT_EQ(json_blocks::expectedInit, actualInit);
 }
 
 
@@ -558,6 +601,9 @@ TEST_F(Configurator, Runtime)
 
     from_json(jsonBlock, actualRuntime);
     EXPECT_EQ(json_blocks::expectedRuntime, actualRuntime);
+
+    actualRuntime = ReCopy(json_blocks::expectedRuntime);
+    EXPECT_EQ(json_blocks::expectedRuntime, actualRuntime);
 }
 
 
@@ -571,6 +617,9 @@ TEST_F(Configurator, Graphics)
     const nlohmann::json& jsonBlock = json_blocks::graphics;
 
     from_json(jsonBlock, actualGraphics);
+    EXPECT_EQ(json_blocks::expectedGraphics, actualGraphics);
+
+    actualGraphics = ReCopy(json_blocks::expectedGraphics);
     EXPECT_EQ(json_blocks::expectedGraphics, actualGraphics);
 }
 

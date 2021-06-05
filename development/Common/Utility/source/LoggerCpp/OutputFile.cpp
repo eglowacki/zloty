@@ -43,27 +43,13 @@ OutputFile::OutputFile(const Config::Ptr& aConfigPtr)
     {
         runtimeId = util::ApplicationRuntimeId();
 
-        const std::string folderName = logFileName.has_parent_path() ? logFileName.parent_path().generic_string() : "$(LogFolder)";
-        const std::string fileName = logFileName.stem().generic_string();
-        const std::string extension = logFileName.has_extension() ? logFileName.extension().generic_string() : "log";
-
-        util::FileCycler(folderName, fileName, extension);
-
-        fs::path fp = fs::path(folderName) / fs::path(fileName);
-        fp.replace_extension(extension);
-
-        const std::string logPathName = fs::path(util::ExpendEnv(fp.generic_string(), nullptr)).generic_string();
-
-        io::file::AssureDirectories(logPathName);
-        mFilename = logPathName;
+        util::FileCycler(logFileName.generic_string());
     }
-    else
-    {
-        const std::string logPathName = fs::path(util::ExpendEnv(logFileName.generic_string(), nullptr)).generic_string();
 
-        io::file::AssureDirectories(logPathName);
-        mFilename = logPathName;
-    }
+    const std::string logPathName = fs::path(util::ExpendEnv(logFileName.generic_string(), nullptr)).generic_string();
+
+    io::file::AssureDirectories(logPathName);
+    mFilename = logPathName;
 
     ++mInstanceCounter;
     open();

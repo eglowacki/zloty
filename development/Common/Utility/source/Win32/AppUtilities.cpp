@@ -256,6 +256,22 @@ namespace
         return value ? "True" : "False";
     }
 
+    // return number based on "-0000" format
+    int ExtractNumber(const std::string& name)
+    {
+        const std::string fileName = fs::path(name).stem().generic_string();
+        if (fileName.size() > 4)
+        {
+            std::string_view v{ fileName };
+            v.remove_prefix(v.size() - 4);
+
+            const std::string value(v.begin(), v.end());
+            return yaget::conv::AtoN<int>(value.c_str());
+        }
+
+        return 0;
+    }
+
 } // namespace
 
 
@@ -480,22 +496,16 @@ std::string yaget::util::ValidatePath(const std::string potentialPath)
 }
 
 
-namespace
+//---------------------------------------------------------------------------------------------------------------------------------
+bool yaget::util::FileCycler(const std::string& filePath, int maxFiles /*= 10*/)
 {
-    int ExtractNumber(const std::string& name)
-    {
-        const std::string fileName = fs::path(name).stem().generic_string();
-        if (fileName.size() > 4)
-        {
-            std::string_view v{ fileName };
-            v.remove_prefix(v.size() - 4);
+    const fs::path logFileName(filePath);
 
-            const std::string value(v.begin(), v.end());
-            return yaget::conv::AtoN<int>(value.c_str());
-        }
+    const std::string folderName = logFileName.has_parent_path() ? logFileName.parent_path().generic_string() : "$(LogFolder)";
+    const std::string fileName = logFileName.stem().generic_string();
+    const std::string extension = logFileName.has_extension() ? logFileName.extension().generic_string() : "log";
 
-        return 0;
-    }
+    return FileCycler(folderName, fileName, extension, maxFiles);
 }
 
 
@@ -766,6 +776,7 @@ void yaget::util::DefaultOptions(args::Options& options)
         ("logic_tick", "Game Logic thread tick update (hz) (default 60)", args::value<uint32_t>())
         ("vts_fix", "Fix VTS errors.")
         ("log_write_tags", "Write out file to $(LogFolder) of all active log tags.")
+        ("config_value", "Override individual configuration values --config_value = Debug.Metrics.TraceOn=false (no spaces around =)", args::value<std::vector<std::string>>())
         ;
 }
 

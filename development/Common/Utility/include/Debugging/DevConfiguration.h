@@ -77,6 +77,8 @@ namespace yaget
                     bool AllowSocketConnection = false;
                     bool AllowFallbackToFile = false;
                     int SocketConnectionTimeout = 100;
+                    std::string TraceFileName = "$(Temp)/$(AppName)_trace.json";
+                    bool TraceOn = true;
                 };
                 Metrics mMetrics;
 

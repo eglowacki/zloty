@@ -122,3 +122,48 @@ TEST_F(File, LogCycler)
 
     io::file::RemoveFiles(oldFiles);
 }
+
+TEST_F(File, LogCyclerHelper)
+{
+    using namespace yaget;
+    namespace FileComp = yaget::io::file::FileComp;
+
+    const char* testFileName = "$(Temp)/LogCycler.garbage";
+    const char* filter = "*LogCycler*.garbage";
+    const char* filePath = "$(Temp)";
+
+    const auto filePathName = fs::path(yaget::util::ExpendEnv(testFileName, nullptr)).generic_string();
+    Strings oldFiles = io::file::GetFileNames(yaget::util::ExpendEnv(filePath, nullptr), false, filter);
+    io::file::RemoveFiles(oldFiles);
+
+    EXPECT_TRUE(util::FileCycler(testFileName));
+
+    EXPECT_EQ(0, io::file::GetFileNames(yaget::util::ExpendEnv(filePath, nullptr), false, filter).size());
+
+    const auto dataBuffer = io::CreateBuffer("417");
+    io::file::SaveFile(filePathName, dataBuffer);
+
+    oldFiles = io::file::GetFileNames(yaget::util::ExpendEnv(filePath, nullptr), false, filter);
+    EXPECT_EQ(1, oldFiles.size());
+
+    EXPECT_TRUE(util::FileCycler(testFileName));
+    io::file::SaveFile(filePathName, dataBuffer);
+    oldFiles = io::file::GetFileNames(yaget::util::ExpendEnv(filePath, nullptr), false, filter);
+    EXPECT_EQ(2, oldFiles.size());
+
+    EXPECT_TRUE(util::FileCycler(testFileName));
+    io::file::SaveFile(filePathName, dataBuffer);
+    oldFiles = io::file::GetFileNames(yaget::util::ExpendEnv(filePath, nullptr), false, filter);
+    EXPECT_EQ(3, oldFiles.size());
+
+    EXPECT_TRUE(util::FileCycler(testFileName));
+    io::file::SaveFile(filePathName, dataBuffer);
+    oldFiles = io::file::GetFileNames(yaget::util::ExpendEnv(filePath, nullptr), false, filter);
+    EXPECT_EQ(4, oldFiles.size());
+
+    EXPECT_TRUE(util::FileCycler(testFileName, 1));
+    oldFiles = io::file::GetFileNames(yaget::util::ExpendEnv(filePath, nullptr), false, filter);
+    EXPECT_EQ(1, oldFiles.size());
+
+    io::file::RemoveFiles(oldFiles);
+}

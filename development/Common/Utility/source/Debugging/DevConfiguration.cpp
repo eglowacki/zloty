@@ -279,5 +279,22 @@ void yaget::dev::Initialize(const args::Options& options, const char* configData
     configuration.mInit.ResY = options.find<int>("res_y", configuration.mInit.ResY);
     configuration.mInit.LogicTick = options.find<int>("logic_tick", configuration.mInit.LogicTick);
 
+    // process any configuration value overrides.
+    // Debug.Metrics.TraceOn=false
+    // Debug.Metrics.TraceOn='Hello World'
+    // Debug.Metrics.NumThreads=5
+    // Debug.Metrics.WaitSeconds=5.4f
+    const auto configValues = options.find<Strings>("config_value", {});
+    for (const auto token : configValues)
+    {
+        const auto jsonBlock = json::ParseConfig(token);
+
+        const auto configString = json::PrettyPrint(jsonBlock);
+        from_json(jsonBlock, configuration);
+    }
+
+    //const auto tokens = conv::Split()
+    //
+
     GetCurrentConfiguration() = configuration;
 }

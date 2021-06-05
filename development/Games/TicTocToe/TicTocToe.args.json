@@ -3,6 +3,18 @@
   "Id": "26af90b1-d749-4bfd-95b3-baba5c885c76",
   "Items": [
     {
+      "Id": "acf60596-766e-4ce2-8fb1-1f92cad67e66",
+      "Command": "--config_value=Debug.Metrics.TraceOn=true"
+    },
+    {
+      "Id": "fc2f1d90-c627-43f0-8d7d-064219bb692d",
+      "Command": "--log_filter_clear"
+    },
+    {
+      "Id": "3c65c40f-e28f-4cd4-9f3f-9dd232354bba",
+      "Command": "--config_value=Debug.Metrics.TraceFileName=''"
+    },
+    {
       "Id": "b29e0f25-e1db-4d93-a951-8f780f04ee49",
       "Command": "--log_filter=-INPT"
     },

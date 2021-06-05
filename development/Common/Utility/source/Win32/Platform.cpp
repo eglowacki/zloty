@@ -139,9 +139,9 @@ namespace
         {
             if (mConsoleAttached)
             {
-                fclose(mInHandle);
-                fclose(mOutHandle);
-                fclose(mErrHandle);
+                CloseFile(mInHandle);
+                CloseFile(mOutHandle);
+                CloseFile(mErrHandle);
 
                 FILE* fp = nullptr;
                 // Just to be safe, redirect standard IO to NUL before releasing.
@@ -172,6 +172,14 @@ namespace
         }
 
     private:
+        void CloseFile(FILE*& file)
+        {
+            if (file)
+            {
+                fclose(file);
+                file = nullptr;
+            }
+        }
         bool mConsoleAttached = false;
         FILE* mInHandle = nullptr;
         FILE* mOutHandle = nullptr;

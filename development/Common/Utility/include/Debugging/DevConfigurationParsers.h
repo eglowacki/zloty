@@ -120,7 +120,10 @@ namespace yaget::dev
     inline bool operator==(const Configuration::Debug::Metrics& lhs, const Configuration::Debug::Metrics& rhs)
     {
         return lhs.AllowSocketConnection == rhs.AllowSocketConnection &&
-               lhs.AllowFallbackToFile == rhs.AllowFallbackToFile;
+               lhs.AllowFallbackToFile == rhs.AllowFallbackToFile &&
+               lhs.SocketConnectionTimeout == rhs.SocketConnectionTimeout &&
+               lhs.TraceFileName == rhs.TraceFileName &&
+               lhs.TraceOn == rhs.TraceOn;
     }
 
     inline bool operator==(const Configuration::Debug& lhs, const Configuration::Debug& rhs)
@@ -303,6 +306,9 @@ namespace yaget::dev
     {
         j["AllowSocketConnection"] = metrics.AllowSocketConnection;
         j["AllowFallbackToFile"] = metrics.AllowFallbackToFile;
+        j["SocketConnectionTimeout"] = metrics.SocketConnectionTimeout;
+        j["TraceFileName"] = metrics.TraceFileName;
+        j["TraceOn"] = metrics.TraceOn;
     }
 
     //-------------------------------------------------------------------------------------------------------------------------------
@@ -311,6 +317,8 @@ namespace yaget::dev
         metrics.AllowSocketConnection = json::GetValue(j, "AllowSocketConnection", metrics.AllowSocketConnection);
         metrics.AllowFallbackToFile = json::GetValue(j, "AllowFallbackToFile", metrics.AllowFallbackToFile);
         metrics.SocketConnectionTimeout = json::GetValue(j, "SocketConnectionTimeout", metrics.SocketConnectionTimeout);
+        metrics.TraceFileName = json::GetValue(j, "TraceFileName", metrics.TraceFileName);
+        metrics.TraceOn = json::GetValue(j, "TraceOn", metrics.TraceOn);
     }
 
 

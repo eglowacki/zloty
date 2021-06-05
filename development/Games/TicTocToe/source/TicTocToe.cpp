@@ -13,6 +13,7 @@
 #include "LoggerCpp/OutputDebug.h"
 #include "LoggerCpp/OutputFile.h"
 
+#include "Metrics/Concurrency.h"
 
 #if 0
 namespace yaget::ylog
@@ -311,6 +312,8 @@ int main(int argc, char* argv[])
 
     int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug>(argc, argv, options, nullptr, 0, [&options]()
     {
+        metrics::Channel channel("Main.TTT", YAGET_METRICS_CHANNEL_FILE_LINE);
+
         if (options.find<bool>("vts_fix", false))
         {
             yaget::io::diag::VirtualTransportSystem vtsFixer(false, "$(DatabaseFolder)/vts.sqlite");

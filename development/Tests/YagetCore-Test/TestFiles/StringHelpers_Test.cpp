@@ -112,6 +112,12 @@ TEST_F(Strings, ToVectorConversion)
 
    result = yaget::conv::Split(testValues, ", ");
    EXPECT_TRUE(result == std::vector<std::string>{"A,B"});
+
+   testValues = "A,";
+   result = yaget::conv::Split(testValues, ",");
+   cv = std::vector<std::string>{ "A", "" };
+   EXPECT_TRUE(result == cv);
+
 }
 
 TEST_F(Strings, NumberConversion)

@@ -88,35 +88,6 @@ namespace yaget
         std::wstring utf8_to_wide(const std::string &str);
 
         //----------------------------------------------------------------------------------------------------------------------------------
-        inline std::vector<std::string> Split(const std::string& theString, const std::string& theDelimiter)
-        {
-            if (theString.empty())
-            {
-                return std::vector<std::string>();
-            }
-            else if (theDelimiter.empty())
-            {
-                return { theString };
-            }
-
-            std::vector<std::string> theStringVector;
-            size_t  start = 0, end = 0;
-
-            while (end != std::string::npos)
-            {
-                end = theString.find(theDelimiter, start);
-
-                // If at end, use length=maxLength.  Else use length=end-start.
-                theStringVector.push_back(theString.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
-
-                // If at end, use start=maxSize.  Else use start=end+delimiter.
-                start = ((end > (std::string::npos - theDelimiter.size())) ? std::string::npos : end + theDelimiter.size());
-            }
-
-            return theStringVector;
-        }
-
-        //----------------------------------------------------------------------------------------------------------------------------------
         template<typename T>
         std::string Combine(const T& values, const char* delimiter);
 
@@ -254,6 +225,45 @@ namespace yaget
         inline std::string& Trim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
         {
             return LeftTrim(RightTrim(str, chars), chars);
+        }
+
+        //----------------------------------------------------------------------------------------------------------------------------------
+        inline std::vector<std::string> Split(const std::string& theString, const std::string& theDelimiter, bool stripSpaces = false)
+        {
+            if (theString.empty())
+            {
+                return std::vector<std::string>();
+            }
+            else if (theDelimiter.empty())
+            {
+                if (stripSpaces)
+                {
+                    std::string retValue = theString;
+                    return { Trim(retValue) };
+                }
+                return { theString };
+            }
+
+            std::vector<std::string> theStringVector;
+            size_t  start = 0, end = 0;
+
+            while (end != std::string::npos)
+            {
+                end = theString.find(theDelimiter, start);
+
+                // If at end, use length=maxLength.  Else use length=end-start.
+                theStringVector.push_back(theString.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
+                if (stripSpaces)
+                {
+                    Trim(theStringVector.back());
+                }
+
+
+                // If at end, use start=maxSize.  Else use start=end+delimiter.
+                start = ((end > (std::string::npos - theDelimiter.size())) ? std::string::npos : end + theDelimiter.size());
+            }
+
+            return theStringVector;
         }
 
         //----------------------------------------------------------------------------------------------------------------------------------

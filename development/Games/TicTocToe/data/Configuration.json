@@ -13,6 +13,13 @@
 						"filename": "$(LogFolder)/$(AppName).log"
 					}
 				}
+			},
+			"Metrics": {
+				"AllowFallbackToFile": false,
+				"AllowSocketConnection": false,
+				"SocketConnectionTimeout": 100,
+				"TraceFileName": "$(Temp)/$(AppName)_trace.json",
+				"TraceOn": false
 			}
 		},
 

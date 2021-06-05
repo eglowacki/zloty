@@ -50,6 +50,7 @@
     <ClCompile Include="..\source\ImageLoaders\lodepng.cpp" />
     <ClCompile Include="..\source\InputDevice.cpp" />
     <ClCompile Include="..\source\Items\ItemsDirector.cpp" />
+    <ClCompile Include="..\source\Json\JsonHelpers.cpp" />
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>

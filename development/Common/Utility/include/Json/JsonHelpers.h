@@ -76,18 +76,28 @@ namespace yaget::json
         return defaultValue;
     }
 
+    //-------------------------------------------------------------------------------------------------------------------------------
     template<typename T>
     inline T GetValue(const nlohmann::json& block)
     {
         return block.get<T>();
     }
 
+    //-------------------------------------------------------------------------------------------------------------------------------
     inline std::string PrettyPrint(const nlohmann::json& jasonBlock, int indent = 4)
     {
         std::ostringstream s;
         s << jasonBlock.dump(indent) << std::endl;
         return s.str();
     }
+
+    //-------------------------------------------------------------------------------------------------------------------------------
+    // parse txt in the format:
+    // Debug.Metrics.TraceOn=false
+    // Debug.Metrics.TraceFile='Hello World'
+    // Debug.Metrics.Timeout=2.4f
+    // Debug.Metrics.Ticks=40
+    nlohmann::json ParseConfig(const std::string& text);
 
 } // namespace yaget::json
 

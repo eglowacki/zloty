@@ -52,6 +52,7 @@ namespace yaget::metrics
         const std::string mFilePathName;
 
         ThreadNames mThreadNames;
+        const bool mTraceOn = true;
     };
 
 }

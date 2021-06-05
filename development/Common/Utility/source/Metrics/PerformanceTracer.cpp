@@ -9,6 +9,11 @@
 #include "Json/JsonHelpers.h"
 
 #include <filesystem>
+
+#include "Debugging/DevConfiguration.h"
+
+
+#include "Platform/Support.h"
 namespace fs = std::filesystem;
 
 const int holder = yaget::meta::print_size_at_compile<yaget::metrics::TraceRecord>();
@@ -30,6 +35,15 @@ namespace
         "f",    // FlowEnd
         "t"     // FlowPoint
     };
+
+    std::string ResolveTraceFileName()
+    {
+        const auto& name = yaget::dev::CurrentConfiguration().mDebug.mMetrics.TraceFileName;
+        const auto traceFile = fs::path(yaget::util::ExpendEnv(name, nullptr)).generic_string();
+        const auto [result, error] = yaget::io::file::AssureDirectories(traceFile);
+
+        return result ? traceFile : "";
+    }
 }
 
 namespace yaget::metrics
@@ -62,6 +76,7 @@ namespace yaget::metrics
 
             break;
         case yaget::metrics::TraceRecord::Event::Instant:
+            j["s"] = "p";
             break;
         }
     }
@@ -88,64 +103,71 @@ namespace yaget::metrics
 
 
 yaget::metrics::TraceCollector::TraceCollector()
-    : mFilePathName(fs::path(yaget::util::ExpendEnv("$(Temp)/$(AppName)_trace.json", nullptr)).generic_string()) // todo: trace file name should be driven by config
+    : mFilePathName(ResolveTraceFileName())
+    , mTraceOn(mFilePathName.empty() ? false : dev::CurrentConfiguration().mDebug.mMetrics.TraceOn)
 {
-    using namespace yaget;
-
-    yaget::util::FileCycler("$(Temp)", "$(AppName)_trace", "json");
+    util::FileCycler(mFilePathName);
 }
 
 
 yaget::metrics::TraceCollector::~TraceCollector()
 {
-    ProfileStamps profileStamps;
+    if (mTraceOn)
     {
-        std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
-        std::swap(profileStamps, mProfileStamps);
-    }
+        ProfileStamps profileStamps;
+        {
+            std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
+            std::swap(profileStamps, mProfileStamps);
+        }
 
-    if (!profileStamps.empty())
-    {
-        ////profileStamps.erase(profileStamps.begin() + 5, profileStamps.end());
+        if (!profileStamps.empty())
+        {
+            ////profileStamps.erase(profileStamps.begin() + 5, profileStamps.end());
 
-        std::ofstream outputStream(mFilePathName.c_str());
+            std::ofstream outputStream(mFilePathName.c_str());
 
-        outputStream << "{\"otherData\": {";
-        outputStream << "\"Application\": \"Yaget-Test-Core\",";
-        outputStream << "\"Date\": \"Saturday May 29, 2021. 12:59PM\"";
-        outputStream << "},";
+            outputStream << "{\"otherData\": {";
+            outputStream << "\"Application\": \"Yaget-Test-Core\",";
+            outputStream << "\"Date\": \"Saturday May 29, 2021. 12:59PM\"";
+            outputStream << "},";
 
-        outputStream << "\"traceEvents\":";
+            outputStream << "\"traceEvents\":";
 
-        nlohmann::json jsonBlock = profileStamps;
-        to_json(jsonBlock, mThreadNames);
+            nlohmann::json jsonBlock = profileStamps;
+            to_json(jsonBlock, mThreadNames);
 
-        outputStream << jsonBlock;
-        outputStream << "}";
-        outputStream.flush();
+            outputStream << jsonBlock;
+            outputStream << "}";
+        }
     }
 }
 
 
 void yaget::metrics::TraceCollector::AddProfileStamp(yaget::metrics::TraceRecord&& result)
 {
-    std::size_t num = 0;
+    if (mTraceOn)
     {
-        std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
-        mProfileStamps.emplace_back(std::move(result));
-        num = mProfileStamps.size();
-    }
+        std::size_t num = 0;
+        {
+            std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
+            mProfileStamps.emplace_back(std::move(result));
+            num = mProfileStamps.size();
+        }
 
-    const int capacityChecker = 1000;
-    if (num % capacityChecker == 0)
-    {
-        const std::string bytes = yaget::conv::ToThousandsSep(num * sizeof(ProfileStamps::value_type));
-        YLOG_DEBUG("METR", "Accumulated profile results: '%d' results using '%s' bytes of memory.", num, bytes.c_str());
+        const int capacityChecker = 1000;
+        if (num % capacityChecker == 0)
+        {
+            const std::string bytes = yaget::conv::ToThousandsSep(num * sizeof(ProfileStamps::value_type));
+            YLOG_DEBUG("METR", "Accumulated profile results: '%d' results using '%s' bytes of memory.", num, bytes.c_str());
+        }
     }
 }
 
 void yaget::metrics::TraceCollector::SetThreadName(const char* threadName, std::size_t t)
 {
-    std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
-    mThreadNames[t] = threadName ? threadName : "";
+    if (mTraceOn)
+    {
+        std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
+        mThreadNames[t] = threadName ? threadName : "";
+    }
 }
