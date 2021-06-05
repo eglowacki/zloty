@@ -37,6 +37,9 @@ namespace yaget
         using SleepPredicate = std::function<bool()>;
         // sleep while SleepPredicate returns true, return from sleep if predicate returns false
         void Sleep(SleepPredicate sleepPredicate);
+        // Allows to specify how long to wait before quit sleep with predicate
+        enum class SleepResult { TimedOut, OK };
+        SleepResult Sleep(time::TimeUnits_t maxSleepSleep, time::TimeUnits_t unitType, SleepPredicate sleepPredicate);
 
         void Sleep(time::TimeUnits_t numSleep, time::TimeUnits_t unitType);
 

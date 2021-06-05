@@ -73,7 +73,7 @@ std::string yaget::mt::GenerateNextName(const std::string& name)
 yaget::mt::JobPool::JobPool(const char* poolName, uint32_t numThreads /*= 0*/, Behaviour behaviour /*= Behaviour::StartAsRun*/) 
     : mName(GenerateNextName(poolName))
     , mBehaviour(behaviour)
-    , mDynamicThreads(false)
+    , mDynamicThreads(true)
     , mMaxNumThreads(CalculateMaxNumThreads(numThreads))
 {
     mEmptyCondition.Trigger();

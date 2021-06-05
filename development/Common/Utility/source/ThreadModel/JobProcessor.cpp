@@ -4,7 +4,8 @@
 #include "StringHelpers.h" 
 #include "Debugging/Assert.h" 
 #include "Logger/YLog.h" 
-#include "Metrics/Concurrency.h" 
+#include "Metrics/Concurrency.h"
+#include "Metrics/Gather.h"
  
  
 yaget::mt::JobProcessor::Holder::Holder(const std::string& threadName, PopNextTask_t&& popNextTask) 
@@ -39,10 +40,9 @@ void yaget::mt::JobProcessor::Holder::Clear()
 yaget::mt::JobProcessor::JobProcessor(const std::string& threadName, PopNextTask_t&& popNextTask) 
     : mThreadName(threadName) 
 { 
-    mThread = std::thread(std::ref(*this), std::move(popNextTask)); 
-    metrics::MarkStartThread(mThread, threadName.c_str()); 
- 
-    mPauseCondition.Trigger(); 
+    mPauseCondition.Trigger();
+    mThread = std::thread(std::ref(*this), std::move(popNextTask));
+    metrics::MarkStartThread(mThread, threadName.c_str());
 } 
  
  
@@ -54,8 +54,25 @@ yaget::mt::JobProcessor::~JobProcessor()
     mTaskReadyCondition.Trigger(); 
  
     if (mThread.joinable()) 
-    { 
-        mThread.join(); 
+    {
+        const time::TimeUnits_t maxSleepSleep = 500000;
+        const time::TimeUnits_t units = time::kMicrosecondUnit;
+        const auto result = platform::Sleep(maxSleepSleep, units, [this]()
+        {
+                return mTaskInProgress == true;
+        });
+
+        if (result == platform::SleepResult::OK)
+        {
+            mThread.join();
+        }
+        else
+        {
+            ::TerminateThread(static_cast<HANDLE>(mThread.native_handle()), 1);
+
+            const auto message = fmt::format("Job '{}' killed. Task in progress exceeded time out value: '{}{}'.", mThreadName, maxSleepSleep, metrics::UnitName(units));
+            YAGET_UTIL_THROW("MULT", message);
+        }
     } 
  
     metrics::MarkEndThread(mThread); 
@@ -68,19 +85,31 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
 { 
     mPauseCondition.Wait(); 
     metrics::Channel channel("T." + mThreadName, YAGET_METRICS_CHANNEL_FILE_LINE); 
- 
+
+    struct Releaser
+    {
+        Releaser(std::atomic_bool& value)
+            : mValue(value)
+        {}
+
+        ~Releaser()
+        {
+            mValue = false;
+        }
+
+        std::atomic_bool& mValue;
+    };
+
+    Releaser releaser(mTaskInProgress);
+
     while (true) 
     { 
-        { 
-            mTaskReadyCondition.Wait(); 
- 
-            if (mQuit) 
-            { 
-                break; 
-            } 
-        } 
- 
-        while (Task_t nextTask = popNextTask()) 
+        if (mQuit)
+        {
+            break;
+        }
+
+        while (Task_t nextTask = popNextTask())
         { 
             try 
             { 
@@ -96,13 +125,19 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
                 YLOG_ERROR("MULT", "Task '%s' running on '%s' thread failed with exception: '%s'.", "some_task_description", mThreadName.c_str(), e.what());
             }
 
-            // allows us to break even if there are more tasks to left
+            // allows us to break out even  if there are more tasks to left
             if (mQuit)
             {
-                break;
+                return;
             }
         }
-    } 
+
+        // we always setup task in progress in ctor to true, so the thread has a chance to
+        // grab a on first iteration. There was race condition in JobPool when creating
+        // dynamic threads
+        mTaskInProgress = false;
+        mTaskReadyCondition.Wait();
+    }
 } 
  
  

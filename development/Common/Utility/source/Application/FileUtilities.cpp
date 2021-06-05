@@ -96,10 +96,11 @@ yaget::Strings yaget::io::file::GetFileNames(const std::string& sourceLocation, 
     std::sort(foundFiles.begin(), foundFiles.end());
     double timeEnd = platform::GetRealTime();
 
-    YLOG_INFO("FILE", "Found '%d' files in '%s' took: '%f' seconds.", foundFiles.size(), sourceLocation.c_str(), timeEnd - timeStart);
+    YLOG_INFO("METR", "Found '%d' files in '%s' took: '%f' seconds.", foundFiles.size(), sourceLocation.c_str(), timeEnd - timeStart);
 
     return foundFiles;
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------------------
 yaget::Strings yaget::io::file::GetFileNames(const std::string& sourceLocation, bool recursive, const std::string& filter)
@@ -110,6 +111,7 @@ yaget::Strings yaget::io::file::GetFileNames(const std::string& sourceLocation, 
         return result;
     });
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------------------
 yaget::Strings yaget::io::file::GenerateConfigSearchPath(const std::string& name, bool addAppName, const args::Options* options) // KeyBindings, Configuration 

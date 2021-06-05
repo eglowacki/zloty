@@ -12,6 +12,7 @@
 
 #include "Platform/WindowsLean.h"
 #include "CommandLineArgs.inl"
+#include "Metrics/Gather.h"
 
 #include <thread>
 #include <random>
@@ -538,6 +539,26 @@ void platform::Sleep(SleepPredicate sleepPredicate)
     {
         std::this_thread::yield();
     }
+}
+
+platform::SleepResult platform::Sleep(time::TimeUnits_t maxSleepSleep, time::TimeUnits_t unitType, SleepPredicate sleepPredicate)
+{
+    SleepResult sleepResult =SleepResult::OK;
+
+    const auto startDestroyTime = platform::GetRealTime(unitType);
+    platform::Sleep([&sleepResult, startDestroyTime, maxSleepSleep, unitType, sleepPredicate]()
+    {
+        const auto nowTime = platform::GetRealTime(unitType);
+        if (nowTime - startDestroyTime > maxSleepSleep)
+        {
+            sleepResult = SleepResult::TimedOut;
+            return false;
+        }
+
+        return sleepPredicate();
+    });
+
+    return sleepResult;
 }
 
 void platform::Sleep(time::TimeUnits_t numSleep, time::TimeUnits_t unitType)

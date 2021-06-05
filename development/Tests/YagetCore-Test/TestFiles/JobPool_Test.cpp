@@ -26,6 +26,7 @@ namespace yaget::ylog
 } // namespace yaget::ylog 
 
 
+//CHECK_EQUAL(expected, actual);
 class Threads : public ::testing::Test
 {
 private:
@@ -77,6 +78,41 @@ TEST_F(Threads, JobPool)
     }
     YLOG_NOTICE("TEST", loadsMessage.c_str());
     EXPECT_EQ(counter, 0);
+
+    {
+        mt::JobPool pool("UNIT_TEST_STARTUP", MaxThreads, mt::JobPool::Behaviour::StartAsRun);
+
+        std::atomic_bool keepRunning = true;
+        int counter[2] = {};
+        pool.AddTask([&keepRunning, &counter]()
+        {
+            while (keepRunning)
+            {
+                counter[0] = 1;
+            }
+        });
+
+        pool.AddTask([&keepRunning, &counter]()
+        {
+                while (keepRunning)
+                {
+                    counter[1] = 1;
+                }
+        });
+
+        const auto sleepResult = platform::Sleep(1000, time::kMicrosecondUnit, [&counter]()
+        {
+            if (counter[0] == 1 && counter[1] == 1)
+            {
+                return false;
+            }
+
+            return true;
+        });
+
+        EXPECT_EQ(platform::SleepResult::OK, sleepResult);
+        keepRunning = false;
+    }
 }
 
 

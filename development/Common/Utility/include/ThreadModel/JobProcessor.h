@@ -57,7 +57,7 @@ namespace yaget
             const std::string mThreadName; 
  
             std::thread mThread; 
-            std::atomic_bool mTaskInProgress{ false }; 
+            std::atomic_bool mTaskInProgress{ true }; 
  
             Condition mTaskReadyCondition; 
             Condition mPauseCondition; 
