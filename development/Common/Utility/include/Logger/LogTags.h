@@ -1,5 +1,6 @@
 // core yaget library all log tags. If you are a core library developer/maintainer
 // add any new tags here. If you are developing executable, dll, add your own tags to existing ones
+// by including code snippet below (adjusted for your environment) in one of your cpp files, preferably 'main'
 //
 //namespace yaget::ylog
 //{
