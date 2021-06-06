@@ -61,7 +61,6 @@ namespace yaget
             const VirtualTransportSystem& mVTS;
         };
 
-
         //! Fully multi-threaded and async requests and notifications for file data from "some" source
         class VirtualTransportSystem : public Noncopyable<VirtualTransportSystem>
         {
@@ -92,7 +91,12 @@ namespace yaget
                 bool operator==(const Section& other) const;
 
                 //! Initializes with string in a format Name@Filter. Filter is optional.
+                //! We do not enforce explicit here due to allow easy of usage with strings
                 Section(const std::string& pathName);
+
+                Section& operator=(Section&&) = default;
+                Section(Section&&) = default;
+                ~Section() = default;
 
                 std::string ToString() const;
 
