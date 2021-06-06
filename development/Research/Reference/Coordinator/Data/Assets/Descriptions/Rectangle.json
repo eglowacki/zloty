@@ -1,0 +1,24 @@
+{
+    "Description": {
+
+        "Layers": [
+            {
+                "Name": "Default",
+                "Geometry": "Geometry@Predefined/Rectangle",
+                "Material": "Materials@Position",
+                "DepthState": "DepthStencil@DepthLess",
+                "BlendState": "Blends@Disabled",
+                "Texture": "Textures@Checker"
+            },
+
+            {
+                "Name": "WireFrame",
+                "Material": "Materials@WireFrame",
+                "DepthState": "DepthStencil@DepthLessEqual",
+                "RasterizerState": "Rasterizers@BackCull",
+                "BlendState": "Blends@SourceAlpha",
+                "Operation": "Overlay"
+            }
+        ]
+    }
+}

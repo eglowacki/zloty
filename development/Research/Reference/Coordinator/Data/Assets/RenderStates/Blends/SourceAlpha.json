@@ -1,0 +1,21 @@
+{
+    "BlendState": {
+
+        "AlphaToCoverageEnable": false,
+        "IndependentBlendEnable": false,
+        "BlendFactor": "0.75, 0.75, 0.75, 0.75",
+
+        "Blends": [
+            {
+                "BlendEnable": true,
+                "SrcBlend": "SrcColor",
+                "DestBlend": "BlendFactor",
+                "BlendOp": "Add",
+                "SrcBlendAlpha": "One",
+                "DestBlendAlpha": "Zero",
+                "BlendOpAlpha": "Add",
+                "RenderTargetWriteMask": 15
+            }
+        ]
+    }
+}

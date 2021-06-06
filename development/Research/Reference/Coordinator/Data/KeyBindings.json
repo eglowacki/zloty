@@ -1,0 +1,9 @@
+{
+    "FullScreenToggle": {
+        "Action": "FullScreenToggle",
+        "ContextName": "",
+        "DisplayName": "Back",
+        "Flags": "ButtonDown",
+        "Value": "Back"
+    }
+}

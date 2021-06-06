@@ -1,0 +1,15 @@
+{
+    "Description": {
+
+        "Layers": [
+            {
+                "Name": "Default",
+                "Geometry": "Geometry@Predefined/Rectangle",
+                "Material": "Materials@WireFrame",
+                "DepthState": "DepthStencil@DepthLess",
+                "BlendState": "Blends@Disabled",
+                "Texture": "Textures@Checker2"
+            }
+        ]
+    }
+}

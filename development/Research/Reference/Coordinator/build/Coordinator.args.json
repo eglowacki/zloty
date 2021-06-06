@@ -1,0 +1,26 @@
+{
+  "FileVersion": 2,
+  "Id": "7248b931-88b9-485c-9306-d98415c06f76",
+  "Items": [
+    {
+      "Id": "2330f76d-68bc-4223-9f86-e5b9f0159866",
+      "Command": "--log_filter_clear"
+    },
+    {
+      "Id": "ba954926-f038-443c-a328-2b611db44859",
+      "Command": "--vts_fix"
+    },
+    {
+      "Id": "4362e440-7d66-4ed4-b451-9ac3af6e2482",
+      "Command": "--configuration_file=Ponger --configuration_path=../../../Research/Coordinator/Data"
+    },
+    {
+      "Id": "ba59c19b-4189-4b1d-88d1-f08d38e3f5cc",
+      "Command": "--options_view"
+    },
+    {
+      "Id": "065d2d9d-4a07-43ad-87af-94bb28a0279f",
+      "Command": "--configuration_path=../../../Research/Coordinator/Data"
+    }
+  ]
+}

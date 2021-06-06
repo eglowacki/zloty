@@ -1,0 +1,58 @@
+; These values are used in KeyBindings file to author actions.
+; User friendly names for keys. Use ASCII values as int or char for rest of values, ("A" or 65).
+[KeysMap]
+ArrowDown
+ArrowLeft
+ArrowRight
+ArrowUp
+Back
+CapsLock
+Delete
+End
+ESC
+F1
+F10
+F11
+F12
+F2
+F3
+F4
+F5
+F6
+F7
+F8
+F9
+Home
+Mouse4
+Mouse5
+MouseLeft
+MouseMiddle
+MouseRight
+MouseWheel
+PageDown
+PageUp
+Return
+Shift
+Tab
+
+; User friendly names for key flags. Those can be or'ed together with |, (ButtonDown|ButtonShift).
+[FlagsMap]
+ButtonAlt
+ButtonCaps
+ButtonCtrl
+ButtonDown
+ButtonNumLock
+ButtonShift
+ButtonUp
+InputSeqOred
+MouseMove
+MouseWheel
+[Example]
+"Quit App":
+{
+    "Action": "Quit App",
+    "ContextName" : "",
+    "DisplayName" : "ESC",
+    "Flags" : "ButtonDown",
+    "Value" : "ESC"
+}

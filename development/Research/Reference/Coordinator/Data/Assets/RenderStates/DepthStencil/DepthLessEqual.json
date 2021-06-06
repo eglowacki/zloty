@@ -1,0 +1,6 @@
+{
+    "DepthStencilState": {
+        "DepthEnable": true,
+        "DepthFunc": "LessEqual"
+    }
+}

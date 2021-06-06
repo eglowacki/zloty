@@ -1,0 +1,207 @@
+{
+    "Include": "DefaultConfiguration",
+
+    "Configuration": {
+        "Debug": {
+            "Logging": {
+                "Filters": [ "INPT", "MULT", "FILE", "VTS", "POOL", "SQL", "VTSD", "DIRE", "SCRT", "PROF" ]
+            },
+            "Flags": {
+                "DisregardDebugger": true
+            }
+        },
+
+        "Graphics": {
+            "Device": "Settings@Device",
+            "MemoryReport": false
+        },
+
+        "Runtime": {
+            "ShowScriptHelp": false
+        },
+
+        "Init": {
+            "Aliases": {
+                "$(LogFolder)": "$(DataFolder)/Logs",
+                "$(DatabaseFolder)": "$(DataFolder)/Database",
+                "$(GlobalDataFolder)": "$(RootFolder)/Data"
+            },
+
+            "VTS": [
+                {
+                    "Settings": {
+                        "Path": [ "$(GlobalDataFolder)", "$(DataFolder)", "$(DataFolder)/UserSettings" ],
+                        "ReadOnly": false,
+                        "Recursive": false,
+                        "Filters": [ "*.json" ],
+                        "Converters": "JSON"
+                    }
+                },
+
+                {
+                    "UserOptions": {
+                        "Path": [ "$(DataFolder)/UserOptions" ],
+                        "ReadOnly": false,
+                        "Recursive": false,
+                        "Filters": [ "*.json" ],
+                        "Converters": "JSON"
+                    }
+                },
+
+                {
+                    "Geometry": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/Geometry", "$(DataFolder)/Assets/Geometry" ],
+                        "ReadOnly": false,
+                        "Recursive": true,
+                        "Filters": [ "*.pak" ],
+                        "Converters": "PAK"
+                    }
+                },
+
+                {
+                    "Models": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/Geometry", "$(DataFolder)/Assets/Geometry" ],
+                        "ReadOnly": false,
+                        "Recursive": true,
+                        "Filters": [ "*.blend", "*.fbx" ],
+                        "Converters": "GEOM"
+                    }
+                },
+
+                {
+                    "Descriptions": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/Descriptions", "$(DataFolder)/Assets/Descriptions" ],
+                        "ReadOnly": false,
+                        "Recursive": false,
+                        "Filters": [ "*.json" ],
+                        "Converters": "DESC"
+                    }
+                },
+
+                {
+                    "Materials": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/Materials", "$(DataFolder)/Assets/Materials" ],
+                        "ReadOnly": false,
+                        "Recursive": false,
+                        "Filters": [ "*.json" ],
+                        "Converters": "MAT"
+                    }
+                },
+
+                {
+                    "Shaders": {
+                        "Path": [ "$(DataFolder)/ShaderCache/$(BuildConfiguration)" ],
+                        "ReadOnly": true,
+                        "Recursive": false,
+                        "Filters": [ "*.cso" ],
+                        "Converters": "SHADER"
+                    }
+                },
+
+                {
+                    "Images": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/Images", "$(DataFolder)/Assets/Images" ],
+                        "ReadOnly": true,
+                        "Recursive": true,
+                        "Filters": [ "*.jpg", "*.png", "*.dds" ],
+                        "Converters": "IMAGE"
+                    }
+                },
+
+                {
+                    "Meta": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/TextureMeta", "$(DataFolder)/Assets/TextureMeta" ],
+                        "ReadOnly": true,
+                        "Recursive": true,
+                        "Filters": [ "*.json" ],
+                        "Converters": "IMAGEMETA"
+                    }
+                },
+
+                {
+                    "Textures": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/Textures", "$(DataFolder)/Assets/Textures" ],
+                        "ReadOnly": true,
+                        "Recursive": true,
+                        "Filters": [ "*.json" ],
+                        "Converters": "TEXTURE"
+                    }
+                },
+
+                {
+                    "DepthStencil": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/RenderStates/DepthStencil", "$(DataFolder)/Assets/RenderStates/DepthStencil" ],
+                        "ReadOnly": true,
+                        "Recursive": true,
+                        "Filters": [ "*.json" ],
+                        "Converters": "DEPTHSTENCIL"
+                    }
+                },
+
+                {
+                    "Rasterizers": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/RenderStates/Rasterizer", "$(DataFolder)/Assets/RenderStates/Rasterizer" ],
+                        "ReadOnly": true,
+                        "Recursive": true,
+                        "Filters": [ "*.json" ],
+                        "Converters": "RASTERIZER"
+                    }
+                },
+
+                {
+                    "Blends": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/RenderStates/Blends", "$(DataFolder)/Assets/RenderStates/Blends" ],
+                        "ReadOnly": true,
+                        "Recursive": true,
+                        "Filters": [ "*.json" ],
+                        "Converters": "BLEND"
+                    }
+                },
+
+                {
+                    "FontBitmaps": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/FontSets/Bitmaps", "$(DataFolder)/Assets/FontSets/Bitmaps" ],
+                        "ReadOnly": true,
+                        "Recursive": false,
+                        "Filters": [ "*.spritefont" ],
+                        "Converters": "FONTBITMAP"
+                    }
+                },
+
+                {
+                    "Fonts": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/Fonts", "$(DataFolder)/Assets/Fonts" ],
+                        "ReadOnly": true,
+                        "Recursive": true,
+                        "Filters": [ "*.ttf" ],
+                        "Converters": "FONT"
+                    }
+                },
+
+                {
+                    "FontFaces": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/Fonts", "$(DataFolder)/Assets/Fonts" ],
+                        "ReadOnly": true,
+                        "Recursive": true,
+                        "Filters": [ "*.face" ],
+                        "Converters": "FONTFACE"
+                    }
+                },
+
+                {
+                    "Scripts": {
+                        "Path": [ "$(GlobalDataFolder)/Assets/Scripts", "$(DataFolder)/Assets/Scripts" ],
+                        "ReadOnly": true,
+                        "Recursive": true,
+                        "Filters": [ "*.py" ],
+                        "Converters": "PYTHON"
+                    }
+                }
+
+            ],
+
+            "WindowOptions": "UserOptions@WindowConfiguration",
+            "GameDirectorScript": "Scripts@$(AppName)"
+        }
+    }
+}

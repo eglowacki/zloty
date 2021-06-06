@@ -1,0 +1,38 @@
+{
+    "Active": "Window",
+    "Appearances": [
+        [
+            "Fullscreen",
+            {
+                "Appearance": "Fullscreen",
+                "Left": 0,
+                "MonitorIndex": 1,
+                "ResolutionX": 3840,
+                "ResolutionY": 2160,
+                "Top": 0
+            }
+        ],
+        [
+            "Window",
+            {
+                "Appearance": "Window",
+                "Left": 5908,
+                "MonitorIndex": 2,
+                "ResolutionX": 1705,
+                "ResolutionY": 1176,
+                "Top": 116
+            }
+        ],
+        [
+            "Borderless",
+            {
+                "Appearance": "Borderless",
+                "Left": 5650,
+                "MonitorIndex": 2,
+                "ResolutionX": 1920,
+                "ResolutionY": 1080,
+                "Top": 77
+            }
+        ]
+    ]
+}

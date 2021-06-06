@@ -1,0 +1,6 @@
+{
+    "Material": {
+        "Vertex": "Shaders@PositionVS",
+        "Pixel": "Shaders@FlatPS"
+    }
+}

@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Pong Game Files">
+      <UniqueIdentifier>{99b5c25a-dd6f-4d5a-9ad2-24e7853e88fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files">
+      <UniqueIdentifier>{d56b7158-edff-4388-b726-32fc23352c49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Assets">
+      <UniqueIdentifier>{7a6bbff4-1eba-4eb6-94fa-3c4a38a95f97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Assets\Materials">
+      <UniqueIdentifier>{3b9b3a2c-54d1-4f69-8864-241426fcaed7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Assets\Descriptions">
+      <UniqueIdentifier>{9f481102-b10c-45e0-a007-44360185bbb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Assets\Shaders">
+      <UniqueIdentifier>{fb7f62cc-8172-4f9d-a31b-dcc016692895}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Assets\TextureMeta">
+      <UniqueIdentifier>{e1a5887f-02fd-4bdf-97ec-1f1334ace56e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Assets\Textures">
+      <UniqueIdentifier>{c32d5ee3-037e-4315-8ec8-2bf4a8fe1fbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Assets\RenderStates">
+      <UniqueIdentifier>{442bcb10-b680-47d0-9af8-e2440338edb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Database Files">
+      <UniqueIdentifier>{49a32224-be6b-4027-95d1-5ee570478214}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\UserSettings Files">
+      <UniqueIdentifier>{adff30be-5cbe-43ad-9ad0-aa8a9d7b99d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Assets\Scripts">
+      <UniqueIdentifier>{8659d115-2a64-4b11-9359-3de5cd5b6ec9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\AppCoordinator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\GameHarness.cpp">
+      <Filter>Pong Game Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Ponger\PongerTypes.cpp">
+      <Filter>Pong Game Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Ponger\PongerRenderer.cpp">
+      <Filter>Pong Game Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Ponger\PongerComponents.cpp">
+      <Filter>Pong Game Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Ponger\GameWorldSystem.cpp">
+      <Filter>Pong Game Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Ponger\RenderWorldSystem.cpp">
+      <Filter>Pong Game Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\source\Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\AppCoordinator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\includes\GameHarness.h">
+      <Filter>Pong Game Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\includes\Ponger\PongerTypes.h">
+      <Filter>Pong Game Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\includes\Ponger\PongerRenderer.h">
+      <Filter>Pong Game Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\includes\Ponger\PongerComponents.h">
+      <Filter>Pong Game Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\includes\Ponger\GameWorldSystem.h">
+      <Filter>Pong Game Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\includes\Ponger\RenderWorldSystem.h">
+      <Filter>Pong Game Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\source\small.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\source\Coordinator.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\source\Coordinator.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Data\Assets\Materials\Position.json">
+      <Filter>Data Files\Assets\Materials</Filter>
+    </None>
+    <None Include="..\Data\Assets\Descriptions\Rectangle.json">
+      <Filter>Data Files\Assets\Descriptions</Filter>
+    </None>
+    <None Include="..\Data\Assets\TextureMeta\WrapPoint.json">
+      <Filter>Data Files\Assets\TextureMeta</Filter>
+    </None>
+    <None Include="..\Data\Assets\TextureMeta\WrapAnisotropic.json">
+      <Filter>Data Files\Assets\TextureMeta</Filter>
+    </None>
+    <None Include="..\Data\Assets\TextureMeta\ClampPoint.json">
+      <Filter>Data Files\Assets\TextureMeta</Filter>
+    </None>
+    <None Include="..\Data\Assets\TextureMeta\ClampAnisotropic.json">
+      <Filter>Data Files\Assets\TextureMeta</Filter>
+    </None>
+    <None Include="..\Data\Assets\Textures\Checker.json">
+      <Filter>Data Files\Assets\Textures</Filter>
+    </None>
+    <None Include="..\Data\Assets\RenderStates\DepthStencil\DepthLess.json">
+      <Filter>Data Files\Assets\RenderStates</Filter>
+    </None>
+    <None Include="..\Data\Assets\RenderStates\DepthStencil\DepthLessEqual.json">
+      <Filter>Data Files\Assets\RenderStates</Filter>
+    </None>
+    <None Include="..\Data\Assets\RenderStates\Rasterizer\BackCull.json">
+      <Filter>Data Files\Assets\RenderStates</Filter>
+    </None>
+    <None Include="..\Data\Assets\RenderStates\Blends\SourceAlpha.json">
+      <Filter>Data Files\Assets\RenderStates</Filter>
+    </None>
+    <None Include="..\Data\Assets\Materials\WireFrame.json">
+      <Filter>Data Files\Assets\Materials</Filter>
+    </None>
+    <None Include="..\Data\Assets\RenderStates\Blends\Disabled.json">
+      <Filter>Data Files\Assets\RenderStates</Filter>
+    </None>
+    <None Include="..\Data\Assets\Descriptions\Background.json">
+      <Filter>Data Files\Assets\Descriptions</Filter>
+    </None>
+    <None Include="..\Data\Assets\Textures\Checker2.json">
+      <Filter>Data Files\Assets\Textures</Filter>
+    </None>
+    <None Include="..\Data\UserSettings\Device.json">
+      <Filter>Data Files\UserSettings Files</Filter>
+    </None>
+    <None Include="..\Data\Database\items.sqlite">
+      <Filter>Data Files\Database Files</Filter>
+    </None>
+    <None Include="..\Data\Database\vts.sqlite">
+      <Filter>Data Files\Database Files</Filter>
+    </None>
+    <None Include="..\Data\KeyBindings.json">
+      <Filter>Data Files</Filter>
+    </None>
+    <None Include="cpp.hint" />
+    <None Include="Coordinator.deployment" />
+    <None Include="..\Data\Coordinator.json">
+      <Filter>Data Files</Filter>
+    </None>
+    <None Include="..\Data\Assets\Scripts\test.py">
+      <Filter>Data Files\Assets\Scripts</Filter>
+    </None>
+    <None Include="..\Data\Assets\Scripts\coordinator.py">
+      <Filter>Data Files\Assets\Scripts</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\source\Shaders\PositionVS.hlsl">
+      <Filter>Data Files\Assets\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\source\Shaders\FlatPS.hlsl">
+      <Filter>Data Files\Assets\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\source\Shaders\WireFramePS.hlsl">
+      <Filter>Data Files\Assets\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\source\Shaders\WireFrameVS.hlsl">
+      <Filter>Data Files\Assets\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{7248b931-88b9-485c-9306-d98415c06f76}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Coordinator</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\BuildRules\yaget.Debug.props" />
+    <Import Project="..\..\..\BuildRules\yaget.Executable.props" />
+    <Import Project="..\..\..\BuildRules\yaget.Tooling.props" />
+    <Import Project="..\..\..\BuildRules\yaget.VertexShader.props" />
+    <Import Project="..\..\..\BuildRules\yaget.lua.props" />
+    <Import Project="..\..\..\BuildRules\yaget.Render.props" />
+    <Import Project="..\..\..\BuildRules\yaget.PythonScripting.props" />
+    <Import Project="..\..\..\BuildRules\yaget.boost.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\BuildRules\yaget.Release.props" />
+    <Import Project="..\..\..\BuildRules\yaget.Executable.props" />
+    <Import Project="..\..\..\BuildRules\yaget.Tooling.props" />
+    <Import Project="..\..\..\BuildRules\yaget.VertexShader.props" />
+    <Import Project="..\..\..\BuildRules\yaget.lua.props" />
+    <Import Project="..\..\..\BuildRules\yaget.Render.props" />
+    <Import Project="..\..\..\BuildRules\yaget.PythonScripting.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>c:\Development\yaget\Experimental\Modules\kaguya-master\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_SILENCE_CLANG_CONCEPTS_MESSAGE;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>c:\Development\yaget\Experimental\Modules\kaguya-master\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\GameHarness.cpp" />
+    <ClCompile Include="..\source\Ponger\GameWorldSystem.cpp" />
+    <ClCompile Include="..\source\Ponger\PongerComponents.cpp" />
+    <ClCompile Include="..\source\Ponger\PongerRenderer.cpp" />
+    <ClCompile Include="..\source\Ponger\PongerTypes.cpp" />
+    <ClCompile Include="..\source\Ponger\RenderWorldSystem.cpp" />
+    <ClCompile Include="..\source\AppCoordinator.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\includes\GameHarness.h" />
+    <ClInclude Include="..\includes\Ponger\GameWorldSystem.h" />
+    <ClInclude Include="..\includes\Ponger\PongerComponents.h" />
+    <ClInclude Include="..\includes\Ponger\PongerRenderer.h" />
+    <ClInclude Include="..\includes\Ponger\PongerTypes.h" />
+    <ClInclude Include="..\includes\Ponger\RenderWorldSystem.h" />
+    <ClInclude Include="..\source\Resource.h" />
+    <ClInclude Include="..\source\targetver.h" />
+    <ClInclude Include="..\source\AppCoordinator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\source\Coordinator.ico" />
+    <Image Include="..\source\small.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\source\Coordinator.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Data\Assets\Descriptions\Background.json" />
+    <None Include="..\Data\Assets\Descriptions\Rectangle.json" />
+    <None Include="..\Data\Assets\Materials\Position.json" />
+    <None Include="..\Data\Assets\Materials\WireFrame.json" />
+    <None Include="..\Data\Assets\RenderStates\Blends\Disabled.json" />
+    <None Include="..\Data\Assets\RenderStates\Blends\SourceAlpha.json" />
+    <None Include="..\Data\Assets\RenderStates\DepthStencil\DepthLess.json" />
+    <None Include="..\Data\Assets\RenderStates\DepthStencil\DepthLessEqual.json" />
+    <None Include="..\Data\Assets\RenderStates\Rasterizer\BackCull.json" />
+    <None Include="..\Data\Assets\Scripts\coordinator.py" />
+    <None Include="..\Data\Assets\Scripts\test.py" />
+    <None Include="..\Data\Assets\TextureMeta\ClampAnisotropic.json" />
+    <None Include="..\Data\Assets\TextureMeta\ClampPoint.json" />
+    <None Include="..\Data\Assets\TextureMeta\WrapAnisotropic.json" />
+    <None Include="..\Data\Assets\TextureMeta\WrapPoint.json" />
+    <None Include="..\Data\Assets\Textures\Checker.json" />
+    <None Include="..\Data\Assets\Textures\Checker2.json" />
+    <None Include="..\Data\Coordinator.json" />
+    <None Include="..\Data\Database\items.sqlite" />
+    <None Include="..\Data\Database\vts.sqlite" />
+    <None Include="..\Data\KeyBindings.json" />
+    <None Include="..\Data\UserSettings\Device.json" />
+    <None Include="Coordinator.deployment" />
+    <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\source\Shaders\FlatPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\source\Shaders\PositionVS.hlsl" />
+    <FxCompile Include="..\source\Shaders\WireFramePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\source\Shaders\WireFrameVS.hlsl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties _1_1_4Data_4Configuration_1json__JSONSchema="http://json.schemastore.org/ansible-stable-2.5" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

@@ -1,0 +1,9 @@
+{
+    "Include": "Modules/modules.deployment",
+
+    "Configuration": {
+        "Common": [
+            "Modules/assimp-4.1.0/builds/code/Release/assimp-vc140-mt.dll"
+        ]
+    }
+}

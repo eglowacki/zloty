@@ -1,0 +1,10 @@
+{
+    "Device": {
+        "DeviceType": "Hardware",
+        "FeatureLevels": [ "11_1", "11_0" ],
+        "DebugLayer": true,
+        "BufferCount": 2,
+        "MultiSample": 1,
+        "BufferFormat": "R8G8B8A8_UNORM"
+    }
+}

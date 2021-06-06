@@ -1,0 +1,4 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define YAGET_COMPILE_SUPRESS_START(x) __pragma(warning(push)) __pragma(warning(disable : x)) __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): Disabling Compiler Warning: [" YAGET_STRINGIZE(x) "]."))

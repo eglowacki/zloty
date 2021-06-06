@@ -1,0 +1,20 @@
+{
+    "BlendState": {
+    
+        "AlphaToCoverageEnable": false,
+        "IndependentBlendEnable": false,
+
+        "Blends": [
+            {
+                "BlendEnable": false,
+                "SrcBlend": "One",
+                "DestBlend": "Zero",
+                "BlendOp": "Add",
+                "SrcBlendAlpha": "One",
+                "DestBlendAlpha": "Zero",
+                "BlendOpAlpha": "Add",
+                "RenderTargetWriteMask": 15
+            }
+        ]
+    }
+}
