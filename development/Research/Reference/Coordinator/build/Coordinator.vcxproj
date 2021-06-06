@@ -65,24 +65,24 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\BuildRules\yaget.Debug.props" />
-    <Import Project="..\..\..\BuildRules\yaget.Executable.props" />
-    <Import Project="..\..\..\BuildRules\yaget.Tooling.props" />
-    <Import Project="..\..\..\BuildRules\yaget.VertexShader.props" />
-    <Import Project="..\..\..\BuildRules\yaget.lua.props" />
-    <Import Project="..\..\..\BuildRules\yaget.Render.props" />
-    <Import Project="..\..\..\BuildRules\yaget.PythonScripting.props" />
-    <Import Project="..\..\..\BuildRules\yaget.boost.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.Debug.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.Executable.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.Tooling.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.VertexShader.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.lua.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.Render.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.PythonScripting.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.boost.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\BuildRules\yaget.Release.props" />
-    <Import Project="..\..\..\BuildRules\yaget.Executable.props" />
-    <Import Project="..\..\..\BuildRules\yaget.Tooling.props" />
-    <Import Project="..\..\..\BuildRules\yaget.VertexShader.props" />
-    <Import Project="..\..\..\BuildRules\yaget.lua.props" />
-    <Import Project="..\..\..\BuildRules\yaget.Render.props" />
-    <Import Project="..\..\..\BuildRules\yaget.PythonScripting.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.Release.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.Executable.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.Tooling.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.VertexShader.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.lua.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.Render.props" />
+    <Import Project="..\..\..\..\BuildRules\yaget.PythonScripting.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

@@ -1,0 +1,50 @@
+{
+	"Configuration" : {
+		"Debug": {
+			"Logging": {
+				"Filters": [ "MULT", "POOL", "SQL", "FILE", "VTS", "IDS", "INPT", "SPAM", "APP", "DIRE", "METR" ],
+				"Level": "DBUG",
+				"Outputs": {
+					"ylog::OutputDebug": {
+						"split_lines": "true"
+					},
+					"ylog::OutputFile": {
+						"max_startup_size": "0",
+						"filename": "$(LogFolder)/$(AppName).log"
+					}
+				}
+			},
+			"Metrics": {
+				"AllowFallbackToFile": false,
+				"AllowSocketConnection": false,
+				"SocketConnectionTimeout": 100,
+				"TraceFileName": "$(Temp)/$(AppName)_trace.json",
+				"TraceOn": false
+			}
+		},
+
+		"Init": {
+			"Aliases": {
+				"$(AssetsFolder)": {
+					"Path": "$(UserDataFolder)/Assets",
+					"ReadOnly": true
+				},
+				"$(DatabaseFolder)": {
+					"Path": "$(UserDataFolder)/Database",
+					"ReadOnly": true
+				}
+			},
+			"VTS": [
+				{
+					"Settings": {
+						"Converters": "JSON",
+						"Filters": [ "*.json" ],
+						"Path": [ "$(DataFolder)/Data", "$(AppFolder)" ],
+						"ReadOnly": true,
+						"Recursive": false
+					}
+				}
+			]
+		}
+	}
+}

@@ -1,0 +1,9 @@
+{
+    "Quit App": {
+        "Action": "Quit App",
+        "ContextName": "",
+        "DisplayName": "ESC",
+        "Flags": "ButtonDown",
+        "Value": "ESC"
+    },
+}
