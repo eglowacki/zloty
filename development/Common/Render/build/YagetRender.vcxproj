@@ -268,9 +268,9 @@
   <ItemGroup>
     <CustomBuild Include="..\source\FbTemplates\geometry_stream.fbs">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(YAGET_DEPENDENCIES_PATH)\flatbuffers-1.11.0\builds\$(Configuration)\flatc.exe -o %(RelativeDir)\..\Generated --cpp %(FullPath)
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(YAGET_DEPENDENCIES_PATH)\flatbuffers-1.12.0\builds\$(Configuration)\flatc.exe -o %(RelativeDir)\..\Generated --cpp %(FullPath)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(YAGET_DEPENDENCIES_PATH)\flatbuffers-1.11.0\builds\$(Configuration)\flatc.exe -o %(RelativeDir)\..\Generated --cpp %(FullPath)
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(YAGET_DEPENDENCIES_PATH)\flatbuffers-1.12.0\builds\$(Configuration)\flatc.exe -o %(RelativeDir)\..\Generated --cpp %(FullPath)
 </Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compile flatbuffers schema</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compile flatbuffers schema</Message>
