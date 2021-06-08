@@ -1,5 +1,6 @@
 # zloty
-YAGET development (Rev.1-Oct.2020)
+YAGET "Yet Another Game Engine Technology" development (Rev.2-June.2021) 
+
 
 * [Home](https://github.com/eglowacki/zloty/wiki)
 
