@@ -2,7 +2,7 @@
 #include "VTS/ResolvedAssets.h"
 #include "Debugging/Assert.h"
 #include "lodepng.h"
-#include <DirectXTex.h>
+//#include <DirectXTex.h>
 
 namespace
 {
@@ -50,9 +50,12 @@ namespace
 
 
 //--------------------------------------------------------------------------------------------------
-yaget::image::Header yaget::image::GetHeader(const io::Buffer& buffer)
+yaget::image::Header yaget::image::GetHeader(const io::Buffer& /*buffer*/)
 {
+    YAGET_UTIL_THROW("REND", "DX11 DDS disabeld for now...");
     image::Header header;
+
+#if 0 // disable this code for now to move it to renderer
 
     if (IsDDS(buffer))
     {
@@ -121,6 +124,7 @@ yaget::image::Header yaget::image::GetHeader(const io::Buffer& buffer)
             YAGET_ASSERT(false, "Image Colortype: '%d' is not supported.", imageState.info_png.color.colortype);
         }
     }
+#endif
 
     return header;
 }

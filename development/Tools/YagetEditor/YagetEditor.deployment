@@ -1,0 +1,10 @@
+{
+    "Configuration": {
+        "Release": [
+            "Dependencies/assimp-5.0.1/builds/bin/Release/assimp-vc142-mt.dll"
+        ],
+        "Debug": [
+            "Dependencies/assimp-5.0.1/builds/bin/Debug/assimp-vc142-mtd.dll"
+        ]
+    }
+}

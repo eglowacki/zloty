@@ -86,6 +86,13 @@ public:
 //    gameCoordinator.GameUpdate(gameClock, channel);
 //}
 
+namespace DirectX::SimpleMath
+{
+    const Matrix Matrix::Identity = { 1.f, 0.f, 0.f, 0.f,
+                                      0.f, 1.f, 0.f, 0.f,
+                                      0.f, 0.f, 1.f, 0.f,
+                                      0.f, 0.f, 0.f, 1.f };
+}
 
 TEST_F(Coordinator, HashBits)
 {

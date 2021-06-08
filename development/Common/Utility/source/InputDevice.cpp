@@ -393,7 +393,7 @@ void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::KeyRecord(uint32_t flags, int keyValue, yaget::time::Microsecond_t timeStamp /*= platform::GetRealTime(time::kMicroSecondUnit)*/)
 {
-    metrics::LockerSpan locker(mPendingInputsMutex, "KeyRecord", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::UniqueLock locker(mPendingInputsMutex, "KeyRecord", YAGET_METRICS_CHANNEL_FILE_LINE);
 
     auto record = std::make_shared<Key>(timeStamp, flags, static_cast<unsigned char>(keyValue));
     YLOG_DEBUG("INPT", "Generated Key (%d) Record: '%s'.' at time (ms): '%d'.", keyValue, record->ToString().c_str(), time::FromTo<uint32_t>(timeStamp, time::kMicrosecondUnit, time::kMilisecondUnit));
@@ -404,10 +404,15 @@ void input::InputDevice::KeyRecord(uint32_t flags, int keyValue, yaget::time::Mi
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::MouseRecord(uint32_t flags, const InputDevice::Mouse::Buttons& buttons, int zDelta, const InputDevice::Mouse::Location& pos, yaget::time::Microsecond_t timeStamp /*= platform::GetRealTime(time::kMicroSecondUnit)*/)
 {
-    metrics::LockerSpan locker(mPendingInputsMutex, "MouseRecord", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::UniqueLock locker(mPendingInputsMutex, "MouseRecord", YAGET_METRICS_CHANNEL_FILE_LINE);
 
     auto record = std::make_shared<Mouse>(timeStamp, flags, buttons, zDelta, pos);
     YLOG_DEBUG("INPT", "Generated Mouse Record: '%s' at time (ms): '%d'.", record->ToString().c_str(), time::FromTo<uint32_t>(timeStamp, time::kMicrosecondUnit, time::kMilisecondUnit));
+    if (!record.get())
+    {
+        int z = 0;
+        z;
+    }
     mPendingInputs.push(std::move(record));
 }
 
@@ -415,7 +420,7 @@ void input::InputDevice::MouseRecord(uint32_t flags, const InputDevice::Mouse::B
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::ProcessRecord(const Record& record)
 {
-    metrics::LockerSpan locker(mActionMapMutex, "ProcessRecord", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::UniqueLock locker(mActionMapMutex, "ProcessRecord", YAGET_METRICS_CHANNEL_FILE_LINE);
 
     std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
 
@@ -445,7 +450,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
     // only process input up to this time
     time::Microsecond_t maxInputTime = gameClock.GetLogicTime();
     {
-        metrics::LockerSpan locker(mPendingInputsMutex, "Input.Pending", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::UniqueLock locker(mPendingInputsMutex, "Input.Pending", YAGET_METRICS_CHANNEL_FILE_LINE);
 
         if (!mPendingInputs.empty())
         {
@@ -480,7 +485,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
         if (deferMessages)
         {
             // we run out of time to process our messages and based on policy we defer remaining messages to next frame
-            metrics::LockerSpan locker(mPendingInputsMutex, "DeferInput", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::UniqueLock locker(mPendingInputsMutex, "DeferInput", YAGET_METRICS_CHANNEL_FILE_LINE);
 
             while (!inputsToProcess.empty())
             {
@@ -498,7 +503,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
 void input::InputDevice::TriggerAction(const std::string& actionName, int32_t mouseX, int32_t mouseY, time::Microsecond_t timeStamp /*= platform::GetRealTime(time::kMicroSecondUnit)*/)
 {
     //std::unique_lock<std::mutex> locker(mActionMapMutex);
-    metrics::LockerSpan locker(mActionMapMutex, fmt::format("TriggerAction-{}", actionName).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::UniqueLock locker(mActionMapMutex, fmt::format("TriggerAction-{}", actionName).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
 
     std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
 

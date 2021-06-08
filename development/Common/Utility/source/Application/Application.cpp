@@ -8,7 +8,7 @@ yaget::Application::Application(const std::string& title, items::Director& direc
     , IdCache(director.IdCache())
     , mDirector(director)
     , mInputDevice(vts)
-    , mGeneralPoolThread(std::make_unique<mt::JobPool>("AppPool", yaget::dev::CurrentConfiguration().mDebug.mThreads.App))
+    , mGeneralPoolThread(std::make_unique<mt::JobPool>("AppPool", yaget::dev::CurrentConfiguration().mDebug.mThreads.App, mt::JobPool::Behaviour::StartAsPause))
     , mVTS(vts)
 {
     YLOG_INFO("INIT", "Created Application '%s'.", title.c_str());
@@ -139,6 +139,7 @@ int yaget::Application::Run(const UpdateCallback_t& logicCallback, const UpdateC
     }
     mGeneralPoolThread->AddTask([this, &logicCallback, shutdownLogicCallback]() { onLogicTask(logicCallback, shutdownLogicCallback); });
 
+    int counter = 10;
     YLOG_DEBUG("APP", "Application.Run pump started.");
     while (!mRequestQuit)
     {
@@ -151,6 +152,15 @@ int yaget::Application::Run(const UpdateCallback_t& logicCallback, const UpdateC
         }
 
         std::this_thread::yield();
+
+        if (counter)
+        {
+            --counter;
+            if (!counter)
+            {
+                mGeneralPoolThread->UnpauseAll();
+            }
+        }
     }
     YLOG_DEBUG("APP", "Application.Run pump ended.");
 

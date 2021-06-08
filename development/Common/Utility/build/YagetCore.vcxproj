@@ -100,6 +100,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\source\Logger\YLog.cpp" />
+    <ClCompile Include="..\source\Math\MathFacade.cpp" />
     <ClCompile Include="..\source\MemoryManager\NewAllocator.cpp" />
     <ClCompile Include="..\source\MemoryManager\PoolAllocator.cpp" />
     <ClCompile Include="..\source\Metrics\Concurrency.cpp" />
@@ -158,8 +159,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\Base.h" />
     <ClInclude Include="..\..\include\BitArray.h" />
-    <ClInclude Include="..\..\include\YagetCore.h" />
     <ClInclude Include="..\..\include\MathFacade.h" />
+    <ClInclude Include="..\..\include\YagetCore.h" />
     <ClInclude Include="..\..\include\STLHelper.h" />
     <ClInclude Include="..\..\include\YagetVersion.h" />
     <ClInclude Include="..\include\App\AppHarness.h" />

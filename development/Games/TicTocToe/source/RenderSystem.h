@@ -27,7 +27,7 @@ namespace ttt
     class RenderSystem : public yaget::comp::gs::GameSystem<EndMarker, Messaging, RenderComponent*>
     {
     public:
-        RenderSystem(Messaging& messaging);
+        RenderSystem(Messaging& messaging, yaget::Application& app);
         ~RenderSystem();
 
     private:

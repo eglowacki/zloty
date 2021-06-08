@@ -468,7 +468,7 @@ int64_t yaget::app::ProcHandler::onMessage(uint32_t message, uint64_t wParam, in
         {
             int32_t resX, resY;
             GetWindowResolution(mWindowHandle, resX, resY);
-            YLOG_DEBUG("WIN", "Proessing SIZE event. Cuurent client resolution: (%dx%d)", resX, resY);
+            YLOG_DEBUG("WIND", "Proessing SIZE event. Cuurent client resolution: (%dx%d)", resX, resY);
 
             if (wParam == SIZE_MINIMIZED)
             {

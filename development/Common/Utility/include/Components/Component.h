@@ -85,7 +85,14 @@ namespace yaget
                     }
                     else
                     {
-                        static_assert(false, "[yaget diagnostic] Type T missing Row alias, as in internal::HasCompRow concept");
+                        struct ComponentProperties
+                        {
+                            using Row = std::tuple<>;
+                            using Types = std::tuple<>;
+                        };
+
+                        return ComponentProperties{};
+                        //static_assert(false, "[yaget diagnostic] Type T missing Row alias, as in internal::HasCompRow concept");
                     }
                 }
 

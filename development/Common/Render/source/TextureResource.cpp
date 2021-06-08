@@ -9,7 +9,6 @@
 #include "Gui/Support.h"
 
 #include <DDSTextureLoader.h>
-#include <DirectXTex.h>
 
 
 //--------------------------------------------------------------------------------------------------

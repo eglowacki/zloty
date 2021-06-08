@@ -1,8 +1,8 @@
 ﻿#include "RenderSystem.h"
 #include "cpp-terminal/terminal.h"
 
-ttt::RenderSystem::RenderSystem(Messaging& messaging)
-    : GameSystem("RenderSystem", messaging, [this](auto&&... params) {OnUpdate(params...); })
+ttt::RenderSystem::RenderSystem(Messaging& messaging, yaget::Application& app)
+    : GameSystem("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); })
     , mTerminal(std::make_unique<Term::Terminal>())
 {
     mTerminal->save_screen();
@@ -37,6 +37,8 @@ ttt::RenderSystem::~RenderSystem()
 
 void ttt::RenderSystem::OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, RenderComponent* renderComponent)
 {
+    int z = 0;
+    z;
     id;
     gameClock;
     channel;

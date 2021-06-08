@@ -17,7 +17,7 @@
 
 #include "YagetCore.h"
 #include "Resources/ResourceView.h"
-#include "MathFacade.h"
+#include "RenderMathFacade.h"
 
 namespace DirectX { class SpriteFont; class SpriteBatch; }
 

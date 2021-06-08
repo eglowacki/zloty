@@ -10,6 +10,14 @@
 #include "RenderTarget.h"
 #include "Resources/RenderStateCache.h"
 
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
+
+// D3D12 extension library.
+//#include <d3dx12.h>
+
 using namespace yaget;
 using namespace Microsoft::WRL;
 using namespace DirectX;

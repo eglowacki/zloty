@@ -16,7 +16,8 @@
 #define YAGET_SHADER_MATERIAL_H
 #pragma once
 
-#include "MathFacade.h"
+#include <d3d11_2.h>
+#include "RenderMathFacade.h"
 #include "RenderHelpers.h"
 #include "Resources/ResourceView.h"
 #include "Streams/Buffers.h"

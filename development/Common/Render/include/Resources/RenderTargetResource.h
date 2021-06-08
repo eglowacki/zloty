@@ -17,6 +17,7 @@
 
 #include "YagetCore.h"
 #include "Resources/ResourceView.h"
+#include "RenderMathFacade.h"
 #include <wrl/client.h>
 
 

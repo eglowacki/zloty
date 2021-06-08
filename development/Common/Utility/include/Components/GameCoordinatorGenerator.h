@@ -167,7 +167,7 @@ namespace yaget::comp::db
                 }
             }
             sqlCommand += ", PRIMARY KEY('Id'));";
-            YLOG_NOTICE("TTT", "[%s]", sqlCommand.c_str());
+            YLOG_NOTICE("GSYS", "[%s]", sqlCommand.c_str());
             results.emplace_back(sqlCommand);
         });
 
@@ -231,14 +231,6 @@ namespace yaget::comp::db
         return 0;
     }
 
-    //template <>
-    //inline Strings GenerateSystemsCoordinatorSchemaVersion<EmptySchema>(int64_t& schemaVersion)
-    //{
-    //    Strings results = GenerateSystemsCoordinatorSchema<EmptySchema>();
-    //    schemaVersion = GenerateSystemsCoordinatorVersion<EmptySchema>();
-    //    return results;
-    //}
-
     struct PolicyName
     {
         constexpr static bool AutoComponent = true;
@@ -271,7 +263,7 @@ namespace yaget::comp::db
                     {
                         auto componentName = json::GetValue<std::string>(componentBlock, "Type", {});
                         // TODO: Check against FullRow if that particular componentName exists/is_valid
-                        YAGET_UTIL_THROW_ASSERT("TTT", !componentName.empty(), "Component Type can not be empty and must have one of game components names.");
+                        YAGET_UTIL_THROW_ASSERT("GSYS", !componentName.empty(), "Component Type can not be empty and must have one of game components names.");
 
                         if (!componentName.ends_with("Component") && PolicyName::AutoComponent)
                         {
@@ -289,7 +281,7 @@ namespace yaget::comp::db
                                     std::string message = print_tuple(componentParams);
 
                                     std::string sqCommand = fmt::format("INSERT INTO '{}' VALUES({{}}{}{});", tableName, message.empty() ? "" : ", ", message);
-                                    YLOG_NOTICE("TTT", "[%s] ", sqCommand.c_str());
+                                    YLOG_NOTICE("GSYS", "[%s] ", sqCommand.c_str());
                                     results.emplace_back(sqCommand);
                                 }
                             });
@@ -316,7 +308,7 @@ namespace yaget::comp::db
                         for (const auto& item : block)
                         {
                             auto componentName = json::GetValue(item, "Type", std::string{});
-                            YAGET_UTIL_THROW_ASSERT("TTT", !componentName.empty(), "Component Type can not be empty and must have one of game components names.");
+                            YAGET_UTIL_THROW_ASSERT("GSYS", !componentName.empty(), "Component Type can not be empty and must have one of game components names.");
 
                             if (!componentName.ends_with("Component") && PolicyName::AutoComponent)
                             {
@@ -334,7 +326,7 @@ namespace yaget::comp::db
                                         std::string message = print_tuple(componentParams);
 
                                         std::string sqCommand = fmt::format("INSERT INTO '{}' VALUES({{}}{}{});", tableName, message.empty() ? "" : ", ", message);
-                                        YLOG_NOTICE("TTT", "[%s] ", sqCommand.c_str());
+                                        YLOG_NOTICE("GSYS", "[%s] ", sqCommand.c_str());
                                         stageItems.emplace_back(sqCommand);
                                     }
                                 });
@@ -350,6 +342,12 @@ namespace yaget::comp::db
         }
 
         return results;
+    }
+
+    template <>
+    inline Strings GenerateDirectorLoadout<EmptySchema, PolicyName>(io::VirtualTransportSystem&, const std::string&)
+    {
+        return {};
     }
 
 }

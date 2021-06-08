@@ -27,14 +27,14 @@ namespace yaget::comp::gs
 {
     // Create coordinator for system and call each for update
     // T is GameCoordinatorSet and ...S are Systems (classes that follow yaget::comp::gs::GameSystem)
-    template <typename T, typename M, typename... S>
+    template <typename T, typename M, typename A, typename... S>
     class SystemsCoordinator
     {
     public:
         using CoordinatorSet = T;
         using Messaging = M;
 
-        SystemsCoordinator(M& messaging);
+        SystemsCoordinator(M& messaging, A& app);
 
         void Tick(const time::GameClock& gameClock, metrics::Channel& channel);
 
@@ -54,17 +54,19 @@ namespace yaget::comp::gs
 
     namespace internal
     {
-        template <typename T, typename M>
+        template <typename T, typename M, typename A>
         struct Updater
         {
-            Updater(M& messaging)
+            Updater(M& messaging, A& application)
                 : mMessaging(messaging)
+                , mApplication(application)
             {}
 
             void operator()(const time::GameClock& gameClock, metrics::Channel& channel);
             std::shared_ptr<T> mSystemsCoordinator;
 
             M& mMessaging;
+            A& mApplication;
         };
 
     }
@@ -75,27 +77,27 @@ namespace yaget::comp::gs
     template <typename TG, typename TR, typename M, typename A>
     int RunGame(M& messaging, A& app)
     {
-        return app.Run(internal::Updater<TG, M>(messaging), internal::Updater<TR, M>(messaging));
+        return app.Run(internal::Updater<TG, M, A>(messaging, app), internal::Updater<TR, M, A>(messaging, app));
     }
 
 }
 
 
 //#include "Components/SystemsCoordinatorImplementation.h"
-template <typename T, typename M, typename... S>
-yaget::comp::gs::SystemsCoordinator<T, M, S...>::SystemsCoordinator(M& messaging)
+template <typename T, typename M, typename A, typename... S>
+yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messaging, A& app)
     : mMessaging(messaging)
 {
-    meta::for_each(mSystems, [this]<typename T0>(T0& system)
+    meta::for_each(mSystems, [this, &app]<typename T0>(T0& system)
     {
         using BaseType = T0;
         using SystemType = typename BaseType::element_type;
-        system = std::make_shared<SystemType>(mMessaging);
+        system = std::make_shared<SystemType>(mMessaging, app);
     });
 }
 
-template <typename T, typename M, typename... S>
-void yaget::comp::gs::SystemsCoordinator<T, M, S...>::Tick(const time::GameClock& gameClock, metrics::Channel& channel)
+template <typename T, typename M, typename A, typename... S>
+void yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::Tick(const time::GameClock& gameClock, metrics::Channel& channel)
 {
     // possibly run each system on own thread, taking Policy (usage) into account
     meta::for_each(mSystems, [this, &gameClock, &channel](auto& gameSystem)
@@ -104,28 +106,28 @@ void yaget::comp::gs::SystemsCoordinator<T, M, S...>::Tick(const time::GameClock
     });
 }
 
-template <typename T, typename M, typename... S>
+template <typename T, typename M, typename A, typename... S>
 template <typename C>
-yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, S...>::GetCoordinator()
+yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetCoordinator()
 {
     return mCoordinatorSet.template GetCoordinator<C>();
 }
 
-template <typename T, typename M, typename... S>
+template <typename T, typename M, typename A, typename... S>
 template <typename C>
-const yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, S...>::GetCoordinator() const
+const yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetCoordinator() const
 {
     return mCoordinatorSet.template GetCoordinator<C>();
 }
 
 // on the first call, we'll create system coordinator. This ensures it get's created on the same
 // thread as it get's to call Tick on.
-template <typename T, typename M>
-void yaget::comp::gs::internal::Updater<T, M>::operator()(const time::GameClock& gameClock, metrics::Channel& channel)
+template <typename T, typename M, typename A>
+void yaget::comp::gs::internal::Updater<T, M, A>::operator()(const time::GameClock& gameClock, metrics::Channel& channel)
 {
     if (!mSystemsCoordinator)
     {
-        mSystemsCoordinator = std::make_shared<T>(mMessaging);
+        mSystemsCoordinator = std::make_shared<T>(mMessaging, mApplication);
     }
 
     mSystemsCoordinator->Tick(gameClock, channel);

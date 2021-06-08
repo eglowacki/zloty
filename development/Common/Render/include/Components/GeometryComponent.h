@@ -18,7 +18,7 @@
 #include "YagetCore.h"
 #include "Components/RenderComponent.h"
 #include "Resources/ResourceWatchRefresher.h"
-#include "MathFacade.h"
+#include "RenderMathFacade.h"
 
 
 namespace yaget

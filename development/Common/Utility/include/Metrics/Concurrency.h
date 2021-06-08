@@ -96,20 +96,20 @@ namespace yaget::metrics
     //--------------------------------------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------------------------------
-    class Locker
-    {
-    public:
-        Locker(std::mutex&, const char*, const char*, uint32_t) {}
-    };
+    //class Locker
+    //{
+    //public:
+    //    Locker(std::mutex&, const char*, const char*, uint32_t) {}
+    //};
 
-    //--------------------------------------------------------------------------------------------------------------
-    class LockerSpan : public Locker
-    {
-    public:
-        LockerSpan(std::mutex& mutex, const char* message, const char* file, uint32_t line)
-            : Locker(mutex, message, file, line)
-        {}
-    };
+    ////--------------------------------------------------------------------------------------------------------------
+    //class LockerSpan : public Locker
+    //{
+    //public:
+    //    LockerSpan(std::mutex& mutex, const char* message, const char* file, uint32_t line)
+    //        : Locker(mutex, message, file, line)
+    //    {}
+    //};
 
     //--------------------------------------------------------------------------------------------------------------
     inline void Initialize(const args::Options&) {}

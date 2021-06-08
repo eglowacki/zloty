@@ -84,6 +84,9 @@
     <Filter Include="GameSystem Files">
       <UniqueIdentifier>{1189b9fa-040d-4e7a-942b-aa9ab05fdf88}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{ccd4add0-7dbf-45aa-86d3-85b82ff75e71}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
@@ -293,6 +296,9 @@
     <ClCompile Include="..\source\Json\JsonHelpers.cpp">
       <Filter>Json Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Math\MathFacade.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -411,9 +417,6 @@
     </ClInclude>
     <ClInclude Include="..\include\Components\LocationComponent.h">
       <Filter>Component Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\MathFacade.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Components\PhysicsComponent.h">
       <Filter>Component Files</Filter>
@@ -595,6 +598,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Metrics\PerformanceTracer.h">
       <Filter>Metric Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\MathFacade.h">
+      <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -19,7 +19,7 @@
 #include "Resources/ResourceView.h"
 #include "VTS/RenderResolvedAssets.h"
 #include "ShaderResources.h"
-#include "MathFacade.h"
+#include "RenderMathFacade.h"
 
 
 namespace yaget

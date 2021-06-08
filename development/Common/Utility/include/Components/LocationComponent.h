@@ -35,7 +35,7 @@ namespace yaget
         class LocationComponent : public Component
         {
         public:
-            LocationComponent(Id_t id, const math3d::Vector3& position = math3d::Vector3(), const math3d::Quaternion& orientation = math3d::Quaternion(), const math3d::Vector3& scale = math3d::Vector3::One);
+            LocationComponent(Id_t id, const math3d::Vector3& position = math3d::Vector3(), const math3d::Quaternion& orientation = math3d::Quaternion(), const math3d::Vector3& scale = { 1.0f, 1.0f, 1.0f });
             virtual ~LocationComponent();
 
             const math3d::Vector3& GetPosition() const { return mPosition; }
@@ -46,7 +46,7 @@ namespace yaget
             void SetPosition(const math3d::Vector3& position) { mPosition = position; mStateHashDirty = true; }
             void SetOrientation(const math3d::Quaternion& orientation) { mOrientation = orientation; mStateHashDirty = true; }
             void SetScale(const math3d::Vector3& scale) { mScale = scale; mStateHashDirty = true; }
-            void Set(const math3d::Vector3& position, const math3d::Quaternion& orientation, const math3d::Vector3& scale = math3d::Vector3::One)
+            void Set(const math3d::Vector3& position, const math3d::Quaternion& orientation, const math3d::Vector3& scale = { 1.0f, 1.0f, 1.0f })
             { 
                 mPosition = position; 
                 mOrientation = orientation; 

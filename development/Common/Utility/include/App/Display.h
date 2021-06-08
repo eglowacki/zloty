@@ -44,7 +44,7 @@ namespace yaget::app
     };
 
     //--------------------------------------------------------------------------------------------------
-    class MonitorInfoEx : public MONITORINFOEX
+    class MonitorInfoEx : public tagMONITORINFOEXA
     {
     public:
         MonitorInfoEx() : tagMONITORINFOEXA()

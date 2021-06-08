@@ -124,11 +124,12 @@ void yaget::mt::JobPool::UpdateThreadPool(size_t numTasksLeft)
     if (mDynamicThreads && numTasksLeft)
     {
         mt::unique_lock mutexLock = mt::unique_lock(mThreadListMutext);
-        const auto threadListSize = mThreads.size();
+        size_t threadListSize = mThreads.size();
 
         // looks like we have tasks left, let check to see if we reached man number of threads
         // and if not, are all busy?
-        if (threadListSize < mMaxNumThreads)
+        while (numTasksLeft && threadListSize < mMaxNumThreads)
+        //if (threadListSize < mMaxNumThreads)
         {
             // https://app.gitkraken.com/glo/view/card/c09a1b0ebde34dfd96f0a8737d446677 (KAR-41)
             const bool allBusy = std::ranges::all_of(mThreads.begin(), mThreads.end(), [](auto itr)
@@ -142,9 +143,21 @@ void yaget::mt::JobPool::UpdateThreadPool(size_t numTasksLeft)
                 std::string threadName = mMaxNumThreads > 1 ? fmt::format("{}_{}/{}", mName, threadListSize + 1, mMaxNumThreads) : mName;
                 mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); })));
             }
+
+            threadListSize = mThreads.size();
+            --numTasksLeft;
         }
     }
 }
+
+
+size_t yaget::mt::JobPool::GetNumTasksLeft()
+{
+    std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
+    const size_t numTasksLeft = mTasks.size();
+    return numTasksLeft;
+}
+
 
 void yaget::mt::JobPool::AddTask(mt::JobProcessor::Task_t task) 
 {
@@ -156,11 +169,10 @@ void yaget::mt::JobPool::AddTask(mt::JobProcessor::Task_t task)
         numTasksLeft = mTasks.size();
     }
 
-    UpdateThreadPool(numTasksLeft);
-
     if (mBehaviour == Behaviour::StartAsRun) 
     { 
-        UnpauseAll(); 
+        UpdateThreadPool(numTasksLeft);
+        UnpauseAll();
     } 
 } 
 
@@ -176,12 +188,7 @@ void yaget::mt::JobPool::UnpauseAll()
 {
     if (mDynamicThreads && mBehaviour == Behaviour::StartAsPause)
     {
-        size_t numTasksLeft = 0;
-        {
-            std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
-            numTasksLeft = mTasks.size();
-        }
-
+        const size_t numTasksLeft = GetNumTasksLeft();
         UpdateThreadPool(numTasksLeft);
     }
 

@@ -15,7 +15,7 @@
 
 #include "Components/RenderComponent.h"
 #include "Components/PayloadStager.h"
-#include "MathFacade.h"
+#include "RenderMathFacade.h"
 #include "PrimitiveBatch.h"
 #include "Debugging/Primitives.h"
 #include <wrl/client.h>

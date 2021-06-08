@@ -88,6 +88,8 @@ namespace yaget
             JobProcessor::Task_t PopNextTask();
             void UpdateThreadPool(size_t numTasksLeft);
 
+            size_t GetNumTasksLeft();
+
             Threads_t mThreads;
             typedef std::deque<JobProcessor::Task_t> Tasks_t;
             Tasks_t mTasks;

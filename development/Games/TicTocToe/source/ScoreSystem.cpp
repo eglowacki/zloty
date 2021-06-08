@@ -1,8 +1,8 @@
 ﻿#include "ScoreSystem.h"
 
 
-ttt::ScoreSystem::ScoreSystem(Messaging& messaging)
-    : GameSystem("ScoreSystem", messaging, [this](auto&&... params) {OnUpdate(params...); })
+ttt::ScoreSystem::ScoreSystem(Messaging& messaging, yaget::Application& app)
+    : GameSystem("ScoreSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); })
 {
 }
 

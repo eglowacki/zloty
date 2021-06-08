@@ -66,14 +66,14 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BuildRules\yaget.Debug.props" />
-    <Import Project="..\..\BuildRules\yaget.Render.props" />
     <Import Project="..\..\BuildRules\yaget.Executable.props" />
+    <Import Project="..\..\BuildRules\yaget.Render12.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BuildRules\yaget.Release.props" />
-    <Import Project="..\..\BuildRules\yaget.Render.props" />
     <Import Project="..\..\BuildRules\yaget.Executable.props" />
+    <Import Project="..\..\BuildRules\yaget.Render12.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -84,9 +84,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -118,19 +120,17 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -138,14 +138,19 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\Editor.cpp" />
+    <ClCompile Include="source\EditorGameCoordinator.cpp" />
     <ClCompile Include="source\EditorMain.cpp" />
+    <ClCompile Include="source\EditorSystem.cpp" />
+    <ClCompile Include="source\RenderGameCoordinator.cpp" />
+    <ClCompile Include="source\RenderSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="data\Configuration.json">
@@ -156,6 +161,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="data\KeyBindings.json" />
+    <None Include="YagetEditor.deployment" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\Editor.h" />
+    <ClInclude Include="source\EditorGameCoordinator.h" />
+    <ClInclude Include="source\EditorGameTypes.h" />
+    <ClInclude Include="source\EditorSystem.h" />
+    <ClInclude Include="source\RenderGameCoordinator.h" />
+    <ClInclude Include="source\RenderSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

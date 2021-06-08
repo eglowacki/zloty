@@ -23,12 +23,17 @@
 
 namespace yaget
 {
+    class Application;
     namespace metrics { class Channel; }
     namespace time { class GameClock; }
 }
 
 namespace yaget::comp::gs
 {
+
+    struct NoEndMarker {};
+    struct GenerateEndMarker {};
+
     // TODO add timers support for entities
     // Example:
     //  class ScoreSystem : public yaget::comp::gs::GameSystem<NoEndMarker, Messaging, ScoreComponent*>
@@ -66,7 +71,7 @@ namespace yaget::comp::gs
         }
 
     protected:
-        GameSystem(const char* niceName, Messaging& messaging, UpdateFunctor updateFunctor)
+        GameSystem(const char* niceName, Messaging& messaging, Application& /*app*/, UpdateFunctor updateFunctor)
             : mMessaging(messaging)
             , mNiceName(niceName)
             , mUpdateFunctor(updateFunctor)

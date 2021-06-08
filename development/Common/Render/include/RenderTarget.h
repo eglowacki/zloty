@@ -16,7 +16,7 @@
 #pragma once
 
 #include "YagetCore.h"
-#include "MathFacade.h"
+#include "RenderMathFacade.h"
 #include <wrl/client.h>
 #include <atomic>
 #include <queue>

@@ -4,22 +4,22 @@
 //  Copyright 7/27/2016 Edgar Glowacki.
 //
 // NOTES:
-//      Helper include to bring SImpleMath (and it's windows 
-//      dependencies header)
+//      Helper include to bring SimpleMath to provide
+//      'some' level of indirection of including math library
+//
+//      define YAGET_SKIP_INIT_SIMPLE_MATH before including
+//      MathFacade if you are going to link against DXTX
 //
 //
 // #include "MathFacade.h"
 //
 /////////////////////////////////////////////////////////////////////////
 //! \file
-
-#ifndef YAGET_MATH_FACADA_H
-#define YAGET_MATH_FACADA_H
 #pragma once
 
-#include "Base.h"
+#define YAGET_SKIP_INIT_SIMPLE_MATH
+
 #include "Platform/WindowsLean.h"
-#include <d3d11_2.h>
 #include <SimpleMath.h>
 #include <DirectXColors.h>
 
@@ -27,7 +27,7 @@ namespace math3d
 {
     using namespace DirectX::SimpleMath;
 
-    inline math3d::Matrix CreateMatrix(const math3d::Vector3& location, const math3d::Quaternion& rotation, const math3d::Vector3& scale = math3d::Vector3::One)
+    inline math3d::Matrix CreateMatrix(const math3d::Vector3& location, const math3d::Quaternion& rotation, const math3d::Vector3& scale = {1.0f, 1.0f, 1.0f })
     {
         // this will scale object first, then rotate and finally move
         return math3d::Matrix::CreateScale(scale) * math3d::Matrix::CreateFromQuaternion(rotation) * math3d::Matrix::CreateTranslation(location);
@@ -90,59 +90,54 @@ inline math3d::Matrix CreatePerspectiveFieldOfViewLH(float fov, float aspectRati
     return R;
 }
 
-namespace yaget
+namespace yaget::math
 {
-    namespace math
+    // left, up, width, height
+    typedef math3d::Vector4 Size_t;
+    // left, up, right, bottom
+    typedef  math3d::Vector4 Rect_t;
+
+    struct Box
     {
-        // left, up, width, height
-        typedef math3d::Vector4 Size_t;
-        // left, up, right, bottom
-        typedef  math3d::Vector4 Rect_t;
+        Box() = default;// : mMin(std::numeric_limits<float>::max()), mMax(std::numeric_limits<float>::lowest()) {}
+        Box(float v) : mMin(v), mMax(v) {}
 
-        struct Box
+        math3d::Vector3 mMin = math3d::Vector3(std::numeric_limits<float>::max());
+        math3d::Vector3 mMax = math3d::Vector3(std::numeric_limits<float>::lowest());
+
+        void GrowExtends(const math3d::Vector3& meshPoint)
         {
-            Box() = default;// : mMin(std::numeric_limits<float>::max()), mMax(std::numeric_limits<float>::lowest()) {}
-            Box(float v) : mMin(v), mMax(v) {}
+            mMax.x = meshPoint.x > mMax.x ? meshPoint.x : mMax.x;
+            mMax.y = meshPoint.y > mMax.y ? meshPoint.y : mMax.y;
+            mMax.z = meshPoint.z > mMax.z ? meshPoint.z : mMax.z;
 
-            math3d::Vector3 mMin = math3d::Vector3(std::numeric_limits<float>::max());
-            math3d::Vector3 mMax = math3d::Vector3(std::numeric_limits<float>::lowest());
+            mMin.x = meshPoint.x < mMin.x ? meshPoint.x : mMin.x;
+            mMin.y = meshPoint.y < mMin.y ? meshPoint.y : mMin.y;
+            mMin.z = meshPoint.z < mMin.z ? meshPoint.z : mMin.z;
+        }
 
-            void GrowExtends(const math3d::Vector3& meshPoint)
-            {
-                mMax.x = meshPoint.x > mMax.x ? meshPoint.x : mMax.x;
-                mMax.y = meshPoint.y > mMax.y ? meshPoint.y : mMax.y;
-                mMax.z = meshPoint.z > mMax.z ? meshPoint.z : mMax.z;
+        void GrowExtends(const Box& box)
+        {
+            GrowExtends(box.mMin);
+            GrowExtends(box.mMax);
+        }
 
-                mMin.x = meshPoint.x < mMin.x ? meshPoint.x : mMin.x;
-                mMin.y = meshPoint.y < mMin.y ? meshPoint.y : mMin.y;
-                mMin.z = meshPoint.z < mMin.z ? meshPoint.z : mMin.z;
-            }
+        math3d::Vector3 GetSize() const
+        {
+            return math3d::Vector3(mMax - mMin);
+        }
 
-            void GrowExtends(const Box& box)
-            {
-                GrowExtends(box.mMin);
-                GrowExtends(box.mMax);
-            }
+        math3d::Vector3 GetMid() const
+        {
+            return mMin + math3d::Vector3(GetSize() / 2.0f);
+        }
 
-            math3d::Vector3 GetSize() const
-            {
-                return math3d::Vector3(mMax - mMin);
-            }
+        static Box Zero()
+        {
+            static Box zeroBox(0);
+            return zeroBox;
+        }
+    };
 
-            math3d::Vector3 GetMid() const
-            {
-                return mMin + math3d::Vector3(GetSize() / 2.0f);
-            }
-
-            static Box Zero()
-            {
-                static Box zeroBox(0);
-                return zeroBox;
-            }
-        };
-
-    } // namespace math
-} // namespace yaget
-
-#endif // YAGET_MATH_FACADA_H
+}
 

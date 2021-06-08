@@ -26,7 +26,7 @@ namespace ttt
     class ScoreSystem : public yaget::comp::gs::GameSystem<NoEndMarker, Messaging, ScoreComponent*>
     {
     public:
-        ScoreSystem(Messaging& messaging);
+        ScoreSystem(Messaging& messaging, yaget::Application& app);
 
     private:
         void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, ScoreComponent* boardComponent);

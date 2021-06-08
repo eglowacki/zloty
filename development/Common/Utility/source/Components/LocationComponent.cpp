@@ -5,7 +5,7 @@
 
 
 //--------------------------------------------------------------------------------------------------
-yaget::comp::LocationComponent::LocationComponent(Id_t id, const math3d::Vector3& position /*= math3d::Vector3()*/, const math3d::Quaternion& orientation /*= math3d::Quaternion()*/, const math3d::Vector3& scale /*= math3d::Vector3::One*/)
+yaget::comp::LocationComponent::LocationComponent(Id_t id, const math3d::Vector3& position /*= math3d::Vector3()*/, const math3d::Quaternion& orientation /*= math3d::Quaternion()*/, const math3d::Vector3& scale /*= {1.0f, 1.0f, 1.0f }*/)
     : Component(id)
     , mPosition(position)
     , mOrientation(orientation)

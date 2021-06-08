@@ -8,6 +8,7 @@
     <OutDir>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\lib\$(PlatformName)\</OutDir>
     <TargetName>$(ProjectName)$(YAGET_DEBUG_SUFFIX)</TargetName>
     <_PropertySheetDisplayName>yaget.StaticLibrary</_PropertySheetDisplayName>
+    <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

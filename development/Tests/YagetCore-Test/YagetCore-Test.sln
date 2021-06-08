@@ -19,22 +19,27 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetRender", "..\..\Common
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TicTocToe", "..\..\Games\TicTocToe\TicTocToe.vcxproj", "{26AF90B1-D749-4BFD-95B3-BABA5C885C76}"
 	ProjectSection(ProjectDependencies) = postProject
-		{6C57825D-E4AA-43A5-89D7-52B97B0DCA76} = {6C57825D-E4AA-43A5-89D7-52B97B0DCA76}
+		{07303B2D-746E-4E66-9F3E-E0C5D4A31D80} = {07303B2D-746E-4E66-9F3E-E0C5D4A31D80}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetCore-Perf", "..\..\Perf\YagetCore-Perf\YagetCore-Perf.vcxproj", "{1D93FA71-6B51-4657-85C6-F2ACB572F1C5}"
 	ProjectSection(ProjectDependencies) = postProject
-		{6C57825D-E4AA-43A5-89D7-52B97B0DCA76} = {6C57825D-E4AA-43A5-89D7-52B97B0DCA76}
+		{07303B2D-746E-4E66-9F3E-E0C5D4A31D80} = {07303B2D-746E-4E66-9F3E-E0C5D4A31D80}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetEditor", "..\..\Tools\YagetEditor\YagetEditor.vcxproj", "{E9BF76D1-18C0-43EB-815F-858D8D819D50}"
 	ProjectSection(ProjectDependencies) = postProject
-		{3B087BA9-C1A1-401B-8EAF-0F8827FC539A} = {3B087BA9-C1A1-401B-8EAF-0F8827FC539A}
+		{62C78A26-D56A-46C0-B205-8E1456749B02} = {62C78A26-D56A-46C0-B205-8E1456749B02}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "References", "References", "{BF75A11A-D243-484D-8BBF-F97BD493A1ED}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Coordinator", "..\..\Research\Reference\Coordinator\build\Coordinator.vcxproj", "{7248B931-88B9-485C-9306-D98415C06F76}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetRender12", "..\..\Common\Render\build\YagetRender12.vcxproj", "{62C78A26-D56A-46C0-B205-8E1456749B02}"
+	ProjectSection(ProjectDependencies) = postProject
+		{07303B2D-746E-4E66-9F3E-E0C5D4A31D80} = {07303B2D-746E-4E66-9F3E-E0C5D4A31D80}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -106,6 +111,14 @@ Global
 		{7248B931-88B9-485C-9306-D98415C06F76}.Release|x64.ActiveCfg = Release|x64
 		{7248B931-88B9-485C-9306-D98415C06F76}.Release|x86.ActiveCfg = Release|Win32
 		{7248B931-88B9-485C-9306-D98415C06F76}.Release|x86.Build.0 = Release|Win32
+		{62C78A26-D56A-46C0-B205-8E1456749B02}.Debug|x64.ActiveCfg = Debug|x64
+		{62C78A26-D56A-46C0-B205-8E1456749B02}.Debug|x64.Build.0 = Debug|x64
+		{62C78A26-D56A-46C0-B205-8E1456749B02}.Debug|x86.ActiveCfg = Debug|Win32
+		{62C78A26-D56A-46C0-B205-8E1456749B02}.Debug|x86.Build.0 = Debug|Win32
+		{62C78A26-D56A-46C0-B205-8E1456749B02}.Release|x64.ActiveCfg = Release|x64
+		{62C78A26-D56A-46C0-B205-8E1456749B02}.Release|x64.Build.0 = Release|x64
+		{62C78A26-D56A-46C0-B205-8E1456749B02}.Release|x86.ActiveCfg = Release|Win32
+		{62C78A26-D56A-46C0-B205-8E1456749B02}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
