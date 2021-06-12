@@ -66,6 +66,9 @@ namespace yaget
             return time::FromTo<double>(currentTime, time::kRawUnit, time::kSecondUnit);
         }
 
+        // Return current date and time formatted to format parameter.
+        std::string GetCurrentDateTime(const char* format = "%A %B %d, %Y. %T");
+
         void LogLastError(const std::string& userMessage);
         std::string LastErrorMessage();
 

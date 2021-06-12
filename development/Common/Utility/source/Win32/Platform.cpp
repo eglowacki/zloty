@@ -594,6 +594,18 @@ void platform::AdjustDrift(time::TimeUnits_t amount, time::TimeUnits_t timeUnit)
     HighResTimeSource.AdjustDrift(amount, timeUnit);
 }
 
+std::string platform::GetCurrentDateTime(const char* format)
+{
+    const char* validFormat = format ? format : "%A %B %d, %Y. %T";
+    char dateString[256];
+    time_t t;
+    ::time(&t);
+    tm* tmp = ::localtime(&t);
+    ::strftime(dateString, sizeof(dateString), validFormat, tmp);
+
+    return dateString;
+}
+
 void platform::LogLastError(const std::string& userMessage)
 {
     LPVOID lpMsgBuf = nullptr;

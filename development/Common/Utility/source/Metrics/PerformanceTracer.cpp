@@ -100,9 +100,12 @@ yaget::metrics::TraceCollector::TraceCollector()
         mOutputStream.open(mFilePathName.c_str());
         if (mOutputStream.is_open())
         {
+            const auto appName = util::ExpendEnv("$(AppName)", nullptr);
+            const auto dateString = platform::GetCurrentDateTime();
+
             mOutputStream << "{\"otherData\": {";
-            mOutputStream << "\"Application\": \"Yaget-Test-Core\",";
-            mOutputStream << "\"Date\": \"Saturday May 29, 2021. 12:59PM\"";
+            mOutputStream << "\"Application\": \"" + appName + "\",";
+            mOutputStream << "\"Date\": \"" + dateString + "\"";
             mOutputStream << "},";
 
             mOutputStream << "\"traceEvents\":[{}";
