@@ -3,23 +3,30 @@
 #include "Items/ItemsDirector.h"
 
 
+//-------------------------------------------------------------------------------------------------
 yaget::Application::Application(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
     : Options(options)
     , IdCache(director.IdCache())
     , mDirector(director)
     , mInputDevice(vts)
-    , mGeneralPoolThread(std::make_unique<mt::JobPool>("AppPool", yaget::dev::CurrentConfiguration().mDebug.mThreads.App, mt::JobPool::Behaviour::StartAsPause))
+    , mGeneralPoolThread(std::make_unique<mt::JobPool>("AppPool", dev::CurrentConfiguration().mDebug.mThreads.App, mt::JobPool::Behaviour::StartAsPause))
     , mVTS(vts)
 {
     YLOG_INFO("INIT", "Created Application '%s'.", title.c_str());
 }
 
-void yaget::Application::onRenderTask(const yaget::Application::UpdateCallback_t& renderCallback)
+
+//-------------------------------------------------------------------------------------------------
+void yaget::Application::onRenderTask(const Application::TickLogic& renderCallback)
 {
     dev::CurrentThreadIds().RefreshRender(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Render, "RENDER");
 
     metrics::Channel channel("RenderThread", YAGET_METRICS_CHANNEL_FILE_LINE);
+
+    mRenderClock.Resync();
+    time::Microsecond_t lastRenderTime = mRenderClock.GetRealTime();
+    time::Microsecond_t deltaTime = 0;
 
     while (!mQuit)
     {
@@ -31,14 +38,21 @@ void yaget::Application::onRenderTask(const yaget::Application::UpdateCallback_t
             platform::Sleep([this] { return IsSuspended(); });
         }
 
-        renderCallback(*this, mApplicationClock, rChannel);
+        mRenderClock.Tick(deltaTime);
+        renderCallback(mRenderClock, rChannel);
         std::this_thread::yield();
+
+        const time::Microsecond_t currentRenderTime = mRenderClock.GetRealTime();
+        deltaTime = currentRenderTime - lastRenderTime;
+        lastRenderTime = currentRenderTime;
     }
 
     dev::CurrentThreadIds().RefreshRender(0);
 }
 
-void yaget::Application::onLogicTask(const UpdateCallback_t& logicCallback, const UpdateCallback_t& shutdownLogicCallback)
+
+//-------------------------------------------------------------------------------------------------
+void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickLogic& shutdownLogicCallback)
 {
     dev::CurrentThreadIds().RefreshLogic(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Logic, "LOGIC");
@@ -70,7 +84,7 @@ void yaget::Application::onLogicTask(const UpdateCallback_t& logicCallback, cons
             metrics::Channel gChannel("GameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
 
             const time::Microsecond_t startProcessTime = platform::GetRealTime(time::kMicrosecondUnit);
-            const uint64_t tickCounter = mApplicationClock.GetTickCounter();
+            //const uint64_t tickCounter = mApplicationClock.GetTickCounter();
 
             mApplicationClock.Tick(kFixedDeltaTime);
             /*uint32_t numInputs =*/ mInputDevice.Tick(mApplicationClock, defaultPerformancePolicy, gChannel);
@@ -81,7 +95,7 @@ void yaget::Application::onLogicTask(const UpdateCallback_t& logicCallback, cons
             {
                 metrics::Channel gChannel("Callback", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-                logicCallback(*this, mApplicationClock, gChannel);
+                logicCallback(mApplicationClock, gChannel);
             }
 
             const time::Microsecond_t actualProcessTime = platform::GetRealTime(time::kMicrosecondUnit) - startProcessTime;
@@ -117,33 +131,24 @@ void yaget::Application::onLogicTask(const UpdateCallback_t& logicCallback, cons
 
     if (shutdownLogicCallback)
     {
-        shutdownLogicCallback(*this, mApplicationClock, channel);
+        shutdownLogicCallback(mApplicationClock, channel);
     }
 
     dev::CurrentThreadIds().RefreshLogic(0);
 }
 
-int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRender /*= nullptr*/, const TickIdle& tickIdle /*= nullptr*/)
-{
-    auto tickWrapper = [this, &tickLogic](Application&, const time::GameClock& gameClock, metrics::Channel& channel) { tickLogic(gameClock, channel); };
-    UpdateCallback_t renderWrapper = [this, &tickRender](Application&, const time::GameClock& gameClock, metrics::Channel& channel) { tickRender(gameClock, channel); };
-    if (!tickRender)
-    {
-        renderWrapper = nullptr;
-    }
 
-    return Run(tickWrapper, nullptr, renderWrapper, tickIdle, nullptr);
-}
-
-int yaget::Application::Run(const UpdateCallback_t& logicCallback, const UpdateCallback_t& shutdownLogicCallback, const UpdateCallback_t& renderCallback, const StatusCallback_t& idleCallback, const StatusCallback_t& quitCallback)
+//-------------------------------------------------------------------------------------------------
+int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRender /*= {}*/, const TickIdle& tickIdle /*= {}*/, const QuitLogic& shutdownLogicCallback /*= {}*/, const QuitApplication& quitCallback /*= {}*/)
 {
     // kick off separate thread for rendering
     YAGET_ASSERT(mGeneralPoolThread, "Can not call Run second time.");
-    if (renderCallback)
+    if (tickRender)
     {
-        mGeneralPoolThread->AddTask([this, renderCallback]() { onRenderTask(renderCallback); });
+        mGeneralPoolThread->AddTask([this, tickRender]() { onRenderTask(tickRender); });
     }
-    mGeneralPoolThread->AddTask([this, &logicCallback, shutdownLogicCallback]() { onLogicTask(logicCallback, shutdownLogicCallback); });
+    YAGET_ASSERT(tickLogic, "Run Applicatuin methid nees to have valid TickLogic callback.");
+    mGeneralPoolThread->AddTask([this, &tickLogic, shutdownLogicCallback]() { onLogicTask(tickLogic, shutdownLogicCallback); });
 
     int counter = 10;
     YLOG_DEBUG("APP", "Application.Run pump started.");
@@ -152,9 +157,9 @@ int yaget::Application::Run(const UpdateCallback_t& logicCallback, const UpdateC
         //metrics::Channel channel("Message Pump", YAGET_METRICS_CHANNEL_FILE_LINE);
 
         onMessagePump(mApplicationClock);
-        if (idleCallback)
+        if (tickIdle)
         {
-            idleCallback();
+            tickIdle();
         }
 
         std::this_thread::yield();
@@ -188,11 +193,15 @@ int yaget::Application::Run(const UpdateCallback_t& logicCallback, const UpdateC
     return 0;
 }
 
+
+//-------------------------------------------------------------------------------------------------
 void yaget::Application::RequestQuit()
 {
     mRequestQuit = true;
 }
 
+
+//-------------------------------------------------------------------------------------------------
 void yaget::Application::ChangeVideoSettings(const VideoOptions& /*videoOptions*/)
 {
 }

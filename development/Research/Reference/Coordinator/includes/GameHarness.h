@@ -89,7 +89,7 @@ namespace yaget
                 auto quitLoop = [this] { QuitTick(); };
                 auto shutdownLogicLoop = [this](auto&&... params) { OnShutdown(params...); };
 
-                return mApplication.Run(gameLoop, shutdownLogicLoop, renderLoop, idleLoop, quitLoop);
+                return mApplication.Run(gameLoop, renderLoop, idleLoop, shutdownLogicLoop, quitLoop);
             }
 
         protected:

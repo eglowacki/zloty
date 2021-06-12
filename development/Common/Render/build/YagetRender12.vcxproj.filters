@@ -8,11 +8,14 @@
     <Filter Include="Source Files\Platform">
       <UniqueIdentifier>{d9882132-046e-4691-8820-ef97237dad6b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Application Files">
+      <UniqueIdentifier>{f205eebf-0763-4cf6-9d34-60ae0a4a71cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Triangle Files">
+      <UniqueIdentifier>{dc4439ea-4950-47c9-9b5b-b6ff2737bf43}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\DX12\Render\DesktopApplication.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\DX12\Render\Device.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -21,6 +24,12 @@
     </ClInclude>
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h">
       <Filter>Source Files\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\DesktopApplication.h">
+      <Filter>Source Files\Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h">
+      <Filter>Source Files\Triangle Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -32,6 +41,9 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Platform\SwapChain.cpp">
       <Filter>Source Files\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp">
+      <Filter>Source Files\Triangle Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

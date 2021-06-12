@@ -151,11 +151,13 @@
     <ClInclude Include="..\include\DX12\Render\Device.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\HardwareDevice.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h" />
+    <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\HardwareDevice.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\SwapChain.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

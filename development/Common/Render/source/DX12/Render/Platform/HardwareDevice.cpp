@@ -171,9 +171,9 @@ yaget::render::platform::HardwareDevice::~HardwareDevice()
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::HardwareDevice::Render()
+void yaget::render::platform::HardwareDevice::Render(const time::GameClock& gameClock, metrics::Channel& channel)
 {
-    mSwapChain.Render();
+    mSwapChain.Render(gameClock, channel);
 }
 
 

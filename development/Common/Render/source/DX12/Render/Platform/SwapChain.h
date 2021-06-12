@@ -27,7 +27,13 @@ struct ID3D12CommandAllocator;
 struct ID3D12GraphicsCommandList;
 struct ID3D12Fence;
 
-namespace yaget { class Application; }
+namespace yaget
+{
+    namespace time { class GameClock; }
+    namespace metrics { class Channel; }
+    class Application;
+}
+
 
 namespace yaget::render::platform
 {
@@ -37,7 +43,7 @@ namespace yaget::render::platform
         SwapChain(Application& app, ID3D12Device2* device, uint32_t numFrames);
         ~SwapChain();
 
-        void Render();
+        void Render(const time::GameClock& gameClock, metrics::Channel& channel);
         void Resize();
 
     private:

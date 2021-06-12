@@ -422,9 +422,9 @@ yaget::render::Device::~Device()
 }
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::Device::RenderFrame(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/)
+void yaget::render::Device::RenderFrame(const time::GameClock& gameClock, metrics::Channel& channel)
 {
-    mHardwareDevice->Render();
+    mHardwareDevice->Render(gameClock, channel);
 
     mWaiter.Wait();
 }

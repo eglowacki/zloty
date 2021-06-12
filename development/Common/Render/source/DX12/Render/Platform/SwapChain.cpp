@@ -224,7 +224,7 @@ yaget::render::platform::SwapChain::~SwapChain()
 }
 
 
-void yaget::render::platform::SwapChain::Render()
+void yaget::render::platform::SwapChain::Render(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/)
 {
     auto commandAllocator = mAllocators[mCurrentBackBufferIndex];
     auto backBuffer = mBackBuffers[mCurrentBackBufferIndex];

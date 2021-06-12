@@ -22,7 +22,10 @@ struct ID3D12Device2;
 struct ID3D12DebugDevice;
 struct ID3D12CommandQueue;
 
-namespace yaget {
+namespace yaget
+{
+    namespace time { class GameClock; }
+    namespace metrics { class Channel; }
     class Application;
 }
 
@@ -34,7 +37,7 @@ namespace yaget::render::platform
         HardwareDevice(Application& app);
         ~HardwareDevice();
 
-        void Render();
+        void Render(const time::GameClock& gameClock, metrics::Channel& channel);
         void Resize();
 
     private:
