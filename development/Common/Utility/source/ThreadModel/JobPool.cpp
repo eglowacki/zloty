@@ -101,21 +101,33 @@ void yaget::mt::JobPool::Clear()
 
     mEmptyCondition.Trigger();
 }
- 
- 
-yaget::mt::JobPool::~JobPool() 
-{ 
-    { 
-        std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex); 
-        YLOG_DEBUG("POOL", "Deleting threads for JobPool '%s'.%s", mName.c_str(), (mTasks.empty() ? "" : fmt::format(" There are '{}' unfinished tasks in queue.", mTasks.size()).c_str())); 
-        mTasks.clear(); 
-    } 
- 
+
+
+void yaget::mt::JobPool::Destroy()
+{
+    {
+        std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
+        if (!mTasks.empty())
+        {
+            YLOG_DEBUG("POOL", "Deleting threads for JobPool '%s'.%s", mName.c_str(), (mTasks.empty() ? "" : fmt::format(" There are '{}' unfinished tasks in queue.", mTasks.size()).c_str()));
+            mTasks.clear();
+        }
+    }
+
     Clear();
 
     mt::unique_lock mutexLock = mDynamicThreads ? mt::unique_lock(mThreadListMutext) : mt::unique_lock{};
-    mThreads.clear();
-    YLOG_DEBUG("POOL", "Done deleting threads for JobPool '%s'.", mName.c_str()); 
+    if (!mThreads.empty())
+    {
+        mThreads.clear();
+        YLOG_DEBUG("POOL", "Done deleting threads for JobPool '%s'.", mName.c_str());
+    }
+}
+
+
+yaget::mt::JobPool::~JobPool() 
+{
+    Destroy();
 }
 
 
@@ -183,6 +195,12 @@ void yaget::mt::JobPool::Join()
     mEmptyCondition.Trigger();
 }
 
+void yaget::mt::JobPool::JoinDestroy()
+{
+    Join();
+    Destroy();
+}
+
 
 void yaget::mt::JobPool::UnpauseAll() 
 {
@@ -206,40 +224,14 @@ void yaget::mt::JobPool::UnpauseAll()
 yaget::mt::JobProcessor::Task_t yaget::mt::JobPool::PopNextTask()
 {
     JobProcessor::Task_t task = {};
-    //size_t numTasksLeft = 0;
     {
         std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
         if (!mTasks.empty())
         {
             task = *mTasks.begin();
             mTasks.pop_front();
-            //numTasksLeft = mTasks.size();
         }
     }
-
-    //if (mDynamicThreads && numTasksLeft)
-    //{
-    //    mt::unique_lock mutexLock = mt::unique_lock(mThreadListMutext);
-
-    //    // looks like we have tasks left, let check to see if we reached man number of threads
-    //    // and if not, are all busy?
-    //    if (mThreads.size() < mMaxNumThreads)
-    //    {
-    //        // https://app.gitkraken.com/glo/view/card/c09a1b0ebde34dfd96f0a8737d446677 (KAR-41)
-    //        const bool allBusy = std::ranges::all_of(mThreads.begin(), mThreads.end(), [](auto itr)
-    //        {
-    //            return itr.second.IsBusy();
-    //        });
-
-    //        if (allBusy)
-    //        {
-    //            // spawn another thread
-    //            std::string threadName = mMaxNumThreads > 1 ? fmt::format("{}_{}/{}", mName, mThreads.size() + 1, mMaxNumThreads) : mName;
-    //            auto it = mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); })));
-    //            it.first->second.StartProcessing();
-    //        }
-    //    }
-    //}
 
     if (task)
     {

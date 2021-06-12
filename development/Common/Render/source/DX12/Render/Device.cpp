@@ -424,50 +424,70 @@ yaget::render::Device::~Device()
 //-------------------------------------------------------------------------------------------------
 void yaget::render::Device::RenderFrame(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/)
 {
-    //Render();
+    mHardwareDevice->Render();
+
+    mWaiter.Wait();
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::Device::Resize()
 {
+    WaiterScoper scoper(mWaiter);
+
     mHardwareDevice->Resize();
-    //uint32_t width = 1024;
-    //uint32_t height = 768;
-
-    //if (g_ClientWidth != width || g_ClientHeight != height)
-    //{
-    //    // Don't allow 0 size swap chain back buffers.
-    //    g_ClientWidth = std::max(1u, width);
-    //    g_ClientHeight = std::max(1u, height);
-
-    //    // Flush the GPU queue to make sure the swap chain's back buffers
-    //    // are not being referenced by an in-flight command list.
-    //    Flush(g_CommandQueue, g_Fence, g_FenceValue, g_FenceEvent);
-
-    //    for (int i = 0; i < g_NumFrames; ++i)
-    //    {
-    //        // Any references to the back buffers must be released
-    //        // before the swap chain can be resized.
-    //        g_BackBuffers[i].Reset();
-    //        g_FrameFenceValues[i] = g_FrameFenceValues[g_CurrentBackBufferIndex];
-    //    }
-    //    DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-    //    HRESULT hr = g_SwapChain->GetDesc(&swapChainDesc);
-    //    YAGET_UTIL_THROW_ON_RROR(hr, "Could not SwapChain description");
-
-    //    hr = g_SwapChain->ResizeBuffers(g_NumFrames, g_ClientWidth, g_ClientHeight, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
-    //    YAGET_UTIL_THROW_ON_RROR(hr, "Could not resize buffers");
-
-    //    g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
-
-    //    UpdateRenderTargetViews(g_Device, g_SwapChain, g_RTVDescriptorHeap);
-    //}
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::Device::SurfaceStateChange()
 {
-    
+    Resize();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::Device::Waiter::Wait()
+{
+    if (mPauseCounter == true)
+    {
+        YLOG_NOTICE("DEVI", "Waiter - We are requested to pause. Stopping.");
+        mWaitForRenderThread.notify_one();
+        std::unique_lock<std::mutex> locker(mPauseRenderMutex);
+        mRenderPaused.wait(locker);
+        YLOG_NOTICE("DEVI", "Waiter - Resuming Render.");
+    }
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::Device::Waiter::BeginPause()
+{
+    // TODO Look at re-entrent lock (from the same thread)
+    // rather then home grown
+    if (mUsageCounter++)
+    {
+        return;
+    }
+
+    // We should use Concurency (perf) locker to keep track in RAD
+    YLOG_NOTICE("DEVI", "Waiter - Requesting Render pause...");
+    std::unique_lock<std::mutex> locker(mPauseRenderMutex);
+    mPauseCounter = true;
+    mWaitForRenderThread.wait(locker);
+    YLOG_NOTICE("DEVI", "Waiter - Render is Paused (resizing commences...)");
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::Device::Waiter::EndPause()
+{
+    if (--mUsageCounter)
+    {
+        return;
+    }
+
+    YLOG_NOTICE("DEVI", "Waiter - Render can start (resizing done)");
+    mPauseCounter = false;
+    mRenderPaused.notify_one();
 }

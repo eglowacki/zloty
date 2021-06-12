@@ -35,7 +35,7 @@ namespace yaget::metrics
         class Metric : public yaget::Noncopyable<Metric>
         {
         public:
-            virtual ~Metric();
+            virtual ~Metric() = default;
 
         protected:
             Metric(const std::string& message, const char* file, uint32_t line);
@@ -48,6 +48,8 @@ namespace yaget::metrics
         };
     }
 
+    enum class MessageScope { Global, Process, Thread };
+
     class Channel : public internal::Metric
     {
     public:
@@ -55,7 +57,7 @@ namespace yaget::metrics
         Channel(const std::string& message, const char* file, uint32_t line);
         ~Channel() override;
 
-        void AddMessage(const std::string& message) const;
+        void AddMessage(const std::string& message, MessageScope scope) const;
     };
 
     //--------------------------------------------------------------------------------------------------------------
@@ -69,7 +71,7 @@ namespace yaget::metrics
         void AddMessage(const std::string& message) const;
 
     private:
-        std::size_t mId = 0;
+        size_t mId = 0;
     };
 
     class Lock : public internal::Metric
@@ -114,7 +116,8 @@ namespace yaget::metrics
     //--------------------------------------------------------------------------------------------------------------
     inline void Initialize(const args::Options&) {}
 
-    // putting back intel concurrency functionality
+    void MarkAddMessage(const std::string& message, MessageScope scope, size_t id);
+
     void MarkStartThread(std::thread& thread, const char* name);
     void MarkStartThread(uint32_t threadId, const char* name);
 

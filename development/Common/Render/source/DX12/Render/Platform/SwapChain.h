@@ -37,6 +37,7 @@ namespace yaget::render::platform
         SwapChain(Application& app, ID3D12Device2* device, uint32_t numFrames);
         ~SwapChain();
 
+        void Render();
         void Resize();
 
     private:

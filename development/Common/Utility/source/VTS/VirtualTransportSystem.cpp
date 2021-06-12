@@ -96,6 +96,7 @@ void yaget::io::VirtualTransportSystem::onEntriesCollected()
 {
     mSectionEntriesCollector = nullptr;
     mDoneCallback();
+    metrics::MarkAddMessage("VTS Ready", metrics::MessageScope::Global, meta::pointer_cast(this));
 }
 
 

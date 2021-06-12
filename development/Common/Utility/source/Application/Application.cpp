@@ -25,6 +25,12 @@ void yaget::Application::onRenderTask(const yaget::Application::UpdateCallback_t
     {
         metrics::Channel rChannel("RenderTick", YAGET_METRICS_CHANNEL_FILE_LINE);
 
+        if (IsSuspended())
+        {
+            metrics::Channel sChannel("Suspended", YAGET_METRICS_CHANNEL_FILE_LINE);
+            platform::Sleep([this] { return IsSuspended(); });
+        }
+
         renderCallback(*this, mApplicationClock, rChannel);
         std::this_thread::yield();
     }

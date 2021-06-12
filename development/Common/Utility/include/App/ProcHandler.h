@@ -107,7 +107,9 @@ namespace yaget::app
 
         HWND WinHandle() const { return mWindowHandle; }
         Appearance ActiveAppearance() const { return mActiveAppearance; }
-        
+        // Return true if current window is minimized/suspended. 
+        bool IsSuspended() const;
+
     private:
         static LRESULT CALLBACK WindowCallback(HWND hWnd, uint32_t message, uint64_t wParam, int64_t lParam);
 

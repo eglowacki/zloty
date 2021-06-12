@@ -34,6 +34,7 @@ namespace yaget::render::platform
         HardwareDevice(Application& app);
         ~HardwareDevice();
 
+        void Render();
         void Resize();
 
     private:

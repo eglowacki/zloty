@@ -561,15 +561,15 @@ platform::SleepResult platform::Sleep(time::TimeUnits_t maxSleepSleep, time::Tim
     return sleepResult;
 }
 
-void platform::Sleep(time::TimeUnits_t numSleep, time::TimeUnits_t unitType)
+void platform::Sleep(time::TimeUnits_t maxSleepSleep, time::TimeUnits_t unitType)
 {
-    time::Microsecond_t sleepDuration = time::FromTo<time::Microsecond_t>(numSleep, unitType, time::kMicrosecondUnit);
+    time::Microsecond_t sleepDuration = time::FromTo<time::Microsecond_t>(maxSleepSleep, unitType, time::kMicrosecondUnit);
     std::this_thread::sleep_for(std::chrono::microseconds(sleepDuration));
 }
 
-void platform::BusySleep(time::TimeUnits_t numSleep, time::TimeUnits_t unitType)
+void platform::BusySleep(time::TimeUnits_t maxSleepSleep, time::TimeUnits_t unitType)
 {
-    time::TimeUnits_t endTime = platform::GetRealTime(unitType) + numSleep;
+    time::TimeUnits_t endTime = platform::GetRealTime(unitType) + maxSleepSleep;
     while (platform::GetRealTime(unitType) < endTime)
     {
         std::this_thread::yield();

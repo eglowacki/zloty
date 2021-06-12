@@ -47,11 +47,12 @@ namespace yaget
             void AddTask(JobProcessor::Task_t task);
             void UnpauseAll();
             
-            void Clear();
 
             // Blocking call, it will process all tasks until none. 
             // It is possible to add new task while Join() from other threads. 
             void Join();
+            // Same as above Join but it will also delete and cleanup all threads.
+            void JoinDestroy();
 
             // if there is allot of task to be added, it's more efficient
             // to use this class, since it will lock mutex once,
@@ -85,6 +86,8 @@ namespace yaget
             }
 
         private:
+            void Clear();
+            void Destroy();
             JobProcessor::Task_t PopNextTask();
             void UpdateThreadPool(size_t numTasksLeft);
 

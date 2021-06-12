@@ -44,10 +44,6 @@ int64_t WindowApplication::_onHandleInputMessage(WindowHandle_t hWnd, uint32_t m
     return onHandleRawInput(hWnd, message, wParam, lParam);
 }
 
-void WindowApplication::_onSuspend(bool /*bSuspend*/)
-{
-}
-
 void WindowApplication::ProcessResize()
 {
     const auto& requestedSurfaceState = GetSurface().State();
@@ -149,6 +145,11 @@ int64_t yaget::WindowApplication::ProcessUserInput(uint32_t message, uint64_t wP
     }
 
     return 0;
+}
+
+bool WindowApplication::IsSuspended() const
+{
+    return mWindowHandler->IsSuspended();
 }
 
 int WindowApplication::_processMouseMessage(uint32_t message, uint64_t wParam, int64_t lParam)

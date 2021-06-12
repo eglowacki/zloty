@@ -41,9 +41,9 @@ namespace yaget
         enum class SleepResult { TimedOut, OK };
         SleepResult Sleep(time::TimeUnits_t maxSleepSleep, time::TimeUnits_t unitType, SleepPredicate sleepPredicate);
 
-        void Sleep(time::TimeUnits_t numSleep, time::TimeUnits_t unitType);
+        void Sleep(time::TimeUnits_t maxSleepSleep, time::TimeUnits_t unitType);
 
-        void BusySleep(time::TimeUnits_t numSleep, time::TimeUnits_t unitType);
+        void BusySleep(time::TimeUnits_t maxSleepSleep, time::TimeUnits_t unitType);
 
         bool ParseArgs(const char* commandLine, args::Options& options, std::string* errorMessage);
         bool ParseArgs(args::Options& options, std::string* errorMessage);

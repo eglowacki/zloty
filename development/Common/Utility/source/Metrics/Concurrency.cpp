@@ -36,11 +36,6 @@ yaget::metrics::internal::Metric::Metric(const std::string& message, const char*
 {}
 
 
-yaget::metrics::internal::Metric::~Metric()
-{
-}
-
-
 yaget::metrics::Channel::Channel(const std::string& message, const char* file, uint32_t line)
     : internal::Metric(message, file, line)
 {
@@ -50,6 +45,11 @@ yaget::metrics::Channel::Channel(const std::string& message, const char* file, u
 
 yaget::metrics::Channel::~Channel()
 {
+    if (mMessage == "T.TraceDataSaver.1")
+    {
+        int z = 0;
+        z;
+    }
     YAGET_ASSERT(mTreadID == platform::CurrentThreadId());
 
     const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
@@ -57,12 +57,11 @@ yaget::metrics::Channel::~Channel()
 }
 
 
-void yaget::metrics::Channel::AddMessage(const std::string& message) const
+void yaget::metrics::Channel::AddMessage(const std::string& message, MessageScope scope) const
 {
     YAGET_ASSERT(mTreadID == platform::CurrentThreadId());
 
-    const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
-    GetSaver().AddProfileStamp({ message, currentTime, currentTime, mTreadID, TraceRecord::Event::Instant, 0, "Note" });
+    MarkAddMessage(message, scope, 0);
 }
 
 
@@ -107,27 +106,21 @@ yaget::metrics::Lock::Lock(const std::string& message, const char* file, uint32_
 }
 
 
-//yaget::metrics::Lock::~Lock()
-//{
-//}
-
-
 yaget::metrics::UniqueLock::UniqueLock(std::mutex& mutex, const std::string& message, const char* file, uint32_t line)
     : Lock("Mutex:" + message, file, line)
     , mlocker(mutex)
 {
     const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
-    //GetSaver().AddProfileStamp({ "Acquiring." + mMessage, mStart, currentTime, mTreadID, TraceRecord::Event::Complete, 0, "Channel" });
     GetSaver().AddProfileStamp({ "Acquiring." + mMessage, currentTime, currentTime, mTreadID, TraceRecord::Event::End, 0, "Channel" });
 }
 
-//yaget::metrics::UniqueLock::~UniqueLock()
-//{
-//    //const std::size_t threadID = platform::CurrentThreadId();
-//    //const auto releasedTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
-//    //GetSaver().AddProfileStamp({ mMessage, mStart, releasedTime, threadID, TraceRecord::Event::Lock, 0, "Lock" });
-//}
 
+void yaget::metrics::MarkAddMessage(const std::string& message, MessageScope scope, size_t id)
+{
+    const std::size_t threadID = platform::CurrentThreadId();
+    const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+    GetSaver().AddProfileStamp({ message, currentTime, currentTime, threadID, TraceRecord::Event::Instant, id, "Tracker", scope });
+}
 
 void yaget::metrics::MarkStartThread(uint32_t threadId, const char* threadName)
 {

@@ -2,6 +2,7 @@
 #include "App/AppUtilities.h"
 #include "App/Display.h"
 #include "Debugging/DevConfiguration.h"
+#include "Metrics/Concurrency.h"
 #include "VTS/ResolvedAssets.h"
 
 #include <shellscalingapi.h>
@@ -493,6 +494,7 @@ int64_t yaget::app::ProcHandler::onMessage(uint32_t message, uint64_t wParam, in
         case WM_ENTERSIZEMOVE:
             // We want to avoid trying to resizing the swapchain as the user does the 'rubber band' resize
             YLOG_DEBUG("WIN", "WM_ENTERSIZEMOVE called...");
+            metrics::MarkAddMessage("Starting Window Resize", metrics::MessageScope::Global, meta::pointer_cast(this));
             mReflectedState.mMoving = true;
             GetWindowResolution(mWindowHandle, mReflectedState.mLastResolution.first, mReflectedState.mLastResolution.second);
             break;
@@ -500,6 +502,7 @@ int64_t yaget::app::ProcHandler::onMessage(uint32_t message, uint64_t wParam, in
         case WM_EXITSIZEMOVE:
             // Here is the other place where you handle the swapchain resize after the user stops using the 'rubber-band' 
             YLOG_DEBUG("WIN", "WM_EXITSIZEMOVE called...");
+            metrics::MarkAddMessage("Ended Window Resize", metrics::MessageScope::Global, meta::pointer_cast(this));
             mReflectedState.mMoving = false;
 
             int32_t resX, resY;
@@ -580,6 +583,11 @@ void yaget::app::ProcHandler::SaveAppearance() const
     SaveWindowAppearance(mWindowHandle, mWindowAppearances, mActiveAppearance, mVTS, mInit.mWindowOptions);
 }
 
+
+bool yaget::app::ProcHandler::IsSuspended() const
+{
+    return mReflectedState.mSuspended;
+}
 
 /*static*/ LRESULT CALLBACK yaget::app::ProcHandler::WindowCallback(HWND hWnd, uint32_t message, uint64_t wParam, int64_t lParam)
 {

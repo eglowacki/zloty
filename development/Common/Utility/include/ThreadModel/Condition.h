@@ -15,7 +15,10 @@
 #pragma once
 
 #include "YagetCore.h"
+#include "Time/GameClock.h"
+
 #include <mutex>
+#include <chrono>
 
 namespace yaget
 {
@@ -35,10 +38,29 @@ namespace yaget
                 mCondition.notify_one();
             }
 
-            void Wait()
+            // will wait on Trigger() to be called (from other thread)
+            // numSleep allows us to just wait until that time pass before it get's triggered.
+            void Wait(time::TimeUnits_t numSleep = 0, time::TimeUnits_t unitType = time::kMilisecondUnit)
             {
                 std::unique_lock<std::mutex> locker(mMutex);
-                mCondition.wait(locker, [this] { return mRelease; });
+                if (numSleep)
+                {
+                    using namespace std::chrono_literals;
+
+                    if (unitType == time::kMicrosecondUnit)
+                    {
+                        mCondition.wait_for(locker, numSleep * 1us, [this] { return mRelease; });
+                    }
+                    else if (unitType == time::kMilisecondUnit)
+                    {
+                        mCondition.wait_for(locker, numSleep * 1ms, [this] { return mRelease; });
+                    }
+                }
+                else
+                {
+                    mCondition.wait(locker, [this] { return mRelease; });
+                }
+
                 mRelease = false;
             }
 

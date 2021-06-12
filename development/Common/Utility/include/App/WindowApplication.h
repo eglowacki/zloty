@@ -27,7 +27,7 @@ namespace yaget
     {
     public:
         WindowApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
-        virtual ~WindowApplication();
+        ~WindowApplication() override;
 
         app::DisplaySurface GetSurface() const override;
 
@@ -41,13 +41,13 @@ namespace yaget
         virtual void OnResize() = 0;
         virtual void OnSurfaceStateChange() = 0;
 
-        void _onSuspend(bool bSuspend);
         void ProcessResize();
         int _processInputMessage(int64_t lParam);
         int _processMouseMessage(uint32_t message, uint64_t wParam, int64_t lParam);
         int64_t _onHandleInputMessage(WindowHandle_t hWnd, uint32_t message, uint64_t wParam, int64_t lParam);
         int64_t ProcessUserInput(uint32_t message, uint64_t wParam, int64_t lParam);
 
+        bool IsSuspended() const override;
         bool onMessagePump(const time::GameClock& gameClock) override;
         void Cleanup() override;
 

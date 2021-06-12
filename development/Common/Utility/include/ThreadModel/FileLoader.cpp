@@ -187,7 +187,7 @@ void yaget::io::FileLoader::Start()
                 }
 
 
-                channel.AddMessage(fmt::format("Got '{}' files.", numEntriesRemoved));
+                channel.AddMessage(fmt::format("Got '{}' files.", numEntriesRemoved), metrics::MessageScope::Thread);
             }
         }
 

@@ -34,6 +34,7 @@ namespace yaget
         app::DisplaySurface GetSurface() const override { return app::DisplaySurface{ mOutputHandle, app::SurfaceState::Shared }; };
 
     private:
+        bool IsSuspended() const override;
         bool onMessagePump(const time::GameClock& gameClock) override;
         void Cleanup() override;
 

@@ -17,11 +17,14 @@
 #pragma once
 
 #include "YagetCore.h"
-#include "Meta/CompilerAlgo.h"
 #include "App/AppUtilities.h"
-#include "StringHelpers.h"
+#include "Debugging/DevConfiguration.h"
 #include "Exception/Exception.h"
+#include "Meta/CompilerAlgo.h"
+#include "Metrics/Concurrency.h"
 #include "Platform/Support.h"
+#include "StringHelpers.h"
+
 #include <functional>
 
 
@@ -37,11 +40,6 @@ namespace yaget::app
             // this will force first time ever initialization if current ids struct with setting
             // main thread id as current one. If user utilizes different thread as a "main",
             // it can call this before calling Harness
-            //auto mainId = dev::CurrentThreadIds().Main;
-            //metrics::MarkStartThread(mainId, "MAIN");
-
-            //const char* configData = nullptr;
-            //size_t configSize = 0;
 
             using LogOutputs = std::tuple<Args...>;
             meta::for_each_type<LogOutputs>([](const auto& logType)
@@ -54,6 +52,10 @@ namespace yaget::app
             {
                 return -1;
             }
+
+            const auto mainId = dev::CurrentThreadIds().Main;
+            metrics::MarkStartThread(mainId, "MAIN");
+            metrics::MarkAddMessage("Started Game", metrics::MessageScope::Process, 0);
 
             int returnResult = 0;
             try
@@ -80,6 +82,8 @@ namespace yaget::app
                 YAGET_ASSERT(false, "Application terminated, std::exception thrown: '%s'", e.what());
                 return 1;
             }
+
+            metrics::MarkAddMessage("Ended Game", metrics::MessageScope::Process, 0);
 
             //render::Device::DebugReport();
             return returnResult;

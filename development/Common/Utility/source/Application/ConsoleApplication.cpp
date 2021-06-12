@@ -59,6 +59,11 @@ ConsoleApplication::~ConsoleApplication()
     gConsoleApplication = nullptr;
 }
 
+bool ConsoleApplication::IsSuspended() const
+{
+    return false;
+}
+
 bool ConsoleApplication::onMessagePump(const time::GameClock& /*gameClock*/)
 {
     INPUT_RECORD inputRec = {0};

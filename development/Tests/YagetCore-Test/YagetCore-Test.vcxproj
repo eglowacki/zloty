@@ -68,6 +68,7 @@
     <ClCompile Include="TestFiles\PoolAllocator_Test.cpp" />
     <ClCompile Include="TestFiles\StringConverters_Test.cpp" />
     <ClCompile Include="TestFiles\StringHelpers_Test.cpp" />
+    <ClCompile Include="TestFiles\Threading_Test.cpp" />
     <ClCompile Include="TestFiles\VTS_Test.cpp" />
     <ClCompile Include="TestFiles\YLog_Test.cpp" />
   </ItemGroup>

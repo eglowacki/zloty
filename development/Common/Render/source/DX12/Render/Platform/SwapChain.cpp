@@ -54,8 +54,13 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------------------
-    ComPtr<IDXGISwapChain4> CreateSwapChain(HWND hWnd, ComPtr<ID3D12CommandQueue> commandQueue, uint32_t width, uint32_t height, uint32_t bufferCount)
+    ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::DisplaySurface& surface, ComPtr<ID3D12CommandQueue> commandQueue, uint32_t bufferCount)
     {
+        const auto& size = surface.Size();
+        const auto width = static_cast<uint32_t>(size.x);
+        const auto height = static_cast<uint32_t>(size.y);
+        const auto hWnd = surface.Handle<HWND>();
+
         ComPtr<IDXGISwapChain4> dxgiSwapChain4;
         ComPtr<IDXGIFactory4> dxgiFactory4;
         UINT createFactoryFlags = 0;
@@ -169,7 +174,7 @@ namespace
         if (fence->GetCompletedValue() < fenceValue)
         {
             HRESULT hr = fence->SetEventOnCompletion(fenceValue, fenceEvent);
-            YAGET_UTIL_THROW_ON_RROR(fenceEvent != nullptr, "Could not Set DX12 Event on completion");
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not Set DX12 Event on completion");
 
             ::WaitForSingleObject(fenceEvent, static_cast<DWORD>(duration.count()));
         }
@@ -189,11 +194,11 @@ yaget::render::platform::SwapChain::SwapChain(Application& app, ID3D12Device2* d
     : mApplication(app)
     , mDevice(device)
     , mCommandQueue(CreateCommandQueue(mDevice))
-    , mSwapChain(CreateSwapChain(mApplication.GetSurface().Handle<HWND>(), mCommandQueue, 1024, 768, 3))
+    , mSwapChain(CreateSwapChain(mApplication.GetSurface(), mCommandQueue, 3))
     , mCurrentBackBufferIndex(mSwapChain->GetCurrentBackBufferIndex())
     , mDescriptorHeap(CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, numFrames))
     , mFence(CreateFence(mDevice))
-    , mFenceEvent(CreateEventHandle)
+    , mFenceEvent(CreateEventHandle())
     , mDescriptorSize(mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV))
     , mNumFrames(numFrames)
     , mBackBuffers(mNumFrames)
@@ -213,18 +218,62 @@ yaget::render::platform::SwapChain::SwapChain(Application& app, ID3D12Device2* d
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::SwapChain::~SwapChain()
 {
+    Flush(mCommandQueue, mFence, mFenceValue, mFenceEvent);
+
+    ::CloseHandle(mFenceEvent);
 }
 
+
+void yaget::render::platform::SwapChain::Render()
+{
+    auto commandAllocator = mAllocators[mCurrentBackBufferIndex];
+    auto backBuffer = mBackBuffers[mCurrentBackBufferIndex];
+
+    commandAllocator->Reset();
+    mCommandList->Reset(commandAllocator.Get(), nullptr);
+    // Clear the render target.
+    {
+        CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+        mCommandList->ResourceBarrier(1, &barrier);
+        FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+        CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), mCurrentBackBufferIndex, mDescriptorSize);
+
+        mCommandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+    }
+
+    // Present
+    {
+        CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+        mCommandList->ResourceBarrier(1, &barrier);
+        HRESULT hr = mCommandList->Close();
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not close DX12Command List");
+
+        ID3D12CommandList* const commandLists[] =
+        {
+            mCommandList.Get()
+        };
+
+        mCommandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
+        const UINT syncInterval = true ? 1 : 0;
+        const UINT presentFlags = 0;
+        //UINT presentFlags = g_TearingSupported && !g_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
+        hr = mSwapChain->Present(syncInterval, presentFlags);
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not Present DX12 SwapChain");
+
+        mFrameFenceValues[mCurrentBackBufferIndex] = Signal(mCommandQueue, mFence, mFenceValue);
+        mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
+
+        WaitForFenceValue(mFence, mFrameFenceValues[mCurrentBackBufferIndex], mFenceEvent);
+    }
+}
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::SwapChain::Resize()
 {
-    //uint32_t width = 1024;
-    //uint32_t height = 768;
-
     const auto& size = mApplication.GetSurface().Size();
-    const uint32_t width = static_cast<uint32_t>(size.x);
-    const uint32_t height = static_cast<uint32_t>(size.y);
+    const auto width = static_cast<uint32_t>(size.x);
+    const auto height = static_cast<uint32_t>(size.y);
 
     // Flush the GPU queue to make sure the swap chain's back buffers
     // are not being referenced by an in-flight command list.

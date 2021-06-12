@@ -43,7 +43,7 @@ yaget::mt::JobProcessor::JobProcessor(const std::string& threadName, PopNextTask
     mPauseCondition.Trigger();
     mThread = std::thread(std::ref(*this), std::move(popNextTask));
     metrics::MarkStartThread(mThread, threadName.c_str());
-} 
+}
  
  
 yaget::mt::JobProcessor::~JobProcessor() 
@@ -55,7 +55,7 @@ yaget::mt::JobProcessor::~JobProcessor()
  
     if (mThread.joinable()) 
     {
-        const time::TimeUnits_t maxSleepSleep = 500000;
+        const time::TimeUnits_t maxSleepSleep = 1000000;
         const time::TimeUnits_t units = time::kMicrosecondUnit;
         const auto result = platform::Sleep(maxSleepSleep, units, [this]()
         {
@@ -83,7 +83,8 @@ yaget::mt::JobProcessor::~JobProcessor()
  
 void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask) 
 { 
-    mPauseCondition.Wait(); 
+    mPauseCondition.Wait();
+
     metrics::Channel channel("T." + mThreadName, YAGET_METRICS_CHANNEL_FILE_LINE); 
 
     struct Releaser

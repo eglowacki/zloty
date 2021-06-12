@@ -26,7 +26,7 @@ namespace
         "B",    // Begin
         "E",    // End
         "X",    // Complete
-        "i",    // Instant
+        "I",    // Instant
         "b",    // AsyncBegin
         "e",    // AsyncEnd
         "n",    // AsyncPoint
@@ -36,6 +36,15 @@ namespace
         "t"     // FlowPoint
     };
 
+    //enum class MessageScope { Global, Process, Thread };
+    const char* S[]
+    {
+        "g",    // Global
+        "p",    // Process
+        "t"     // Thread
+    };
+
+
     std::string ResolveTraceFileName()
     {
         const auto& name = yaget::dev::CurrentConfiguration().mDebug.mMetrics.TraceFileName;
@@ -44,24 +53,23 @@ namespace
 
         return result ? traceFile : "";
     }
-}
 
-namespace yaget::metrics
-{
-    inline void to_json(nlohmann::json& j, const yaget::metrics::TraceRecord& profileStamp)
+    void SaveTraceRecord(const yaget::metrics::TraceRecord& profileStamp, std::ofstream& file)
     {
-        j["name"] = profileStamp.mName;
-        j["pid"] = 0;
-        j["tid"] = profileStamp.mThreadID;
-        j["ts"] = profileStamp.mStart;
-        j["ph"] = PH[static_cast<int>(profileStamp.mEvent)];
-        j["cat"] = profileStamp.mCategory;
+        file << std::setprecision(3) << std::fixed;
+        file << ",{";
+        file << "\"name\":\"" << profileStamp.mName << "\",";
+        file << "\"pid\":0,";
+        file << "\"tid\":" << profileStamp.mThreadID << ",";
+        file << "\"ph\":\"" << PH[static_cast<int>(profileStamp.mEvent)] << "\",";
+        file << "\"cat\":\"" << profileStamp.mCategory << "\",";
+        file << "\"ts\":" << profileStamp.mStart;
 
         switch (profileStamp.mEvent)
         {
         case yaget::metrics::TraceRecord::Event::Complete:
         case yaget::metrics::TraceRecord::Event::Lock:
-            j["dur"] = profileStamp.mEnd - profileStamp.mStart;
+            file << ",\"dur\":" << profileStamp.mEnd - profileStamp.mStart;
 
             break;
         case yaget::metrics::TraceRecord::Event::Begin:
@@ -72,80 +80,88 @@ namespace yaget::metrics
         case yaget::metrics::TraceRecord::Event::FlowPoint:
         case yaget::metrics::TraceRecord::Event::AsyncBegin:
         case yaget::metrics::TraceRecord::Event::FlowBegin:
-            j["id"] = profileStamp.mId;
+            file << ",\"id\":" << profileStamp.mId;
 
             break;
         case yaget::metrics::TraceRecord::Event::Instant:
-            j["s"] = "p";
+            file << ",\"s\":\"" << S[static_cast<int>(profileStamp.mMessageScope)] << "\"";;
             break;
         }
-    }
 
-    inline void to_json(nlohmann::json& j, const yaget::metrics::ThreadNames::value_type& threadInfo)
-    {
-        j["name"] = "thread_name";
-        j["ph"] = "M";
-        j["pid"] = 0;
-        j["tid"] = threadInfo.first;
-        j["args"]["name"] = threadInfo.second;
-    }
-
-    inline void to_json(nlohmann::json& j, const yaget::metrics::ThreadNames& threadNames)
-    {
-        for (const auto& it : threadNames)
-        {
-            nlohmann::json j2;
-            to_json(j2, it);
-            j.push_back(j2);
-        }
+        file << "}";
     }
 }
 
 
+//-------------------------------------------------------------------------------------------------
 yaget::metrics::TraceCollector::TraceCollector()
     : mFilePathName(ResolveTraceFileName())
-    , mTraceOn(mFilePathName.empty() ? false : dev::CurrentConfiguration().mDebug.mMetrics.TraceOn)
+    , mTraceState(mFilePathName.empty() ? TraceState::Off : (dev::CurrentConfiguration().mDebug.mMetrics.TraceOn && util::FileCycler(mFilePathName) ? TraceState::StartSaver : TraceState::Off))
 {
-    util::FileCycler(mFilePathName);
-}
-
-
-yaget::metrics::TraceCollector::~TraceCollector()
-{
-    if (mTraceOn)
+    if (mTraceState == TraceState::StartSaver)
     {
-        ProfileStamps profileStamps;
+        mOutputStream.open(mFilePathName.c_str());
+        if (mOutputStream.is_open())
         {
-            std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
-            std::swap(profileStamps, mProfileStamps);
+            mOutputStream << "{\"otherData\": {";
+            mOutputStream << "\"Application\": \"Yaget-Test-Core\",";
+            mOutputStream << "\"Date\": \"Saturday May 29, 2021. 12:59PM\"";
+            mOutputStream << "},";
+
+            mOutputStream << "\"traceEvents\":[{}";
+            mOutputStream.flush();
         }
-
-        if (!profileStamps.empty())
+        else
         {
-            ////profileStamps.erase(profileStamps.begin() + 5, profileStamps.end());
-
-            std::ofstream outputStream(mFilePathName.c_str());
-
-            outputStream << "{\"otherData\": {";
-            outputStream << "\"Application\": \"Yaget-Test-Core\",";
-            outputStream << "\"Date\": \"Saturday May 29, 2021. 12:59PM\"";
-            outputStream << "},";
-
-            outputStream << "\"traceEvents\":";
-
-            nlohmann::json jsonBlock = profileStamps;
-            to_json(jsonBlock, mThreadNames);
-
-            outputStream << jsonBlock;
-            outputStream << "}";
+            mTraceState = TraceState::Off;
         }
     }
 }
 
 
+//-------------------------------------------------------------------------------------------------
+yaget::metrics::TraceCollector::~TraceCollector()
+{
+    mQuit = true;
+
+    if (mTraceState == TraceState::On)
+    {
+        mTracingCondition.Trigger();
+        mDataSaver.JoinDestroy();
+
+        mTraceState = TraceState::Off;
+        SaveCurrentProfileStamps();
+        YAGET_ASSERT(mProfileStamps.empty(), "There are still '%d' entries left in Profile Stamps.", mProfileStamps.size());
+
+        for (const auto& [id, name] : mThreadNames)
+        {
+            mOutputStream << ",{";
+            mOutputStream << "\"name\":\"thread_name\",";
+            mOutputStream << "\"ph\":\"M\",";
+            mOutputStream << "\"pid\":0,";
+            mOutputStream << "\"tid\":" << id << ",";
+            mOutputStream << "\"args\":{\"name\":\"" << name << "\"}";
+
+            mOutputStream << "}";
+        }
+        
+        mOutputStream << "]}";
+        mOutputStream.flush();
+    }
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::metrics::TraceCollector::AddProfileStamp(yaget::metrics::TraceRecord&& result)
 {
-    if (mTraceOn)
+    if (mTraceState == TraceState::StartSaver)
+    {
+        std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
+        mDataSaver.AddTask([this]() { DataSaver(); });
+        mTraceState = TraceState::On;
+    }
+
+    if (mTraceState == TraceState::On)
     {
         std::size_t num = 0;
         {
@@ -163,11 +179,57 @@ void yaget::metrics::TraceCollector::AddProfileStamp(yaget::metrics::TraceRecord
     }
 }
 
+
+//-------------------------------------------------------------------------------------------------
 void yaget::metrics::TraceCollector::SetThreadName(const char* threadName, std::size_t t)
 {
-    if (mTraceOn)
+    //if (mTraceState == TraceState::On)
     {
-        std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
+        std::unique_lock<std::mutex> mutexLock(mmThreadNameMutex);
         mThreadNames[t] = threadName ? threadName : "";
     }
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::metrics::TraceCollector::DataSaver()
+{
+    do
+    {
+        mTracingCondition.Wait(200);
+
+        SaveCurrentProfileStamps();
+    }
+    while (!mQuit);
+
+    SaveCurrentProfileStamps();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::metrics::TraceCollector::SaveCurrentProfileStamps()
+{
+    static size_t counter = 0;
+    ProfileStamps profileStamps;
+    {
+        std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
+        std::swap(profileStamps, mProfileStamps);
+
+        counter += profileStamps.size();;
+    }
+
+    //if (counter > 200)
+    //{
+    //    return;
+    //}
+
+    const auto startTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+    for (const auto& profileStamp : profileStamps)
+    {
+        SaveTraceRecord(profileStamp, mOutputStream);
+    }
+
+    const auto endTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+    TraceRecord traceRecord{ "TraceFileWrite", startTime, endTime, platform::CurrentThreadId(), TraceRecord::Event::Complete, 0, "FileWrite" };
+    SaveTraceRecord(traceRecord, mOutputStream);
 }

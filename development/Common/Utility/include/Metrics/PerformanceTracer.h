@@ -16,8 +16,11 @@
 
 #include "YagetCore.h"
 #include "Time/GameClock.h"
+#include "ThreadModel/JobPool.h"
+#include <fstream>
 #include <unordered_map>
 
+#include "Concurrency.h"
 
 namespace yaget::metrics
 {
@@ -32,6 +35,7 @@ namespace yaget::metrics
         Event mEvent = Event::Complete;
         std::size_t mId = 0;
         std::string mCategory;
+        MessageScope mMessageScope = MessageScope::Thread;
     };
 
     using ThreadNames = std::map<std::size_t, std::string>;
@@ -46,13 +50,26 @@ namespace yaget::metrics
         void SetThreadName(const char* threadName, std::size_t t);
 
     private:
+        void DataSaver();
+
+        void SaveCurrentProfileStamps();
+
         std::mutex mmProfileStampMutex;
+        std::mutex mmThreadNameMutex;
         using ProfileStamps = std::vector<TraceRecord>;
         ProfileStamps mProfileStamps;
         const std::string mFilePathName;
 
         ThreadNames mThreadNames;
-        const bool mTraceOn = true;
+
+        // 
+        enum class TraceState {Off, StartSaver, On};
+        TraceState mTraceState = TraceState::Off;
+
+        mt::JobPool mDataSaver = mt::JobPool("TraceDataSaver", 1);
+        std::atomic_bool mQuit{ false };
+        mt::Condition mTracingCondition;
+        std::ofstream mOutputStream;
     };
 
 }

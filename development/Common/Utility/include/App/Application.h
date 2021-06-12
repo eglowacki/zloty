@@ -97,6 +97,7 @@ namespace yaget
         std::unique_ptr<Mouse> mLastMouseInput;
 
     private:
+        virtual bool IsSuspended() const = 0;
         virtual bool onMessagePump(const time::GameClock& gameClock) = 0;
         virtual void Cleanup() = 0;
         void onRenderTask(const UpdateCallback_t& renderCallback);

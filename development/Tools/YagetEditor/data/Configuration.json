@@ -19,7 +19,7 @@
 				"AllowSocketConnection": false,
 				"SocketConnectionTimeout": 100,
 				"TraceFileName": "$(Temp)/$(AppName)_trace.json",
-				"TraceOn": false
+				"TraceOn": true
 			}
 		},
 

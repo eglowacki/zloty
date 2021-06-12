@@ -453,7 +453,7 @@ namespace yaget::meta
 
     //std::uintptr_t
     template <typename P, typename T = std::uintptr_t>
-    T pointer_cast(P p)
+    T pointer_cast(P* p)
     {
         return reinterpret_cast<T>(p);
     }

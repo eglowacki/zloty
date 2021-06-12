@@ -171,6 +171,13 @@ yaget::render::platform::HardwareDevice::~HardwareDevice()
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::render::platform::HardwareDevice::Render()
+{
+    mSwapChain.Render();
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::platform::HardwareDevice::Resize()
 {
     mSwapChain.Resize();
