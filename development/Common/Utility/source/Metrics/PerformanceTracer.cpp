@@ -1,8 +1,5 @@
 //#define YAGET_GET_STRUCT_SIZE
 #include "Metrics/PerformanceTracer.h"
-
-#include <cstdint>
-
 #include "App/AppUtilities.h"
 #include "App/FileUtilities.h"
 #include "StringHelpers.h"

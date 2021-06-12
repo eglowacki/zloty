@@ -458,8 +458,11 @@ namespace yaget::meta
         return reinterpret_cast<T>(p);
     }
 
-    // It will generate compile error but will print
-    // sizef of a structure
+    // It will generate compile error but will print sizeof of a structure
+    // Add this line as the first line in your cpp file where you want to print
+    // the size of some structure
+    // #define YAGET_GET_STRUCT_SIZE
+    // const int holder = meta::print_size_at_compile<metrics::TraceRecord>();
     template <typename T>
     int print_size_at_compile()
     {

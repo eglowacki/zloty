@@ -41,7 +41,7 @@ yaget::io::BlobLoader::~BlobLoader()
 
 void yaget::io::BlobLoader::AddTask(const Strings& fileNames, const std::vector<Convertor>& convertors)
 {
-    YAGET_ASSERT((fileNames.size() == convertors.size()) || (fileNames.size() > 1 && convertors.size() == 1), 
+    YAGET_ASSERT_ERROR((fileNames.size() == convertors.size()) || (fileNames.size() > 1 && convertors.size() == 1),
         "File names and converters arrays did not match. Both must be the same size OR converter must be 1. FileNames: '%d', Converters: '%d'", fileNames.size(), convertors.size());
 
     mCounter += convertors.empty() ? 0 : fileNames.size();

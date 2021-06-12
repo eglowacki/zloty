@@ -43,8 +43,19 @@
 						"ReadOnly": true,
 						"Recursive": false
 					}
+				},
+				{
+					"UserOptions": {
+						"Path": [ "$(SaveDataFolder)/UserOptions" ],
+						"ReadOnly": false,
+						"Recursive": false,
+						"Filters": [ "*.json" ],
+						"Converters": "JSON"
+					}
 				}
-			]
+			],
+			"WindowOptions": "UserOptions@WindowConfiguration"
+
 		}
 	}
 }

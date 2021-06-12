@@ -1,10 +1,5 @@
 #include "Metrics/Concurrency.h"
-#include "HashUtilities.h"
-#include "YagetVersion.h"
-#include "App/AppUtilities.h"
-#include "App/FileUtilities.h"
 #include "Debugging/DevConfiguration.h"
-#include "Fmt/ostream.h"
 #include "Metrics/PerformanceTracer.h"
 #include "Platform/Support.h"
 
@@ -81,7 +76,7 @@ yaget::metrics::TimeSpan::~TimeSpan()
     if (mId)
     {
         const std::size_t threadID = platform::CurrentThreadId();
-        const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+        const auto currentTime = platform::GetRealTime(time::kMicrosecondUnit);
         GetSaver().AddProfileStamp({ mMessage, currentTime, currentTime, threadID, TraceRecord::Event::FlowEnd, mId, "Tracker" });
     }
 }
@@ -92,7 +87,7 @@ void yaget::metrics::TimeSpan::AddMessage(const std::string& message) const
     if (mId)
     {
         const std::size_t threadID = platform::CurrentThreadId();
-        const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+        const auto currentTime = platform::GetRealTime(time::kMicrosecondUnit);
         GetSaver().AddProfileStamp({ message, currentTime, currentTime, threadID, TraceRecord::Event::FlowPoint, mId, "Tracker" });
     }
 }
@@ -110,7 +105,7 @@ yaget::metrics::UniqueLock::UniqueLock(std::mutex& mutex, const std::string& mes
     : Lock("Mutex:" + message, file, line)
     , mlocker(mutex)
 {
-    const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+    const auto currentTime = platform::GetRealTime(time::kMicrosecondUnit);
     GetSaver().AddProfileStamp({ "Acquiring." + mMessage, currentTime, currentTime, mTreadID, TraceRecord::Event::End, 0, "Channel" });
 }
 
@@ -118,7 +113,7 @@ yaget::metrics::UniqueLock::UniqueLock(std::mutex& mutex, const std::string& mes
 void yaget::metrics::MarkAddMessage(const std::string& message, MessageScope scope, size_t id)
 {
     const std::size_t threadID = platform::CurrentThreadId();
-    const auto currentTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+    const auto currentTime = platform::GetRealTime(time::kMicrosecondUnit);
     GetSaver().AddProfileStamp({ message, currentTime, currentTime, threadID, TraceRecord::Event::Instant, id, "Tracker", scope });
 }
 
