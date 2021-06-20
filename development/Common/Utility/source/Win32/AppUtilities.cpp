@@ -116,7 +116,6 @@ namespace
 
             bMoreFolders = hasParent && hasRoot && rootNotSame;
 
-            //bMoreFolders = hasParent;// && ((hasRoot && rootDrive != confFolder) || (!hasRoot));
             confFolder = confFolder.parent_path();
 
         } while (bMoreFolders);
@@ -159,9 +158,28 @@ namespace
 
         return fs::path(result).generic_string();
     }
+
+
+    std::string ResolveGlobalDataFolder()
+    {
+        if (const fs::path folderPath = yaget::util::ResolveYagetMarker(yaget::dev::DataMarker); !folderPath.empty())
+        {
+            return folderPath.generic_string();
+            //return (fs::path(folderPath) / fs::path(ResolveBrandName()) / fs::path(ResolveAppName())).generic_string();
+        }
+
+        return ResolveAppFolder();
+    }
+
     //--------------------------------------------------------------------------------------------------
     std::string ResolveUserDataFolder()
     {
+        if (const fs::path folderPath = yaget::util::ResolveYagetMarker(yaget::dev::UserDataMarker); !folderPath.empty())
+        {
+            return folderPath.generic_string();
+            //return (fs::path(folderPath) / fs::path(ResolveBrandName()) / fs::path(ResolveAppName())).generic_string();
+        }
+
         fs::path result = GetKnowFolder(FOLDERID_SavedGames);
         result /= fs::path(ResolveBrandName()) / fs::path(ResolveAppName());
 
@@ -171,6 +189,12 @@ namespace
     //--------------------------------------------------------------------------------------------------
     std::string ResolveAppDataFolder()
     {
+        if (const  fs::path folderPath = yaget::util::ResolveYagetMarker(yaget::dev::AppDataMarker); !folderPath.empty())
+        {
+            return folderPath.generic_string();
+            //return (fs::path(folderPath) / fs::path(ResolveBrandName()) / fs::path(ResolveAppName())).generic_string();
+        }
+
         fs::path result = GetKnowFolder(FOLDERID_LocalAppData);
         result /= fs::path(ResolveBrandName()) / fs::path(ResolveAppName());
 
@@ -196,7 +220,7 @@ namespace
             { "$(ExecutableName)", {ResolveExecutableName(), true} },
             { "$(AppPathName)", {ResolveAppPathName(), true} },
             { "$(ConfigurationFolder)",{ "$(AppFolder)", true } },
-            { "$(DataFolder)",{ ResolveConfigurationFolderName(yaget::DataMarker), true } },
+            { "$(DataFolder)",{ ResolveGlobalDataFolder(), true } },
             { "$(Temp)",{ ResolveTempPathName(), false } },
             { "$(LogFolder)",{ "$(UserDataFolder)/Logs", false } },
             { "$(SaveDataFolder)",{ "$(UserDataFolder)/Saves", false } },
@@ -493,6 +517,43 @@ std::string yaget::util::ValidatePath(const std::string potentialPath)
     }
 
     return result;
+}
+
+
+//---------------------------------------------------------------------------------------------------------------------------------
+std::string yaget::util::ResolveYagetMarker(const char* markerName)
+{
+#ifndef YAGET_SHIPPING
+    const auto& appFolder = ResolveAppFolder();
+
+    const auto& userFolder = ResolveConfigurationFolderName(markerName);
+    if (userFolder != appFolder)
+    {
+        // we have found the dev yaget marker file to point us which
+        // folder to set as User's, otherwise it returns whatever the
+        // underlying platform returns.
+        const fs::path markerPath = fs::path(userFolder) / fs::path(markerName);
+        std::ifstream markerFile(markerPath.generic_string());
+        if (markerFile.is_open())
+        {
+            std::string markerText;
+            std::getline(markerFile, markerText);
+
+            if (!markerText.empty() && !markerText.starts_with(';'))
+            {
+                const auto devUserFolder = fs::path(userFolder) / fs::path(markerText);
+                if (fs::is_directory(devUserFolder))
+                {
+                    return devUserFolder.generic_string();
+                }
+            }
+        }
+
+        return userFolder;
+    }
+#endif // YAGET_SHIPPING
+
+    return "";
 }
 
 

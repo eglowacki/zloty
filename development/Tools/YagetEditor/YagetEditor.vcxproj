@@ -160,7 +160,11 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\KeyBindings.json" />
+    <CopyFileToFolders Include="data\KeyBindings.json">
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </CopyFileToFolders>
     <None Include="YagetEditor.deployment" />
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +174,20 @@
     <ClInclude Include="source\EditorSystem.h" />
     <ClInclude Include="source\RenderGameCoordinator.h" />
     <ClInclude Include="source\RenderSystem.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="data\Assets\Shaders\triangle.frag.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</TreatWarningAsError>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</TreatWarningAsError>
+    </FxCompile>
+    <FxCompile Include="data\Assets\Shaders\triangle.vert.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</TreatWarningAsError>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</TreatWarningAsError>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

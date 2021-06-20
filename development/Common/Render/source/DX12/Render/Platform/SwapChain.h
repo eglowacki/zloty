@@ -37,6 +37,7 @@ namespace yaget
 
 namespace yaget::render::platform
 {
+#if 0
     class SwapChain
     {
     public:
@@ -74,5 +75,6 @@ namespace yaget::render::platform
 
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
     };
+#endif
 }
 

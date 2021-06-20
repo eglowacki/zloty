@@ -18,7 +18,7 @@ int yaget::editor::Run(yaget::args::Options& options)
     const auto& vtsConfig = dev::CurrentConfiguration().mInit.mVTSConfig;
     io::tool::VirtualTransportSystemDefault vts(vtsConfig, resolvers);
 
-    // for now we always reset Director while changes to schema
+    // for now we always reset Director while changes to schema are WIP
     items::DefaultDirector<EditorSystemsCoordinator> director(vts, "Director", items::Director::RuntimeMode::Reset);
     render::DesktopApplication app("Yaget.Editor", director, vts, options);
     Messaging messaging{};

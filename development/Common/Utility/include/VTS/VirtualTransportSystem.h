@@ -306,7 +306,10 @@ namespace yaget
                 {
                     for (auto tag : tags)
                     {
-                        mList.push_back(mAssets[tag.mGuid]);
+                        if (const auto it = mAssets.find(tag.mGuid); it != mAssets.end())
+                        {
+                            mList.push_back(it->second);
+                        }
                     }
                 }
             }

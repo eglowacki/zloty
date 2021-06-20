@@ -5,13 +5,13 @@
 #include <dxgi1_6.h>
 
 
-
+#if 0
 namespace
 {
     using namespace Microsoft::WRL;
 
     //-------------------------------------------------------------------------------------------------
-    void EnableDebugLayer()
+    ComPtr<ID3D12Debug1> EnableDebugLayer()
     {
 #ifdef YAGET_DEBUG
         // Always enable the debug layer before doing anything DX12 related
@@ -27,8 +27,11 @@ namespace
 
         debugController->EnableDebugLayer();
         debugController->SetEnableGPUBasedValidation(true);
-        //debugInterface->EnableDebugLayer();
+
+        return debugController;
 #endif // YAGET_DEBUG
+
+        return nullptr;
     }
 
     //-------------------------------------------------------------------------------------------------
@@ -157,10 +160,10 @@ namespace
 yaget::render::platform::HardwareDevice::HardwareDevice(Application& app)
     : mDevice(CreateDevice())
     , mSwapChain(app, mDevice.Get(), 3)
-{
 #ifdef YAGET_DEBUG
-    mDevice->QueryInterface(IID_PPV_ARGS(&mDebugDevice));
+    , mDebugDevice(EnableDebugLayer())
 #endif // YAGET_DEBUG
+{
 }
 
 
@@ -182,3 +185,4 @@ void yaget::render::platform::HardwareDevice::Resize()
 {
     mSwapChain.Resize();
 }
+#endif

@@ -93,9 +93,13 @@ namespace yaget
 
     using Strings = std::vector<std::string>;
 
-
-    static const char* DataMarker = "yaget_data.marker";
-}
+    namespace dev
+    {
+        static const char* DataMarker = "yaget-dev_data.marker";
+        static const char* AppDataMarker = "yaget-dev_app_data.marker";
+        static const char* UserDataMarker = "yaget-dev_user_data.marker";
+    } // namespace dev
+} // namespace yaget
 
 // In some case compiler will generate this warning, (Internet has enough explanation about it)
 // Adding this macro to cpp file, which generated this warning will suppress it (fixes).

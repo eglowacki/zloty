@@ -9,6 +9,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Data Files\Assets">
+      <UniqueIdentifier>{7b278993-f0b7-40e6-815e-088ae0ee7495}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\Assets\Shaders">
+      <UniqueIdentifier>{9d919a89-5ab5-45c0-958f-7d6f3b1a68f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\EditorMain.cpp">
@@ -34,11 +40,11 @@
     <CopyFileToFolders Include="data\Configuration.json">
       <Filter>Data Files</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\KeyBindings.json">
+      <Filter>Data Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\KeyBindings.json">
-      <Filter>Data Files</Filter>
-    </None>
     <None Include="YagetEditor.deployment">
       <Filter>Data Files</Filter>
     </None>
@@ -62,5 +68,13 @@
     <ClInclude Include="source\RenderSystem.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="data\Assets\Shaders\triangle.frag.hlsl">
+      <Filter>Data Files\Assets\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="data\Assets\Shaders\triangle.vert.hlsl">
+      <Filter>Data Files\Assets\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

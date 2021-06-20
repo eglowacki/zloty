@@ -120,7 +120,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;YAGET_DEBUG_RENDER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\include\DX12;..\source\DX12;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -135,7 +135,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;YAGET_DEBUG_RENDER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\include\DX12;..\source\DX12;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -149,12 +149,16 @@
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
     <ClInclude Include="..\include\DX12\Render\Device.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\Adapter.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\DeviceDebugger.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\HardwareDevice.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h" />
     <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Platform\DeviceDebugger.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\HardwareDevice.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\SwapChain.cpp" />
     <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp" />

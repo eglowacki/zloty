@@ -31,6 +31,12 @@
     <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h">
       <Filter>Source Files\Triangle Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Platform\DeviceDebugger.h">
+      <Filter>Source Files\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Platform\Adapter.h">
+      <Filter>Source Files\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -44,6 +50,12 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp">
       <Filter>Source Files\Triangle Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Platform\DeviceDebugger.cpp">
+      <Filter>Source Files\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp">
+      <Filter>Source Files\Platform</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

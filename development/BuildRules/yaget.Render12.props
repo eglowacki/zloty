@@ -7,6 +7,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Render\Include\DX12;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>YAGET_DEBUG_RENDER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>YagetRender12$(YAGET_DEBUG_SUFFIX).lib;DirectX-Guids.lib;DXGI.lib;D3d12.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>

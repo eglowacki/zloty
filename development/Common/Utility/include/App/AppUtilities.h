@@ -66,13 +66,21 @@ namespace yaget::util
     bool IsExtension(const std::string& name, const std::string& extension);
     std::string ValidatePath(const std::string potentialPath);
 
-    // Check for if file exist folder/fileName.extension exist
+    // It will return valid folder name if markerName file exist in or at above directories.
+    // That file can contain text consist of subfolder path.
+    // If combination of directory where markerFile resides and 'subfolder path'
+    // is valid text and that folder exist at the location, return that full path.
+    // Otherwise return folder name where markerFile is located.
+    // If no fileMarker exists, return empty string.
+    std::string ResolveYagetMarker(const char* markerName);
+
+    // Check for if folder/fileName.extension exist
     // rename to folder/fileName-0000.extension
-    // // where 0000 will be replace with hightest number from all files fallowing
-    // // pattern: folder/fileName-????.extension
-    // maxFiles will cap number of renamed files. It will leave hightest numbered files
+    // where 0000 will be replace with hightest number from all files fallowing
+    // pattern: folder/fileName-????.extension
+    // maxFiles will cap number of renamed files. It will leave hightest numbered files and delete the smaller numbered files
     bool FileCycler(const std::string& folder, const std::string& fileName, const std::string& extension, int maxFiles = 10);
-    // helper function that splits filePath into separate components (folder, file, ext)
+    // helper function that splits filePath into separate components (folder, file, ext), it just calls function above
     bool FileCycler(const std::string& filePath, int maxFiles = 10);
 
     std::string SelectSaveFileName(const char* filter, const char* dialogTitle);
@@ -86,7 +94,7 @@ namespace yaget::util
     // fill in options with default engine options, should be called first, before system::Initialized 
     void DefaultOptions(args::Options& options);
 
-    // Return formated string for current configuration, like:
+    // Return formatted string for current configuration, like:
     // which configuration file was used
     // Search path for configuration file
     // Alias expansion

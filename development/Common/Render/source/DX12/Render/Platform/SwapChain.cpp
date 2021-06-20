@@ -7,6 +7,56 @@
 #include <d3dx12.h>
 
 
+#if 0
+
+if (mSwapchain != nullptr)
+{
+    mSwapchain->ResizeBuffers(backbufferCount, mWidth, mHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+}
+else
+{
+    DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
+    swapchainDesc.BufferCount = backbufferCount;
+    swapchainDesc.Width = width;
+    swapchainDesc.Height = height;
+    swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapchainDesc.SampleDesc.Count = 1;
+
+    IDXGISwapChain1* swapchain = xgfx::createSwapchain(mWindow, mFactory, mCommandQueue, &swapchainDesc);
+    HRESULT swapchainSupport = swapchain->QueryInterface(__uuidof(IDXGISwapChain3), (void**)&swapchain);
+    if (SUCCEEDED(swapchainSupport))
+    {
+        mSwapchain = (IDXGISwapChain3*)swapchain;
+    }
+}
+mFrameIndex = mSwapchain->GetCurrentBackBufferIndex();
+
+
+
+
+
+
+inline IDXGISwapChain1* createSwapchain(xwin::Window * window, IDXGIFactory4 * factory,
+    ID3D12CommandQueue * queue,
+    DXGI_SWAP_CHAIN_DESC1 * swapchainDesc,
+    DXGI_SWAP_CHAIN_FULLSCREEN_DESC * fullscreenDesc = nullptr,
+    IDXGIOutput * output = nullptr)
+{
+    xwin::WindowDelegate& del = window->getDelegate();
+
+    IDXGISwapChain1* swapchain = nullptr;
+    HRESULT hr = factory->CreateSwapChainForHwnd(queue, del.hwnd, swapchainDesc, fullscreenDesc, output, &swapchain);
+
+    if (!FAILED(hr))
+    {
+        return swapchain;
+    }
+
+    return nullptr;
+}
+
 namespace
 {
     using namespace Microsoft::WRL;
@@ -212,6 +262,8 @@ yaget::render::platform::SwapChain::SwapChain(Application& app, ID3D12Device2* d
     }
 
     mCommandList = CreateCommandList(mDevice, mAllocators[mCurrentBackBufferIndex], D3D12_COMMAND_LIST_TYPE_DIRECT);
+
+    Resize();
 }
 
 
@@ -259,7 +311,12 @@ void yaget::render::platform::SwapChain::Render(const time::GameClock& /*gameClo
         const UINT presentFlags = 0;
         //UINT presentFlags = g_TearingSupported && !g_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
         hr = mSwapChain->Present(syncInterval, presentFlags);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not Present DX12 SwapChain");
+        if (FAILED(hr))
+        {
+            Resize();
+            //hr = mDevice->GetDeviceRemovedReason();
+            //YAGET_UTIL_THROW_ON_RROR(hr, "Could not Present DX12 SwapChain");
+        }
 
         mFrameFenceValues[mCurrentBackBufferIndex] = Signal(mCommandQueue, mFence, mFenceValue);
         mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
@@ -271,6 +328,18 @@ void yaget::render::platform::SwapChain::Render(const time::GameClock& /*gameClo
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::SwapChain::Resize()
 {
+    // Signal and increment the fence value.
+    const UINT64 fence = mFenceValue;
+    HRESULT hr = mCommandQueue->Signal(mFence.Get(), fence);
+    mFenceValue++;
+
+    // Wait until the previous frame is finished.
+    if (mFence->GetCompletedValue() < fence)
+    {
+        hr = mFence->SetEventOnCompletion(fence, mFenceEvent);
+        WaitForSingleObjectEx(mFenceEvent, INFINITE, false);
+    }
+
     const auto& size = mApplication.GetSurface().Size();
     const auto width = static_cast<uint32_t>(size.x);
     const auto height = static_cast<uint32_t>(size.y);
@@ -288,10 +357,10 @@ void yaget::render::platform::SwapChain::Resize()
     }
 
     DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-    HRESULT hr = mSwapChain->GetDesc(&swapChainDesc);
+    hr = mSwapChain->GetDesc(&swapChainDesc);
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not get SwapChain description");
 
-    hr = mSwapChain->ResizeBuffers(mNumFrames, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
+    hr = mSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, swapChainDesc.Flags);
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not resize buffers");
 
     mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
@@ -318,3 +387,4 @@ void yaget::render::platform::SwapChain::UpdateRenderTargetViews(ID3D12Device2* 
         rtvHandle.Offset(rtvDescriptorSize);
     }
 }
+#endif
