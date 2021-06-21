@@ -18,14 +18,18 @@
 #include <wrl/client.h>
 
 
-struct ID3D12Device2;
+//struct ID3D12Device2;
+//struct ID3D12Device;
+//struct ID3D12CommandQueue;
+//struct IDXGISwapChain4;
+struct IDXGISwapChain3;
+struct IDXGIFactory4;
 struct ID3D12CommandQueue;
-struct IDXGISwapChain4;
-struct ID3D12DescriptorHeap;
-struct ID3D12Resource;
-struct ID3D12CommandAllocator;
-struct ID3D12GraphicsCommandList;
-struct ID3D12Fence;
+//struct ID3D12DescriptorHeap;
+//struct ID3D12Resource;
+//struct ID3D12CommandAllocator;
+//struct ID3D12GraphicsCommandList;
+//struct ID3D12Fence;
 
 namespace yaget
 {
@@ -37,44 +41,49 @@ namespace yaget
 
 namespace yaget::render::platform
 {
-#if 0
     class SwapChain
     {
     public:
-        SwapChain(Application& app, ID3D12Device2* device, uint32_t numFrames);
+        template <typename T>
+        using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+        SwapChain(Application& app, const ComPtr<IDXGIFactory4>& factory, const ComPtr<ID3D12CommandQueue>& commandQueue, uint32_t numFrames);
         ~SwapChain();
 
-        void Render(const time::GameClock& gameClock, metrics::Channel& channel);
-        void Resize();
+        const ComPtr<IDXGISwapChain3>& Get() const { return mSwapChain; }
+
+        //void Render(const time::GameClock& gameClock, metrics::Channel& channel);
+        //void Resize();
 
     private:
-        using Handle_t = void*;
+        ComPtr<IDXGISwapChain3> mSwapChain;
 
-        void UpdateRenderTargetViews(ID3D12Device2* device);
+        //using Handle_t = void*;
 
-        Application& mApplication;
-        ID3D12Device2* mDevice = nullptr;
-        Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
-        Microsoft::WRL::ComPtr<IDXGISwapChain4> mSwapChain;
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDescriptorHeap;
-        Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
-        Handle_t mFenceEvent;
-        uint64_t mFenceValue = 0;
-        uint32_t mDescriptorSize = 0;
-        uint32_t mNumFrames = 2;
+        //void UpdateRenderTargetViews(ID3D12Device2* device);
 
-        using BackBuffer = Microsoft::WRL::ComPtr<ID3D12Resource>;
-        std::vector<BackBuffer> mBackBuffers;
+        //Application& mApplication;
+        //ID3D12Device2* mDevice = nullptr;
+        //Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
+        //Microsoft::WRL::ComPtr<IDXGISwapChain4> mSwapChain;
+        //Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDescriptorHeap;
+        //Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
+        //Handle_t mFenceEvent;
+        //uint64_t mFenceValue = 0;
+        //uint32_t mDescriptorSize = 0;
+        //uint32_t mNumFrames = 2;
 
-        using Allocator = Microsoft::WRL::ComPtr<ID3D12CommandAllocator>;
-        std::vector<Allocator> mAllocators;
+        //using BackBuffer = Microsoft::WRL::ComPtr<ID3D12Resource>;
+        //std::vector<BackBuffer> mBackBuffers;
 
-        std::vector<uint64_t> mFrameFenceValues;
+        //using Allocator = Microsoft::WRL::ComPtr<ID3D12CommandAllocator>;
+        //std::vector<Allocator> mAllocators;
 
-        uint32_t mCurrentBackBufferIndex = 0;
+        //std::vector<uint64_t> mFrameFenceValues;
 
-        Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
+        //uint32_t mCurrentBackBufferIndex = 0;
+
+        //Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
     };
-#endif
 }
 

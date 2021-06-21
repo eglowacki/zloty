@@ -56,6 +56,7 @@
 "SQL",
 "IGUI",
 "VTS",
+"VTSD",
 "WATC",
 "CONV",
 "WIN",

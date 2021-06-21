@@ -20,7 +20,4 @@ yaget::render::platform::DeviceDebugger::DeviceDebugger()
 
     mDebugController->EnableDebugLayer();
     mDebugController->SetEnableGPUBasedValidation(true);
-
-
-    //dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 }

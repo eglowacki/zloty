@@ -7,6 +7,40 @@
 #include <d3dx12.h>
 
 
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::SwapChain::SwapChain(Application& app, const ComPtr<IDXGIFactory4>& factory, const ComPtr<ID3D12CommandQueue>& commandQueue, uint32_t numFrames)
+{
+    const auto& surface = app.GetSurface();
+    const auto& size = surface.Size();
+    const auto width = static_cast<uint32_t>(size.x);
+    const auto height = static_cast<uint32_t>(size.y);
+
+    DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+    swapChainDesc.BufferCount = numFrames;
+    swapChainDesc.Width = width;
+    swapChainDesc.Height = height;
+    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapChainDesc.SampleDesc.Count = 1;
+
+    ComPtr<IDXGISwapChain1> swapChain;
+    HRESULT hr = factory->CreateSwapChainForHwnd(commandQueue.Get(), surface.Handle<HWND>(), &swapChainDesc, nullptr, nullptr, &swapChain);
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 SwapChain");
+
+    hr = factory->MakeWindowAssociation(surface.Handle<HWND>(), DXGI_MWA_NO_ALT_ENTER);
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not make DX12 Window Association");
+
+    hr = swapChain.As(&mSwapChain);
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 SwapChain interface");
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::SwapChain::~SwapChain()
+{
+}
+
 #if 0
 
 if (mSwapchain != nullptr)

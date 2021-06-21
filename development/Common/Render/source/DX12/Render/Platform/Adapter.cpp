@@ -64,24 +64,103 @@ yaget::render::platform::Adapter::Adapter()
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Device");
 
     mDevice->SetName(L"Yaget Device");
+
+#if YAGET_DEBUG_RENDER == 1
+    hr = mDevice->QueryInterface(IID_PPV_ARGS(&mDebugDevice));
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Debug Device Interface");
+#endif
 }
 
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::Adapter::~Adapter()
 {
+#if YAGET_DEBUG_RENDER == 1
+    mDevice = nullptr;
+
+    const D3D12_RLDO_FLAGS flags = D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL;
+    mDebugDevice->ReportLiveDeviceObjects(flags);
+#endif
 }
 
 
 //-------------------------------------------------------------------------------------------------
-Microsoft::WRL::ComPtr<ID3D12Device> yaget::render::platform::Adapter::GetDevice() const
+const Microsoft::WRL::ComPtr<ID3D12Device>& yaget::render::platform::Adapter::GetDevice() const
 {
     return mDevice;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-Microsoft::WRL::ComPtr<IDXGIFactory4> yaget::render::platform::Adapter::GetFactory() const
+const Microsoft::WRL::ComPtr<IDXGIFactory4>& yaget::render::platform::Adapter::GetFactory() const
 {
     return mFactory;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::CommandQueue::CommandQueue(const Microsoft::WRL::ComPtr<ID3D12Device>& device)
+{
+    using namespace Microsoft::WRL;
+
+    D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+    queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+    HRESULT hr = device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue));
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command Queue");
+
+    mCommandQueue->SetName(L"Yaget CommandQueue");
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::CommandQueue::~CommandQueue()
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::Fence::Fence(const ComPtr<ID3D12Device>& device)
+{
+    HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence));
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Fence");
+
+    mFenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
+    YAGET_UTIL_THROW_ON_RROR(mFenceEvent, "Could not create Event");
+
+    mFenceValue = 1;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::Fence::~Fence()
+{
+    ::CloseHandle(mFenceEvent);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::Fence::Wait(CommandQueue& commandQueue)
+{
+    // WAITING FOR THE FRAME TO COMPLETE BEFORE CONTINUING IS NOT BEST PRACTICE.
+    // This is code implemented as such for simplicity. The D3D12HelloFrameBuffering
+    // sample illustrates how to use fences for efficient resource usage and to
+    // maximize GPU utilization.
+
+    // Signal and increment the fence value.
+    const UINT64 fence = mFenceValue;
+    HRESULT hr = commandQueue.Get()->Signal(mFence.Get(), fence);
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not signal DX12 Command Queue with Fence");
+
+    mFenceValue++;
+
+    // Wait until the previous frame is finished.
+    if (mFence->GetCompletedValue() < fence)
+    {
+        hr = mFence->SetEventOnCompletion(fence, mFenceEvent);
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Fence Event On Completion");
+
+        ::WaitForSingleObject(mFenceEvent, INFINITE);
+    }
 }

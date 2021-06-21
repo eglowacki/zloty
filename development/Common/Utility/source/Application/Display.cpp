@@ -10,10 +10,10 @@ namespace
         }
 
         RECT clientRect;
-        GetClientRect(reinterpret_cast<HWND>(handle), &clientRect);
+        ::GetClientRect(reinterpret_cast<HWND>(handle), &clientRect);
 
-        int w = std::max<int>(1, clientRect.right - clientRect.left);
-        int h = std::max<int>(1, clientRect.bottom - clientRect.top);
+        const auto w = std::max<int>(1, clientRect.right - clientRect.left);
+        const auto h = std::max<int>(1, clientRect.bottom - clientRect.top);
         return { static_cast<float>(w), static_cast<float>(h) };
     }
 

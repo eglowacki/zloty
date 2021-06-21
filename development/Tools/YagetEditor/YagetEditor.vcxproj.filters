@@ -76,5 +76,11 @@
     <FxCompile Include="data\Assets\Shaders\triangle.vert.hlsl">
       <Filter>Data Files\Assets\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="data\Assets\Shaders\shaders.vert.hlsl">
+      <Filter>Data Files\Assets\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="data\Assets\Shaders\shaders.frag.hlsl">
+      <Filter>Data Files\Assets\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
