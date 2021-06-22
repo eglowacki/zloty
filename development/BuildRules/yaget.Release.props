@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="yaget.Options.Release.props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros">
     <YAGET_ROOT_FOLDER>c:\Development\yaget</YAGET_ROOT_FOLDER>
     <YAGET_DEBUG_SUFFIX />
@@ -21,7 +24,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
-      <PreprocessorDefinitions>NDEBUG;YAGET_RELEASE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;YAGET_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link />

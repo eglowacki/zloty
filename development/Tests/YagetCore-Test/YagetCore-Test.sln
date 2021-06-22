@@ -43,7 +43,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetRender12", "..\..\Comm
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D3D12HelloTriangle", "..\..\Research\Reference\HelloTriangle\D3D12HelloTriangle.vcxproj", "{5018F6A3-6533-4744-B1FD-727D199FD2E9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectX12Seed", "..\..\Research\Reference\directx12-seed\builds\DirectX12Seed.vcxproj", "{BED53B0D-3D40-328C-A5C5-23831EDF8245}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D3D12Fullscreen", "..\..\..\..\..\DirectX-Graphics-Samples\Samples\Desktop\D3D12Fullscreen\src\D3D12Fullscreen.vcxproj", "{296530E7-221E-436A-80FC-B1EF5218C820}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -211,16 +211,18 @@ Global
 		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.RelWithDebInfo|x64.Build.0 = Release|x64
 		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.RelWithDebInfo|x86.ActiveCfg = Debug|x64
 		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.RelWithDebInfo|x86.Build.0 = Debug|x64
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245}.Debug|x64.ActiveCfg = Debug|x64
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245}.Debug|x86.ActiveCfg = Debug|x64
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245}.MinSizeRel|x86.ActiveCfg = MinSizeRel|x64
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245}.Release|x64.ActiveCfg = Release|x64
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245}.Release|x86.ActiveCfg = Release|x64
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245}.RelWithDebInfo|x86.ActiveCfg = RelWithDebInfo|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.Debug|x64.ActiveCfg = Debug|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.Debug|x86.ActiveCfg = Debug|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.MinSizeRel|x64.ActiveCfg = Debug|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.MinSizeRel|x64.Build.0 = Debug|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.MinSizeRel|x86.ActiveCfg = Debug|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.MinSizeRel|x86.Build.0 = Debug|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.Release|x64.ActiveCfg = Release|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.Release|x86.ActiveCfg = Release|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.RelWithDebInfo|x64.ActiveCfg = Release|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.RelWithDebInfo|x64.Build.0 = Release|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.RelWithDebInfo|x86.ActiveCfg = Debug|x64
+		{296530E7-221E-436A-80FC-B1EF5218C820}.RelWithDebInfo|x86.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -228,7 +230,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7248B931-88B9-485C-9306-D98415C06F76} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
 		{5018F6A3-6533-4744-B1FD-727D199FD2E9} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
-		{BED53B0D-3D40-328C-A5C5-23831EDF8245} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
+		{296530E7-221E-436A-80FC-B1EF5218C820} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5462B7EF-FA41-4DF9-B842-727A101BE0B1}
