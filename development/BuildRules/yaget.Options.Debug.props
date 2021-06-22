@@ -5,7 +5,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>YAGET_ASSERT_ENABLED=1;YAGET_LOG_ENABLED=1;YAGET_CONC_METRICS_ENABLED=0;YAGET_WATCHER_ENABLED=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>YAGET_ASSERT_ENABLED=1;YAGET_LOG_ENABLED=1;YAGET_CONC_METRICS_ENABLED=1;YAGET_WATCHER_ENABLED=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />

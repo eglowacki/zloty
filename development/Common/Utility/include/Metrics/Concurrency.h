@@ -22,12 +22,13 @@
 
 #include "YagetCore.h"
 #include "Time/GameClock.h"
-#include <memory>
 #include <functional>
 
 
 namespace yaget::metrics
 {
+    enum class MessageScope { Global, Process, Thread };
+
 #if YAGET_CONC_METRICS_ENABLED == 1
 
     namespace internal
@@ -48,7 +49,6 @@ namespace yaget::metrics
         };
     }
 
-    enum class MessageScope { Global, Process, Thread };
 
     class Channel : public internal::Metric
     {
@@ -96,24 +96,6 @@ namespace yaget::metrics
     };
 
     //--------------------------------------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------------------------------------
-    //class Locker
-    //{
-    //public:
-    //    Locker(std::mutex&, const char*, const char*, uint32_t) {}
-    //};
-
-    ////--------------------------------------------------------------------------------------------------------------
-    //class LockerSpan : public Locker
-    //{
-    //public:
-    //    LockerSpan(std::mutex& mutex, const char* message, const char* file, uint32_t line)
-    //        : Locker(mutex, message, file, line)
-    //    {}
-    //};
-
-    //--------------------------------------------------------------------------------------------------------------
     inline void Initialize(const args::Options&) {}
 
     void MarkAddMessage(const std::string& message, MessageScope scope, size_t id);
@@ -139,8 +121,8 @@ namespace yaget::metrics
     class Channel
     {
     public:
-        Channel(const char*, const char*, uint32_t) {}
-        void AddMessage(const std::string&) const;
+        Channel(const std::string&, const char*, uint32_t) {}
+        void AddMessage(const std::string&, MessageScope) const {}
     };
 
     //--------------------------------------------------------------------------------------------------------------
@@ -148,34 +130,26 @@ namespace yaget::metrics
     class TimeSpan
     {
     public:
-        TimeSpan(const char*, const char*, uint32_t) {}
-        void AddMessage(const std::string&) const;
+        TimeSpan(std::size_t, const std::string&, const char*, uint32_t) {}
+        void AddMessage(const std::string&) const {}
     };
 
     //--------------------------------------------------------------------------------------------------------------
     class UniqueLock
     {
     public:
-        UniqueLock(std::mutex& mutex, const std::string&, const char*, uint32_t) { std::unique_lock<std::mutex> locker(mutex); }
-    };
-
-    //--------------------------------------------------------------------------------------------------------------
-    class Locker
-    {
-    public:
-        Locker(std::mutex&, const char*, const char*, uint32_t) {}
-    };
-
-    //--------------------------------------------------------------------------------------------------------------
-    class LockerSpan : public Locker
-    {
-    public:
-        LockerSpan(std::mutex& mutex, const char* message, const char* file, uint32_t line)
-            : Locker(mutex, message, file, line)
+        UniqueLock(std::mutex& mutex, const std::string&, const char*, uint32_t)
+            : mlocker(mutex)
         {}
+
+    private:
+        std::unique_lock<std::mutex> mlocker;
     };
+
     //--------------------------------------------------------------------------------------------------------------
     inline void Initialize(const args::Options&) {}
+
+    inline void MarkAddMessage(const std::string&, MessageScope, size_t) {}
 
     // putting back intel concurrency functionality
     void MarkStartThread(std::thread& thread, const char* name);

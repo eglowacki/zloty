@@ -97,6 +97,8 @@
 
 #else // YAGET_ASSERT_ENABLED
 
+    #include "Base.h"
+
     #define YAGET_ASSERT(...)                   do { YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YAGET_ASSERT_WARNING(...)           do { YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YAGET_ASSERT_DEBUG(...)             do { YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)

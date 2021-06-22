@@ -765,7 +765,7 @@ void yaget::util::Throw(const char* tag, const std::string& message, const char*
         platform::DebuggerBreak();
     }
 
-    const auto& textError = fmt::format("{}\n{}({})", message, (file ? file : "no_file"), line);
+    const auto& textError = fmt::format("{}\n{}({}) {}", message, (file ? file : "no_file"), line, functionName);
     throw ex::bad_init(textError);
 }
 
@@ -784,7 +784,7 @@ void yaget::util::ThrowOnError(long hr, const std::string& message, const char* 
             platform::DebuggerBreak();
         }
 
-        textError += fmt::format("\n{}({})", (file ? file : "no_file"), line);
+        textError += fmt::format("\n{}({}) {}", (file ? file : "no_file"), line, functionName);
         throw ex::bad_init(textError);
     }
 }
