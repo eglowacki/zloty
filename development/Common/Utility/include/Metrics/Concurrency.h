@@ -24,6 +24,11 @@
 #include "Time/GameClock.h"
 #include <functional>
 
+#if !defined(YAGET_CONC_METRICS_ENABLED)
+    #if !defined(NDEBUG) // if we are in debug mode
+        #define YAGET_CONC_METRICS_ENABLED 1 // enable it by default, otherwise we honor user settings
+    #endif
+#endif
 
 namespace yaget::metrics
 {
