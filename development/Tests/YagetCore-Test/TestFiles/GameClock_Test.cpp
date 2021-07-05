@@ -12,12 +12,6 @@
 
 class Time : public ::testing::Test
 {
-protected:
-    // void SetUp() override {}
-    // void TearDown() override {}
-
-private:
-    //yaget::test::Environment mEnvironment;
 };
 
 
@@ -145,4 +139,90 @@ TEST_F(Time, FromToConversion)
 
     resultMicrosecondsTime = time::FromTo<time::TimeUnits_t>(resultMillisecondsTime, time::kMilisecondUnit, time::kMicrosecondUnit);
     EXPECT_EQ(expectedMicrosecondsTime, resultMicrosecondsTime);
+}
+
+namespace
+{
+    std::tuple<double, double> SetupTimeDuration(yaget::time::TimeUnits_t waitTime, yaget::time::TimeUnits_t unitType, std::function<void(yaget::time::TimeUnits_t maxSleepSleep, yaget::time::TimeUnits_t unitType)> sleeperFunction)
+    {
+        using namespace yaget;
+
+        const auto start = std::chrono::system_clock::now();
+
+        sleeperFunction(waitTime, unitType);
+
+        const auto end = std::chrono::system_clock::now();
+        const std::chrono::duration<double> diff = end - start;
+        const auto timePoint = diff.count();
+
+        double expectedTime = time::FromTo<double>(waitTime, unitType, time::kSecondUnit);
+
+        return { timePoint, expectedTime };
+    }
+    
+}
+
+TEST_F(Time, ClockDuration)
+{
+    using namespace yaget;
+
+    {
+        constexpr time::TimeUnits_t waitTime = 500;
+        constexpr time::TimeUnits_t unitType = time::kMilisecondUnit;
+
+        const auto [timePoint, expectedTime] = SetupTimeDuration(waitTime, unitType, [](auto waitTime, auto unitType)
+        {
+            platform::Sleep(waitTime, unitType);
+        });
+
+        EXPECT_NEAR(expectedTime, timePoint, 0.05);
+    }
+
+    {
+        constexpr time::TimeUnits_t waitTime = 16;
+        constexpr time::TimeUnits_t unitType = time::kMilisecondUnit;
+
+        const auto [timePoint, expectedTime] = SetupTimeDuration(waitTime, unitType, [](auto waitTime, auto unitType)
+        {
+            platform::Sleep(waitTime, unitType);
+        });
+
+        EXPECT_NEAR(expectedTime, timePoint, 0.05);
+    }
+
+    {
+        constexpr time::TimeUnits_t waitTime = time::FromTo<time::Microsecond_t>(500, time::kMilisecondUnit, time::kMicrosecondUnit);
+        constexpr time::TimeUnits_t unitType = time::kMicrosecondUnit;
+
+        const auto [timePoint, expectedTime] = SetupTimeDuration(waitTime, unitType, [](auto waitTime, auto unitType)
+        {
+            platform::Sleep(waitTime, unitType);
+        });
+
+        EXPECT_NEAR(expectedTime, timePoint, 0.05);
+    }
+
+    {
+        constexpr time::TimeUnits_t waitTime = 500;
+        constexpr time::TimeUnits_t unitType = time::kMilisecondUnit;
+
+        const auto [timePoint, expectedTime] = SetupTimeDuration(waitTime, unitType, [](auto waitTime, auto unitType)
+        {
+            platform::BusySleep(waitTime, unitType);
+        });
+
+        EXPECT_NEAR(expectedTime, timePoint, 0.05);
+    }
+
+    {
+        constexpr time::TimeUnits_t waitTime = time::FromTo<time::Microsecond_t>(500, time::kMilisecondUnit, time::kMicrosecondUnit);
+        constexpr time::TimeUnits_t unitType = time::kMicrosecondUnit;
+
+        const auto [timePoint, expectedTime] = SetupTimeDuration(waitTime, unitType, [](auto waitTime, auto unitType)
+        {
+            platform::BusySleep(waitTime, unitType);
+        });
+
+        EXPECT_NEAR(expectedTime, timePoint, 0.05);
+    }
 }

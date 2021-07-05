@@ -838,6 +838,7 @@ void yaget::util::DefaultOptions(args::Options& options)
         ("vts_fix", "Fix VTS errors.")
         ("log_write_tags", "Write out file to $(LogFolder) of all active log tags.")
         ("config_value", "Override individual configuration values --config_value = Debug.Metrics.TraceOn=false (no spaces around =)", args::value<std::vector<std::string>>())
+        ("render_software", "Force software renderer")
         ;
 }
 

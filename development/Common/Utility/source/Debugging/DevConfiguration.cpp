@@ -277,6 +277,7 @@ std::string yaget::dev::Initialize(const args::Options& options, const char* con
     configuration.mInit.FullScreen = options.find<bool>("full_screen", configuration.mInit.FullScreen);
     configuration.mInit.ResX = options.find<int>("res_x", configuration.mInit.ResX);
     configuration.mInit.ResY = options.find<int>("res_y", configuration.mInit.ResY);
+    configuration.mInit.SoftwareRender = options.find<bool>("render_software", configuration.mInit.SoftwareRender);
     configuration.mInit.LogicTick = options.find<int>("logic_tick", configuration.mInit.LogicTick);
 
     // process any configuration value overrides.

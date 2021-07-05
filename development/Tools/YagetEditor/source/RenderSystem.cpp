@@ -7,9 +7,7 @@ yaget::editor::RenderSystem::RenderSystem(Messaging& messaging, render::DesktopA
 {
 }
 
-void yaget::editor::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, RenderComponent* renderComponent)
+void yaget::editor::RenderSystem::OnUpdate([[maybe_unused]] comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, [[maybe_unused]] RenderComponent* renderComponent)
 {
     mDevice.RenderFrame(gameClock, channel);
-    id;
-    renderComponent;
 }

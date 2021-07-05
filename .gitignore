@@ -84,8 +84,6 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/windows
 development/Common/Utility/builds/
 
-development/Research/Reference/directx12-seed/
+development/Research/Reference/
 
-development/Research/Reference/HelloTriangle/
-
-development/Tests/YagetCore-Test/packages/
+development/Tests/YagetCore-Test/packages/WinPixEventRuntime.1.0.161208001/

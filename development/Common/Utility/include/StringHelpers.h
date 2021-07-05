@@ -82,6 +82,11 @@ namespace yaget
             return ss.str();
         }
 
+        inline std::string ToBool(bool value)
+        {
+            return value ? "True" : "False";
+        }
+
         // Convert wide Unicode String to UTF8 string
         std::string wide_to_utf8(const wchar_t* wstr);
         // Convert an UTF8 string to a wide Unicode String

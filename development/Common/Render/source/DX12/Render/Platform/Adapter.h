@@ -14,75 +14,46 @@
 #pragma once
 
 #include "YagetCore.h"
+#include "Render/RenderCore.h"
+#include "App/WindowFrame.h"
 #include "DeviceDebugger.h"
 
 struct IDXGIFactory4;
-struct IDXGIAdapter1;
-struct ID3D12Device;
+struct ID3D12Device4;
 struct ID3D12CommandQueue;
 struct ID3D12Fence;
-struct ID3D12DebugDevice;
+struct IDXGIAdapter4;
+
+namespace D3D12MA { class Allocator; }
 
 namespace yaget::render::platform
 {
+    class SwapChain2;
+
     class Adapter
     {
     public:
-        template <typename T>
-        using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-        Adapter();
+        Adapter(app::WindowFrame windowFrame);
         ~Adapter();
 
-        const ComPtr<ID3D12Device>& GetDevice() const;
+        const ComPtr<ID3D12Device4>& GetDevice() const;
         const ComPtr<IDXGIFactory4>& GetFactory() const;
 
     private:
 #if YAGET_DEBUG_RENDER == 1
-        ComPtr<ID3D12DebugDevice> mDebugDevice;
         DeviceDebugger mDeviceDebugger;
-#endif
+#endif // YAGET_DEBUG_RENDER == 1
         ComPtr<IDXGIFactory4> mFactory;
-        ComPtr<IDXGIAdapter1> mAdapter;
-        ComPtr<ID3D12Device> mDevice;
+        ComPtr<IDXGIAdapter4> mAdapter;
+        ComPtr<ID3D12Device4> mDevice;
+
+        struct Deleter
+        {
+            void operator()(D3D12MA::Allocator* allocator) const;
+        };
+
+        using AllocHolder = std::unique_ptr<D3D12MA::Allocator, Deleter>;
+        AllocHolder mAllocator;
     };
-
-
-    class CommandQueue
-    {
-    public:
-        template <typename T>
-        using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-        CommandQueue(const ComPtr<ID3D12Device>& device);
-        ~CommandQueue();
-
-        const ComPtr<ID3D12CommandQueue>& Get() const { return mCommandQueue; }
-
-    private:
-        ComPtr<ID3D12CommandQueue> mCommandQueue;
-    };
-
-    class Fence
-    {
-    public:
-        template <typename T>
-        using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-        Fence(const ComPtr<ID3D12Device>& device);
-        ~Fence();
-
-        void Wait(CommandQueue& commandQueue);
-
-    private:
-        ComPtr<ID3D12Fence> mFence;
-        HANDLE mFenceEvent;
-        uint64_t mFenceValue;
-        //m_fenceValue = 1;
-        //m_fenceEvent
-        //m_fence
-    };
-
-
 
 }

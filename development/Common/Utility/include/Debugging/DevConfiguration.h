@@ -95,6 +95,9 @@ namespace yaget
                 bool FullScreen = false;
                 int ResX = 1920;
                 int ResY = 1080;
+                int NumBackBuffers = 3;
+                bool SoftwareRender = false;
+                bool EnableRenderDebugLayer = true;
                 uint32_t LogicTick = time::kFrames_60;  // specifies what is the logic game thread ticking at, defaults to 60
 
                 //  "Levels": {

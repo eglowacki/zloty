@@ -1,7 +1,9 @@
 ﻿#include "App/Display.h"
+#include "Debugging/DevConfiguration.h"
 
 namespace 
 {
+    //-------------------------------------------------------------------------------------------------
     math3d::Vector2 GetWindowSize(yaget::app::DisplaySurface::PlatformWindowHandle handle)
     {
         if (!handle)
@@ -33,6 +35,7 @@ namespace
         return TRUE;
     }
 
+    //-------------------------------------------------------------------------------------------------
     yaget::app::SysDisplays::Monitors GetAllMonitors()
     {
         yaget::app::SysDisplays::Monitors info;
@@ -45,6 +48,7 @@ namespace
 }
 
 
+//-------------------------------------------------------------------------------------------------
 yaget::app::DisplaySurface::DisplaySurface(PlatformWindowHandle handle, SurfaceState surfaceState)
 : mHandle(handle)
 , mSize(GetWindowSize(handle))
@@ -53,12 +57,29 @@ yaget::app::DisplaySurface::DisplaySurface(PlatformWindowHandle handle, SurfaceS
 }
 
 
+//-------------------------------------------------------------------------------------------------
+bool yaget::app::DisplaySurface::VSync() const
+{
+    return true;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+int yaget::app::DisplaySurface::NumBackBuffers() const
+{
+    return dev::CurrentConfiguration().mInit.NumBackBuffers;
+}
+
+
+//-------------------------------------------------------------------------------------------------
 yaget::app::SysDisplays::SysDisplays()
     : mInfo(GetAllMonitors())
 {
     
 }
 
+
+//-------------------------------------------------------------------------------------------------
 bool yaget::app::SysDisplays::Intersect(const RECT& windowPos) const
 {
     for (const auto &monitor : mInfo)
@@ -73,6 +94,8 @@ bool yaget::app::SysDisplays::Intersect(const RECT& windowPos) const
     return false;
 }
 
+
+//-------------------------------------------------------------------------------------------------
 const yaget::app::MonitorInfoEx& yaget::app::SysDisplays::FindPrimary() const
 {
     auto it = std::find_if(std::begin(mInfo), std::end(mInfo), [](const auto& monitor)
@@ -85,6 +108,8 @@ const yaget::app::MonitorInfoEx& yaget::app::SysDisplays::FindPrimary() const
     return *it;
 }
 
+
+//-------------------------------------------------------------------------------------------------
 const yaget::app::MonitorInfoEx& yaget::app::SysDisplays::Find(int index) const
 {
     auto it = std::find_if(std::begin(mInfo), std::end(mInfo), [index](const auto& monitor)
@@ -100,6 +125,8 @@ const yaget::app::MonitorInfoEx& yaget::app::SysDisplays::Find(int index) const
     return FindPrimary();
 }
 
+
+//-------------------------------------------------------------------------------------------------
 const yaget::app::MonitorInfoEx& yaget::app::SysDisplays::FindNearest(HWND hWnd) const
 {
     HMONITOR windowMonitor = ::MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);

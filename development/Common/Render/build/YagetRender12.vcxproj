@@ -118,11 +118,10 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;YAGET_DEBUG_RENDER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\include\DX12;..\source\DX12;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include\DX12;..\source\DX12;..\source\DX12\imgui-docking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,13 +130,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;YAGET_DEBUG_RENDER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\include\DX12;..\source\DX12;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include\DX12;..\source\DX12;..\source\DX12\imgui-docking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,19 +147,51 @@
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
     <ClInclude Include="..\include\DX12\Render\Device.h" />
+    <ClInclude Include="..\include\DX12\Render\RenderCore.h" />
+    <ClInclude Include="..\include\DX12\Render\Waiter.h" />
+    <ClInclude Include="..\source\DX12\imgui-docking\backends\imgui_impl_dx12.h" />
+    <ClInclude Include="..\source\DX12\imgui-docking\backends\imgui_impl_win32.h" />
+    <ClInclude Include="..\source\DX12\imgui-docking\imconfig.h" />
+    <ClInclude Include="..\source\DX12\imgui-docking\imgui.h" />
+    <ClInclude Include="..\source\DX12\imgui-docking\imgui_internal.h" />
+    <ClInclude Include="..\source\DX12\imgui-docking\imstb_rectpack.h" />
+    <ClInclude Include="..\source\DX12\imgui-docking\imstb_textedit.h" />
+    <ClInclude Include="..\source\DX12\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\Adapter.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\CommandQueue.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\DeviceDebugger.h" />
-    <ClInclude Include="..\source\DX12\Render\Platform\HardwareDevice.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h" />
     <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h" />
+    <ClInclude Include="..\source\DX12\Render\UI\Layer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\DX12\imgui-docking\backends\imgui_impl_dx12.cpp" />
+    <ClCompile Include="..\source\DX12\imgui-docking\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\source\DX12\imgui-docking\imgui.cpp" />
+    <ClCompile Include="..\source\DX12\imgui-docking\imgui_demo.cpp" />
+    <ClCompile Include="..\source\DX12\imgui-docking\imgui_draw.cpp" />
+    <ClCompile Include="..\source\DX12\imgui-docking\imgui_tables.cpp" />
+    <ClCompile Include="..\source\DX12\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Platform\CommandQueue.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Platform\D3D12MemAlloc.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level3</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Level3</WarningLevel>
+    </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Platform\DeviceDebugger.cpp" />
-    <ClCompile Include="..\source\DX12\Render\Platform\HardwareDevice.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\SwapChain.cpp" />
     <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp" />
+    <ClCompile Include="..\source\DX12\Render\UI\Layer.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Waiter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\source\DX12\imgui-docking\misc\debuggers\imgui.natvis" />
+    <Natvis Include="..\source\DX12\Render\Platform\D3D12MemAlloc.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\source\DX12\imgui-docking\misc\debuggers\imgui.natstepfilter" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

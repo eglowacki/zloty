@@ -299,6 +299,9 @@
     <ClCompile Include="..\source\Math\MathFacade.cpp">
       <Filter>Math</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Application\WindowFrame.cpp">
+      <Filter>Application Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -601,6 +604,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\MathFacade.h">
       <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\App\WindowFrame.h">
+      <Filter>Application Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

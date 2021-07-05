@@ -32,10 +32,22 @@ namespace yaget::app
 
         const math3d::Vector2& Size() const { return mSize; }
         SurfaceState State() const { return mSurfaceState; }
+        bool VSync() const;
+        int NumBackBuffers() const;
 
         // Helper method to cast window handle into specific T
         template <typename T>
         T Handle() const { return reinterpret_cast<T>(mHandle); }
+
+        template <typename T>
+        std::tuple<T, T> GetSize() const
+        {
+            const auto& size = Size();
+            const auto width = static_cast<T>(size.x);
+            const auto height = static_cast<T>(size.y);
+
+            return { width, height };
+        }
 
     private:
         PlatformWindowHandle mHandle{nullptr};

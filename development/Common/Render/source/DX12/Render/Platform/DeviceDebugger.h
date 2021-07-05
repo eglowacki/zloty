@@ -13,22 +13,35 @@
 
 #pragma once
 
-#include "YagetCore.h"
-#include <wrl/client.h>
+#include "Render/RenderCore.h"
 
-struct ID3D12Debug1;
+struct ID3D12Object;
+
+#if YAGET_DEBUG_RENDER == 1
+
+struct ID3D12Device4;
 
 namespace yaget::render::platform
 {
-    // When this object is created, it will require to use
-    // DXGI_CREATE_FACTORY_DEBUG flag in CreateDXGIFactory2(...) call
     class DeviceDebugger
     {
     public:
         DeviceDebugger();
-        ~DeviceDebugger() = default;
+        ~DeviceDebugger();
 
-    private:
-        Microsoft::WRL::ComPtr<ID3D12Debug1> mDebugController;
+        void ActivateMessageSeverity(const ComPtr<ID3D12Device4>& device);
     };
+
+    void SetDebugName(ID3D12Object* object, const std::string& name, const char* file, unsigned line);
 }
+
+#else
+
+namespace yaget::render::platform
+{
+    inline void SetDebugName(ID3D12Object*, const std::string&, const char*, unsigned) {}
+}
+
+#endif // YAGET_DEBUG_RENDER == 1
+
+#define YAGET_RENDER_SET_DEBUG_NAME(object, name) yaget::render::platform::SetDebugName(object, name, __FILE__, __LINE__)

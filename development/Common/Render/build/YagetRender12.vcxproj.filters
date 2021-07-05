@@ -5,25 +5,34 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\Platform">
-      <UniqueIdentifier>{d9882132-046e-4691-8820-ef97237dad6b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Application Files">
       <UniqueIdentifier>{f205eebf-0763-4cf6-9d34-60ae0a4a71cc}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Triangle Files">
       <UniqueIdentifier>{dc4439ea-4950-47c9-9b5b-b6ff2737bf43}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Platform Files">
+      <UniqueIdentifier>{d9882132-046e-4691-8820-ef97237dad6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI Files">
+      <UniqueIdentifier>{a9554901-7ee9-450d-b94e-afe5a84cf1af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI Files\ImGui Files">
+      <UniqueIdentifier>{4b279477-89ab-40c1-90e1-5e3545664106}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI Files\ImGui Files\Backends">
+      <UniqueIdentifier>{44340cf2-30ba-447e-b663-5bcf3372c2e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Platform Files\MemAlloc Files">
+      <UniqueIdentifier>{d867235c-ceca-4bec-9f48-68476b7e930b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\Device.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\DX12\Render\Platform\HardwareDevice.h">
-      <Filter>Source Files\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h">
-      <Filter>Source Files\Platform</Filter>
+      <Filter>Source Files\Platform Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h">
       <Filter>Source Files\Application Files</Filter>
@@ -32,30 +41,112 @@
       <Filter>Source Files\Triangle Files</Filter>
     </ClInclude>
     <ClInclude Include="..\source\DX12\Render\Platform\DeviceDebugger.h">
-      <Filter>Source Files\Platform</Filter>
+      <Filter>Source Files\Platform Files</Filter>
     </ClInclude>
     <ClInclude Include="..\source\DX12\Render\Platform\Adapter.h">
-      <Filter>Source Files\Platform</Filter>
+      <Filter>Source Files\Platform Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\imgui-docking\imconfig.h">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\imgui-docking\imgui.h">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\imgui-docking\imgui_internal.h">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\imgui-docking\imstb_rectpack.h">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\imgui-docking\imstb_textedit.h">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\imgui-docking\imstb_truetype.h">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\UI\Layer.h">
+      <Filter>Source Files\UI Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\imgui-docking\backends\imgui_impl_win32.h">
+      <Filter>Source Files\UI Files\ImGui Files\Backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\imgui-docking\backends\imgui_impl_dx12.h">
+      <Filter>Source Files\UI Files\ImGui Files\Backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h">
+      <Filter>Source Files\Platform Files\MemAlloc Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Waiter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Platform\CommandQueue.h">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\RenderCore.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\DX12\Render\Platform\HardwareDevice.cpp">
-      <Filter>Source Files\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Platform\SwapChain.cpp">
-      <Filter>Source Files\Platform</Filter>
+      <Filter>Source Files\Platform Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp">
       <Filter>Source Files\Triangle Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Platform\DeviceDebugger.cpp">
-      <Filter>Source Files\Platform</Filter>
+      <Filter>Source Files\Platform Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp">
-      <Filter>Source Files\Platform</Filter>
+      <Filter>Source Files\Platform Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\DX12\imgui-docking\imgui.cpp">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\imgui-docking\imgui_demo.cpp">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\imgui-docking\imgui_draw.cpp">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\imgui-docking\imgui_tables.cpp">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\imgui-docking\imgui_widgets.cpp">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\UI\Layer.cpp">
+      <Filter>Source Files\UI Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\imgui-docking\backends\imgui_impl_win32.cpp">
+      <Filter>Source Files\UI Files\ImGui Files\Backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\imgui-docking\backends\imgui_impl_dx12.cpp">
+      <Filter>Source Files\UI Files\ImGui Files\Backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Platform\D3D12MemAlloc.cpp">
+      <Filter>Source Files\Platform Files\MemAlloc Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Waiter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Platform\CommandQueue.cpp">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\source\DX12\imgui-docking\misc\debuggers\imgui.natvis">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </Natvis>
+    <Natvis Include="..\source\DX12\Render\Platform\D3D12MemAlloc.natvis">
+      <Filter>Source Files\Platform Files\MemAlloc Files</Filter>
+    </Natvis>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\source\DX12\imgui-docking\misc\debuggers\imgui.natstepfilter">
+      <Filter>Source Files\UI Files\ImGui Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

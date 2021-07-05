@@ -38,13 +38,14 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
             platform::Sleep([this] { return IsSuspended(); });
         }
 
-        mRenderClock.Tick(deltaTime);
         renderCallback(mRenderClock, rChannel);
         std::this_thread::yield();
 
         const time::Microsecond_t currentRenderTime = mRenderClock.GetRealTime();
         deltaTime = currentRenderTime - lastRenderTime;
         lastRenderTime = currentRenderTime;
+
+        mRenderClock.Tick(deltaTime);
     }
 
     dev::CurrentThreadIds().RefreshRender(0);
@@ -84,9 +85,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
             metrics::Channel gChannel("GameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
 
             const time::Microsecond_t startProcessTime = platform::GetRealTime(time::kMicrosecondUnit);
-            //const uint64_t tickCounter = mApplicationClock.GetTickCounter();
 
-            mApplicationClock.Tick(kFixedDeltaTime);
             /*uint32_t numInputs =*/ mInputDevice.Tick(mApplicationClock, defaultPerformancePolicy, gChannel);
 
             tickAccumulator -= kFixedDeltaTime;
@@ -97,6 +96,8 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
 
                 logicCallback(mApplicationClock, gChannel);
             }
+
+            mApplicationClock.Tick(kFixedDeltaTime);
 
             const time::Microsecond_t actualProcessTime = platform::GetRealTime(time::kMicrosecondUnit) - startProcessTime;
             if (actualProcessTime > kFixedDeltaTime)
@@ -150,12 +151,10 @@ int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRe
     YAGET_ASSERT(tickLogic, "Run Applicatuin methid nees to have valid TickLogic callback.");
     mGeneralPoolThread->AddTask([this, &tickLogic, shutdownLogicCallback]() { onLogicTask(tickLogic, shutdownLogicCallback); });
 
-    int counter = 10;
+    mGeneralPoolThread->UnpauseAll();
     YLOG_DEBUG("APP", "Application.Run pump started.");
     while (!mRequestQuit)
     {
-        //metrics::Channel channel("Message Pump", YAGET_METRICS_CHANNEL_FILE_LINE);
-
         onMessagePump(mApplicationClock);
         if (tickIdle)
         {
@@ -163,15 +162,6 @@ int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRe
         }
 
         std::this_thread::yield();
-
-        if (counter)
-        {
-            --counter;
-            if (!counter)
-            {
-                mGeneralPoolThread->UnpauseAll();
-            }
-        }
     }
     YLOG_DEBUG("APP", "Application.Run pump ended.");
 

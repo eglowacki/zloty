@@ -111,7 +111,7 @@ int64_t yaget::WindowApplication::ProcessUserInput(uint32_t message, uint64_t wP
             int64_t result = _onHandleInputMessage(GetSurface().Handle<HWND>(), message, wParam, lParam);
             if (result)
             {
-                return 0;
+                return TRUE;
             }
             else if (_processMouseMessage(message, wParam, lParam) == 0)
             {
@@ -138,7 +138,7 @@ int64_t yaget::WindowApplication::ProcessUserInput(uint32_t message, uint64_t wP
                 int64_t result = _onHandleInputMessage(GetSurface().Handle<HWND>(), message, wParam, lParam);
                 if (result)
                 {
-                    return 0;
+                    return TRUE;
                 }
             }
             break;

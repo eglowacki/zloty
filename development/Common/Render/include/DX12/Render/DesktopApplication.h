@@ -28,7 +28,7 @@ namespace yaget::render
     public:
         DesktopApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
             : WindowApplication(title, director, vts, options)
-            , mDevice(*this)
+            , mDevice(app::WindowFrame(*this))
         {
             if (Input().IsAction("Quit App"))
             {
@@ -36,14 +36,17 @@ namespace yaget::render
             }
         }
 
-        void OnResize() override { mDevice.Resize(); }
-        Device& GetDevice() { return mDevice; }
+        DeviceB& GetDevice() { return mDevice; }
 
     private:
-        int64_t onHandleRawInput(WindowHandle_t /*hWnd*/, uint32_t /*message*/, uint64_t /*wParam*/, int64_t /*lParam*/) override { return 0; }
+        void OnResize() override { mDevice.Resize(); }
         void OnSurfaceStateChange() override { mDevice.SurfaceStateChange(); }
+        int64_t onHandleRawInput(WindowHandle_t hWnd, uint32_t message, uint64_t wParam, int64_t lParam) override
+        {
+            return mDevice.OnHandleRawInput(hWnd, message, wParam, lParam);
+        }
 
-        Device mDevice;
+        DeviceB mDevice;
     };
 
 }

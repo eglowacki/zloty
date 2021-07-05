@@ -15,75 +15,60 @@
 
 
 #include "YagetCore.h"
-#include <wrl/client.h>
+#include "App/WindowFrame.h"
+#include "Render/RenderCore.h"
 
 
-//struct ID3D12Device2;
-//struct ID3D12Device;
-//struct ID3D12CommandQueue;
-//struct IDXGISwapChain4;
-struct IDXGISwapChain3;
+struct IDXGISwapChain4;
 struct IDXGIFactory4;
+struct ID3D12Device4;
 struct ID3D12CommandQueue;
-//struct ID3D12DescriptorHeap;
-//struct ID3D12Resource;
-//struct ID3D12CommandAllocator;
-//struct ID3D12GraphicsCommandList;
-//struct ID3D12Fence;
+struct ID3D12DescriptorHeap;
+struct ID3D12Resource;
+struct ID3D12CommandAllocator;
+struct ID3D12GraphicsCommandList;
 
 namespace yaget
 {
+    namespace app { class DisplaySurface; }
     namespace time { class GameClock; }
     namespace metrics { class Channel; }
-    class Application;
 }
 
 
 namespace yaget::render::platform
 {
+    class CommandQueue;
+
     class SwapChain
     {
     public:
-        template <typename T>
-        using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-        SwapChain(Application& app, const ComPtr<IDXGIFactory4>& factory, const ComPtr<ID3D12CommandQueue>& commandQueue, uint32_t numFrames);
+        SwapChain(app::WindowFrame windowFrame, const ComPtr<ID3D12Device4>& device, IDXGIFactory4* factory);
         ~SwapChain();
 
-        const ComPtr<IDXGISwapChain3>& Get() const { return mSwapChain; }
-
-        //void Render(const time::GameClock& gameClock, metrics::Channel& channel);
-        //void Resize();
+        void Resize();
+        void Render();
 
     private:
-        ComPtr<IDXGISwapChain3> mSwapChain;
+        void UpdateRenderTargetViews();
 
-        //using Handle_t = void*;
+        app::WindowFrame mWindowFrame;
+        int mNumBackBuffers = 2;
+        bool mTearingSupported = false;
+        ComPtr<ID3D12Device4> mDevice;
+        std::unique_ptr<platform::CommandQueue> mCommandQueue;
+        ComPtr<IDXGISwapChain4> mSwapChain;
+        uint32_t mCurrentBackBufferIndex = 0;
 
-        //void UpdateRenderTargetViews(ID3D12Device2* device);
+        ComPtr<ID3D12DescriptorHeap> mRTVDescriptorHeap;
+        uint32_t mRTVDescriptorSize = 0;
 
-        //Application& mApplication;
-        //ID3D12Device2* mDevice = nullptr;
-        //Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
-        //Microsoft::WRL::ComPtr<IDXGISwapChain4> mSwapChain;
-        //Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDescriptorHeap;
-        //Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
-        //Handle_t mFenceEvent;
-        //uint64_t mFenceValue = 0;
-        //uint32_t mDescriptorSize = 0;
-        //uint32_t mNumFrames = 2;
+        std::vector<ComPtr<ID3D12Resource>> mBackBuffers;
+        std::vector<ComPtr<ID3D12CommandAllocator>> mCommandAllocators;
+        std::vector<uint64_t> mFrameFenceValues;
 
-        //using BackBuffer = Microsoft::WRL::ComPtr<ID3D12Resource>;
-        //std::vector<BackBuffer> mBackBuffers;
-
-        //using Allocator = Microsoft::WRL::ComPtr<ID3D12CommandAllocator>;
-        //std::vector<Allocator> mAllocators;
-
-        //std::vector<uint64_t> mFrameFenceValues;
-
-        //uint32_t mCurrentBackBufferIndex = 0;
-
-        //Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
+        ComPtr<ID3D12GraphicsCommandList> mCommandList;
     };
-}
+
+} // namespace yaget::render::platform
 

@@ -170,7 +170,7 @@ void yaget::metrics::TraceCollector::AddProfileStamp(yaget::metrics::TraceRecord
             num = mProfileStamps.size();
         }
 
-        const int capacityChecker = 1000;
+        const int capacityChecker = 5000;
         if (num % capacityChecker == 0)
         {
             const std::string bytes = yaget::conv::ToThousandsSep(num * sizeof(ProfileStamps::value_type));
@@ -183,11 +183,8 @@ void yaget::metrics::TraceCollector::AddProfileStamp(yaget::metrics::TraceRecord
 //-------------------------------------------------------------------------------------------------
 void yaget::metrics::TraceCollector::SetThreadName(const char* threadName, std::size_t t)
 {
-    //if (mTraceState == TraceState::On)
-    {
-        std::unique_lock<std::mutex> mutexLock(mmThreadNameMutex);
-        mThreadNames[t] = threadName ? threadName : "";
-    }
+    std::unique_lock<std::mutex> mutexLock(mmThreadNameMutex);
+    mThreadNames[t] = threadName ? threadName : "";
 }
 
 

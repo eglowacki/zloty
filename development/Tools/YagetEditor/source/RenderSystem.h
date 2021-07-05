@@ -22,7 +22,7 @@
 namespace yaget::render
 {
     class DesktopApplication;
-    class Device;
+    class DeviceB;
 }
 
 namespace yaget::editor
@@ -36,6 +36,6 @@ namespace yaget::editor
     private:
         void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, RenderComponent* renderComponent);
 
-        render::Device& mDevice;
+        render::DeviceB& mDevice;
     };
 }
