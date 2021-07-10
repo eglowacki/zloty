@@ -422,7 +422,7 @@ void input::InputDevice::ProcessRecord(const Record& record)
 {
     metrics::UniqueLock locker(mActionMapMutex, "ProcessRecord", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-    std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
+    const std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
 
     for (auto&& action : mActionMap)
     {

@@ -18,13 +18,12 @@
 #include "Components/CoordinatorSet.h"
 #include "App/Application.h"
 
-namespace yaget::metrics {
-    class Channel;
-}
 
+namespace yaget::metrics { class Channel; }
 
 namespace yaget::comp::gs
 {
+    //-------------------------------------------------------------------------------------------------
     // Create coordinator for system and call each for update
     // T is GameCoordinatorSet and ...S are Systems (classes that follow yaget::comp::gs::GameSystem)
     template <typename T, typename M, typename A, typename... S>
@@ -54,6 +53,7 @@ namespace yaget::comp::gs
 
     namespace internal
     {
+        //-------------------------------------------------------------------------------------------------
         template <typename T, typename M, typename A>
         struct Updater
         {
@@ -69,8 +69,9 @@ namespace yaget::comp::gs
             A& mApplication;
         };
 
-    }
+    } // namespace internal
 
+    //-------------------------------------------------------------------------------------------------
     // Helper to create game and render coordinator systems, connect to app and run it.
     // It creates each Coordinator on the thread that it's run and Tick is called from.
     // In this case we have 2 threads, logic and render.
@@ -80,10 +81,10 @@ namespace yaget::comp::gs
         return app.Run(internal::Updater<TG, M, A>(messaging, app), internal::Updater<TR, M, A>(messaging, app));
     }
 
-}
+} // namespace yaget::comp::gs
 
 
-//#include "Components/SystemsCoordinatorImplementation.h"
+//-------------------------------------------------------------------------------------------------
 template <typename T, typename M, typename A, typename... S>
 yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messaging, A& app)
     : mMessaging(messaging)
@@ -96,6 +97,8 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
     });
 }
 
+
+//-------------------------------------------------------------------------------------------------
 template <typename T, typename M, typename A, typename... S>
 void yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::Tick(const time::GameClock& gameClock, metrics::Channel& channel)
 {
@@ -106,6 +109,8 @@ void yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::Tick(const time::GameCl
     });
 }
 
+
+//-------------------------------------------------------------------------------------------------
 template <typename T, typename M, typename A, typename... S>
 template <typename C>
 yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetCoordinator()
@@ -113,6 +118,8 @@ yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>:
     return mCoordinatorSet.template GetCoordinator<C>();
 }
 
+
+//-------------------------------------------------------------------------------------------------
 template <typename T, typename M, typename A, typename... S>
 template <typename C>
 const yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetCoordinator() const
@@ -120,6 +127,8 @@ const yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, 
     return mCoordinatorSet.template GetCoordinator<C>();
 }
 
+
+//-------------------------------------------------------------------------------------------------
 // on the first call, we'll create system coordinator. This ensures it get's created on the same
 // thread as it get's to call Tick on.
 template <typename T, typename M, typename A>

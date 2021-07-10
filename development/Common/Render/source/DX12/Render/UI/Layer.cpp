@@ -1,5 +1,5 @@
 #include "Render/UI/Layer.h"
-#include "App/Display.h"
+#include "App/WindowFrame.h"
 #include "imgui-docking/backends/imgui_impl_win32.h"
 
 //-------------------------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ yaget::render::ui::Layer::Resizer::~Resizer()
 }
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::ui::Layer::Layer(const app::DisplaySurface& displaySurface)
+yaget::render::ui::Layer::Layer(app::WindowFrame windowFrame)
 {
     IMGUI_CHECKVERSION();
 
@@ -43,7 +43,7 @@ yaget::render::ui::Layer::Layer(const app::DisplaySurface& displaySurface)
     }
 
     // Setup Platform/Renderer backends
-    ImGui_ImplWin32_Init(displaySurface.Handle<void*>());
+    ImGui_ImplWin32_Init(windowFrame.GetSurface().Handle<void*>());
     //ImGui_ImplDX12_Init(g_pd3dDevice,
     //    NUM_FRAMES_IN_FLIGHT,
     //    DXGI_FORMAT_R8G8B8A8_UNORM, g_pd3dSrvDescHeap,

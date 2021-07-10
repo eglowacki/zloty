@@ -28,6 +28,12 @@ yaget::render::platform::DeviceDebugger::DeviceDebugger()
 
         debugController1->EnableDebugLayer();
         debugController1->SetEnableGPUBasedValidation(true);
+
+        YLOG_NOTICE("DEVI", "DeviceDebugger Activated.");
+    }
+    else
+    {
+        YLOG_NOTICE("DEVI", "DeviceDebugger NOT Activated.");
     }
 }
 
@@ -35,10 +41,13 @@ yaget::render::platform::DeviceDebugger::DeviceDebugger()
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::DeviceDebugger::~DeviceDebugger()
 {
-    ComPtr<IDXGIDebug1> dxgiDebug;
-    if (SUCCEEDED(::DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug))))
+    if (yaget::dev::CurrentConfiguration().mInit.EnableRenderDebugLayer)
     {
-        dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(D3D12_RLDO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+        ComPtr<IDXGIDebug1> dxgiDebug;
+        if (SUCCEEDED(::DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug))))
+        {
+            dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(D3D12_RLDO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+        }
     }
 }
 
@@ -48,13 +57,31 @@ void yaget::render::platform::DeviceDebugger::ActivateMessageSeverity(const ComP
 {
     if (yaget::dev::CurrentConfiguration().mInit.EnableRenderDebugLayer)
     {
+        const bool breakOnCorruption = true;
+        const bool breakOnError = true;
+        const bool breakOnWarning = true;
+
         ComPtr<ID3D12InfoQueue> infoQueue;
         HRESULT hr = device.As(&infoQueue);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 InfoQueue Device Interface");
 
-        infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-        infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
-        infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+        if (breakOnCorruption)
+        {
+            hr = infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Break On 'Corruption' Severity");
+        }
+
+        if (breakOnError)
+        {
+            hr = infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Break On 'Error' Severity");
+        }
+
+        if (breakOnWarning)
+        {
+            hr = infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+            YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Break On 'Warning' Severity");
+        }
 
 #if 0
         // Suppress whole categories of messages
@@ -83,6 +110,11 @@ void yaget::render::platform::DeviceDebugger::ActivateMessageSeverity(const ComP
 
         infoQueue->PushStorageFilter(&newFilter);
 #endif // 0
+        YLOG_NOTICE("DEVI", "DeviceDebugger MessageSeverity Activated. Corruption: '%s', Error: '%s', Warning: '%s'.", conv::ToBool(breakOnCorruption).c_str(), conv::ToBool(breakOnError).c_str(), conv::ToBool(breakOnWarning).c_str());
+    }
+    else
+    {
+        YLOG_NOTICE("DEVI", "DeviceDebugger MessageSeverity NOT Activated.");
     }
 }
 

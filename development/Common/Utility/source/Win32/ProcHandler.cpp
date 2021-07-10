@@ -315,12 +315,22 @@ namespace
         vts.UpdateAssetData(newAsset, io::VirtualTransportSystem::Request::Add);
     }
 
+    //--------------------------------------------------------------------------------------------------
+    std::string CreateWindowTitle(const std::string& currentTitle, int32_t resX, int32_t resY)
+    {
+        const auto winTitle = fmt::format("{} - ({}x{})", currentTitle, resX, resY);
+
+        return winTitle;
+    }
+
+
     const char* AppearanceNames[] = { "Fullscreen", "Window", "Borderless" };
 
 }
 
 yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init, const std::string& windowTitle, io::VirtualTransportSystem& vts, ProcessInput processInput, ProcessResize processResize, RequestClose requestClose)
     : mInit(init)
+    , mWindowTitle(windowTitle)
     , mProcessMessage([this](auto&&... params) { return onInitialize(params...); })
     , mProcessInput(std::move(processInput))
     , mProcessResize(std::move(processResize))
@@ -345,7 +355,7 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
 
     HWND winH = ::CreateWindowEx(NULL,
         WinName,                    // name of the window class
-        windowTitle.c_str(),        // title of the window
+        mWindowTitle.c_str(),        // title of the window
         WS_OVERLAPPEDWINDOW,        // window style
         300,                        // x-position of the window
         300,                        // y-position of the window
@@ -416,6 +426,7 @@ void yaget::app::ProcHandler::onResize(bool sizeChanged)
 
     if (sizeChanged)
     {
+
         mProcessResize();
     }
 }
@@ -469,7 +480,7 @@ int64_t yaget::app::ProcHandler::onMessage(uint32_t message, uint64_t wParam, in
         {
             int32_t resX, resY;
             GetWindowResolution(mWindowHandle, resX, resY);
-            YLOG_DEBUG("WIND", "Proessing SIZE event. Cuurent client resolution: (%dx%d)", resX, resY);
+            YLOG_DEBUG("WIND", "Proessing SIZE event. Current client resolution: (%dx%d)", resX, resY);
 
             if (wParam == SIZE_MINIMIZED)
             {
@@ -500,14 +511,17 @@ int64_t yaget::app::ProcHandler::onMessage(uint32_t message, uint64_t wParam, in
             break;
 
         case WM_EXITSIZEMOVE:
+            int32_t resX, resY;
+            GetWindowResolution(mWindowHandle, resX, resY);
+            const bool sizeChanged = mReflectedState.mLastResolution.first != resX || mReflectedState.mLastResolution.second != resY;
+
             // Here is the other place where you handle the swapchain resize after the user stops using the 'rubber-band' 
-            YLOG_DEBUG("WIN", "WM_EXITSIZEMOVE called...");
+            YLOG_DEBUG("WIN", "WM_EXITSIZEMOVE called, ResX: (%dx%d), SizeChanged: '%d'.", resX, resY, sizeChanged);
             metrics::MarkAddMessage("Ended Window Resize", metrics::MessageScope::Global, meta::pointer_cast(this));
             mReflectedState.mMoving = false;
 
-            int32_t resX, resY;
-            GetWindowResolution(mWindowHandle, resX, resY);
-            onResize(mReflectedState.mLastResolution.first != resX || mReflectedState.mLastResolution.second != resY);
+            onResize(sizeChanged);
+
             break;
     }
 
@@ -591,69 +605,69 @@ bool yaget::app::ProcHandler::IsSuspended() const
 
 /*static*/ LRESULT CALLBACK yaget::app::ProcHandler::WindowCallback(HWND hWnd, uint32_t message, uint64_t wParam, int64_t lParam)
 {
-        if (auto This = GetThis(hWnd))
+    if (auto This = GetThis(hWnd))
+    {
+        YAGET_ASSERT(This->mProcessMessage, "There is no callback associated with window proc.");
+
+        if (message == WM_DESTROY)
         {
-            YAGET_ASSERT(This->mProcessMessage, "There is no callback associated with window proc.");
+            This->SaveAppearance();
 
-            if (message == WM_DESTROY)
-            {
-                This->SaveAppearance();
+            // close the application entirely
+            ::SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
+            ::PostQuitMessage(0);
 
-                // close the application entirely
-                SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
-                PostQuitMessage(0);
+            // if we processed this message return 0
+            return 0;
+        }
+        else if (message == WM_GETMINMAXINFO)
+        {
+            // We want to prevent the window from being set too tiny
+            auto* info = reinterpret_cast<MINMAXINFO*>(lParam);
+            info->ptMinTrackSize.x = SafeResolutionX;
+            info->ptMinTrackSize.y = SafeResolutionY;
 
-                // if we processed this message return 0
-                return 0;
-            }
-            else if (message == WM_GETMINMAXINFO)
-            {
-                // We want to prevent the window from being set too tiny
-                auto info = reinterpret_cast<MINMAXINFO*>(lParam);
-                info->ptMinTrackSize.x = SafeResolutionX;
-                info->ptMinTrackSize.y = SafeResolutionY;
+            // if we processed this message return 0
+            return 0;
+        }
+        else if (message == WM_DPICHANGED)
+        {
+            const auto currentDpi = static_cast<float>(HIWORD(wParam));
+            UpdateDpiConfiguration(currentDpi);
+            // 
+            This->onResize(true);
+        }
+        else if ((message == WM_SYSKEYDOWN || message == WM_KEYDOWN) && wParam == VK_RETURN && (HIWORD(lParam) & KF_ALTDOWN))
+        {
+            This->ToggleBorderless();
 
-                // if we processed this message return 0
-                return 0;
-            }
-            else if (message == WM_DPICHANGED)
-            {
-                const auto currentDpi = static_cast<float>(HIWORD(wParam));
-                UpdateDpiConfiguration(currentDpi);
-                // 
-                This->onResize(true);
-            }
-            else if ((message == WM_SYSKEYDOWN || message == WM_KEYDOWN) && wParam == VK_RETURN && (HIWORD(lParam) & KF_ALTDOWN))
-            {
-                This->ToggleBorderless();
-
-                return 0;
-            }
-            else
-            {
-                return This->mProcessMessage(message, wParam, lParam);
-            }
+            return 0;
         }
         else
         {
-            if (message == WM_NCCREATE)
-            {
-                SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
-                auto windowHandler = reinterpret_cast<app::ProcHandler *>((LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
-                windowHandler->mWindowHandle = hWnd;
-
-                if (HMONITOR monitor = ::MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST))
-                {
-                    uint32_t dpiX, dpiY;
-                    HRESULT hr = ::GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
-                    YAGET_UTIL_THROW_ON_RROR(hr, "Did not GetDpiForMonitor.");
-                    UpdateDpiConfiguration(static_cast<float>(dpiX));
-                }
-
-                // in case of an error, return FALSE to stop creation of this window
-            }
+            return This->mProcessMessage(message, wParam, lParam);
         }
+    }
+    else
+    {
+        if (message == WM_NCCREATE)
+        {
+            ::SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
+            auto windowHandler = reinterpret_cast<app::ProcHandler *>((LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
+            windowHandler->mWindowHandle = hWnd;
 
-        // Handle any messages the switch statement didn't
-        return DefWindowProc(hWnd, message, wParam, lParam);
+            if (HMONITOR monitor = ::MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST))
+            {
+                uint32_t dpiX, dpiY;
+                HRESULT hr = ::GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
+                YAGET_UTIL_THROW_ON_RROR(hr, "Did not GetDpiForMonitor.");
+                UpdateDpiConfiguration(static_cast<float>(dpiX));
+            }
+
+            // in case of an error, return FALSE to stop creation of this window
+        }
+    }
+
+    // Handle any messages the switch statement didn't
+    return DefWindowProc(hWnd, message, wParam, lParam);
 }

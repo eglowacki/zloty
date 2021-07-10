@@ -30,7 +30,7 @@ namespace yaget::app
 
         DisplaySurface(PlatformWindowHandle handle, SurfaceState surfaceState);
 
-        const math3d::Vector2& Size() const { return mSize; }
+        const math3d::Vector2 Size() const;
         SurfaceState State() const { return mSurfaceState; }
         bool VSync() const;
         int NumBackBuffers() const;
@@ -51,7 +51,6 @@ namespace yaget::app
 
     private:
         PlatformWindowHandle mHandle{nullptr};
-        math3d::Vector2 mSize{};
         SurfaceState mSurfaceState = SurfaceState::Shared;
     };
 

@@ -26,7 +26,7 @@ struct ID3D12CommandQueue;
 struct ID3D12DescriptorHeap;
 struct ID3D12Resource;
 struct ID3D12CommandAllocator;
-struct ID3D12GraphicsCommandList;
+struct ID3D12GraphicsCommandList2;
 
 namespace yaget
 {
@@ -47,7 +47,7 @@ namespace yaget::render::platform
         ~SwapChain();
 
         void Resize();
-        void Render();
+        void Render(const time::GameClock& gameClock, metrics::Channel& channel);
 
     private:
         void UpdateRenderTargetViews();
@@ -67,7 +67,9 @@ namespace yaget::render::platform
         std::vector<ComPtr<ID3D12CommandAllocator>> mCommandAllocators;
         std::vector<uint64_t> mFrameFenceValues;
 
-        ComPtr<ID3D12GraphicsCommandList> mCommandList;
+        ComPtr<ID3D12GraphicsCommandList2> mCommandList;
+        float mCurrentColorT = 0.0f;
+        float mColorTDirection = 1.0f;
     };
 
 } // namespace yaget::render::platform

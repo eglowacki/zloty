@@ -17,11 +17,7 @@
 
 #include "YagetCore.h"
 
-namespace yaget {
-	namespace app {
-		class DisplaySurface;
-	}
-}
+namespace yaget::app { class WindowFrame; }
 
 namespace yaget::render::ui
 {
@@ -38,7 +34,7 @@ namespace yaget::render::ui
 			Layer& mLayer;
 		};
 		
-		Layer(const app::DisplaySurface& displaySurface);
+		Layer(app::WindowFrame windowFrame);
 		~Layer();
 
 		void Begin();

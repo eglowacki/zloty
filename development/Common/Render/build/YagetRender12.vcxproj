@@ -173,6 +173,7 @@
     <ClCompile Include="..\source\DX12\imgui-docking\imgui_draw.cpp" />
     <ClCompile Include="..\source\DX12\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="..\source\DX12\imgui-docking\imgui_widgets.cpp" />
+    <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\CommandQueue.cpp" />

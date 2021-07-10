@@ -88,7 +88,7 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------------------
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> CreateCommandList(ID3D12Device2* device, ID3D12CommandAllocator* commandAllocator, D3D12_COMMAND_LIST_TYPE type)
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device2* device, ID3D12CommandAllocator* commandAllocator, D3D12_COMMAND_LIST_TYPE type)
     {
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
         HRESULT hr = device->CreateCommandList(0, type, commandAllocator, nullptr, IID_PPV_ARGS(&commandList));
@@ -97,7 +97,11 @@ namespace
         hr = commandList->Close();
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not close DX12 Command List");
 
-        return commandList;
+        Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList2;
+        hr = commandList.As(&commandList2);
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Command List2 interface");
+
+        return commandList2;
     }
 
 } // namespace
@@ -165,6 +169,8 @@ void yaget::render::platform::SwapChain::Resize()
 
     const auto [width, height] = mWindowFrame.GetSurface().GetSize<uint32_t>();
 
+    YLOG_DEBUG("DEVI", "SwapChain::Resize: (%dx%d).", width, height);
+
     hr = mSwapChain->ResizeBuffers(mNumBackBuffers, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not resize DX12 SwapChain");
 
@@ -174,7 +180,7 @@ void yaget::render::platform::SwapChain::Resize()
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::SwapChain::Render()
+void yaget::render::platform::SwapChain::Render(const time::GameClock& gameClock, metrics::Channel& /*channel*/)
 {
     auto commandAllocator = mCommandAllocators[mCurrentBackBufferIndex];
     const auto backBuffer = mBackBuffers[mCurrentBackBufferIndex];
@@ -190,10 +196,20 @@ void yaget::render::platform::SwapChain::Render()
 
         mCommandList->ResourceBarrier(1, &barrier);
 
-        FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+        const math3d::Color currentClearColor = math3d::Color::Lerp({ 0.4f, 0.6f, 0.9f }, { 0.6f, 0.9f, 0.4f }, mCurrentColorT);
+        mCurrentColorT += (gameClock.GetDeltaTimeSecond() * mColorTDirection) * 0.75f;
+        if (mCurrentColorT > 1.0f)
+        {
+            mColorTDirection = -1.0f;
+        }
+        else if (mCurrentColorT < 0.0f)
+        {
+            mColorTDirection = 1.0f;
+        }
+
         const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), mCurrentBackBufferIndex, mRTVDescriptorSize);
 
-        mCommandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+        mCommandList->ClearRenderTargetView(rtv, currentClearColor, 0, nullptr);
     }
 
     // Present

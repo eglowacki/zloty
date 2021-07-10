@@ -50,17 +50,24 @@ namespace
 
 //-------------------------------------------------------------------------------------------------
 yaget::app::DisplaySurface::DisplaySurface(PlatformWindowHandle handle, SurfaceState surfaceState)
-: mHandle(handle)
-, mSize(GetWindowSize(handle))
-, mSurfaceState(surfaceState)
+    : mHandle(handle)
+    , mSurfaceState(surfaceState)
 {
+}
+
+
+//-------------------------------------------------------------------------------------------------
+const math3d::Vector2 yaget::app::DisplaySurface::Size() const
+{
+    const math3d::Vector2 size = GetWindowSize(mHandle);
+    return size;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 bool yaget::app::DisplaySurface::VSync() const
 {
-    return true;
+    return dev::CurrentConfiguration().mInit.VSync;
 }
 
 

@@ -43,6 +43,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetRender12", "..\..\Comm
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial1", "..\..\Research\Reference\LearningDirectX12-0.0.1\builds\Tutorial1\Tutorial1.vcxproj", "{ECE318D8-F03F-30A1-8137-80B90A4898E3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial2", "..\..\Research\Reference\LearningDirectX12-0.0.2\builds\Tutorial2\Tutorial2.vcxproj", "{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -207,6 +209,16 @@ Global
 		{ECE318D8-F03F-30A1-8137-80B90A4898E3}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{ECE318D8-F03F-30A1-8137-80B90A4898E3}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 		{ECE318D8-F03F-30A1-8137-80B90A4898E3}.RelWithDebInfo|x86.ActiveCfg = RelWithDebInfo|x64
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.Debug|x64.ActiveCfg = Debug|x64
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.Debug|x86.ActiveCfg = Debug|x64
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.MinSizeRel|x86.ActiveCfg = MinSizeRel|x64
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.Release|x64.ActiveCfg = Release|x64
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.Release|x86.ActiveCfg = Release|x64
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.RelWithDebInfo|x86.ActiveCfg = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -214,6 +226,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7248B931-88B9-485C-9306-D98415C06F76} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
 		{ECE318D8-F03F-30A1-8137-80B90A4898E3} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
+		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5462B7EF-FA41-4DF9-B842-727A101BE0B1}

@@ -122,6 +122,7 @@ namespace yaget::app
         void SaveAppearance() const;
 
         const dev::Configuration::Init& mInit;
+        const std::string mWindowTitle;
         ProcessMessage mProcessMessage;
         ProcessInput mProcessInput;
         ProcessResize mProcessResize;

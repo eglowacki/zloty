@@ -48,7 +48,8 @@ namespace yaget::time
         Microsecond_t GetLogicTime() const;
         // Current delta time, this will be the last value called to Tick and will stay the same for the frame duration
         Microsecond_t GetDeltaTime() const;
-
+        // Helper method to return delta time in seconds.
+        float GetDeltaTimeSecond() const;
 
         // Resets the mLogicTime to current game time, used only at the start of the game loop for the first time, or long pauses
         void Resync();

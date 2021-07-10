@@ -135,6 +135,9 @@
     <ClCompile Include="..\source\DX12\Render\Platform\CommandQueue.cpp">
       <Filter>Source Files\Platform Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp">
+      <Filter>Source Files\Application Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="..\source\DX12\imgui-docking\misc\debuggers\imgui.natvis">

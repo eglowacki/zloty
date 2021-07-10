@@ -38,7 +38,6 @@
 #include "App/WindowFrame.h"
 #include "Render/Waiter.h"
 
-//#include <d3dx12.h>
 
 namespace yaget
 {
@@ -56,6 +55,7 @@ namespace yaget::render
         class SwapChain;
     }
 
+    //-------------------------------------------------------------------------------------------------
     class DeviceB : public Noncopyable<DeviceB>
     {
     public:

@@ -284,7 +284,7 @@ namespace yaget
         private:
             using PoolLine = internal::PoolAllocatorLine<T, E>;
             using PoolLinePtr = std::unique_ptr<PoolLine>;
-            std::vector<PoolLinePtr> mMemoryLines;
+            std::vector<PoolLinePtr> mMemoryLines{};
             int mLastLineIndex = PoolLine::INVALID_SLOT;
         };
 
