@@ -478,9 +478,8 @@ int64_t yaget::app::ProcHandler::onMessage(uint32_t message, uint64_t wParam, in
 
         case WM_SIZE:
         {
-            int32_t resX, resY;
-            GetWindowResolution(mWindowHandle, resX, resY);
-            YLOG_DEBUG("WIND", "Proessing SIZE event. Current client resolution: (%dx%d)", resX, resY);
+            const int32_t resX = LOWORD(lParam);
+            const int32_t resY = HIWORD(lParam);
 
             if (wParam == SIZE_MINIMIZED)
             {
@@ -490,13 +489,13 @@ int64_t yaget::app::ProcHandler::onMessage(uint32_t message, uint64_t wParam, in
             }
             else if (mReflectedState.mSuspended)
             {
-                YLOG_DEBUG("WIN", "    Restored...");
+                YLOG_DEBUG("WIN", "    Restored. Current client resolution: (%dx%d)", resX, resY);
                 mReflectedState.mSuspended = false;
                 onSuspend(false);
             }
             else if (!mReflectedState.mMoving || mReflectedState.mAllowUpdateWhileMoving)
             {
-                YLOG_DEBUG("WIN", "    Calling application resize callback...");
+                YLOG_DEBUG("WIN", "    Calling application resize callback: (%dx%d)", resX, resY);
                 onResize(true);
             }
 
@@ -516,7 +515,7 @@ int64_t yaget::app::ProcHandler::onMessage(uint32_t message, uint64_t wParam, in
             const bool sizeChanged = mReflectedState.mLastResolution.first != resX || mReflectedState.mLastResolution.second != resY;
 
             // Here is the other place where you handle the swapchain resize after the user stops using the 'rubber-band' 
-            YLOG_DEBUG("WIN", "WM_EXITSIZEMOVE called, ResX: (%dx%d), SizeChanged: '%d'.", resX, resY, sizeChanged);
+            YLOG_DEBUG("WIN", "WM_EXITSIZEMOVE called. Current client resolution: (%dx%d), SizeChanged: '%s'.", resX, resY, conv::ToBool(sizeChanged).c_str());
             metrics::MarkAddMessage("Ended Window Resize", metrics::MessageScope::Global, meta::pointer_cast(this));
             mReflectedState.mMoving = false;
 
