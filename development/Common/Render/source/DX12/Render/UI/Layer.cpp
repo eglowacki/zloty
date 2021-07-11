@@ -93,4 +93,3 @@ void yaget::render::ui::Layer::End()
         //ImGui::RenderPlatformWindowsDefault(NULL, (void*)g_pd3dCommandList);
     }
 }
-

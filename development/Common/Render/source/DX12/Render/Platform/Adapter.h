@@ -13,7 +13,6 @@
 
 #pragma once
 
-#include "YagetCore.h"
 #include "Render/RenderCore.h"
 #include "App/WindowFrame.h"
 #include "DeviceDebugger.h"
