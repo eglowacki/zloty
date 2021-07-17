@@ -379,7 +379,7 @@ namespace
         void SetName(uint32_t threadId, const char* name) noexcept
         {
             std::unique_lock<std::mutex> locker(mMutex);
-            mNames.insert(std::make_pair(threadId, name));
+            mNames[threadId] = name;
         }
 
         std::string GetName(uint32_t threadId) const

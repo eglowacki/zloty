@@ -179,7 +179,7 @@ int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRe
     while (onMessagePump(mApplicationClock))
         ;
 
-    YLOG_DEBUG("APP", "Application.Run returning back to caller!");
+    YLOG_DEBUG("APP", "Application.Run returning back to caller.");
     return 0;
 }
 

@@ -115,9 +115,7 @@ yaget::render::platform::Adapter::Adapter(app::WindowFrame /*windowFrame*/)
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::Adapter::~Adapter()
-{
-}
+yaget::render::platform::Adapter::~Adapter() = default;
 
 
 //-------------------------------------------------------------------------------------------------

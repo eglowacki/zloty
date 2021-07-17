@@ -48,9 +48,7 @@ yaget::render::platform::CommandQueue::CommandQueue(ID3D12Device4* device, Type 
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::CommandQueue::~CommandQueue()
-{
-}
+yaget::render::platform::CommandQueue::~CommandQueue() = default;
 
 
 //-------------------------------------------------------------------------------------------------

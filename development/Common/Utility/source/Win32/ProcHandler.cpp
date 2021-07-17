@@ -355,7 +355,7 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
 
     HWND winH = ::CreateWindowEx(NULL,
         WinName,                    // name of the window class
-        mWindowTitle.c_str(),        // title of the window
+        mWindowTitle.c_str(),       // title of the window
         WS_OVERLAPPEDWINDOW,        // window style
         300,                        // x-position of the window
         300,                        // y-position of the window
@@ -364,7 +364,7 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
         nullptr,                    // we have no parent window, NULL
         nullptr,                    // we aren't using menus, NULL
         GetModuleHandle(nullptr),   // application handle
-        this);               // user data
+        this);                      // user data
 
     YAGET_ASSERT(winH == mWindowHandle, "Return value from CreateWindowEx(...) does not match mWindowHandle.");
 
