@@ -608,6 +608,12 @@
     <ClInclude Include="..\include\App\WindowFrame.h">
       <Filter>Application Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Math\YagetMath.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Math\Interpolators.h">
+      <Filter>Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\source\Win32\CommandLineArgs.inl">
@@ -632,6 +638,9 @@
   <ItemGroup>
     <Natvis Include="..\..\..\BuildRules\Natvis\yaget.Core.natvis">
       <Filter>Debugging Files</Filter>
+    </Natvis>
+    <Natvis Include="..\..\..\..\..\..\Dependencies\Mather\Mathter\Mathter.natvis">
+      <Filter>Math</Filter>
     </Natvis>
   </ItemGroup>
 </Project>

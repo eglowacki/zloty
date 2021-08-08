@@ -218,6 +218,8 @@
     <ClInclude Include="..\include\LoggerCpp\Utils.h" />
     <ClInclude Include="..\include\Logger\LogTags.h" />
     <ClInclude Include="..\include\Logger\YLog.h" />
+    <ClInclude Include="..\include\Math\Interpolators.h" />
+    <ClInclude Include="..\include\Math\YagetMath.h" />
     <ClInclude Include="..\include\MemoryManager\PoolAllocator.h" />
     <ClInclude Include="..\include\Meta\CompilerAlgo.h" />
     <ClInclude Include="..\include\Meta\Hana.h" />
@@ -273,6 +275,7 @@
     <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Natvis Include="..\..\..\..\..\..\Dependencies\Mather\Mathter\Mathter.natvis" />
     <Natvis Include="..\..\..\BuildRules\Natvis\yaget.Core.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

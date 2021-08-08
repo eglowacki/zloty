@@ -4,6 +4,7 @@
 #include "App/Application.h"
 #include "CommandQueue.h"
 #include "StringHelpers.h"
+#include "Math/YagetMath.h"
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
@@ -117,7 +118,7 @@ yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, cons
     , mSwapChain{ CreateSwapChain(mWindowFrame, factory, mCommandQueue->GetCommandQueue().Get(), mNumBackBuffers, mTearingSupported) }
     , mCurrentBackBufferIndex{ mSwapChain->GetCurrentBackBufferIndex() }
     , mRTVDescriptorHeap{ CreateDescriptorHeap(mDevice.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, mNumBackBuffers) }
-    , mRTVDescriptorSize{ device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) }
+    , mRTVDescriptorSize{ mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) }
     , mBackBuffers(mNumBackBuffers, nullptr)
     , mCommandAllocators(mNumBackBuffers, nullptr)
     , mFrameFenceValues(mNumBackBuffers, 0)

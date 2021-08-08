@@ -52,6 +52,9 @@
     <ClCompile Include="TestFiles\Threading_Test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="TestFiles\Math_Test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Test Files">

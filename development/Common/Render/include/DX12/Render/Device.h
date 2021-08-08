@@ -64,7 +64,7 @@ namespace yaget::render
 
         void Resize();
         void SurfaceStateChange();
-        int64_t OnHandleRawInput(void* hWnd, uint32_t message, uint64_t wParam, int64_t lParam);
+        int64_t OnHandleRawInput(app::DisplaySurface::PlatformWindowHandle hWnd, uint32_t message, uint64_t wParam, int64_t lParam);
 
         void RenderFrame(const time::GameClock& gameClock, metrics::Channel& channel);
 

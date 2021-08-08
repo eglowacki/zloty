@@ -44,7 +44,7 @@ void yaget::render::DeviceB::SurfaceStateChange()
 YAGET_COMPILE_SUPRESS_START(4100, "unreferenced local variable")
 
 //-------------------------------------------------------------------------------------------------
-int64_t yaget::render::DeviceB::OnHandleRawInput(void* hWnd, uint32_t message, uint64_t wParam, int64_t lParam)
+int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWindowHandle hWnd, uint32_t message, uint64_t wParam, int64_t lParam)
 {
     return 0;
 }

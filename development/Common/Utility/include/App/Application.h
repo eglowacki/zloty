@@ -30,7 +30,7 @@ namespace yaget
     namespace io { class VirtualTransportSystem; }
     namespace items { class Director; }
 
-    class Application : public Noncopyable<Application>
+    class Application : public NonCopyMove<Application>
     {
     public:
         enum class ReturnCode
@@ -43,7 +43,7 @@ namespace yaget
 
         static int ExitCode(ReturnCode returnCode) { return static_cast<int>(returnCode); }
 
-        using WindowHandle_t = void*;
+        using WindowHandle_t = app::DisplaySurface::PlatformWindowHandle;
 
         virtual ~Application() = default;
 

@@ -9,6 +9,7 @@
     <Import Project="yaget.terminal.props" />
     <Import Project="yaget.hana.props" />
     <Import Project="yaget.Math.DXTK.props" />
+    <Import Project="yaget.Mather.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
     <YAGET_RUN_FOLDER>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\bin\$(ProjectName)\$(Platform).$(Configuration)\</YAGET_RUN_FOLDER>

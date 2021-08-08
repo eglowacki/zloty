@@ -66,6 +66,19 @@ namespace yaget
         ~Noncopyable() = default;
     };
 
+    template <typename T>
+    class NonCopyMove : public Noncopyable<T>
+    {
+    public:
+        NonCopyMove(NonCopyMove&& other) = delete;
+        T& operator=(T&& other) = delete;
+
+    protected:
+        NonCopyMove() = default;
+        ~NonCopyMove() = default;
+    };
+
+
     //// Notes about move
     //class Foo;
     //class Move : public Noncopyable<Foo> // optional if no copy allowed

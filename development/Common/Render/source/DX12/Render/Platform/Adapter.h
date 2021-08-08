@@ -27,8 +27,6 @@ namespace D3D12MA { class Allocator; }
 
 namespace yaget::render::platform
 {
-    class SwapChain2;
-
     class Adapter
     {
     public:
