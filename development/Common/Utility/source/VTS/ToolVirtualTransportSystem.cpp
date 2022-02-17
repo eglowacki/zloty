@@ -23,8 +23,11 @@ yaget::io::tool::VirtualTransportSystem::VirtualTransportSystem(dev::Configurati
         DatabaseHandle dbLocker = LockDatabaseAccess();
         std::vector<SectionRecord> sections = dbLocker->DB().GetRowsTuple<SectionRecord>(command);
         std::string logMessage = "VTS Sections:\n";
+        auto numSections = sections.size();
         for (const auto& section : sections)
         {
+            --numSections;
+
             logMessage += fmt::format("Section: '{}', Path: '[{}]', Filters: '[{}]', ReadOnly: '{}', Recursive: '{}'\n", std::get<0>(section), std::get<1>(section), std::get<2>(section), pp::log(std::get<3>(section)), pp::log(std::get<4>(section)));
             auto resolvedPaths = conv::Split(std::get<1>(section), ",");
             auto numPaths = resolvedPaths.size();
@@ -32,7 +35,7 @@ yaget::io::tool::VirtualTransportSystem::VirtualTransportSystem(dev::Configurati
             {
                 logMessage += fmt::format("    Expended Path: '{}'", util::ExpendEnv(it, nullptr));
 
-                if (--numPaths)
+                if (--numPaths || numSections)
                 {
                     logMessage += "\n";
                 }

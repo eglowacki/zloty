@@ -161,7 +161,7 @@ namespace yaget::comp
         using Patterns = std::unordered_map<PatternSet, std::set<comp::Id_t>>;
         Patterns mPatterns;
 
-        const Strings mComponentNames = comp::db::GetPolicyRowNames<P::Row>();
+        const Strings mComponentNames = comp::db::GetPolicyRowNames<typename P::Row>();
     };
 
     namespace internal
@@ -229,16 +229,16 @@ T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
     }
 
     memory::PoolAllocator<T>& componentAllocator = FindAllocator<T>();
-    T* newComponenet = componentAllocator.Allocate(std::forward<comp::Id_t>(id), std::forward<Args>(args)...);
+    T* newComponent = componentAllocator.Allocate(std::forward<comp::Id_t>(id), std::forward<Args>(args)...);
 
-    std::get<T*>(mItems[id]) = newComponenet;
+    std::get<T*>(mItems[id]) = newComponent;
 
     FullRow newRow = FindItem(id);
     PatternSet newBits = GetValidBits(newRow);
     YAGET_ASSERT(newBits.any(), "Adding new Component to an item did not create any new pattern bits.");
     mPatterns[newBits].insert(id);
 
-    return newComponenet;
+    return newComponent;
 }
 
 template<typename P>
@@ -387,7 +387,7 @@ void yaget::comp::Coordinator<P>::ForEach(const comp::ItemIds& ids, std::functio
 {
     for (const auto& id : ids)
     {
-        auto requestedRow = FindItem<R>(id);
+        const auto requestedRow = FindItem<R>(id);
         if (!callback(id, requestedRow))
         {
             break;
@@ -399,7 +399,7 @@ template<typename P>
 template<typename R>
 std::size_t yaget::comp::Coordinator<P>::ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback)
 {
-    auto ids = GetItemIds<R>();
+    const auto ids = GetItemIds<R>();
     ForEach<R>(ids, callback);
 
     return ids.size();

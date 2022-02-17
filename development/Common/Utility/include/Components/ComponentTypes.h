@@ -24,18 +24,18 @@ namespace yaget
 {
     namespace comp
     {
-        // represents unique id of entity (item) and every components
-        // which entity is composed of
+        // Represents unique id of entity (item) and every component
+        // that entity is composed of.
         using Id_t = uint64_t;
 
         using ItemIds = std::set<comp::Id_t>;
 
         // Any id's that are marked as persistent, will have high bit set, actual high bit 0x8000000000000000
-        static constexpr const Id_t PERSISTENT_ID_BIT = 0x800000000000;
+        static constexpr const Id_t PERSISTENT_ID_BIT = 0x8000000000000000;
 
         static constexpr const Id_t INVALID_ID = 0;
-        static constexpr const Id_t END_ID_MARKER = (~PERSISTENT_ID_BIT) - 1;
         static constexpr const Id_t GLOBAL_ID_MARKER = ~PERSISTENT_ID_BIT;
+        static constexpr const Id_t END_ID_MARKER = GLOBAL_ID_MARKER - 1;
 
         constexpr Id_t StripQualifiers(Id_t id)
         {
@@ -45,7 +45,7 @@ namespace yaget
         constexpr bool IsIdValid(Id_t id)
         {
             const auto& sid = StripQualifiers(id);
-            return !(sid == INVALID_ID || sid == END_ID_MARKER || sid == GLOBAL_ID_MARKER || id == PERSISTENT_ID_BIT);
+            return !(sid == INVALID_ID || sid == END_ID_MARKER || sid == GLOBAL_ID_MARKER);
         }
 
         constexpr bool IsIdPersistent(Id_t id)
@@ -68,7 +68,8 @@ namespace yaget
         // You can use this type of pattern to decorate RowPolicy
         //struct GlobalEntity : yaget::comp::RowPolicy<BoardComponent*, ScoreComponent*>
         //{
-        //    using AutoCleanup = bool;
+        //    using AutoCleanup = bool; // cleanup any left over components on shutdown
+        //    using Global = bool;      // used as a global entity
         //};
         //
         template <typename... IS>
@@ -85,7 +86,6 @@ namespace yaget
         namespace gs
         {
             // Used a as policy in GameSystem to handle last entity/item during iteration
-            // I - index slot used in GameCoordinator to use with this system. Current convention
             // T how the last and end element iteration is handled
             template <bool T>
             struct EndMarker

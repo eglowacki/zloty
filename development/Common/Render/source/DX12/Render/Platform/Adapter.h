@@ -19,8 +19,8 @@
 
 struct IDXGIFactory4;
 struct ID3D12Device4;
-struct ID3D12CommandQueue;
-struct ID3D12Fence;
+//struct ID3D12CommandQueue;
+//struct ID3D12Fence;
 struct IDXGIAdapter4;
 
 namespace D3D12MA { class Allocator; }

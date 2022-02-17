@@ -68,6 +68,11 @@ namespace yaget::comp::gs
                 Update(id, gameClock, channel, row);
                 return true;
             });
+
+            if constexpr (std::is_same_v<EndMarker, GenerateEndMarker>)
+            {
+                Update(END_ID_MARKER, gameClock, channel, {});
+            }
         }
 
     protected:
