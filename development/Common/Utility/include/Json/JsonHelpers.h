@@ -39,10 +39,10 @@ namespace yaget::json
     {
         YAGET_ASSERT(IsSectionValid(jasonBlock, sectionA, sectionB), "Invalid Section '%s/%s' requested.", sectionA, sectionB);
 
-        auto it = jasonBlock.find(sectionA);
+        const auto it = jasonBlock.find(sectionA);
         if (!sectionB.empty())
         {
-            auto itB = (*it).find(sectionB);
+            const auto itB = (*it).find(sectionB);
             return std::cref(*itB);
         }
 
@@ -54,7 +54,7 @@ namespace yaget::json
     template<typename T>
     inline T GetValue(const nlohmann::json& block, const char* key, const T& defaultValue)
     {
-        if (auto it = block.find(key); it != block.end())
+        if (const auto it = block.find(key); it != block.end())
         {
             return (*it).get<T>();
         }
@@ -68,7 +68,7 @@ namespace yaget::json
     template<typename T>
     inline T GetValue(const nlohmann::json& block, const char* key, const T& defaultValue, std::function<T(const T & valueNew, const T & valueOld)> combiner)
     {
-        if (auto it = block.find(key); it != block.end())
+        if (const auto it = block.find(key); it != block.end())
         {
             return combiner((*it).get<T>(), defaultValue);
         }

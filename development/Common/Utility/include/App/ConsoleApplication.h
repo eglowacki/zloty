@@ -29,7 +29,7 @@ namespace yaget
     {
     public:
         ConsoleApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
-        ~ConsoleApplication();
+        ~ConsoleApplication() override;
 
         app::DisplaySurface GetSurface() const override { return app::DisplaySurface{ mOutputHandle, app::SurfaceState::Shared }; };
 
@@ -49,7 +49,7 @@ namespace yaget
         {
         public:
             DefaultConsole(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
-            ~DefaultConsole();
+            ~DefaultConsole() override;
         };
 
         class BlankApplication : public Application

@@ -123,15 +123,15 @@ namespace yaget
 
 // helper defines during development to suppress any warnings, since we compile with warnings as errors
 //
-//  YAGET_COMPILE_SUPRESS_START(4100, "unreferenced local variable")
+//  YAGET_COMPILE_SUPPRESS_START(4100, "unreferenced local variable")
 //  your code here
-//  YAGET_COMPILE_SUPRESS_END
-#define YAGET_COMPILE_SUPRESS_START(x, m) \
+//  YAGET_COMPILE_SUPPRESS_END
+#define YAGET_COMPILE_SUPPRESS_START(x, m) \
 __pragma(warning(push)) \
 __pragma(warning(disable : x)) \
 __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] Disabling Compiler Warning: [" YAGET_STRINGIZE(x) "] - " m))
 
-#define YAGET_COMPILE_SUPRESS_END __pragma(warning(pop))
+#define YAGET_COMPILE_SUPPRESS_END __pragma(warning(pop))
 
 
 // helper defines during development to change warning level around block of code
@@ -143,7 +143,7 @@ __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] Disabling Co
 __pragma(warning(push, x)) \
 __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] Changed Warning Level to: [" YAGET_STRINGIZE(x) "] - " m))
 
-#define YAGET_COMPILE_WARNING_LEVEL_END YAGET_COMPILE_SUPRESS_END
+#define YAGET_COMPILE_WARNING_LEVEL_END YAGET_COMPILE_SUPPRESS_END
 
 #define YAGET_COMPILE_GLOBAL_SETTINGS(m) \
 __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] GLOBAL-SETTING ======== " m " ========"))
@@ -151,7 +151,7 @@ __pragma(message(__FILE__ "(" YAGET_STRINGIZE(__LINE__) "): [yaget] GLOBAL-SETTI
 // Support for custom functions to provide brand name of product and extra log tags
 #define YAGET_GET_BRAND_FUNCTION_NAME GetBrandName
 #define YAGET_GET_BRAND_FUNCTION_STRING YAGET_STRINGIZE(YAGET_GET_BRAND_FUNCTION_NAME)
-typedef const char* (*YagetFuncBrandName) (void);
+typedef const char* (*YagetFuncBrandName) ();
 
 // It exposes GetBrandName function in application and return user specified brand/company name, which is used in $(Brand) environment alias
 #define YAGET_BRAND_NAME_F(name)  extern "C" __declspec(dllexport) const char* YAGET_GET_BRAND_FUNCTION_NAME() { return name; }
@@ -200,11 +200,13 @@ namespace yaget
 
 // get size of struct at compile time
 // define YAGET_GET_STRUCT_SIZE before calling ANY headers (do that in your cpp at the top of the file)
-// and then call print_size_at_compile and errors out
+// and then call yaget::meta::print_size_at_compile and compile will error out with error message,
+// which will contain size of the type you have passed.
+// Example:
+//      #define YAGET_GET_STRUCT_SIZE
+//      const int holder = yaget::meta::print_size_at_compile<yaget::metrics::TraceRecord>();
+//
 // If YAGET_GET_STRUCT_SIZE is not define, print_size_at_compile does nothing
 // Output (using TraceRecord struct with 80 bytes in size as an example):
 // 1>Meta\CompilerAlgo.h(467,1): error C2440: 'initializing': cannot convert from 'int' to 'char (*)[80]'
 // 1>PerformanceTracer.cpp(4): message : see reference to function template instantiation 'int yaget::meta::print_size_at_compile<TraceRecord>(void)' being compiled
-
-//#define YAGET_GET_STRUCT_SIZE
-//const int holder = yaget::meta::print_size_at_compile<yaget::metrics::TraceRecord>();

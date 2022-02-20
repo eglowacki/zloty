@@ -2,7 +2,7 @@
 
 #include <comdef.h>
 
-#include "Fmt/printf.h"
+#include "fmt/printf.h"
 #include "App/AppUtilities.h"
 #include "App/Application.h"
 #include "Platform/WindowsLean.h"
@@ -137,7 +137,7 @@ yaget::io::FileLoader::FileLoader()
 void yaget::io::FileLoader::Stop()
 {
     mQuit = true;
-    bool bResult = ::PostQueuedCompletionStatus(mIOPort, 0, io::FileData::kStopKey, nullptr) != 0; bResult;
+    [[maybe_unused]] bool bResult = ::PostQueuedCompletionStatus(mIOPort, 0, io::FileData::kStopKey, nullptr) != 0;
     mLoaderThread.reset();
     std::unique_lock<std::mutex> locker(mListMutex);
     mFilesToProcess.clear();
@@ -146,14 +146,14 @@ void yaget::io::FileLoader::Stop()
 yaget::io::FileLoader::~FileLoader()
 {
     Stop();
-    bool bResult = ::CloseHandle(mIOPort) != 0; bResult;
+    [[maybe_unused]] bool bResult = ::CloseHandle(mIOPort) != 0;
 }
 
 void yaget::io::FileLoader::Start()
 {
     metrics::Channel channel("io.file", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-    const bool tryNewOverlap = true;
+    [[maybe_unused]] constexpr bool tryNewOverlap = true;
     while (true)
     {
         std::vector<std::pair<ULONG_PTR, DWORD>> completionKeys;
@@ -163,7 +163,7 @@ void yaget::io::FileLoader::Start()
             OVERLAPPED_ENTRY overlappedEntries[entriesSize] = {};
             ULONG numEntriesRemoved = 0;
 
-            metrics::Channel channel("L.Waiting...", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel channelStatus("L.Waiting...", YAGET_METRICS_CHANNEL_FILE_LINE);
             bool bResult = ::GetQueuedCompletionStatusEx(mIOPort, &overlappedEntries[0], entriesSize, &numEntriesRemoved, INFINITE, false) != 0;
             if (mQuit)
             {

@@ -364,9 +364,6 @@
     <ClInclude Include="..\..\include\Base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\BitArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\STLHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>

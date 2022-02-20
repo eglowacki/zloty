@@ -277,28 +277,16 @@ yaget::Guid yaget::NewGuid()
         (unsigned char)((newId.Data3 >> 8) & 0xFF),
         (unsigned char)((newId.Data3) & 0xFF),
 
-        (unsigned char)newId.Data4[0],
-        (unsigned char)newId.Data4[1],
-        (unsigned char)newId.Data4[2],
-        (unsigned char)newId.Data4[3],
-        (unsigned char)newId.Data4[4],
-        (unsigned char)newId.Data4[5],
-        (unsigned char)newId.Data4[6],
-        (unsigned char)newId.Data4[7]
+        newId.Data4[0],
+        newId.Data4[1],
+        newId.Data4[2],
+        newId.Data4[3],
+        newId.Data4[4],
+        newId.Data4[5],
+        newId.Data4[6],
+        newId.Data4[7]
     };
 
     return bytes;
 }
-#endif
-
-
-// Specialization for std::swap<Guid>() --
-// call member swap function of lhs, passing rhs
-namespace std
-{
-    template <>
-    void swap(yaget::Guid &lhs, yaget::Guid &rhs)
-    {
-        lhs.swap(rhs);
-    }
-}
+#endif // GUID_WINDOWS

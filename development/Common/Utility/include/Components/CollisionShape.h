@@ -15,7 +15,6 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
 #include "MathFacade.h"
 
 class btCollisionShape;
@@ -27,7 +26,7 @@ namespace yaget
         class CollisionShape
         {
         public:
-            virtual ~CollisionShape() {}
+            virtual ~CollisionShape() = default;
             virtual btCollisionShape* GetShape() const = 0;
 
             float GetMass() const;
@@ -46,7 +45,6 @@ namespace yaget
         {
         public:
             BoxCollisionShape(const math3d::Vector3& halfExtends, float mass);
-            virtual ~BoxCollisionShape() {}
 
             btCollisionShape* GetShape() const override;
 

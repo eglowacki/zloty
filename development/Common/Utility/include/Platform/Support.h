@@ -19,7 +19,7 @@
 #include "Time/GameClock.h"
 #include <functional>
 
-namespace std { class thread; }
+class std::thread;
 
 namespace yaget
 {
@@ -66,7 +66,7 @@ namespace yaget
 
         inline double GetRealTime()
         {
-            time::Raw_t currentTime = GetRealTime(time::kRawUnit);
+            const time::Raw_t currentTime = GetRealTime(time::kRawUnit);
             return time::FromTo<double>(currentTime, time::kRawUnit, time::kSecondUnit);
         }
 

@@ -207,7 +207,8 @@ void yaget::SQLite::StatementBinder<math3d::Quaternion>::Bind(sqlite3* database,
     StatementBinder<std::string>::Bind(database, statement, conv::Convertor<math3d::Quaternion>::ToString(value), index);
 }
 
-void yaget::SQLite::StatementBinder<std::string>::Bind(sqlite3* database, sqlite3_stmt* statement, const std::string& value, int index)
+template<typename Fake>
+void yaget::SQLite::StatementBinder<std::string, Fake>::Bind(sqlite3* database, sqlite3_stmt* statement, const std::string& value, int index)
 {
     int result = sqlite3_bind_text(statement, index, value.c_str(), -1, SQLITE_TRANSIENT);
     const char* errorMessage = sqlite3_errmsg(database);

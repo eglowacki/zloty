@@ -358,12 +358,12 @@ namespace
         }
 
     private:
-        template<typename T>
-        static T GetPresizeTime()
+        template<typename TT>
+        static TT GetPresizeTime()
         {
             FILETIME platformTimestamp;
             GetPreciseSystemTime(&platformTimestamp);
-            T val = (static_cast<T>(platformTimestamp.dwHighDateTime) << 32) + platformTimestamp.dwLowDateTime;
+            TT val = (static_cast<T>(platformTimestamp.dwHighDateTime) << 32) + platformTimestamp.dwLowDateTime;
 
             return val;
         }

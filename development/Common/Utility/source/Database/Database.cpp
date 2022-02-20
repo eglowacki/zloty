@@ -1,15 +1,12 @@
 #include "Database/Database.h"
+#include "App/AppUtilities.h"
+#include "App/FileUtilities.h"
+#include "fmt/format.h"
+#include "Logger/YLog.h"
 #include "sqlite/SQLite.h"
 #include "sqlite/sqlite3.h"
-#include "App/AppUtilities.h"
-#include "Logger/YLog.h"
-#include "Fmt/format.h"
-#include "Exception/Exception.h"
-#include "App/FileUtilities.h"
 
 #include <filesystem>
-namespace fs = std::filesystem;
-
 
 namespace
 {

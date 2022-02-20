@@ -103,7 +103,7 @@ namespace yaget::app
 
         using WindowAppearances = std::map<Appearance, WindowAppearance>;
 
-        ProcHandler(const dev::Configuration::Init& init, const std::string& windowTitle, io::VirtualTransportSystem& vts, ProcessInput processInput, ProcessResize processResize, RequestClose requestClose);
+        ProcHandler(const dev::Configuration::Init& init, std::string windowTitle, io::VirtualTransportSystem& vts, ProcessInput processInput, ProcessResize processResize, RequestClose requestClose);
 
         HWND WinHandle() const { return mWindowHandle; }
         Appearance ActiveAppearance() const { return mActiveAppearance; }
@@ -139,7 +139,7 @@ namespace yaget::app
         ReflectedState mReflectedState;
 
         Appearance mActiveAppearance = Appearance::Window;
-        WindowAppearances mWindowAppearances;
+        WindowAppearances mWindowAppearances{};
     };
 
 }

@@ -83,12 +83,12 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
     : mDatabase(ResolveDatabaseName(name, runtimeMode == RuntimeMode::Reset), CombineSchemas(additionalSchema, Strings{fmt::format("INSERT INTO VersionTables(Id) VALUES('{}');", expectedVersion)}, itemsSchema), YAGET_DIRECTOR_VERSION)
     , mIdGameCache([this]() { return GetNextBatch(); })
 {
-    auto version = GetCell<int64_t>(mDatabase.DB(), "SELECT Id FROM VersionTables;");
-    YAGET_UTIL_THROW_ASSERT("DIRE", (expectedVersion == Database::NonVersioned || (expectedVersion != Database::NonVersioned && version == expectedVersion)), 
+    const auto tablesVersion = GetCell<int64_t>(mDatabase.DB(), "SELECT Id FROM VersionTables;");
+    YAGET_UTIL_THROW_ASSERT("DIRE", (expectedVersion == Database::NonVersioned || (expectedVersion != Database::NonVersioned && tablesVersion == expectedVersion)),
         fmt::format("Director Database '{}' has mismatched version. Expected: '{}', result: '{}'.", 
             yaget::util::ExpendEnv(name, nullptr).c_str(),
             expectedVersion, 
-            version));
+            tablesVersion));
 
     YLOG_INFO("DIRE", "Items Director initialized '%s'.", util::ExpendEnv(name, nullptr).c_str());
 

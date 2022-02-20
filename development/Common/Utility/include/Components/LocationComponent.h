@@ -36,7 +36,7 @@ namespace yaget
         {
         public:
             LocationComponent(Id_t id, const math3d::Vector3& position = math3d::Vector3(), const math3d::Quaternion& orientation = math3d::Quaternion(), const math3d::Vector3& scale = { 1.0f, 1.0f, 1.0f });
-            virtual ~LocationComponent();
+            ~LocationComponent() override;
 
             const math3d::Vector3& GetPosition() const { return mPosition; }
             const math3d::Quaternion& GetOrientation() const { return mOrientation; }
@@ -71,21 +71,17 @@ namespace yaget
 } // namespace yaget
 
 
-namespace std
+// Has function for LocationComponent
+template <>
+struct std::hash<yaget::comp::LocationComponent>
 {
-    // Has function for LocationComponent
-    template <>
-    struct hash<yaget::comp::LocationComponent>
+    size_t operator()(const yaget::comp::LocationComponent& location) const noexcept
     {
-        size_t operator()(const yaget::comp::LocationComponent& location) const
-        {
-            const math3d::Vector3& loc = location.GetPosition();
-            const math3d::Quaternion& orient = location.GetOrientation();
-            const math3d::Vector3& scale = location.GetScale();
-            return yaget::conv::GenerateHash(loc, orient, scale);
-        }
-    };
-
-} // namespace std
+        const math3d::Vector3& loc = location.GetPosition();
+        const math3d::Quaternion& orient = location.GetOrientation();
+        const math3d::Vector3& scale = location.GetScale();
+        return yaget::conv::GenerateHash(loc, orient, scale);
+    }
+};
 
 

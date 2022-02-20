@@ -118,139 +118,136 @@
 #include <typeindex>
 
 
-namespace std
+// provide comp id and type_index pair for hash so it can be used with containers (unordered_map)
+template <>
+struct std::hash<std::pair<yaget::comp::Id_t, std::type_index>>
 {
-    // provide comp id and type_index pair for hash so it can be used with containers (unordered_map)
-    template <>
-    struct hash<std::pair<yaget::comp::Id_t, std::type_index>>
-    {
-        size_t operator()(const std::pair<yaget::comp::Id_t, std::type_index>& collectorKey) const
-        {
-            std::hash<yaget::comp::Id_t> hashId_fn;
-            std::hash<std::type_index> hashType_fn;
+	size_t operator()(const std::pair<yaget::comp::Id_t, std::type_index>& collectorKey) const noexcept
+	{
+		constexpr std::hash<yaget::comp::Id_t> hashId_fn;
+		constexpr std::hash<std::type_index> hashType_fn;
 
-            size_t hashOne = hashId_fn(collectorKey.first);
-            size_t hashTwo = hashType_fn(collectorKey.second);
-            if (hashOne > hashTwo)
-            {
-                std::swap(hashOne, hashTwo);
-            }
+		size_t hashOne = hashId_fn(collectorKey.first);
+		size_t hashTwo = hashType_fn(collectorKey.second);
+		if (hashOne > hashTwo)
+		{
+			std::swap(hashOne, hashTwo);
+		}
 
-            std::hash<size_t> hashKey_fn;
-            size_t result = hashKey_fn(hashOne + hashTwo);
+		constexpr std::hash<size_t> hashKey_fn;
+		const size_t result = hashKey_fn(hashOne + hashTwo);
 
-            return result;
-        }
-    };
-}
+		return result;
+	}
+};
 
 namespace yaget::comp
 {
-    // Used as base class for more specific handling of collection of scene data.
-    // Main purpose is to handle last id marker, keep track of which components changed
-    // and maintain list of component hash states
-    // Potential implementation of Process
-    //void Process(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metric::Channel& channel, yaget::comp::LocationComponent* location)
-    //{
-    //    if (IsEndMarker(id, gameClock))
-    //    {
-    //        return;
-    //    }
+	// Used as base class for more specific handling of collection of scene data.
+	// Main purpose is to handle last id marker, keep track of which components changed
+	// and maintain list of component hash states
+	// Potential implementation of Process
+	//void Process(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metric::Channel& channel, yaget::comp::LocationComponent* location)
+	//{
+	//    if (IsEndMarker(id, gameClock))
+	//    {
+	//        return;
+	//    }
 
-    //    size_t currentHash = location->GetState();
-    //    if (UpdateHash(id, std::type_index(typeid(yaget::comp::LocationComponent)), currentHash))
-    //    {
-    //        mPayload->mLocations.push_back(yaget::comp::LocationChunk{ id, location->GetPosition(), location->GetOrientation() });
-    //    }
-    //    else
-    //    {
-    //        mPayload->mActiveIds.insert(id);
-    //    }
-    //}
-    // 
-    template <typename T>
-    class CollectorHelper : public Noncopyable<CollectorHelper<T>>
-    {
-    public:
-        using Stager = comp::PayloadStager<T>;
+	//    size_t currentHash = location->GetState();
+	//    if (UpdateHash(id, std::type_index(typeid(yaget::comp::LocationComponent)), currentHash))
+	//    {
+	//        mPayload->mLocations.push_back(yaget::comp::LocationChunk{ id, location->GetPosition(), location->GetOrientation() });
+	//    }
+	//    else
+	//    {
+	//        mPayload->mActiveIds.insert(id);
+	//    }
+	//}
+	// 
+	template <typename T>
+	class CollectorHelper : public Noncopyable<CollectorHelper<T>>
+	{
+	public:
+		using Stager = PayloadStager<T>;
 
-        CollectorHelper()// : mPayloadStager(payloadStager)
-        {}
+		CollectorHelper() // : mPayloadStager(payloadStager)
+		{
+		}
 
-        const Stager& PayloadStager() const { return mPayloadStager; }
+		const Stager& PayloadStager() const { return mPayloadStager; }
 
-    protected:
-        // Return true (set payload and clear current one)
-        // if id is end marker, otherwise false
-        bool IsEndMarker(comp::Id_t id, const time::GameClock& gameClock)
-        {
-            if (id == comp::END_ID_MARKER)
-            {
-                mPayloadStager.SetPayload(mPayload);
-                mPayload = nullptr;
-                return true;
-            }
+	protected:
+		// Return true (set payload and clear current one)
+		// if id is end marker, otherwise false
+		bool IsEndMarker(Id_t id, const time::GameClock& gameClock)
+		{
+			if (id == END_ID_MARKER)
+			{
+				mPayloadStager.SetPayload(mPayload);
+				mPayload = nullptr;
+				return true;
+			}
 
-            if (mLastTickCounter != gameClock.GetTickCounter())
-            {
-                mLastTickCounter = gameClock.GetTickCounter();
-                // this is a start of the frame, get new buffer to work with
-                mPayload = mPayloadStager.CreatePayload();
-            }
+			if (mLastTickCounter != gameClock.GetTickCounter())
+			{
+				mLastTickCounter = gameClock.GetTickCounter();
+				// this is a start of the frame, get new buffer to work with
+				mPayload = mPayloadStager.CreatePayload();
+			}
 
-            YAGET_ASSERT(mPayload, "Payload for stager is not initialized, posibly calling into Process in the same Frame/Tick that end id marker was already called.");
-            return false;
-        }
+			YAGET_ASSERT(mPayload, "Payload for stager is not initialized, posibly calling into Process in the same Frame/Tick that end id marker was already called.");
+			return false;
+		}
 
-        // Return true if hash was updated (entity changed), false otherwise and nothing changed about it
-        bool UpdateHash(comp::Id_t id, std::type_index compType, size_t currentHash)
-        {
-            StateKey stateKey = std::make_pair(id, compType);
-            auto it = mHashes.find(stateKey);
-            size_t lastHash = it != mHashes.end() ? it->second : std::numeric_limits<size_t>::max();
+		// Return true if hash was updated (entity changed), false otherwise and nothing changed about it
+		bool UpdateHash(Id_t id, std::type_index compType, size_t currentHash)
+		{
+			const StateKey stateKey = std::make_pair(id, compType);
+			const auto it = mHashes.find(stateKey);
+			const size_t lastHash = it != mHashes.end() ? it->second : std::numeric_limits<size_t>::max();
 
-            if (lastHash != currentHash)
-            {
-                // we need to update render location, since it got changed last time we rendered
-                mHashes.insert_or_assign(stateKey, currentHash);
-                return true;
-            }
+			if (lastHash != currentHash)
+			{
+				// we need to update render location, since it got changed last time we rendered
+				mHashes.insert_or_assign(stateKey, currentHash);
+				return true;
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        // IsEndMarker(...) call manages content of this data. Derived classes will use this
-        // to fill application specific data
-        typename Stager::Payload mPayload;
+		// IsEndMarker(...) call manages content of this data. Derived classes will use this
+		// to fill application specific data
+		typename Stager::Payload mPayload;
 
-    private:
-        Stager mPayloadStager;
+	private:
+		Stager mPayloadStager;
 
-        // maps hash value for component to see if we need to get new values
-        using StateKey = std::pair<comp::Id_t, std::type_index>;
-        using Hashes = std::unordered_map<StateKey, size_t>;
+		// maps hash value for component to see if we need to get new values
+		using StateKey = std::pair<Id_t, std::type_index>;
+		using Hashes = std::unordered_map<StateKey, size_t>;
 
-        Hashes mHashes;
-        uint64_t mLastTickCounter = time::INVALID_TICK_COUNTER;
-    };
+		Hashes mHashes;
+		uint64_t mLastTickCounter = time::INVALID_TICK_COUNTER;
+	};
 
-    // Used for specifying which data collector needs to get from game thread
-    struct LocationChunk
-    {
-        comp::Id_t mId = comp::INVALID_ID;
-        math3d::Vector3 mPosition;
-        math3d::Quaternion mOrientation;
-        math3d::Vector3 mScale;
-        io::Tag mTag;
-        math3d::Color mColor;
-    };
+	// Used for specifying which data collector needs to get from game thread
+	struct LocationChunk
+	{
+		Id_t mId = INVALID_ID;
+		math3d::Vector3 mPosition;
+		math3d::Quaternion mOrientation;
+		math3d::Vector3 mScale;
+		io::Tag mTag;
+		math3d::Color mColor;
+	};
 
-    struct SceneChunk
-    {
-        LocationChunk mCamera;
-        std::vector<LocationChunk> mLocations;
-        comp::ItemIds mActiveIds;
-        comp::ItemIds mDebugIds;
-    };
-
+	struct SceneChunk
+	{
+		LocationChunk mCamera;
+		std::vector<LocationChunk> mLocations{};
+		ItemIds mActiveIds{};
+		ItemIds mDebugIds{};
+	};
 } // namespace yaget::comp

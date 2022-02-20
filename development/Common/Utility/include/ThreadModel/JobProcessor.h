@@ -39,7 +39,7 @@ namespace yaget
  
                 void Clear();
                 // this thread is processing some task
-                [[nodiscard]] bool IsBusy() const { return mJobProcessor->mTaskInProgress == true; };
+                [[nodiscard]] bool IsBusy() const { return mJobProcessor->mTaskInProgress == true; }
  
             private: 
                 std::shared_ptr<JobProcessor> mJobProcessor; 

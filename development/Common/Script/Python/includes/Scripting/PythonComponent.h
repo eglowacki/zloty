@@ -97,20 +97,16 @@ namespace yaget
 } // namespace yaget
 
 
-namespace std
+// Hash function for PythonComponent
+template <>
+struct std::hash<yaget::scripting::PythonComponent>
 {
-    // Has function for PythonComponent
-    template <>
-    struct hash<yaget::scripting::PythonComponent>
+    size_t operator()(const yaget::scripting::PythonComponent& script) const
     {
-        size_t operator()(const yaget::scripting::PythonComponent& script) const
-        {
-            script;
-            //const math3d::Vector3& loc = location.GetPosition();
-            //const math3d::Quaternion& orient = location.GetOrientation();
-            //const math3d::Vector3& scale = location.GetScale();
-            return 0;//yaget::conv::GenerateHash(loc, orient, scale);
-        }
-    };
-
-} // namespace std
+        script;
+        //const math3d::Vector3& loc = location.GetPosition();
+        //const math3d::Quaternion& orient = location.GetOrientation();
+        //const math3d::Vector3& scale = location.GetScale();
+        return 0;//yaget::conv::GenerateHash(loc, orient, scale);
+    }
+};

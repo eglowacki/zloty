@@ -22,10 +22,6 @@ namespace
         return FALSE;
     }
 
-    HANDLE handle_cast(void* handle)
-    {
-        return reinterpret_cast<HANDLE>(handle);
-    }
 } // namespace
 
 
@@ -99,11 +95,11 @@ bool ConsoleApplication::onMessagePump(const time::GameClock& /*gameClock*/)
                 ctrlPressed = true;
             }
 
-            bool shiftPressed = (inputRec.Event.KeyEvent.dwControlKeyState & SHIFT_PRESSED) ? true : false;
+            const bool shiftPressed = (inputRec.Event.KeyEvent.dwControlKeyState & SHIFT_PRESSED) ? true : false;
             uint32_t flags = altPressed ? input::kButtonAlt : 0;
             flags |= ctrlPressed ? input::kButtonCtrl : 0;
             flags |= shiftPressed ? input::kButtonShift : 0;
-            int keyValue = mInputDevice.MapKey(inputRec.Event.KeyEvent.wVirtualKeyCode);
+            const int keyValue = mInputDevice.MapKey(inputRec.Event.KeyEvent.wVirtualKeyCode);
 
             if (inputRec.Event.KeyEvent.bKeyDown)
             {
@@ -128,6 +124,8 @@ bool ConsoleApplication::onMessagePump(const time::GameClock& /*gameClock*/)
             mInputDevice.KeyRecord(flags, keyValue);
         }
         break;
+    default: 
+        ;
     }
 
     return !mQuit;

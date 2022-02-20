@@ -47,7 +47,7 @@ yaget::io::tool::VirtualTransportSystem::VirtualTransportSystem(dev::Configurati
 }
 
 
-//YAGET_COMPILE_SUPRESS_START(4189, "'': local variable is initialized but not referenced")
+//YAGET_COMPILE_SUPPRESS_START(4189, "'': local variable is initialized but not referenced")
 
 bool yaget::io::tool::VirtualTransportSystem::AttachBlob(const std::vector<std::shared_ptr<io::Asset>>& assets)
 {
@@ -146,7 +146,7 @@ bool yaget::io::tool::VirtualTransportSystem::AttachBlob(const std::vector<std::
 
     return true;
 }
-//YAGET_COMPILE_SUPRESS_END
+//YAGET_COMPILE_SUPPRESS_END
 
 
 yaget::io::Tag yaget::io::tool::VirtualTransportSystem::CopyTag(const io::Tag& sourceTag, const Section& toSection, Options flat) const

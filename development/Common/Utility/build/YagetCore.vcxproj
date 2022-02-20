@@ -159,7 +159,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\Base.h" />
-    <ClInclude Include="..\..\include\BitArray.h" />
     <ClInclude Include="..\..\include\MathFacade.h" />
     <ClInclude Include="..\..\include\YagetCore.h" />
     <ClInclude Include="..\..\include\STLHelper.h" />

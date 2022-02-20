@@ -82,8 +82,8 @@ namespace yaget
             PhysicsComponent(Id_t id, PhysicsWorldComponent* physicsWorld, const Params& params);
 
             PhysicsComponent(Id_t id, btDiscreteDynamicsWorld* dynamicsWorld, const Params& params);
-            virtual ~PhysicsComponent();
-            virtual void Tick(const time::GameClock& gameClock) override;
+            ~PhysicsComponent() override;
+            void Tick(const time::GameClock& gameClock) override;
 
             DirectX::SimpleMath::Matrix GetMatrix() const;
             void SetMatrix(const DirectX::SimpleMath::Matrix& matrix);

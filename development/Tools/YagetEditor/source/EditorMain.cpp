@@ -1,6 +1,5 @@
 #include "Editor.h"
 
-//#include "YagetCore.h"
 #include "YagetVersion.h"
 #include "App/AppHarness.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
@@ -8,20 +7,17 @@
 #include "LoggerCpp/OutputFile.h"
 #include "Metrics/Concurrency.h"
 
-namespace yaget::ylog
+yaget::Strings yaget::ylog::GetRegisteredTags()
 {
-    yaget::Strings GetRegisteredTags()
+    yaget::Strings tags =
     {
-        yaget::Strings tags =
-        {
-            #include "Logger/LogTags.h"
-            #include "Render/Logger/RenderLogTags.h"
-            "SPAM",
-            "EDIT"
-        };
+        #include "Logger/LogTags.h"
+        #include "Render/Logger/RenderLogTags.h"
+        "SPAM",
+        "EDIT"
+    };
 
-        return tags;
-    }
+    return tags;
 }
 
 YAGET_BRAND_NAME_F("Beyond Limits")

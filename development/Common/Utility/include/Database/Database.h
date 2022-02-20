@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "Base.h"
 #include "sqlite/SQLite.h"
 
 namespace yaget

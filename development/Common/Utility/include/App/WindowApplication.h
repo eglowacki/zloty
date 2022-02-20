@@ -52,11 +52,11 @@ namespace yaget
         void Cleanup() override;
 
         uint32_t mLastKeyFlags = 0;
-        std::unique_ptr<app::ProcHandler> mWindowHandler;
+        std::unique_ptr<app::ProcHandler> mWindowHandler{};
         app::SurfaceState mActiveSurfaceState = app::SurfaceState::Shared;
 
         using RequestedEvents = std::queue<Event>;
-        RequestedEvents mRequestedEvents;
+        RequestedEvents mRequestedEvents{};
         std::mutex mEventsMutex;
     };
 } // namespace yaget

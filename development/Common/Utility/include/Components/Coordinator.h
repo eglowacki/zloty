@@ -33,7 +33,7 @@ namespace yaget::comp
         template <std::size_t TupleIndex, std::size_t MaxTupleSize, typename Tuple>
         constexpr auto coordinator_allocator_combine()
         {
-            using ComponentType = typename std::tuple_element<TupleIndex, Tuple>::type;
+            using ComponentType = std::tuple_element_t<TupleIndex, Tuple>;
 
             using CompType = typename meta::strip_qualifiers_t<ComponentType>;
             std::tuple<memory::PoolAllocator<CompType>> currentRow;
@@ -152,14 +152,14 @@ namespace yaget::comp
             return bits;
         }
 
-        Allocators mAllocators;
+        Allocators mAllocators{};
 
         // Actual item created from Allocators
-        std::map<comp::Id_t, FullRow> mItems;
+        std::map<comp::Id_t, FullRow> mItems{};
 
         // map from unique bits to all id's which contain that specific set of components
         using Patterns = std::unordered_map<PatternSet, std::set<comp::Id_t>>;
-        Patterns mPatterns;
+        Patterns mPatterns{};
 
         const Strings mComponentNames = comp::db::GetPolicyRowNames<typename P::Row>();
     };
@@ -175,7 +175,7 @@ namespace yaget::comp
         template<int N, typename To, typename From>
         void RowCopy(To& to, const From& from)
         {
-            auto element = std::get<std::tuple_element<N - 1, To>::type>(from);
+            auto element = std::get<std::tuple_element_t<N - 1, To>>(from);
             std::get<N - 1>(to) = element;
             if constexpr (N - 1 > 0)
             {
@@ -246,7 +246,7 @@ template<typename T>
 void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
 {
     YAGET_ASSERT(component, "Component parameter of type: '%s' is nulptr.", typeid(T).name());
-    YAGET_ASSERT(mItems.find(id) != mItems.end(), "Item id: '%d' of type: '%s' does not exist in collection.", id, typeid(T).name());
+    YAGET_ASSERT(mItems.contains(id), "Item id: '%d' of type: '%s' does not exist in collection.", id, typeid(T).name());
 
     FullRow row = FindItem(id);
     PatternSet currentBits = GetValidBits(row);
@@ -297,7 +297,7 @@ void yaget::comp::Coordinator<P>::RemoveComponents(comp::Id_t id)
         }
     });
 
-    YAGET_ASSERT(mItems.find(id) == mItems.end(), "Item id: '%d' still exist in collection.", id);
+    YAGET_ASSERT(mItems.contains(id) == false, "Item id: '%d' still exist in collection.", id);
 }
 
 template<typename P>
@@ -325,7 +325,7 @@ template<typename P>
 template<typename R>
 typename R::Row yaget::comp::Coordinator<P>::FindItem(comp::Id_t id) const
 {
-    if constexpr (std::is_same_v<R::Row, FullRow>)
+    if constexpr (std::is_same_v<typename R::Row, FullRow>)
     {
         return FindItem(id);
     }

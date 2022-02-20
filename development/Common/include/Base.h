@@ -28,7 +28,7 @@ This is 3D engine (Yet Another Game Engine Technology)
 #include <cstdint>
 #include <string>
 
-#if YAGET_NEW_ALLOCATOR_ENABLED == 1
+#if defined(YAGET_NEW_ALLOCATOR_ENABLED) && (YAGET_NEW_ALLOCATOR_ENABLED == 1)
     #ifdef YAGET_DEBUG
         #define _CRTDBG_MAP_ALLOC
     #endif // YAGET_DEBUG

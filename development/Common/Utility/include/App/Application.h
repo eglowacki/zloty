@@ -30,7 +30,7 @@ namespace yaget
     namespace io { class VirtualTransportSystem; }
     namespace items { class Director; }
 
-    class Application : public NonCopyMove<Application>
+    class Application : public NonCopyMove<Application>  // NOLINT(cppcoreguidelines-special-member-functions)
     {
     public:
         enum class ReturnCode
@@ -91,7 +91,7 @@ namespace yaget
         time::GameClock mApplicationClock;
         time::GameClock mRenderClock;
         input::InputDevice mInputDevice;
-        std::unique_ptr<Mouse> mLastMouseInput;
+        std::unique_ptr<Mouse> mLastMouseInput{};
 
     private:
         virtual bool IsSuspended() const = 0;
@@ -102,7 +102,7 @@ namespace yaget
 
         // when user request quit, this will be processed on the next frame, to make sure orderly exit
         std::atomic_bool mRequestQuit{false};
-        std::unique_ptr<mt::JobPool> mGeneralPoolThread;
+        std::unique_ptr<mt::JobPool> mGeneralPoolThread{};
         using State_t = double;
         State_t mRenderState = 0.0;
         io::VirtualTransportSystem& mVTS;

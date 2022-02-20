@@ -2,9 +2,7 @@
 // add any new tags here. If you are developing executable, dll, add your own tags to existing ones
 // by including code snippet below (adjusted for your environment) in one of your cpp files, preferably 'main'
 //
-//namespace yaget::ylog
-//{
-//  yaget::Strings GetRegisteredTags()
+//  yaget::Strings yaget::ylog::GetRegisteredTags()
 //  {
 //      yaget::Strings tags =
 //      {
@@ -15,7 +13,6 @@
 //
 //      return tags;
 //  }
-//} // namespace yaget::ylog
 //
 
 // hashed values for core log tags

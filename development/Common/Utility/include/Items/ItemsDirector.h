@@ -68,7 +68,7 @@ namespace yaget
             struct Locker : public DatabaseLocker
             {
                 Locker(std::mutex& mutex, Director& director) : DatabaseLocker(director), mMutex(mutex) { mMutex.lock(); }
-                ~Locker() { mMutex.unlock(); }
+                ~Locker() override { mMutex.unlock(); }
 
             private:
                 std::mutex& mMutex;

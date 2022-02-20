@@ -8,7 +8,7 @@ namespace
     {
         if (!handle)
         {
-            return math3d::Vector2(1, 1);
+            return { 1, 1 };
         }
 
         RECT clientRect;
@@ -20,11 +20,8 @@ namespace
     }
 
     //--------------------------------------------------------------------------------------------------
-    BOOL CALLBACK MonitorEnumProc(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
+    BOOL CALLBACK MonitorEnumProc(__in  HMONITOR hMonitor, [[maybe_unused]] __in  HDC hdcMonitor, [[maybe_unused]] __in  LPRECT lprcMonitor, __in  LPARAM dwData)
     {
-        hdcMonitor;
-        lprcMonitor;
-
         std::vector<yaget::app::MonitorInfoEx>& infoArray = *reinterpret_cast<std::vector<yaget::app::MonitorInfoEx>*>(dwData);
         yaget::app::MonitorInfoEx info;
         ::GetMonitorInfo(hMonitor, &info);

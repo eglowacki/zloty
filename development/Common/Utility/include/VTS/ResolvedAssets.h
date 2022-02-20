@@ -47,7 +47,7 @@ namespace yaget::io
             }
         }
 
-        nlohmann::json root;
+        nlohmann::json root{};
     };
 
     template <typename... T>
@@ -158,8 +158,6 @@ namespace yaget::io
             , mHeader{ image::Header::PixelType::None, image::Header::DataType::RT }
             , mPixels(buffer.second ? image::Process(mBuffer, &mHeader) : io::CreateBuffer(0))
         {
-            int z = 0;
-            z;
         }
 
         image::Header mHeader;

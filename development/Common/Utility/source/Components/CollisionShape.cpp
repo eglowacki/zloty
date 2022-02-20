@@ -1,10 +1,10 @@
 #include "Components/CollisionShape.h"
 
-//YAGET_COMPILE_SUPRESS_START(4127, "conditional expression is constant")
-//YAGET_COMPILE_SUPRESS_START(4099, "'': type name first seen using 'class' now seen using 'struct'")
+//YAGET_COMPILE_SUPPRESS_START(4127, "conditional expression is constant")
+//YAGET_COMPILE_SUPPRESS_START(4099, "'': type name first seen using 'class' now seen using 'struct'")
 //#include "btBulletDynamicsCommon.h" 
-//YAGET_COMPILE_SUPRESS_END
-//YAGET_COMPILE_SUPRESS_END;
+//YAGET_COMPILE_SUPPRESS_END
+//YAGET_COMPILE_SUPPRESS_END;
 
 yaget::physics::CollisionShape::CollisionShape(float mass)
     : mMass(mass)

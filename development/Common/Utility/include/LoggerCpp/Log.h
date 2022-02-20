@@ -12,11 +12,9 @@
 
 
 #include "LoggerCpp/DateTime.h"
-#include "LoggerCpp/Utils.h"
 
 #include <sstream>
 #include <iomanip>  // For easy use of parametric manipulators (setfill, setprecision) by client code
-#include <memory>
 #include <array>
 
 namespace yaget::ylog

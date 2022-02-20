@@ -1,5 +1,4 @@
 ﻿#include "Editor.h"
-
 #include "EditorGameCoordinator.h"
 #include "EditorGameTypes.h"
 #include "Items/ItemsDirector.h"
@@ -7,7 +6,6 @@
 #include "RenderGameCoordinator.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
-
 
 int yaget::editor::Run(yaget::args::Options& options)
 {

@@ -49,7 +49,7 @@ namespace yaget
         enum class DatabaseType { New, Append, ReadOnly, InMemory };
 
         // This is maximum size for db execute command.
-        static const uint32_t MAX_COMMAND_LEN = 1000000;// 4096;
+        static constexpr uint32_t MAX_COMMAND_LEN = 1000000;// 4096;
 
         //-------------------------------------------------------------------------------------------------------------------------------------------
         struct QueryCallback
@@ -104,7 +104,7 @@ namespace yaget
         template<typename T>
         bool ExecuteStatementTuple(const StatementId_t& statementId, const T& dataRow);
 
-        bool IsStatementCached(const StatementId_t& statementId) const { return mStatements.find(statementId) != std::end(mStatements); }
+        bool IsStatementCached(const StatementId_t& statementId) const { return mStatements.contains(statementId); }
 
         template<typename T>
         T GetRowTuple(const std::string& command, bool* result) const noexcept(false);
@@ -123,19 +123,21 @@ namespace yaget
 
     private:
         // this templates execute binding call to sqlite per specific type
-        template<typename T> struct StatementBinder;
-        template<> struct StatementBinder<conv::unused_marker_t> {static void Bind(sqlite3* /*database*/, sqlite3_stmt* /*statement*/, conv::unused_marker_t /*value*/, int /*index*/) {}};
-        template<> struct StatementBinder<null_marker_t> {static void Bind(sqlite3* database, sqlite3_stmt* statement, null_marker_t value, int index);};
-        template<> struct StatementBinder<bool> { static void Bind(sqlite3* database, sqlite3_stmt* statement, bool value, int index); };
-        template<> struct StatementBinder<int> {static void Bind(sqlite3* database, sqlite3_stmt* statement, int value, int index);};
-        template<> struct StatementBinder<int64_t> {static void Bind(sqlite3* database, sqlite3_stmt* statement, int64_t value, int index);};
-        template<> struct StatementBinder<uint64_t> {static void Bind(sqlite3* database, sqlite3_stmt* statement, uint64_t value, int index);};
-        template<> struct StatementBinder<float> {static void Bind(sqlite3* database, sqlite3_stmt* statement, float value, int index);};
-        template<> struct StatementBinder<yaget::Guid> { static void Bind(sqlite3* database, sqlite3_stmt* statement, yaget::Guid value, int index); };
-        template<> struct StatementBinder<std::string> {static void Bind(sqlite3* database, sqlite3_stmt* statement, const std::string& value, int index);};
-        template<> struct StatementBinder<std::vector<std::string>> { static void Bind(sqlite3* database, sqlite3_stmt* statement, const std::vector<std::string>& value, int index); };
-        template<> struct StatementBinder<math3d::Vector3> { static void Bind(sqlite3* database, sqlite3_stmt* statement, const math3d::Vector3& value, int index); };
-        template<> struct StatementBinder<math3d::Quaternion> { static void Bind(sqlite3* database, sqlite3_stmt* statement, const math3d::Quaternion& value, int index); };
+        // NOTE: usage of fake is based on http://www.cplusplus.com/forum/general/193680/
+        template<typename T, typename Fake = void> struct StatementBinder;
+
+        template<typename Fake> struct StatementBinder<conv::unused_marker_t, Fake> {static void Bind(sqlite3* /*database*/, sqlite3_stmt* /*statement*/, conv::unused_marker_t /*value*/, int /*index*/) {}};
+        template<typename Fake> struct StatementBinder<null_marker_t, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, null_marker_t value, int index);};
+        template<typename Fake> struct StatementBinder<bool, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, bool value, int index); };
+        template<typename Fake> struct StatementBinder<int, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, int value, int index);};
+        template<typename Fake> struct StatementBinder<int64_t, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, int64_t value, int index);};
+        template<typename Fake> struct StatementBinder<uint64_t, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, uint64_t value, int index);};
+        template<typename Fake> struct StatementBinder<float, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, float value, int index);};
+        template<typename Fake> struct StatementBinder<yaget::Guid, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, yaget::Guid value, int index); };
+        template<typename Fake> struct StatementBinder<std::string, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, const std::string& value, int index);};
+        template<typename Fake> struct StatementBinder<std::vector<std::string>, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, const std::vector<std::string>& value, int index); };
+        template<typename Fake> struct StatementBinder<math3d::Vector3, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, const math3d::Vector3& value, int index); };
+        template<typename Fake> struct StatementBinder<math3d::Quaternion, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, const math3d::Quaternion& value, int index); };
 
         // this will bind specific value type to sql statement
         template <
@@ -234,7 +236,7 @@ namespace yaget
                 return Q == QueryGetter::Multi ? 0 : -1;
             }
 
-            std::vector<Row> mRowData;
+            std::vector<Row> mRowData{};
         };
 
     } // namespace internal
@@ -258,7 +260,7 @@ namespace yaget
     void SQLite::PreCacheStatementTuple(const StatementId_t& statementId, const std::string& tableName, const Strings& columnNames, Behaviour behaviour, TimeStamp automaticTime /*= TimeStamp::No*/)
     {
         YAGET_ASSERT(mDatabase, "SQLite::ExecuteStatement<RT>: '%s' called for table: '%s', but sqlite db is not created yet.", statementId.c_str(), tableName.c_str());
-        YAGET_ASSERT(mStatements.find(statementId) == std::end(mStatements), "Can not create new statement '%s' since it already exists.", conv::Convertor<std::string>::ToString(statementId).c_str());
+        YAGET_ASSERT(!mStatements.contains(statementId), "Can not create new statement '%s' since it already exists.", conv::Convertor<std::string>::ToString(statementId).c_str());
 
         std::string timeStamp;
         if (automaticTime == TimeStamp::Yes)
@@ -266,7 +268,7 @@ namespace yaget
             timeStamp = ", TimeStamp";
         }
 
-        int numValues = std::tuple_size<T>::value - 1;
+        int numValues = std::tuple_size_v<T> - 1;
         const char* updateStr = behaviour == Behaviour::Update ? "OR REPLACE" : "";
         std::string command = fmt::format("INSERT {} INTO '{}' ({}{}) VALUES (?", updateStr, tableName, conv::Combine(columnNames, ", "), timeStamp);
         while (numValues)
@@ -288,7 +290,7 @@ namespace yaget
     template<typename T>
     bool SQLite::ExecuteStatementTuple(const StatementId_t& statementId, const T& dataRow)
     {
-        YAGET_ASSERT(mStatements.find(statementId) != std::end(mStatements), "Can not execute statement '%s' because it's not pre-cached ", conv::Convertor<std::string>::ToString(statementId).c_str());
+        YAGET_ASSERT(mStatements.contains(statementId), "Can not execute statement '%s' because it's not pre-cached ", conv::Convertor<std::string>::ToString(statementId).c_str());
 
         auto* statement = &mStatements[statementId];
         statement->UpdateStatementTuple(dataRow);

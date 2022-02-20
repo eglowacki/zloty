@@ -75,7 +75,7 @@ namespace yaget
 
             inline uint64_t Hash() const 
             {
-                std::hash<Guid> hasher;
+                const std::hash<Guid> hasher;
                 return hasher(mGuid);
             }
 

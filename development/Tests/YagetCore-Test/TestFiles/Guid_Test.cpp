@@ -19,6 +19,13 @@ TEST(YagetCore, Types_Guid)
     yaget::Guid s3("fdaba646-e07e-49de-9529-4499a5580c75");
     yaget::Guid s4("7bcd757f-5b10-4f9b-af69-1a1f226f3b3e");
 
+    std::hash<yaget::Guid> hasher;
+    const auto hashValue1 = hasher(s1);
+    EXPECT_NE(hashValue1, 0);
+
+    const auto hashValue2 = hasher(s2);
+    EXPECT_NE(hashValue1, hashValue2);
+
     EXPECT_EQ(r1 != r2 || r1 != r3 || r2 != r3, true);
     EXPECT_NE(s1, s2);
     EXPECT_EQ(s1, s4);
@@ -46,7 +53,8 @@ TEST(YagetCore, Types_Guid)
     EXPECT_EQ(swap2, swap4);
     EXPECT_NE(swap1, swap2);
 
-    swap1.swap(swap2);
+    using std::swap;
+    swap(swap1, swap2);
 
     EXPECT_EQ(swap1, swap4);
     EXPECT_EQ(swap2, swap3);

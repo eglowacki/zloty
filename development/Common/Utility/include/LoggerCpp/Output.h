@@ -15,7 +15,6 @@
 #include <vector>
 #include <typeinfo>
 #include <memory>
-#include <set>
 
 // The following includes "boost/shared_ptr.hpp" if LOGGER_USE_BOOST_SHARED_PTR is defined,
 // or <memory> (or <tr1/memory>) when C++11 (or experimental C++0x) is available,

@@ -10,7 +10,6 @@
  */
 
 #include "LoggerCpp/OutputConsole.h"
-#include "Base.h"
 #include <cstdio>
 #include "Platform/WindowsLean.h"
 
@@ -29,7 +28,7 @@ OutputConsole::~OutputConsole()
 // Convert a Level to a Win32 console color text attribute
 unsigned short OutputConsole::toWin32Attribute(Log::Level aLevel)
 {
-    unsigned short code;
+    unsigned short code = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 
     switch (aLevel)
     {
@@ -45,8 +44,6 @@ unsigned short OutputConsole::toWin32Attribute(Log::Level aLevel)
             break; // red
         case Log::Level::eCritic: code = FOREGROUND_RED | FOREGROUND_INTENSITY;
             break; // light red
-        default: code = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-            break; // white
     }
 
     return (code);

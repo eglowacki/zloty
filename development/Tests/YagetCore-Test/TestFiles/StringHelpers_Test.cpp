@@ -16,7 +16,7 @@ private:
 
 TEST_F(Strings, WildCardMatch)
 {
-    std::string fileName = "c:/foldera/folderb/bar.txt";
+    const std::string fileName = "c:/foldera/folderb/bar.txt";
 
     EXPECT_TRUE(yaget::WildCompare("*.txt", fileName));
     EXPECT_TRUE(yaget::WildCompare("*.TXt", fileName));
@@ -27,6 +27,17 @@ TEST_F(Strings, WildCardMatch)
     EXPECT_TRUE(!yaget::WildCompare("*.txt", ""));
     EXPECT_TRUE(!yaget::WildCompare("", fileName));
     EXPECT_TRUE(!yaget::WildCompare("", ""));
+
+    const std::string mixCase = "hElLO";
+    const std::string expectedLowerCase = "hello";
+    const std::string expectedUpperCase = "HELLO";
+
+    std::string lowerCase = yaget::conv::ToLower(mixCase);
+    EXPECT_EQ(expectedLowerCase, lowerCase);
+
+    std::string upperCase = yaget::conv::ToUpper(mixCase);
+    EXPECT_EQ(expectedUpperCase, upperCase);
+
 }
 
 TEST_F(Strings, FromVectorConversion)

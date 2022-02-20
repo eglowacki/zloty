@@ -26,8 +26,7 @@ namespace yaget::io::tool
         VirtualTransportSystem(dev::Configuration::Init::VTSConfigList configList, const AssetResolvers& assetResolvers, const std::string& fileName, RuntimeMode reset);
 
         enum class Options { Hierarchy, Flat, Recover };
-        io::Tag CopyTag(const io::Tag& sourceTag, const Section& targetSection, Options flat) const;
-
+        io::Tag CopyTag(const io::Tag& sourceTag, const Section& toSection, Options flat) const;
 
         bool AttachBlob(std::shared_ptr<io::Asset> asset) { return AttachBlob(std::vector<std::shared_ptr<io::Asset>>{ asset }); }
         bool AttachBlob(const std::vector<std::shared_ptr<io::Asset>>& assets);
@@ -39,7 +38,7 @@ namespace yaget::io::tool
         struct Locker : public DatabaseLocker
         {
             Locker(std::mutex& mutex, io::VirtualTransportSystem& vts) : DatabaseLocker(vts), mMutex(mutex) { mMutex.lock(); }
-            ~Locker() { mMutex.unlock(); }
+            ~Locker() override { mMutex.unlock(); }
 
         private:
             std::mutex& mMutex;

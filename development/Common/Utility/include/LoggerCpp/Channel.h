@@ -55,11 +55,11 @@ namespace yaget
             { }
 
             /// @brief Non virtual destructor
-            ~Channel(void)
+            ~Channel()
             { }
 
             /// @brief Name of the Channel
-            inline const std::string& getName(void) const
+            inline const std::string& getName() const
             {
                 return mName;
             }
@@ -71,7 +71,7 @@ namespace yaget
             }
 
             /// @brief Current Log::Level of the Channel
-            inline Log::Level getLevel(void) const
+            inline Log::Level getLevel() const
             {
                 return mLevel;
             }

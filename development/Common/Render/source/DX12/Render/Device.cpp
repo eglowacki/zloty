@@ -41,7 +41,7 @@ void yaget::render::DeviceB::SurfaceStateChange()
 }
 
 
-YAGET_COMPILE_SUPRESS_START(4100, "unreferenced local variable")
+YAGET_COMPILE_SUPPRESS_START(4100, "unreferenced local variable")
 
 //-------------------------------------------------------------------------------------------------
 int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWindowHandle hWnd, uint32_t message, uint64_t wParam, int64_t lParam)
@@ -62,4 +62,4 @@ void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metri
     mWaiter.Wait();
 }
 
-YAGET_COMPILE_SUPRESS_END
+YAGET_COMPILE_SUPPRESS_END

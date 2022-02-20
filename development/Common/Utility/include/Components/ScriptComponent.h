@@ -15,7 +15,6 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
 #include "Component.h"
 
 
@@ -34,7 +33,7 @@ namespace yaget
             using ScriptFunction = std::function<void(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel)>;
 
             ScriptComponent(Id_t id, ScriptFunction scriptFunction);
-            virtual ~ScriptComponent();
+            ~ScriptComponent() override;
 
             void Update(const time::GameClock& gameClock, metrics::Channel& channel);
 

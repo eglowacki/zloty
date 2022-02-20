@@ -19,8 +19,6 @@
 
 struct IDXGIFactory4;
 struct ID3D12Device4;
-//struct ID3D12CommandQueue;
-//struct ID3D12Fence;
 struct IDXGIAdapter4;
 
 namespace D3D12MA { class Allocator; }
@@ -40,9 +38,9 @@ namespace yaget::render::platform
 #if YAGET_DEBUG_RENDER == 1
         DeviceDebugger mDeviceDebugger;
 #endif // YAGET_DEBUG_RENDER == 1
-        ComPtr<IDXGIFactory4> mFactory;
-        ComPtr<IDXGIAdapter4> mAdapter;
-        ComPtr<ID3D12Device4> mDevice;
+        ComPtr<IDXGIFactory4> mFactory{};
+        ComPtr<IDXGIAdapter4> mAdapter{};
+        ComPtr<ID3D12Device4> mDevice{};
 
         struct Deleter
         {

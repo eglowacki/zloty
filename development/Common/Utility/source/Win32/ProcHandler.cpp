@@ -8,8 +8,7 @@
 #include <shellscalingapi.h>
 
 
-
-namespace 
+namespace
 {
     //--------------------------------------------------------------------------------------------------
     yaget::app::ProcHandler* GetThis(HWND hWnd)
@@ -328,9 +327,9 @@ namespace
 
 }
 
-yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init, const std::string& windowTitle, io::VirtualTransportSystem& vts, ProcessInput processInput, ProcessResize processResize, RequestClose requestClose)
+yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init, std::string windowTitle, io::VirtualTransportSystem& vts, ProcessInput processInput, ProcessResize processResize, RequestClose requestClose)
     : mInit(init)
-    , mWindowTitle(windowTitle)
+    , mWindowTitle(std::move(windowTitle))
     , mProcessMessage([this](auto&&... params) { return onInitialize(params...); })
     , mProcessInput(std::move(processInput))
     , mProcessResize(std::move(processResize))

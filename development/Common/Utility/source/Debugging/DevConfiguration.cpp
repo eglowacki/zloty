@@ -9,10 +9,8 @@
 #include "LoggerCpp/OutputConsole.h"
 #include "LoggerCpp/OutputFile.h"
 #include "Platform/Support.h"
-#include "Exception/Exception.h"
-#include "Fmt/format.h"
+#include "fmt/format.h"
 #include "Metrics/Gather.h"
-#include "Platform/Support.h"
 #include "Debugging/DevConfigurationParsers.h"
 
 #include <filesystem>
@@ -202,8 +200,7 @@ std::string yaget::dev::Initialize(const args::Options& options, const char* con
     std::string optionsPathName = io::file::FindConfigFile("Configuration", true, &options);
 
     std::unique_ptr<std::istream> configStream;
-    auto configuration = GetCurrentConfiguration();
-    configuration = {};
+    Configuration configuration = {};
 
     if (configData && configSize)
     {

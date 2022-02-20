@@ -93,7 +93,7 @@ namespace yaget::app
         const MonitorInfoEx& Find(int index) const;
 
     private:
-        const Monitors mInfo;
+        const Monitors mInfo{};
     };
 
 }

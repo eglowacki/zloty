@@ -47,13 +47,13 @@ namespace DirectX::SimpleMath
         std::string source;
         j.get_to(source);
 
-        auto values = yaget::conv::Split(source, ",");
+        const auto values = yaget::conv::Split(source, ",");
         if (values.size() == 4)
         {
-            float r = yaget::conv::AtoN<float>(values[0].c_str());
-            float g = yaget::conv::AtoN<float>(values[1].c_str());
-            float b = yaget::conv::AtoN<float>(values[2].c_str());
-            float a = yaget::conv::AtoN<float>(values[3].c_str());
+            const float r = yaget::conv::AtoN<float>(values[0].c_str());
+            const float g = yaget::conv::AtoN<float>(values[1].c_str());
+            const float b = yaget::conv::AtoN<float>(values[2].c_str());
+            const float a = yaget::conv::AtoN<float>(values[3].c_str());
             color = math3d::Color(r, g, b, a);
         }
     }
@@ -190,7 +190,7 @@ namespace yaget::dev
     {
         if (j.is_object() && !j.empty())
         {
-            auto it = j.begin();
+            const auto it = j.begin();
             const nlohmann::json& block = *it;
 
             vts.Name = it.key();
@@ -463,13 +463,13 @@ namespace yaget::dev::parsers
             if (*it.begin() == '-')
             {
                 std::string tag(it.begin() + 1, it.end());
-                auto foundTag = std::find(combinedFilterTags.begin(), combinedFilterTags.end(), tag);
+                auto foundTag = std::ranges::find(combinedFilterTags.begin(), combinedFilterTags.end(), tag);
                 if (foundTag != combinedFilterTags.end())
                 {
                     combinedFilterTags.erase(foundTag);
                 }
             }
-            else if (std::find(combinedFilterTags.begin(), combinedFilterTags.end(), it) == combinedFilterTags.end())
+            else if (std::ranges::find(combinedFilterTags.begin(), combinedFilterTags.end(), it) == combinedFilterTags.end())
             {
                 combinedFilterTags.push_back(it);
             }
@@ -512,7 +512,7 @@ namespace std
             {
                 if (elem.is_object() && !elem.empty())
                 {
-                    auto name = elem.begin().key();
+                    const auto name = elem.begin().key();
 
                     Configuration::Init::VTS existingVTS{ name };
                     if (auto it = vtsConfig.find(existingVTS); it != std::end(vtsConfig))
@@ -521,7 +521,7 @@ namespace std
                     }
 
                     from_json(elem, existingVTS);
-                    auto config = vtsConfig.insert(existingVTS);
+                    const auto config = vtsConfig.insert(existingVTS);
                     if (!config.second)
                     {
                         // this is set and elements are immutable

@@ -47,52 +47,48 @@ namespace yaget::conv
 } // namespace yaget::conv
 
 
-namespace std
+// Hash function for T pointer
+template<class T>
+struct std::hash<const T*>
 {
-    // Hash function for T pointer
-    template<class T>
-    struct hash<const T*>
+    typedef const T* argument_type;
+    typedef std::size_t   result_type;
+    inline result_type operator()(argument_type value) const
     {
-        typedef const T* argument_type;
-        typedef std::size_t   result_type;
-        inline result_type operator()(argument_type value) const
-        {
-            // Implementation by Alberto Barbati and Dave Harris.
-            std::size_t x = static_cast<std::size_t>(reinterpret_cast<std::ptrdiff_t>(value));
-            return x + (x >> 3);
-        }
-    };
+        // Implementation by Alberto Barbati and Dave Harris.
+        const std::size_t x = static_cast<std::size_t>(reinterpret_cast<std::ptrdiff_t>(value));
+        return x + (x >> 3);
+    }
+};
 
-    // Hash function for std::array of chars
-    template <std::size_t S>
-    struct hash<std::array<char, S>>
+// Hash function for std::array of chars
+template <std::size_t S>
+struct std::hash<std::array<char, S>>
+{
+    size_t operator()(const std::array<char, S>& bufferData) const
     {
-        size_t operator()(const std::array<char, S>& bufferData) const
+        size_t result = 0;
+        for (auto it : bufferData)
         {
-            size_t result = 0;
-            const size_t prime = 31;
-            for (auto it : bufferData)
-            {
-                result = it + (result * prime);
-            }
-
-            return result;
+            constexpr size_t prime = 31;
+            result = it + (result * prime);
         }
-    };
 
-    // trying out hash on char * terminated by null
-    template <>
-    struct hash<char*>
+        return result;
+    }
+};
+
+// trying out hash on char * terminated by null
+template <>
+struct std::hash<char*>
+{
+    size_t operator()(const char* s) const noexcept
     {
-        size_t operator()(const char* s) const
-        {
-            // http://www.cse.yorku.ca/~oz/hash.html
-            size_t h = 5381;
-            int c;
-            while ((c = *s++))
-                h = ((h << 5) + h) + c;
-            return h;
-        }
-    };
-
-} // namespace std
+        // http://www.cse.yorku.ca/~oz/hash.html
+        size_t h = 5381;
+        int c;
+        while ((c = *s++))
+            h = ((h << 5) + h) + c;
+        return h;
+    }
+};

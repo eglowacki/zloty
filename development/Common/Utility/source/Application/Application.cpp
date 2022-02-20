@@ -26,7 +26,6 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
 
     mRenderClock.Resync();
     time::Microsecond_t lastRenderTime = mRenderClock.GetRealTime();
-    time::Microsecond_t deltaTime = 0;
 
     while (!mQuit)
     {
@@ -42,7 +41,7 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
         std::this_thread::yield();
 
         const time::Microsecond_t currentRenderTime = mRenderClock.GetRealTime();
-        deltaTime = currentRenderTime - lastRenderTime;
+        const time::Microsecond_t deltaTime = currentRenderTime - lastRenderTime;
         lastRenderTime = currentRenderTime;
 
         mRenderClock.Tick(deltaTime);
@@ -82,19 +81,19 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
 
         while (tickAccumulator >= kFixedDeltaTime)
         {
-            metrics::Channel gChannel("GameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel gameChannel("GameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
 
             const time::Microsecond_t startProcessTime = platform::GetRealTime(time::kMicrosecondUnit);
 
-            /*uint32_t numInputs =*/ mInputDevice.Tick(mApplicationClock, defaultPerformancePolicy, gChannel);
+            /*uint32_t numInputs =*/ mInputDevice.Tick(mApplicationClock, defaultPerformancePolicy, gameChannel);
 
             tickAccumulator -= kFixedDeltaTime;
 
             if (logicCallback)
             {
-                metrics::Channel gChannel("Callback", YAGET_METRICS_CHANNEL_FILE_LINE);
+                metrics::Channel channel("Callback", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-                logicCallback(mApplicationClock, gChannel);
+                logicCallback(mApplicationClock, channel);
             }
 
             mApplicationClock.Tick(kFixedDeltaTime);
@@ -122,8 +121,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
 
         const double alpha = tickAccumulator / static_cast<double>(kFixedDeltaTime);
 
-        State state = currentState * alpha + previousState * (1.0 - alpha);
-        state;
+        [[maybe_unused]] State state = currentState * alpha + previousState * (1.0 - alpha);
 
         currentTickTime = nextTickTime;
         std::this_thread::yield();

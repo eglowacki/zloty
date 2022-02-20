@@ -1,7 +1,7 @@
 #include "YagetCore.h"
 
 
-#if YAGET_NEW_ALLOCATOR_ENABLED == 1
+#if defined(YAGET_NEW_ALLOCATOR_ENABLED) && (YAGET_NEW_ALLOCATOR_ENABLED == 1)
 YAGET_COMPILE_GLOBAL_SETTINGS("Allocator Included")
 
 void* operator new  (std::size_t count)

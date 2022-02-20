@@ -46,7 +46,7 @@ namespace yaget
         class Asset : public Noncopyable<Asset>
         {
         public:
-            virtual ~Asset() {}
+            virtual ~Asset() = default;
 
             const io::Tag mTag;
             io::Buffer mBuffer;
@@ -184,11 +184,11 @@ namespace yaget
             AssetResolver FindAssetConverter(const std::string& converterType) const;
 
             //--------------------------------------------------------------------------------------------------
-            // provides locking for DB for read/write, use LockDatabaseAccess() accessors to aquire one
+            // provides locking for DB for read/write, use LockDatabaseAccess() accessors to acquire one
             struct DatabaseLocker
             {
                 DatabaseLocker(VirtualTransportSystem& vts) : mDatabase(vts.mDatabase) {}
-                virtual ~DatabaseLocker() {}
+                virtual ~DatabaseLocker() = default;
 
                 const SQLite& DB() const { return mDatabase.DB(); }
                 SQLite& DB() { return mDatabase.DB(); }
@@ -354,10 +354,10 @@ namespace yaget
             SingleBLobLoader(io::VirtualTransportSystem& vts, const io::Tag& tag) : BLobLoader<T>(vts, tag)
             {}
 
-            SingleBLobLoader(io::VirtualTransportSystem& vts, const BLobLoader<T>::Section& section) : BLobLoader<T>(vts, section)
+            SingleBLobLoader(io::VirtualTransportSystem& vts, const typename BLobLoader<T>::Section& section) : BLobLoader<T>(vts, section)
             {}
 
-            BLobLoader<T>::AssetPtr GetAsset() const
+            typename BLobLoader<T>::AssetPtr GetAsset() const
             {
                 const auto& collection = BLobLoader<T>::Assets();
                 return collection.empty() ? nullptr : *collection.begin();

@@ -1,10 +1,9 @@
 #include "Input/InputDevice.h"
 #include "Logger/YLog.h"
 #include "Debugging/Assert.h"
-#include "Fmt/format.h"
+#include "fmt/format.h"
 #include "StringHelpers.h"
 #include "App/AppUtilities.h"
-#include "App/FileUtilities.h"
 #include "VTS/VirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
 #include "Metrics/Concurrency.h"
@@ -12,9 +11,6 @@
 #include <filesystem>
 #include <fstream>
 #include <algorithm>
-
-namespace fs = std::filesystem;
-
 
 namespace
 {
@@ -28,7 +24,7 @@ namespace
         }
     };
 
-    static std::map<std::string, uint32_t, ci_less> FlagsMap = {
+    std::map<std::string, uint32_t, ci_less> FlagsMap = {
         { "ButtonUp", input::kButtonUp },
         { "ButtonDown", input::kButtonDown },
         { "ButtonShift", input::kButtonShift },
@@ -225,19 +221,19 @@ std::string input::InputDevice::Mouse::ToString() const
     }
     if (mButtons[input::kMouseRight])
     {
-        buttonsText += (buttonsText.size() ? "|" : "") + std::string("MouseRight");
+        buttonsText += (!buttonsText.empty() ? "|" : "") + std::string("MouseRight");
     }
     if (mButtons[input::kMouseMiddle])
     {
-        buttonsText += (buttonsText.size() ? "|" : "") + std::string("MouseMiddle");
+        buttonsText += (!buttonsText.empty() ? "|" : "") + std::string("MouseMiddle");
     }
     if (mButtons[input::kMouse4])
     {
-        buttonsText += (buttonsText.size() ? "|" : "") + std::string("Mouse4");
+        buttonsText += (!buttonsText.empty() ? "|" : "") + std::string("Mouse4");
     }
     if (mButtons[input::kMouse5])
     {
-        buttonsText += (buttonsText.size() ? "|" : "") + std::string("Mouse5");
+        buttonsText += (!buttonsText.empty() ? "|" : "") + std::string("Mouse5");
     }
     return fmt::format("Buttons: {}, Mouse: x:{}, y:{}, wheel: {}, {}", buttonsText, mPos.x, mPos.y, mZDelta, Record::ToString());
 }
@@ -408,11 +404,6 @@ void input::InputDevice::MouseRecord(uint32_t flags, const InputDevice::Mouse::B
 
     auto record = std::make_shared<Mouse>(timeStamp, flags, buttons, zDelta, pos);
     YLOG_DEBUG("INPT", "Generated Mouse Record: '%s' at time (ms): '%d'.", record->ToString().c_str(), time::FromTo<uint32_t>(timeStamp, time::kMicrosecondUnit, time::kMilisecondUnit));
-    if (!record.get())
-    {
-        int z = 0;
-        z;
-    }
     mPendingInputs.push(std::move(record));
 }
 
@@ -470,7 +461,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
 
         while (!inputsToProcess.empty())
         {
-            ProcessRecord(*inputsToProcess.top().get());
+            ProcessRecord(*inputsToProcess.top());
             inputsToProcess.pop();
 
             numMessages++;
@@ -481,7 +472,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
             }
         }
 
-        bool deferMessages = performancePolicy.mPolicy == metrics::PerformancePolicy::Policy::Default || performancePolicy.mPolicy == metrics::PerformancePolicy::Policy::Defer;
+        const bool deferMessages = performancePolicy.mPolicy == metrics::PerformancePolicy::Policy::Default || performancePolicy.mPolicy == metrics::PerformancePolicy::Policy::Defer;
         if (deferMessages)
         {
             // we run out of time to process our messages and based on policy we defer remaining messages to next frame
@@ -524,7 +515,7 @@ void input::InputDevice::RegisterSimpleActionCallback(const std::string& actionN
 {
     struct CallbackWrapper
     {
-        void operator()(const std::string& /*actionName*/, uint64_t /*timeStamp*/, int32_t /*mouseX*/, int32_t /*mouseY*/, uint32_t /*flags*/)
+        void operator()(const std::string& /*actionName*/, uint64_t /*timeStamp*/, int32_t /*mouseX*/, int32_t /*mouseY*/, uint32_t /*flags*/) const
         {
             mActionCallback();
         }
@@ -558,7 +549,7 @@ void input::InputDevice::RegisterActionCallback(const std::string& actionName, i
 bool input::InputDevice::IsAction(const std::string& actionName) const
 {
     std::unique_lock<std::mutex> locker(mActionMapMutex);
-    return mActionMap.find(actionName) != mActionMap.end();
+    return mActionMap.contains(actionName);
 }
 
 

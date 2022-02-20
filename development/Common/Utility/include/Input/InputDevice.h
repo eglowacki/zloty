@@ -30,7 +30,6 @@
 #include <queue>
 #include <mutex>
 #include <bitset>
-//#include <BitArray.h>
 
 namespace yaget
 {
@@ -78,7 +77,7 @@ namespace yaget
         constexpr uint32_t kMaxMouseButtons  = 32;
 
         using ActionCallback_t = std::function<void(const std::string& /*actionName*/, uint64_t /*timeStamp*/, int32_t /*mouseX*/, int32_t /*mouseY*/, uint32_t /*flags*/)>;
-        using ActionNonParamCallback_t = std::function<void(void)>;
+        using ActionNonParamCallback_t = std::function<void()>;
 
         class InputDevice : public Noncopyable<InputDevice>
         {

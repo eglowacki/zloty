@@ -34,7 +34,7 @@ namespace yaget::io
 
         virtual ~DataLoader() = default;
 
-        void Load(const std::string& filePath, DoneCallback_t doneCallback) { Load(std::vector<std::string>{ filePath }, std::vector<DoneCallback_t>{ doneCallback }); };
+        void Load(const std::string& filePath, DoneCallback_t doneCallback) { Load(std::vector<std::string>{ filePath }, std::vector<DoneCallback_t>{ doneCallback }); }
 
         virtual void Load(const Strings& filePathList, const std::vector<DoneCallback_t>& doneCallbacks) = 0;
         virtual bool Save(const io::Buffer& dataBuffer, const std::string& fileName) = 0;
@@ -49,7 +49,7 @@ namespace yaget::io
     {
     public:
         FileLoader();
-        virtual ~FileLoader();
+        ~FileLoader() override;
 
         void Start();
 

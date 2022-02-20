@@ -20,10 +20,6 @@
 #include "MemoryManager/PoolAllocator.h"
 #include "Metrics/Performance.h"
 
-#include <array>
-#include <map>
-#include <memory>
-#include <queue>
 #include <typeindex>
 
 namespace yaget
@@ -172,10 +168,10 @@ namespace yaget
                     return mSignature < rhs.mSignature;
                 }
 
-                int mSignature;
+                int mSignature = 0;
                 Component::TriggerFunction mFunction;
             };
-            std::set<SignalHeader> mSignalHeaders;
+            std::set<SignalHeader> mSignalHeaders{};
 
             mutable uint64_t mStateHash = 0;
 

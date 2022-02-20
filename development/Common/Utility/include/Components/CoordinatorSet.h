@@ -112,9 +112,9 @@ namespace yaget::comp
                 if constexpr (hana::size(transformedRow))
                 {
                     // create our RowPolicy object and get type
-                    constexpr auto qrow = boost::hana::unpack(transformedRow, [](auto... args)
+                    constexpr auto qrow = boost::hana::unpack(transformedRow, []<typename... T0>([[maybe_unused]] T0... args)
                     {
-                        using RP = comp::RowPolicy<decltype(args)...>;
+                        using RP = comp::RowPolicy<T0...>;
                         return RP{};
                     });
                     using QueryRow = decltype(qrow);

@@ -20,7 +20,6 @@
 #include "App/AppUtilities.h"
 #include <map>
 #include <set>
-#include <atomic>
 
 namespace yaget
 {
@@ -206,16 +205,13 @@ namespace yaget
 
     } // namespace dev
 
-    namespace conv
+    template<>
+    struct conv::Convertor<yaget::dev::Configuration::Init::VTS>
     {
-        template<>
-        struct Convertor<yaget::dev::Configuration::Init::VTS>
+        static std::string ToString(const yaget::dev::Configuration::Init::VTS& value)
         {
-            static std::string ToString(const yaget::dev::Configuration::Init::VTS& value)
-            {
-                return value.Name;
-            }
-        };
-    }
+            return value.Name;
+        }
+    };
 
 } // namespace yaget

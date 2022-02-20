@@ -68,8 +68,8 @@ namespace yaget
         {
             struct thousands_sep : std::numpunct<char>
             {
-                char do_thousands_sep()   const { return ','; }  // separate with commas
-                std::string do_grouping() const { return "\3"; } // groups of 3 digits
+                char do_thousands_sep() const override { return ','; }      // separate with commas
+                std::string do_grouping() const override { return "\3"; }   // groups of 3 digits
                 static void imbue(std::ostream &os)
                 {
                     os.imbue(std::locale(os.getloc(), new thousands_sep));
@@ -166,7 +166,7 @@ namespace yaget
                     size_type startingPosition = 0;
                     do
                     {
-                        size_type startNumber = text.find('=', startingPosition);
+                        const size_type startNumber = text.find('=', startingPosition);
                         size_type endNumber = text.find(',', startNumber);
                         if (startNumber != npos && endNumber == npos)
                         {
@@ -197,7 +197,7 @@ namespace yaget
         inline std::string ToLower(const std::string& source)
         {
             std::string value(source.size(), ' ');
-            std::transform(source.begin(), source.end(), value.begin(), [](const char& v)
+            std::ranges::transform(source, value.begin(), [](const char& v)
             {
                 return static_cast<char>(::tolower(v));
             });
@@ -208,7 +208,7 @@ namespace yaget
         inline std::string ToUpper(const std::string& source)
         {
             std::string value(source.size(), ' ');
-            std::transform(source.begin(), source.end(), value.begin(), [](const char& v)
+            std::ranges::transform(source, value.begin(), [](const char& v)
             {
                 return static_cast<char>(::toupper(v));
             });
@@ -243,7 +243,7 @@ namespace yaget
             {
                 if (stripSpaces)
                 {
-                    std::string retValue = theString;
+                    std::string retValue = theString;  // NOLINT(performance-unnecessary-copy-initialization)
                     return { Trim(retValue) };
                 }
                 return { theString };
@@ -277,7 +277,7 @@ namespace yaget
         {
             static unused_marker_t FromString(const char* /*value*/)
             {
-                return unused_marker_t();
+                return {};
             }
 
             static std::string ToString(unused_marker_t /*value*/)
@@ -292,7 +292,7 @@ namespace yaget
         {
             static char FromString(const char* value)
             {
-                return value ? value[0] : 0;
+                return value ? value[0] : '\0';
             }
 
             static std::string ToString(char value)
@@ -300,7 +300,7 @@ namespace yaget
                 char ReturnedValue[2];
                 ReturnedValue[0] = value;
                 ReturnedValue[1] = '\0';
-                return std::string(ReturnedValue);
+                return { ReturnedValue };
             }
         };
 
@@ -414,7 +414,7 @@ namespace yaget
         {
             static std::string FromString(const char* value)
             {
-                return std::string(value);
+                return { value };
             }
 
             static std::string ToString(const std::string& value)
@@ -434,7 +434,7 @@ namespace yaget
 
             static std::string ToString(const char* value)
             {
-                return std::string(value ? value : "");
+                return { value ? value : "" };
             }
         };
 
@@ -447,7 +447,7 @@ namespace yaget
                 return value ? Guid(value) : NewGuid();
             }
 
-            static std::string ToString(Guid value)
+            static std::string ToString(const Guid& value)
             {
                 return value.str();
             }
@@ -474,8 +474,8 @@ namespace yaget
         {
             static math3d::Vector3 FromString(const char* value)
             {
-                std::vector<float> values = internal::ParseValues<float>(value ? value : "");
-                math3d::Vector3 v(&values[0]);
+                const std::vector<float> values = internal::ParseValues<float>(value ? value : "");
+                const math3d::Vector3 v(&values[0]);
                 return v;
             }
             static std::string ToString(const math3d::Vector3& value)
@@ -490,7 +490,7 @@ namespace yaget
         {
             static math3d::Vector2 FromString(const char* value)
             {
-                std::vector<float> values = internal::ParseValues<float>(value ? value : "");
+                const std::vector<float> values = internal::ParseValues<float>(value ? value : "");
                 const math3d::Vector2 v(&values[0]);
                 return v;
             }
@@ -506,7 +506,7 @@ namespace yaget
         {
             static math3d::Quaternion FromString(const char* value)
             {
-                std::vector<float> values = internal::ParseValues<float>(value ? value : "");
+                const std::vector<float> values = internal::ParseValues<float>(value ? value : "");
                 const math3d::Quaternion v(&values[0]);
                 return v;
             }
@@ -534,8 +534,8 @@ namespace yaget
             static ValueT FromString(const char* value)
             {
                 ValueT v{};
-                std::string text(value);
-                Strings tokens = conv::Split(text, "x");
+                const std::string text(value);
+                const Strings tokens = conv::Split(text, "x");
                 if (!tokens.empty())
                 {
                     v.first = Convertor<V1>::FromString(tokens[0].c_str());
@@ -560,8 +560,8 @@ namespace yaget
         {
             static math3d::Color FromString(const char* value)
             {
-                std::vector<float> values = internal::ParseValues<float>(value ? value : "");
-                math3d::Color v(&values[0]);
+                const std::vector<float> values = internal::ParseValues<float>(value ? value : "");
+                const math3d::Color v(&values[0]);
                 return v;
             }
             static std::string ToString(const math3d::Color& value)
@@ -628,7 +628,7 @@ namespace yaget
         template<class TupType, size_t... I>
         void print_tuple(const TupType& _tup, std::index_sequence<I...>, std::string& message)
         {
-            (..., (message += (I == 0 ? "" : ", ") + typename conv::template Convertor<std::tuple_element_t<I, TupType>>::ToString(std::get<I>(_tup))));
+            (..., (message += (I == 0 ? "" : ", ") + typename conv::Convertor<std::tuple_element_t<I, TupType>>::ToString(std::get<I>(_tup))));
         }
 
     }

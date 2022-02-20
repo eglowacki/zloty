@@ -110,8 +110,8 @@
 
 
 #define YAGET_ASSERT_JOIN(lhs, rhs)   YAGET_ASSERT_JOIN_(lhs, rhs)
-#define YAGET_ASSERT_JOIN_(lhs, rhs)  YAGET_ASSERT_JOIN__(lhs, rhs)
-#define YAGET_ASSERT_JOIN__(lhs, rhs) lhs##rhs
+#define YAGET_ASSERT_JOIN_(lhs, rhs)  YAGET_ASSERT_JOIN_2(lhs, rhs)
+#define YAGET_ASSERT_JOIN_2(lhs, rhs) lhs##rhs
 
 #define YAGET_ASSERT_FILE __FILE__
 #define YAGET_ASSERT_LINE __LINE__

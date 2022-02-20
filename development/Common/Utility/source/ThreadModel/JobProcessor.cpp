@@ -1,6 +1,6 @@
 ﻿#include "ThreadModel/JobProcessor.h" 
 #include "Platform/Support.h" 
-#include "Fmt/format.h" 
+#include "fmt/format.h" 
 #include "StringHelpers.h" 
 #include "Debugging/Assert.h" 
 #include "Logger/YLog.h" 
@@ -114,7 +114,7 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
         { 
             try 
             { 
-                metrics::Channel channel("Task Lifetime", YAGET_METRICS_CHANNEL_FILE_LINE); 
+                metrics::Channel lifetimeChannel("Task Lifetime", YAGET_METRICS_CHANNEL_FILE_LINE); 
  
                 mTaskInProgress = true; 
                 nextTask(); 

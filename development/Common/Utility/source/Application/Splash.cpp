@@ -1,7 +1,7 @@
 //  ===========================================================================
 //  File    Splash.cpp
 //  Desc    The implementation file for the CSplash class.
-#include "App/splash.h"
+#include "App/Splash.h"
 #include "windowsx.h"
 #include "Debugging/DevConfiguration.h"
 
@@ -200,8 +200,7 @@ DWORD yaget::Splash::SetBitmap(LPCTSTR lpszFileName)
     //  =======================================================================
     //  load the bitmap
     //  =======================================================================
-    HBITMAP    hBitmap       = NULL;
-    hBitmap = (HBITMAP)::LoadImage(0, lpszFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    HBITMAP hBitmap = (HBITMAP)::LoadImage(0, lpszFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     return SetBitmap(hBitmap);
 }
 

@@ -1,7 +1,6 @@
 #include "Components/Component.h"
 #include "Debugging/Assert.h"
 #include "Debugging/DevConfiguration.h"
-#include "Platform/Support.h"
 
 using namespace yaget;
 

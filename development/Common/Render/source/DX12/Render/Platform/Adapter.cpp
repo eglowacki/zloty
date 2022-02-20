@@ -1,9 +1,9 @@
 #include "Adapter.h"
-#include "D3D12MemAlloc.h"
 #include "App/AppUtilities.h"
+#include "D3D12MemAlloc.h"
+#include "Debugging/DevConfiguration.h"
 #include "StringHelpers.h"
 #include "SwapChain.h"
-#include "Debugging/DevConfiguration.h"
 
 #include <d3d12.h>
 #include <dxgi1_6.h>

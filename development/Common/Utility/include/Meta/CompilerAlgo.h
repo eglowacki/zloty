@@ -72,7 +72,7 @@ namespace yaget::meta
     template <typename T>
     struct strip_qualifiers
     {
-        using type = typename std::remove_pointer<typename std::decay<T>::type>::type;
+        using type = std::remove_pointer_t<std::decay_t<T>>;
     };
 
     // removes any cv, pointers and references qualifiers from T
@@ -100,7 +100,7 @@ namespace yaget::meta
     {
         if constexpr (Index < Size)
         {
-            using RequestedType = typename std::tuple_element<Index, TTuple>::type;
+            using RequestedType = std::tuple_element_t<Index, TTuple>;
             using BaseType = strip_qualifiers_t<RequestedType>;
             //using BaseType = typename std::remove_pointer<typename std::decay<RequestedType>::type>::type;
             BaseType* rt = nullptr;
@@ -183,7 +183,7 @@ namespace yaget::meta
     template<typename S, typename T, typename P = TupleCopyPolicy, int N = std::tuple_size_v<std::remove_reference_t<S>>>
     constexpr void tuple_copy(const S& source, T& target)
     {
-        using ET = typename std::tuple_element<N - 1, S>::type;
+        using ET = std::tuple_element_t<N - 1, S>;
 
         std::get<ET>(target) = P::template Copy<ET>(std::get<ET>(source), std::get<ET>(target));
 
@@ -206,7 +206,7 @@ namespace yaget::meta
     template <class T, class... Types>
     struct Index<T, std::tuple<T, Types...>>
     {
-        static const std::size_t value = 0;
+        static constexpr std::size_t value = 0;
     };
 
     template <class T, class U, class... Types>
@@ -296,7 +296,7 @@ namespace yaget::meta
             using Template = T;
             using UserRow = U;
 
-            using UserElementType = typename std::tuple_element<N - 1, UserRow>::type;
+            using UserElementType = std::tuple_element_t<N - 1, UserRow>;
 
             constexpr bits_t result = 1 << yaget::meta::Index<UserElementType, Template>::value;
 

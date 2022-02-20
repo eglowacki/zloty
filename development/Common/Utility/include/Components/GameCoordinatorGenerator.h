@@ -334,10 +334,6 @@ namespace yaget::comp::db
                         }
                     }
                 }
-
-                int z = 0;
-                z;
-                //return stageItems;
             }
         }
 

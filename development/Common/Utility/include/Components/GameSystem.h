@@ -89,7 +89,7 @@ namespace yaget::comp::gs
         {
             auto newRow = std::tuple_cat(std::tie(id, gameClock, channel), row);
             std::apply(mUpdateFunctor, newRow);
-        };
+        }
 
         const char* mNiceName = nullptr;
         UpdateFunctor mUpdateFunctor;

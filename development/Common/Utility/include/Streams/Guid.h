@@ -75,29 +75,29 @@ namespace yaget
 
     std::ostream &operator<<(std::ostream &s, const Guid &guid);
 
+    // Template specialization for std::swap<Guid>()
+    // usage:
+    //  using std::swap;
+    //  swap(swap1, swap2);
+    inline void swap(yaget::Guid& lhs, yaget::Guid& rhs)
+    {
+        lhs.swap(rhs);
+    }
+
 } // namespace yaget
 
-
-namespace std
+// Specialization for std::hash<Guid> -- this implementation
+// uses std::hash<std::string> on the stringification of the guid
+// to calculate the hash
+template <>
+struct std::hash<yaget::Guid>
 {
-    // Template specialization for std::swap<Guid>() --
-    // See guid.cpp for the function definition
-    template <>
-    void swap(yaget::Guid &guid0, yaget::Guid &guid1);
+    typedef yaget::Guid argument_type;
+    typedef std::size_t result_type;
 
-    // Specialization for std::hash<Guid> -- this implementation
-    // uses std::hash<std::string> on the stringification of the guid
-    // to calculate the hash
-    template <>
-    struct hash<yaget::Guid>
+    result_type operator()(argument_type const &guid) const
     {
-        typedef yaget::Guid argument_type;
-        typedef std::size_t result_type;
-
-        result_type operator()(argument_type const &guid) const
-        {
-            std::hash<std::string> hasher;
-            return static_cast<result_type>(hasher(guid.str()));
-        }
-    };
-}
+        const std::hash<std::string> hasher;
+        return static_cast<result_type>(hasher(guid.str()));
+    }
+};

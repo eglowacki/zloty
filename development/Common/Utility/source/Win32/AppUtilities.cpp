@@ -1,5 +1,5 @@
 #include "App/AppUtilities.h"
-#include "Fmt/printf.h"
+#include "fmt/printf.h"
 #include "Exception/Exception.h"
 #include "Logger/YLog.h"
 #include "StringHelpers.h"
@@ -472,7 +472,7 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
 
 
 //---------------------------------------------------------------------------------------------------------------------------------
-std::string yaget::util::ValidatePath(const std::string potentialPath)
+std::string yaget::util::ValidatePath(const std::string& potentialPath)
 {
     std::string result;
 

@@ -19,9 +19,7 @@
 #ifndef YAGET_INPUT_MANAGER_INCLUDE_IMPLEMENTATION
 #error "Do not include this file explicitly."
 #endif // YAGET_INPUT_MANAGER_INCLUDE_IMPLEMENTATION
-#include "Fmt/format.h"
-#include "Debugging/Assert.h"
-#include <typeinfo>
+#include "fmt/format.h"
 
 namespace yaget
 {
@@ -31,9 +29,8 @@ namespace yaget
         //! Inline implementation
         // input
         inline InputDevice::Record::Record(const time::Microsecond_t timeStamp, const uint32_t flags, int type)
-            : mTimeStamp(timeStamp)
-            , mFlags(flags)
-            , mNext(0)
+            : mFlags(flags)
+            , mTimeStamp(timeStamp)
             , Type(type)
         {
         }
@@ -41,7 +38,7 @@ namespace yaget
         //---------------------------------------------------------------------------------------------------------
         inline bool InputDevice::Record::Is(const InputDevice::Record* target, bool andCompare) const
         {
-            if (!Type == target->Type)
+            if ((!Type) == target->Type)
             {
                 return false;
             }
@@ -80,10 +77,9 @@ namespace yaget
             // then compare that bit with Source.
             for (int i = 0; i < 32; i++)
             {
-                uint32_t CurrBit = target & (1 << i);
-                if (CurrBit)
+                if (const uint32_t currentBit = target & (1 << i))
                 {
-                    if (!(source & CurrBit))
+                    if (!(source & currentBit))
                     {
                         result = false;
                         break;
@@ -95,8 +91,8 @@ namespace yaget
         }
 
         // key
-        inline InputDevice::Key::Key(const uint64_t microDeltaTime, const uint32_t flags, const unsigned char key_value) : InputDevice::Record(microDeltaTime, flags, 2)
-            , mValue(key_value)
+        inline InputDevice::Key::Key(const uint64_t microDeltaTime, const uint32_t flags, const unsigned char keyValue) : InputDevice::Record(microDeltaTime, flags, 2)
+            , mValue(keyValue)
         {
         }
 
@@ -115,9 +111,9 @@ namespace yaget
                         return true;
                     }
 
-                    const uint32_t controlFlag = input::kButtonShift | input::kButtonCtrl;
-                    uint32_t thisFlags = mFlags & controlFlag;
-                    uint32_t targetFlags = target->mFlags & controlFlag;
+                    constexpr uint32_t controlFlag = input::kButtonShift | input::kButtonCtrl;
+                    const uint32_t thisFlags = mFlags & controlFlag;
+                    const uint32_t targetFlags = target->mFlags & controlFlag;
                     if (thisFlags == targetFlags)
                     {
                         if (!mDown && (target->mFlags & input::kButtonDown) && CompareAllBits(mFlags, input::kButtonDown | input::kButtonUp))

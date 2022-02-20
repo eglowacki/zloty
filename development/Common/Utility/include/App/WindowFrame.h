@@ -14,7 +14,6 @@
 
 #pragma once
 
-#include "YagetCore.h"
 #include "App/Display.h"
 
 

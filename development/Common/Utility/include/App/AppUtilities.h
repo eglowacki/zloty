@@ -64,7 +64,7 @@ namespace yaget::util
     const EnvironmentList& GetCurrentEnvironment();
 
     bool IsExtension(const std::string& name, const std::string& extension);
-    std::string ValidatePath(const std::string potentialPath);
+    std::string ValidatePath(const std::string& potentialPath);
 
     // It will return valid folder name if markerName file exist in or at above directories.
     // That file can contain text consist of subfolder path.

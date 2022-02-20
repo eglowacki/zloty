@@ -106,7 +106,7 @@ namespace yaget
             {
                 if (mActive)
                 {
-                    time::Raw_t result = platform::GetRealTime(time::kRawUnit) - mStartTime;
+                    const time::Raw_t result = platform::GetRealTime(time::kRawUnit) - mStartTime;
 
                     if (mParent)
                     {
@@ -170,9 +170,9 @@ namespace yaget
 
             ~TimeScoper()
             {
-                time::Microsecond_t endTime = platform::GetRealTime(time::kMicrosecondUnit);
-                time::Microsecond_t runTime = endTime - mStartTime;
-                int timeDiff = time::FromTo<int>(runTime, time::kMicrosecondUnit, TU);
+                const time::Microsecond_t endTime = platform::GetRealTime(time::kMicrosecondUnit);
+                const time::Microsecond_t runTime = endTime - mStartTime;
+                const int timeDiff = time::FromTo<int>(runTime, time::kMicrosecondUnit, TU);
 
                 YLOG_PNOTICE(mTag, mFile, mLine, mFunction, "%s: '%s' (%s).", mMessage, conv::ToThousandsSep(timeDiff).c_str(), UnitName(TU).c_str());
             }

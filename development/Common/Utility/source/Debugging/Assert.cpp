@@ -3,7 +3,7 @@
 #include "Platform/WindowsLean.h"
 #include "Platform/Support.h"
 #include "Debugging/Assert.h"
-#include "Fmt/format.h"
+#include "fmt/format.h"
 
 #include <cstdio>  // fprintf() and vsnprintf()
 #include <cstring>
