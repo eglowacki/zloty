@@ -27,7 +27,7 @@ namespace
 {
     const char* vtextprintf(const char* format, va_list vlist)
     {
-        int bytes_needed = vsnprintf(nullptr, 0, format, vlist);
+        const size_t bytes_needed = vsnprintf(nullptr, 0, format, vlist);
         char* buff = new char[bytes_needed + 1];
         vsnprintf(buff, bytes_needed + 1, format, vlist);
         return buff;

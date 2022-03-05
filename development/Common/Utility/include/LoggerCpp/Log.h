@@ -137,7 +137,7 @@ namespace yaget::ylog
         static Log::Level toLevel(const char* apLevel);
 
     private:
-        constexpr static std::size_t BufferSize = 1024 * 16;
+        constexpr static std::size_t BufferSize = 1024 * 7;
         constexpr static const char* SplitMarkers[] = {
             "\n",
             " ** "
@@ -168,7 +168,7 @@ namespace yaget::ylog
 
         // split is 0, non 1
         enum class LineToken { Split, Combine };
-        std::array<char[BufferSize], 2> mFormatedBuffers;
+        std::array<char[BufferSize], 2> mFormatedBuffers{};
     };
 
 }
