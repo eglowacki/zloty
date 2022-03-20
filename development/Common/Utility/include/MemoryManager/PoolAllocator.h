@@ -183,17 +183,35 @@ namespace yaget
                 std::array<char, kStrideSize * E> mMemory{};
             };
 
-        } // namespace internal
+            template<typename T>
+            constexpr int GetCapacity()
+            {
+                constexpr bool has_member_capacity = requires(T a)
+                {
+                    a.Capacity > 0;
+                };
 
+                if constexpr (has_member_capacity)
+                {
+                    return T::Capacity;
+                }
+                else 
+                {
+                    return 1;
+                }
+            }
+
+        } // namespace internal
 
         //! Provides memory management. It uses memory lines with the same number of slots
         //! and will add new line if all the lines are full.
         //! It does not provide GC and it's up to user to call Free.
-        //! T type must have static capacity member:
+        //! T can provide static capacity member:
         //!         static constexpr int Capacity = <number_of_slots_per_line_in_memory_pool>;
+        //! If Capacity does not exist, default what 1, unless user provided E value.
         //! TODO: Do we want to add some kind of compaction? This would mean that pointers would need
         //! to be changed,
-        template <typename T, int E = T::Capacity>
+        template <typename T, int E = internal::GetCapacity<T>()>
         class PoolAllocator : public Noncopyable<PoolAllocator<T, E>>
         {
         public:
@@ -282,7 +300,7 @@ namespace yaget
             }
 
         private:
-            using PoolLine = internal::PoolAllocatorLine<T, E>;
+            using PoolLine = internal::PoolAllocatorLine<T, Size>;
             using PoolLinePtr = std::unique_ptr<PoolLine>;
             std::vector<PoolLinePtr> mMemoryLines{};
             int mLastLineIndex = PoolLine::INVALID_SLOT;
