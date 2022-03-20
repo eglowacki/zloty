@@ -5,6 +5,9 @@
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 #include "LoggerCpp/OutputDebug.h"
 #include "LoggerCpp/OutputFile.h"
+
+#include "MemoryManager/PoolAllocator.h"
+
 #include "Metrics/Concurrency.h"
 
 yaget::Strings yaget::ylog::GetRegisteredTags()
@@ -22,7 +25,6 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
 
 YAGET_BRAND_NAME_F("Beyond Limits")
 YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::editor,editor::")
-
 
 int APIENTRY WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {

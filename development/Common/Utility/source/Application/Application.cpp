@@ -61,7 +61,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
     metrics::Channel channel("GameThread", YAGET_METRICS_CHANNEL_FILE_LINE);
 
     const time::Microsecond_t kFixedDeltaTime = time::GetDeltaTime(dev::CurrentConfiguration().mInit.LogicTick);
-    metrics::PerformancePolicy defaultPerformancePolicy;
+    const metrics::PerformancePolicy defaultPerformancePolicy;
 
     mApplicationClock.Resync();
     time::Microsecond_t startTime = platform::GetRealTime(time::kMicrosecondUnit);
@@ -146,7 +146,7 @@ int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRe
     {
         mGeneralPoolThread->AddTask([this, tickRender]() { onRenderTask(tickRender); });
     }
-    YAGET_ASSERT(tickLogic, "Run Applicatuin methid nees to have valid TickLogic callback.");
+    YAGET_ASSERT(tickLogic, "Run Application method need to have valid TickLogic callback.");
     mGeneralPoolThread->AddTask([this, &tickLogic, shutdownLogicCallback]() { onLogicTask(tickLogic, shutdownLogicCallback); });
 
     mGeneralPoolThread->UnpauseAll();

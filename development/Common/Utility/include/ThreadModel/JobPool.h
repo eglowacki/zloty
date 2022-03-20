@@ -103,6 +103,7 @@ namespace yaget
             std::string mName;
             Behaviour mBehaviour = Behaviour::StartAsRun;
             mt::Condition mEmptyCondition;
+            // if True then create threads only on demand
             const bool mDynamicThreads;
             uint32_t mMaxNumThreads;
         };

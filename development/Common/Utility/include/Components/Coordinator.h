@@ -28,7 +28,6 @@ namespace yaget::comp
         template<typename T>
         concept has_auto_cleanup = requires { typename T::AutoCleanup; };
 
-
         // Return tuple of Allocators for each component
         template <std::size_t TupleIndex, std::size_t MaxTupleSize, typename Tuple>
         constexpr auto coordinator_allocator_combine()

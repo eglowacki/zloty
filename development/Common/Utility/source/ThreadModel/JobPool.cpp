@@ -141,9 +141,7 @@ void yaget::mt::JobPool::UpdateThreadPool(size_t numTasksLeft)
         // looks like we have tasks left, let check to see if we reached man number of threads
         // and if not, are all busy?
         while (numTasksLeft && threadListSize < mMaxNumThreads)
-        //if (threadListSize < mMaxNumThreads)
         {
-            // https://app.gitkraken.com/glo/view/card/c09a1b0ebde34dfd96f0a8737d446677 (KAR-41)
             const bool allBusy = std::ranges::all_of(mThreads.begin(), mThreads.end(), [](auto itr)
             {
                 return itr.second.IsBusy();
@@ -194,6 +192,7 @@ void yaget::mt::JobPool::Join()
     mEmptyCondition.Wait(); 
     mEmptyCondition.Trigger();
 }
+
 
 void yaget::mt::JobPool::JoinDestroy()
 {
