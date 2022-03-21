@@ -35,6 +35,7 @@ namespace yaget::comp::gs
     struct GenerateEndMarker {};
 
     // TODO add timers support for entities
+    // https://github.com/eglowacki/zloty/issues/44#issue-1174664933
     // Example:
     //  class ScoreSystem : public yaget::comp::gs::GameSystem<NoEndMarker, Messaging, ScoreComponent*>
     //  {
@@ -87,6 +88,7 @@ namespace yaget::comp::gs
     private:
         void Update(yaget::comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const Row& row)
         {
+            // NOTE how can we convert row to new row with some of them being const modified?
             auto newRow = std::tuple_cat(std::tie(id, gameClock, channel), row);
             std::apply(mUpdateFunctor, newRow);
         }
