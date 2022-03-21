@@ -27,7 +27,6 @@ namespace yaget::render
 
 namespace yaget::editor
 {
-    //comp::gs::GenerateEndMarker
     class RenderSystem : public yaget::comp::gs::GameSystem<comp::gs::GenerateEndMarker, Messaging, RenderComponent*>
     {
     public:

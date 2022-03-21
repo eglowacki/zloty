@@ -88,7 +88,7 @@ namespace yaget::comp
 
             // walk over each coordinator and extract which RequestRow component belong to coordinator
             // and construct RowPolicy to be ingested by coordinator template args
-            meta::for_each(mCoordinators, [&rows, &templateRow]<typename C>(C & coordinator)
+            meta::for_each(mCoordinators, [&rows, &templateRow]<typename C>(C& coordinator)
             {
                 using CoordType = C;
                 using CoordinatorRow = decltype(hana::to_tuple(typename CoordType::FullRow{}));
