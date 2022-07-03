@@ -6,11 +6,8 @@ yaget::editor::EditorSystem::EditorSystem(Messaging& messaging, Application& app
 {
 }
 
-void yaget::editor::EditorSystem::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, EditorComponent* editorComponent, EmptyComponent* emptyComponent)
+void yaget::editor::EditorSystem::OnUpdate([[maybe_unused]] comp::Id_t id, [[maybe_unused]] const time::GameClock& gameClock, [[maybe_unused]] metrics::Channel& channel, [[maybe_unused]] EditorComponent* editorComponent, [[maybe_unused]] EmptyComponent* emptyComponent, [[maybe_unused]] const BlankComponent* blankComponent)
 {
-    id;
-    gameClock;
-    channel;
-    editorComponent;
-    emptyComponent;
+    int z = 0;
+    z;
 }

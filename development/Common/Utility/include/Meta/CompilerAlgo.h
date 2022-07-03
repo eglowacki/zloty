@@ -6,7 +6,26 @@
 //  Maintained by: Edgar
 //
 //  NOTES:
+//      https://en.cppreference.com/w/cpp/language/constraints
+//      template<typename T>
+//      concept Hashable = requires(T a)
+//      {
+//          { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
+//      };
 //      
+//      struct meow {};
+//      
+//      // Constrained C++20 function template:
+//      template<Hashable T>
+//      void f(T) {}
+//      //
+//      // Alternative ways to apply the same constraint:
+//      template<typename T>
+//          requires Hashable<T>
+//      void f(T) {}
+//      
+//      template<typename T>
+//      void f(T) requires Hashable<T> {}
 //
 //
 //  #include "Meta/CompilerAlgo.h"

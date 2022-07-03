@@ -67,7 +67,7 @@ namespace yaget::util
     std::string ValidatePath(const std::string& potentialPath);
 
     // It will return valid folder name if markerName file exist in or at above directories.
-    // That file can contain text consist of subfolder path.
+    // That file can contain text consist of 'subfolder path'.
     // If combination of directory where markerFile resides and 'subfolder path'
     // is valid text and that folder exist at the location, return that full path.
     // Otherwise return folder name where markerFile is located.

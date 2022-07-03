@@ -21,5 +21,28 @@ int yaget::editor::Run(yaget::args::Options& options)
     render::DesktopApplication app("Yaget.Editor", director, vts, options);
     Messaging messaging{};
 
+    // this represent all component which are managed and allowed to be created
+    // by this CoordinatorSet
+    using Ed_Row = EditorSystemsCoordinator::CoordinatorSet::FullRow;
+    Ed_Row edRow{};
+
+    // all Systems which operate/examine some set of specific components
+    using Ed_Systems = EditorSystemsCoordinator::Systems;
+    Ed_Systems edSystems;
+
+    meta::for_each_type<Ed_Systems>([]<typename T0>(const T0&)
+    {
+        using BaseSystem = meta::strip_qualifiers_t<T0>;
+
+        // tuple of exact components that this BaseSystem operates/examines on
+        using SystemSignature = typename BaseSystem::Row;
+
+        const auto callSig = comp::db::GetPolicyRowNames<SystemSignature>();
+        SystemSignature systemSignature{};
+
+        int z = 0;
+        z;
+    });
+
     return comp::gs::RunGame<EditorSystemsCoordinator, RenderSystemsCoordinator>(messaging, app);
 }

@@ -2,8 +2,8 @@
     "Quit App": {
         "Action": "Quit App",
         "ContextName": "",
-        "DisplayName": "ESC",
-        "Flags": "ButtonDown",
-        "Value": "ESC"
+        "DisplayName": "B",
+        "Flags": "ButtonUp",
+        "Value": "B"
     }
 }

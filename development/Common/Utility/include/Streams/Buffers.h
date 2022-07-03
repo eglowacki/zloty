@@ -42,10 +42,7 @@ namespace yaget
         //! Helper to create Buffer of size
         inline Buffer CreateBuffer(size_t size)
         {
-            Buffer dataBuffer;
-
-            dataBuffer.first.reset(new uint8_t[size]);
-            dataBuffer.second = size;
+            Buffer dataBuffer{ new uint8_t[size], size };
             return dataBuffer;
         }
 

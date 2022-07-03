@@ -78,7 +78,7 @@ TEST_F(BlobLoader, LoadConvert)
     const int kMaxNumFiles = 90;
     const Strings filesToTest = CleanupAndSetup(kMaxNumFiles);
 
-    int counter = 0;
+    std::atomic_int counter{0};
     {
         metrics::Channel vChannel("Input Validation", YAGET_METRICS_CHANNEL_FILE_LINE);
 
@@ -119,10 +119,14 @@ TEST_F(BlobLoader, LoadConvert)
         blobLoader.AddTask(filesToTest, [&counter](const auto& fileData)
         {
             ++counter;
-            platform::BusySleep(1, time::kMilisecondUnit);
+            platform::BusySleep(100, time::kMilisecondUnit);
         });
     }
     EXPECT_LT(counter, kMaxNumFiles);
 
     CleanTestFiles();
+}
+
+TEST_F(BlobLoader, FooBar)
+{
 }

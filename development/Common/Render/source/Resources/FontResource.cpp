@@ -21,6 +21,10 @@ yaget::render::FontResource::FontResource(Device& device, std::shared_ptr<io::re
     }
 }
 
+yaget::render::FontResource::~FontResource()
+{
+}
+
 bool yaget::render::FontResource::Activate()
 {
     return false;

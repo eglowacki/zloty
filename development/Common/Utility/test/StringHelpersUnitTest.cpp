@@ -16,6 +16,8 @@ TEST(WildCardMatch)
     CHECK(!yaget::WildCompare("*.txt", ""));
     CHECK(!yaget::WildCompare("", fileName));
     CHECK(!yaget::WildCompare("", ""));
+
+    CHECK(yaget::WildCompareI("*.TxT", fileName));
 }
 
 TEST(VectorStringConversion)

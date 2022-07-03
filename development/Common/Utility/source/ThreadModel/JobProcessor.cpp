@@ -134,8 +134,8 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
         }
 
         // we always setup task in progress in ctor to true, so the thread has a chance to
-        // grab a on first iteration. There was race condition in JobPool when creating
-        // dynamic threads
+        // grab on a first iteration. There was race condition in JobPool when creating
+        // dynamic threads.
         mTaskInProgress = false;
         mTaskReadyCondition.Wait();
     }

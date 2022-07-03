@@ -18,6 +18,8 @@
 
 #include "STLHelper.h"
 
+#include "Platform/Support.h"
+
 
 #include "sqlite/SQLite.h"
 using namespace yaget;
@@ -149,12 +151,38 @@ void Log::FormatLineMessage()
     const auto& streamText = getStream().str();
     const ylog::Tagger tagger(GetTag());
 
+    //const auto currentThreadId = platform::CurrentThreadId();
+    const bool printThreadName = true;
+
+    std::string threadName;
+    if (printThreadName)
+    {
+        constexpr int scratchBufferSize = 24;   // total size of working buffer
+        constexpr int headerStart = 0;          // where is the start of header '[T:'
+        constexpr int headerSize = 3;           // what size is the header '[T:'
+        constexpr int messageSize = scratchBufferSize - 4;   // actual message that we allow to print
+
+        char scratchBuffer[scratchBufferSize] = {'\0'};
+        scratchBuffer[headerStart] = '[';
+        scratchBuffer[headerStart+1] = 'T';
+        scratchBuffer[headerStart+2] = ':';
+
+        const auto currentThreadName = platform::GetCurrentThreadName();
+        _snprintf_s(scratchBuffer + headerSize, messageSize, _TRUNCATE, "%-*s", messageSize, currentThreadName.c_str());
+
+        scratchBuffer[scratchBufferSize-2] = ']';
+        scratchBuffer[scratchBufferSize-1] = '\0';
+
+        threadName = scratchBuffer;
+    }
+
     for (int i = 0; i < 2; ++i)
     {
-        char* buffer = mFormatedBuffers[i];
-        int result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%s] %s%s%s(%d) : %s\n",
+        char* buffer = mFormatedBuffers[i];                 // time channel sev:tag
+        int result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%s]%s %s%s%s(%d) : %s\n",
             timeText.c_str(), channelName.c_str(),
             severityText, ":", tagger.c_str(),
+            threadName.c_str(),
             streamText.c_str(), SplitMarkers[i], GetFileName().c_str(), GetFileLine(), GetFunctionName().c_str());
 
         if (result == -1)

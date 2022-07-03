@@ -25,6 +25,7 @@ namespace yaget::editor
 
     struct EditorComponent { static constexpr int Capacity = 64; };
     struct EmptyComponent { static constexpr int Capacity = 64; };
+    struct BlankComponent { static constexpr int Capacity = 64; };
     struct RenderComponent { static constexpr int Capacity = 64; };
 
     struct RenderEntity : yaget::comp::RowPolicy<RenderComponent*>
@@ -39,7 +40,7 @@ namespace yaget::editor
         using Global = bool;
     };
 
-    struct Entity : yaget::comp::RowPolicy<EmptyComponent*>
+    struct Entity : yaget::comp::RowPolicy<EmptyComponent*, BlankComponent*>
     {
         using AutoCleanup = bool;
     };

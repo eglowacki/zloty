@@ -33,6 +33,7 @@ namespace yaget
         {
         public:
             FontResource(Device& device, std::shared_ptr<io::render::FontAsset> asset);
+            ~FontResource() override;
 
             bool Activate() override;
             bool Activate(DirectX::SpriteBatch* spriteBatch, const std::string& text, float posX, float posY, const math3d::Color& color);

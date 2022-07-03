@@ -44,7 +44,12 @@ namespace yaget
             JobPool(const char* poolName, uint32_t numThreads = 0, Behaviour behaviour = Behaviour::StartAsRun);
             ~JobPool();
 
-            void AddTask(JobProcessor::Task_t task);
+            // Allows to specify on what thread to execute the task,
+            // Default - execute this task in 'some' default way, can be Pool or Tasked
+            // Pool - execute it from same thread that Pool started this task on.
+            // Tasked - execute from the thread that this task was added from.
+            enum class TaskExecutionThread { Default, Pool, Tasked };
+            void AddTask(JobProcessor::Task_t task, TaskExecutionThread taskExecutionThread = TaskExecutionThread::Default);
             void UnpauseAll();
             
 
@@ -91,14 +96,14 @@ namespace yaget
             JobProcessor::Task_t PopNextTask();
             void UpdateThreadPool(size_t numTasksLeft);
 
-            size_t GetNumTasksLeft();
+            size_t GetNumTasksLeft() const;
 
             Threads_t mThreads;
             typedef std::deque<JobProcessor::Task_t> Tasks_t;
             Tasks_t mTasks;
             std::condition_variable mTaskWaitCondition;
             std::mutex mTaskWaitMutex;
-            std::mutex mPendingTasksMutex;
+            mutable std::mutex mPendingTasksMutex;
             std::mutex mThreadListMutext;
             std::string mName;
             Behaviour mBehaviour = Behaviour::StartAsRun;

@@ -33,7 +33,7 @@ namespace yaget
     template <typename T>
     void RemoveDuplicates(T& num)
     {
-        std::unordered_set<T::value_type> set;
+        std::unordered_set<typename T::value_type> set;
         std::size_t pos = 0;
         for (auto v : num)
         {

@@ -33,6 +33,7 @@ namespace yaget::comp::gs
     public:
         using CoordinatorSet = T;
         using Messaging = M;
+        using Systems = std::tuple<S*...>;
 
         SystemsCoordinator(M& messaging, A& app);
 
@@ -45,11 +46,11 @@ namespace yaget::comp::gs
         const comp::Coordinator<C>& GetCoordinator() const;
 
     private:
-        using Systems = std::tuple<std::shared_ptr<S>...>;
+        using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
         Messaging& mMessaging;
         CoordinatorSet mCoordinatorSet;
-        Systems mSystems;
+        ManagedSystems mSystems;
     };
 
     namespace internal

@@ -340,8 +340,12 @@ void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
 
     for (const auto& config : checkedAsset)
     {
+        YLOG_INFO("INPT", "Current file: '%s' being processed. combineBindings value: '%s'.", config->mTag.ResolveVTS().c_str(), combinedBindings.dump().c_str());
         combinedBindings.merge_patch(config->root);
     }
+
+    YLOG_INFO("INPT", "CombineBindings value: '%s'.", combinedBindings.dump().c_str());
+
     const nlohmann::json& root = combinedBindings;
 
     try

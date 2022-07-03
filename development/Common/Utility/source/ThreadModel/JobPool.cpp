@@ -1,6 +1,7 @@
 #include "ThreadModel/JobPool.h"
 #include "Debugging/DevConfiguration.h"
 #include "Logger/YLog.h"
+#include "Platform/Support.h"
 #include "ThreadModel/Variables.h"
 #include "fmt/format.h"
 #include <algorithm>
@@ -138,7 +139,7 @@ void yaget::mt::JobPool::UpdateThreadPool(size_t numTasksLeft)
         mt::unique_lock mutexLock = mt::unique_lock(mThreadListMutext);
         size_t threadListSize = mThreads.size();
 
-        // looks like we have tasks left, let check to see if we reached man number of threads
+        // looks like we have tasks left, let check to see if we reached max number of threads
         // and if not, are all busy?
         while (numTasksLeft && threadListSize < mMaxNumThreads)
         {
@@ -161,7 +162,7 @@ void yaget::mt::JobPool::UpdateThreadPool(size_t numTasksLeft)
 }
 
 
-size_t yaget::mt::JobPool::GetNumTasksLeft()
+size_t yaget::mt::JobPool::GetNumTasksLeft() const
 {
     std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
     const size_t numTasksLeft = mTasks.size();
@@ -169,13 +170,24 @@ size_t yaget::mt::JobPool::GetNumTasksLeft()
 }
 
 
-void yaget::mt::JobPool::AddTask(mt::JobProcessor::Task_t task) 
+void yaget::mt::JobPool::AddTask(mt::JobProcessor::Task_t task, TaskExecutionThread taskExecutionThread/* = TaskExecutionThread::Default*/) 
 {
+    JobProcessor::Task_t selectedTask = task;
+    if (taskExecutionThread == TaskExecutionThread::Tasked)
+    {
+        auto taskRedirector = [threadId = platform::CurrentThreadId(), task]()
+        {
+            task();
+        };
+
+        selectedTask = std::move(taskRedirector);
+    }
+
     size_t numTasksLeft = 0;
     mEmptyCondition.Reset();
     {
         std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
-        mTasks.push_back(task);
+        mTasks.emplace_back(std::move(selectedTask));
         numTasksLeft = mTasks.size();
     }
 
@@ -238,5 +250,5 @@ yaget::mt::JobProcessor::Task_t yaget::mt::JobPool::PopNextTask()
     }
  
     mEmptyCondition.Trigger(); 
-    return JobProcessor::Task_t(); 
+    return {}; 
 } 

@@ -36,6 +36,7 @@ namespace yaget
             using ErrorCallback = std::function<void(const std::string& filePathName, const std::string& errorMessage)>;
             using Convertor = std::function<void(const io::Buffer& fileData)>;
 
+            // loadAllFiles - if true then on destruction it will process all the files before fully exiting.
             BlobLoader(bool loadAllFiles, ErrorCallback errorCallback);
             ~BlobLoader();
 

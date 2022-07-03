@@ -114,7 +114,7 @@ namespace yaget
 
             template<typename... Args>
             static void RegisterOutputTypes()
-            {
+            {                               
                 using LogOutputs = std::tuple<Args...>;
                 meta::template for_each_type<LogOutputs>([](const auto& logType)
                 {
