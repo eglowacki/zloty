@@ -26,11 +26,12 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
 YAGET_BRAND_NAME_F("Beyond Limits")
 YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::editor,editor::")
 
-int APIENTRY WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
+int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
     YAGET_CHECKVERSION;
 
     using namespace yaget;
+                                                                                                    
 
     args::Options options("Yaget.Editor", "Yaget Editor.");
 

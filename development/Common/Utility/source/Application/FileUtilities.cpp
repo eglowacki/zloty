@@ -75,7 +75,7 @@ yaget::Strings yaget::io::file::GetFileNames(const std::string& sourceLocation, 
 {
     Strings foundFiles;
 
-    double timeStart = platform::GetRealTime();
+    //double timeStart = platform::GetRealTime();
     if (fs::is_directory(sourceLocation))
     {
         foundFiles.reserve(2000);
@@ -94,9 +94,7 @@ yaget::Strings yaget::io::file::GetFileNames(const std::string& sourceLocation, 
     }
 
     std::sort(foundFiles.begin(), foundFiles.end());
-    double timeEnd = platform::GetRealTime();
-
-    YLOG_INFO("METR", "Found '%d' files in '%s' took: '%f' seconds.", foundFiles.size(), sourceLocation.c_str(), timeEnd - timeStart);
+    //double timeEnd = platform::GetRealTime();
 
     return foundFiles;
 }

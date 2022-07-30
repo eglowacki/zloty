@@ -45,7 +45,7 @@ namespace yaget::io
 
 } // yaget
 
-uint32_t yaget::io::FileData::mCounter = 1;
+uint32_t yaget::io::FileData::mCounter = 0;
 
 
 bool yaget::io::FileLoader::FileDataSorter::operator()(const FileLoader::FileDataPtr& lhs, const FileLoader::FileDataPtr& rhs) const
@@ -56,7 +56,7 @@ bool yaget::io::FileLoader::FileDataSorter::operator()(const FileLoader::FileDat
 yaget::io::FileData::FileData(const std::string& name, HANDLE port, FileLoader::DoneCallback_t doneCallback)
     : mName(name)
     , mPort(port)
-    , mKey(mCounter++)
+    , mKey(++mCounter)
     , mDoneCallback(std::move(doneCallback))
     , mTimeSpan(yaget::meta::pointer_cast(this), fs::path(name).filename().generic_string(), YAGET_METRICS_CHANNEL_FILE_LINE)
 {

@@ -68,6 +68,9 @@
     <ClInclude Include="source\RenderSystem.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\Editor.ygs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="data\Assets\Shaders\triangle.frag.hlsl">
@@ -82,5 +85,10 @@
     <FxCompile Include="data\Assets\Shaders\shaders.frag.hlsl">
       <Filter>Data Files\Assets\Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="source\Editor.ygs">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

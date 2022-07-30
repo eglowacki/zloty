@@ -37,8 +37,6 @@ This is 3D engine (Yet Another Game Engine Technology)
     #include <crtdbg.h>
 #endif // YAGET_NEW_ALLOCATOR_ENABLED
 
-#define UNREFERENCED_PARAM(P) (P)
-
 // Used in generating unique name during compile. Used in macros that construct variable names
 #define YAGET_STRINGIZE_P(x) #x
 #define YAGET_STRINGIZE(x) YAGET_STRINGIZE_P(x)

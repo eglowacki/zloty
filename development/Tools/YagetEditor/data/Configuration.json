@@ -2,7 +2,7 @@
 	"Configuration" : {
 		"Debug": {
 			"Logging": {
-				"Filters": [ "-INPT", "WIND", "MULT", "POOL" ],
+				"Filters": [ "INPT", "WIND", "MULT", "POOL" ],
 				"Level": "DBUG",
 				"Outputs": {
 					"ylog::OutputDebug": {
@@ -12,7 +12,8 @@
 						"max_startup_size": "0",
 						"filename": "$(LogFolder)/$(AppName).log"
 					}
-				}
+				},
+				"PrintThreadName":  true
 			},
 			"Metrics": {
 				"AllowFallbackToFile": false,

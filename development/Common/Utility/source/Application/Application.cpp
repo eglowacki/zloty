@@ -115,8 +115,6 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
             {
                 break;
             }
-
-            metrics::Tick();
         }
 
         const double alpha = tickAccumulator / static_cast<double>(kFixedDeltaTime);

@@ -18,6 +18,8 @@
 
 #include "STLHelper.h"
 
+#include "Debugging/DevConfiguration.h"
+
 #include "Platform/Support.h"
 
 
@@ -151,8 +153,7 @@ void Log::FormatLineMessage()
     const auto& streamText = getStream().str();
     const ylog::Tagger tagger(GetTag());
 
-    //const auto currentThreadId = platform::CurrentThreadId();
-    const bool printThreadName = true;
+    const bool printThreadName = dev::CurrentConfiguration().mDebug.mLogging.PrintThreadName;
 
     std::string threadName;
     if (printThreadName)
@@ -179,7 +180,7 @@ void Log::FormatLineMessage()
     for (int i = 0; i < 2; ++i)
     {
         char* buffer = mFormatedBuffers[i];                 // time channel sev:tag
-        int result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%s]%s %s%s%s(%d) : %s\n",
+        int result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%-4s]%s %s%s%s(%d) : %s\n",
             timeText.c_str(), channelName.c_str(),
             severityText, ":", tagger.c_str(),
             threadName.c_str(),

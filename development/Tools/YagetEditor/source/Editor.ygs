@@ -1,0 +1,22 @@
+component EditorWindow
+{
+	AutoCleanup,
+	Global
+}
+
+component Location
+{
+	AutoCleanup
+}
+
+component Script
+{
+	AutoCleanup
+}
+
+coordinator Global<EditorWindow>
+coordinator Entity<Location, Script>
+
+
+system Editor<EditorWindow>
+system GameWindow<Location, Script>

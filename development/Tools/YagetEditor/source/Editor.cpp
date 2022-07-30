@@ -7,6 +7,9 @@
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 
+#include <source_location>
+
+
 int yaget::editor::Run(yaget::args::Options& options)
 {
     const io::VirtualTransportSystem::AssetResolvers resolvers = {
@@ -21,7 +24,8 @@ int yaget::editor::Run(yaget::args::Options& options)
     render::DesktopApplication app("Yaget.Editor", director, vts, options);
     Messaging messaging{};
 
-    // this represent all component which are managed and allowed to be created
+#if 0
+      // this represent all component which are managed and allowed to be created
     // by this CoordinatorSet
     using Ed_Row = EditorSystemsCoordinator::CoordinatorSet::FullRow;
     Ed_Row edRow{};
@@ -43,6 +47,7 @@ int yaget::editor::Run(yaget::args::Options& options)
         int z = 0;
         z;
     });
+#endif
 
     return comp::gs::RunGame<EditorSystemsCoordinator, RenderSystemsCoordinator>(messaging, app);
 }

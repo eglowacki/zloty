@@ -524,7 +524,7 @@ std::string platform::GetCurrentThreadName()
 
 uint32_t platform::GetThreadId(std::thread& t)
 {
-    uint32_t threadId = ::GetThreadId(static_cast<HANDLE>(t.native_handle()));
+    const auto threadId = ::GetThreadId(static_cast<HANDLE>(t.native_handle()));
     return threadId;
 }
 
@@ -606,25 +606,6 @@ std::string platform::GetCurrentDateTime(const char* format)
     return dateString;
 }
 
-void platform::LogLastError(const std::string& userMessage)
-{
-    LPVOID lpMsgBuf = nullptr;
-    DWORD dw = GetLastError();
-
-    ::FormatMessage(
-                    FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                    FORMAT_MESSAGE_FROM_SYSTEM |
-                    FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL,
-                    dw,
-                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                    (LPTSTR)&lpMsgBuf,
-                    0, nullptr);
-
-    YLOG_ERROR("PLAT", "GetLastError was: '%s'. User message: '%s'.", (const char *)lpMsgBuf, userMessage.c_str());
-    ::LocalFree(lpMsgBuf);
-}
-
 std::string yaget::platform::LastErrorMessage()
 {
     uint64_t hr = ::GetLastError();
@@ -651,8 +632,7 @@ bool platform::ParseArgs(const char* commandLine, args::Options& options, std::s
 
     std::string commands = appName + conv::safe(commandLine);
     char** argValues = CommandLineToArgvA(commands.c_str(), &argCount);
-    Releaser releaser;
-    releaser.mArg = argValues;
+    Releaser releaser{argValues};
 
     return ParseOptions(options, argCount, argValues, errorMessage);
 }

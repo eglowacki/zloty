@@ -21,34 +21,22 @@
 
 namespace yaget::editor
 {
-    using Messaging = yaget::comp::gs::Messaging<std::shared_ptr<char>>;
+    using Messaging = comp::gs::Messaging<std::shared_ptr<char>>;
 
     struct EditorComponent { static constexpr int Capacity = 64; };
     struct EmptyComponent { static constexpr int Capacity = 64; };
     struct BlankComponent { static constexpr int Capacity = 64; };
     struct RenderComponent { static constexpr int Capacity = 64; };
 
-    struct RenderEntity : yaget::comp::RowPolicy<RenderComponent*>
-    {
-        using AutoCleanup = bool;
-        using Global = bool;
-    };
+    using RenderEntity = comp::GlobalRowPolicy<RenderComponent*>;
 
-    struct GlobalEntity : yaget::comp::RowPolicy<EditorComponent*>
-    {
-        using AutoCleanup = bool;
-        using Global = bool;
-    };
+    using GlobalEntity = comp::GlobalRowPolicy<EditorComponent*>;
+    using Entity = comp::RowPolicy<EmptyComponent*, BlankComponent*>;
 
-    struct Entity : yaget::comp::RowPolicy<EmptyComponent*, BlankComponent*>
-    {
-        using AutoCleanup = bool;
-    };
+    using GlobalCoordinator = comp::Coordinator<GlobalEntity>;
+    using EntityCoordinator = comp::Coordinator<Entity>;
+    using EditorGameCoordinatorSet = comp::CoordinatorSet<GlobalCoordinator, EntityCoordinator>;
 
-    using GlobalCoordinator = yaget::comp::Coordinator<GlobalEntity>;
-    using EntityCoordinator = yaget::comp::Coordinator<Entity>;
-    using EditorGameCoordinatorSet = yaget::comp::CoordinatorSet<GlobalCoordinator, EntityCoordinator>;
-
-    using RenderCoordinator = yaget::comp::Coordinator<RenderEntity>;
-    using RenderCoordinatorSet = yaget::comp::CoordinatorSet<RenderCoordinator>;
+    using RenderCoordinator = comp::Coordinator<RenderEntity>;
+    using RenderCoordinatorSet = comp::CoordinatorSet<RenderCoordinator>;
 }

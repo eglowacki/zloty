@@ -168,10 +168,20 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
     </CopyFileToFolders>
+    <CustomBuild Include="source\Editor.ygs">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(YAGET_ROOT_FOLDER)\DevTools\ParseGameSystem\pgs.py --file=%(FullPath)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(YAGET_ROOT_FOLDER)\DevTools\ParseGameSystem\pgs.py --file=%(FullPath)</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Parsing ygs '%(FullPath)' file</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(FullPath).h</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Parsing ygs '%(FullPath)' file</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(FullPath).h</Outputs>
+    </CustomBuild>
     <None Include="YagetEditor.deployment" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\Editor.h" />
+    <ClInclude Include="source\Editor.ygs.h" />
     <ClInclude Include="source\EditorGameCoordinator.h" />
     <ClInclude Include="source\EditorGameTypes.h" />
     <ClInclude Include="source\EditorSystem.h" />

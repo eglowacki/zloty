@@ -34,7 +34,7 @@ namespace yaget
         std::string GetCurrentThreadName();
 
         // Various Sleep functions
-        // Keep sleeping if predicate returns true
+        // Keep sleeping while predicate returns true
         using SleepPredicate = std::function<bool()>;
 
         // sleep while SleepPredicate returns true, return from sleep if predicate returns false
@@ -52,11 +52,11 @@ namespace yaget
         bool ParseArgs(const char* commandLine, args::Options& options, std::string* errorMessage);
         bool ParseArgs(args::Options& options, std::string* errorMessage);
 
-        /// Return random number in [from, to] range
+        /// Return random number in [from, to] range (inclusive-inclusive)
         int GetRandom(int from, int to);
 
         // returns current real time
-        // timeUnit - it's one of time::k*Unit like kMicrosecondUni, tetc
+        // timeUnit - it's one of time::k*Unit like kMicrosecondUnit, etc.
         time::TimeUnits_t GetRealTime(time::TimeUnits_t timeUnit);
 
         // Adjust drift of real time.
@@ -73,7 +73,6 @@ namespace yaget
         // Return current date and time formatted to format parameter.
         std::string GetCurrentDateTime(const char* format = "%A %B %d, %Y. %T");
 
-        void LogLastError(const std::string& userMessage);
         std::string LastErrorMessage();
 
         void DisregardAttachedDebugger();

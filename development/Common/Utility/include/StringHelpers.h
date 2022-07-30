@@ -99,37 +99,46 @@ namespace yaget
         //----------------------------------------------------------------------------------------------------------------------------------
         // convert ascii into number representation
         template <typename T>
-        T AtoN(const char* value)
+        T AtoN(std::string_view v)
         {
             T result = 0;
-            if (value)
+            if (!v.empty())
             {
-                //std::to_address()
-                //const auto res = std::from_chars(std::addressof(*str.begin()), std::addressof(*str.end()), value, format);
-
-                std::string_view v{value};
                 while (!v.empty() && *v.begin() == ' ') { v.remove_prefix(1); }
                 if (!v.empty())
                 {
                     const auto res = std::from_chars(v.data(), v.data() + v.size(), result);
-                    YLOG_CWARNING("CONV", res.ec == std::errc(), "String conversion from: '%s' to type: '%s' failed with error code: '%d'.", value, meta::type_name_v<T>().c_str(), res.ec);
+                    YLOG_CWARNING("CONV", res.ec == std::errc(), "String conversion from: '%s' to type: '%s' failed with error code: '%d'.", std::string(v).c_str(), meta::type_name_v<T>().c_str(), res.ec);
                 }
             }
 
             return result;
         }
 
+
+        template <typename T>
+        T AtoN(const char* value)
+        {
+            return value ? AtoN<T>(std::string_view{value}) : T{};
+        }
+
         // specialized for bool
         template <>
-        inline bool AtoN<bool>(const char* value)
+        inline bool AtoN<bool>(std::string_view value)
         {
             bool result = false;
-            if (value)
+            if (!value.empty())
             {
                 result = value[0] == '1' || value[0] == 't' || value[0] == 'T';
             }
 
             return result;
+        }
+
+        template <>
+        inline bool AtoN<bool>(const char* value)
+        {
+            return value ? AtoN<bool>(std::string_view{value}) : false;
         }
 
 

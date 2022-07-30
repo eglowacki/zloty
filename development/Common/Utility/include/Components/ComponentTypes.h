@@ -80,6 +80,17 @@ namespace yaget
 
             static_assert(NumComponents > 0, "Policy must have at least one Element.");
             static_assert(meta::tuple_is_unique_v<Row>, "Duplicate element types in Policy");
+
+#ifndef YAGET_RELEASE
+            using AutoCleanup = bool;
+#endif // YAGET_RELEASE
+        };
+
+        // Helper struct to expose Global row policy
+        template <typename... IS>
+        struct GlobalRowPolicy : RowPolicy<IS...>
+        {
+            using Global = bool;
         };
 
         // game system

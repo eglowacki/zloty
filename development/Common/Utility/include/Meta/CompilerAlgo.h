@@ -28,6 +28,23 @@
 //      void f(T) requires Hashable<T> {}
 //
 //
+//      https://youtu.be/rUESOjhvLw0?t=354
+//      namespace yaget
+//      {
+//          inline namespace v1_0_0
+//          {
+//              struct FooBar
+//              {
+//                  int i;
+//                  char c;
+//              };
+//          }
+//      }
+//      // to access
+//      yaget::FooBar foobar;
+//
+//
+//
 //  #include "Meta/CompilerAlgo.h"
 //
 //////////////////////////////////////////////////////////////////////
@@ -368,7 +385,7 @@ namespace yaget::meta
 
     }
 
-    // return bit pattern representing where types from T are located in R
+    // return bit pattern representing where types from T are located in U
     // Like give me components that represent location of any entity (Tree)
     // using Location = std::tuple<int, bool);
     // using Tree = std::tuple<float, const char*, bool, double, int>;

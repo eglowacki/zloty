@@ -21,6 +21,7 @@ namespace fs = std::filesystem;
 
 namespace
 {
+    constexpr int MaxLogFileNameDigits = 4;
     //--------------------------------------------------------------------------------------------------
     std::string ResolveBrandName()
     {
@@ -281,19 +282,30 @@ namespace
     }
 
     // return number based on "-0000" format
-    int ExtractNumber(const std::string& name)
+    int ExtractNumber(const std::string& name, int maxNameDigits)
     {
         const std::string fileName = fs::path(name).stem().generic_string();
-        if (fileName.size() > 4)
+        if (fileName.size() > maxNameDigits)
         {
             std::string_view v{ fileName };
-            v.remove_prefix(v.size() - 4);
+            v.remove_prefix(v.size() - maxNameDigits);
 
             const std::string value(v.begin(), v.end());
             return yaget::conv::AtoN<int>(value.c_str());
         }
 
         return 0;
+    }
+
+    int GetNumDigits(int value)
+    {
+        int length = 1;
+        while (value /= 10)
+        {
+            length++;
+        }
+
+        return length;
     }
 
 } // namespace
@@ -412,19 +424,19 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
     // Show loaded config file
     // show all search path for config file and marked used one with *
     std::string message = "=== Configuration Search Path:";
-    message += "\nFound: '" + (!configFile.empty() ? configFile : "*NO CONFIGURATION*") + "'.";
+    message += "\nFound and Used:\n   " + (!configFile.empty() ? configFile : "*NO CONFIGURATION*") + ".\nSearch Order:";
 
     Strings searches = io::file::GenerateConfigSearchPath("Configuration", true, options);
     for (const auto& searched : searches)
     {
-        std::string marker;
+        std::string linkable;
         if (searched == configFile)
         {
-            marker = "*";
+            linkable = "file:///";
         }
 
-        message += fmt::format("\n   {}{}{}", marker, searched, marker);
-    }
+        message += fmt::format("\n   {}{}", linkable, searched);
+     }
 
     // Show all aliases and it's corresponding path
     message += "\n=== Environment Aliases:";
@@ -441,7 +453,11 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
         std::size_t numPadding = maxLen ? maxLen - env.first.length() : 0;
         std::string spacing(numPadding, ' ');
         std::string expendedAlias = util::ExpendEnv(env.first, nullptr);
-        message += fmt::format("\n   Alias: '{}'{} = {}'{}'", env.first, spacing, (env.second.ReadOnly ? "R- " : "RW "), expendedAlias);
+
+        const bool isLinkable = fs::is_directory(expendedAlias) || fs::is_regular_file(expendedAlias);
+        const char* filePrefix = isLinkable ? "file:///" : "";
+
+        message += fmt::format("\n   Alias: '{}'{} = {}{}{}", env.first, spacing, (env.second.ReadOnly ? "R- " : "RW "), filePrefix, expendedAlias);
     }
 
     const dev::Configuration& configuration = dev::CurrentConfiguration();
@@ -454,7 +470,7 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
         for (const auto& pathName : section.Path)
         {
             std::string potentialPath = util::ExpendEnv(pathName, nullptr);
-            message += fmt::format("\n     {}", potentialPath);
+            message += fmt::format("\n     file:///{}", potentialPath);
         }
     }
 
@@ -579,10 +595,13 @@ bool yaget::util::FileCycler(const std::string& folder, const std::string& fileN
     fp.replace_extension(extension);
     const std::string filePathName = fs::path(ExpendEnv(fp.generic_string(), nullptr)).generic_string();
 
+    const int maxNameDigits = MaxLogFileNameDigits;
+
+    const std::string digitFilter = fmt::format("-{:?<{}}", "", maxNameDigits);
     if (io::file::IsFileExists(filePathName))
     {
         int lastFileIndex = 0;
-        fs::path filterFile = "*" + fileName + "-????";
+        fs::path filterFile = "*" + fileName + digitFilter;
         filterFile.replace_extension(extension);
 
         const std::string folderNameText = fs::path(ExpendEnv(folder, nullptr)).generic_string();
@@ -591,24 +610,37 @@ bool yaget::util::FileCycler(const std::string& folder, const std::string& fileN
         const auto logNames = io::file::GetFileNames(folderNameText, false, filterText);
         for (const auto& name : logNames)
         {
-            int fileIndex = ExtractNumber(name);
+            int fileIndex = ExtractNumber(name, maxNameDigits);
             lastFileIndex = std::max(lastFileIndex, fileIndex);
         }
 
+        auto leftNames = io::file::GetFileNames(folderNameText, false, filterText);
+        std::sort(leftNames.begin(), leftNames.end(), [](const std::string& elem1, const std::string& elem2)
+        {
+            return ExtractNumber(elem1, maxNameDigits) < ExtractNumber(elem2, maxNameDigits);
+        });
+
+        if (GetNumDigits(lastFileIndex + 1) > maxNameDigits)
+        {
+            std::string partialName = fs::path(fs::path(folder) / fs::path(fileName)).generic_string();
+            lastFileIndex = 0;
+
+            for (const auto& name : leftNames)
+            {
+                const std::string newName = fs::path(ExpendEnv(partialName + fmt::format("-{:0{}}", ++lastFileIndex, maxNameDigits), extension.c_str())).generic_string();
+                const auto& [result, errorMessage] = io::file::RenameFile(name, newName);
+            }
+        }
+
         std::string partialName = fs::path(fs::path(folder) / fs::path(fileName)).generic_string();
-        partialName += fmt::format("-{:04}", lastFileIndex + 1);
+        partialName += fmt::format("-{:0{}}", lastFileIndex + 1, maxNameDigits);
 
         const std::string newName = fs::path(ExpendEnv(partialName, extension.c_str())).generic_string();
         const auto& [result, errorMessage] = io::file::RenameFile(filePathName, newName);
+        leftNames.push_back(newName);
 
-        auto leftNames = io::file::GetFileNames(folderNameText, false, filterText);
         if (leftNames.size() > maxFiles)
         {
-            std::sort(leftNames.begin(), leftNames.end(), [](const std::string& elem1, const std::string& elem2)
-            {
-                return ExtractNumber(elem1) < ExtractNumber(elem2);
-            });
-
             io::file::RemoveFiles({ leftNames.rbegin() + maxFiles, leftNames.rend() });
         }
 

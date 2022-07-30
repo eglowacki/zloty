@@ -110,7 +110,7 @@ void yaget::render::platform::DeviceDebugger::ActivateMessageSeverity(const ComP
 
         infoQueue->PushStorageFilter(&newFilter);
 #endif // 0
-        YLOG_NOTICE("DEVI", "DeviceDebugger MessageSeverity Activated. Corruption: '%s', Error: '%s', Warning: '%s'.", conv::ToBool(breakOnCorruption).c_str(), conv::ToBool(breakOnError).c_str(), conv::ToBool(breakOnWarning).c_str());
+        YLOG_NOTICE("DEVI", "DeviceDebugger MessageSeverity Activated. On Corruption: '%s', On Error: '%s', On Warning: '%s'.", conv::ToBool(breakOnCorruption).c_str(), conv::ToBool(breakOnError).c_str(), conv::ToBool(breakOnWarning).c_str());
     }
     else
     {

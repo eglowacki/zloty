@@ -468,7 +468,7 @@ namespace yaget
 
                 if (yaget::platform::IsDebuggerAttached())
                 {
-                    std::string errorMessage = fmt::format("{}({}) : [BEGUG ERROR] {}", file, line, message);
+                    std::string errorMessage = fmt::format("{}({}) : [DEBUG ERROR] {}", file, line, message);
                     yaget::platform::DebuggerOutput(errorMessage);
                     yaget::platform::DebuggerBreak();
                 }

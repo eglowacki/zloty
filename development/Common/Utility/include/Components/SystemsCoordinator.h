@@ -65,8 +65,8 @@ namespace yaget::comp::gs
             {}
 
             void operator()(const time::GameClock& gameClock, metrics::Channel& channel);
-            std::shared_ptr<T> mSystemsCoordinator;
 
+            std::shared_ptr<T> mSystemsCoordinator;
             M& mMessaging;
             A& mApplication;
         };

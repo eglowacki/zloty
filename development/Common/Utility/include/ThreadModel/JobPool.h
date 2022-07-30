@@ -87,7 +87,7 @@ namespace yaget
 
             Locker GetLocker()
             {
-                return Locker(*this);
+                return {*this};
             }
 
         private:

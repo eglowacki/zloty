@@ -63,9 +63,6 @@
     <Filter Include="VTS Files">
       <UniqueIdentifier>{74f8bca2-1bf8-45e4-ba1a-895a10cc5605}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Metric Files">
-      <UniqueIdentifier>{3b1d8fab-c945-4a26-b127-f8d1f87dd6a5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ImageLoader Files">
       <UniqueIdentifier>{ca703232-99e5-42c0-8640-7aa9ca7150d3}</UniqueIdentifier>
     </Filter>
@@ -86,6 +83,9 @@
     </Filter>
     <Filter Include="Math">
       <UniqueIdentifier>{ccd4add0-7dbf-45aa-86d3-85b82ff75e71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Metric Files">
+      <UniqueIdentifier>{3b1d8fab-c945-4a26-b127-f8d1f87dd6a5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

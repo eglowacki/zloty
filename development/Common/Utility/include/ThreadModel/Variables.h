@@ -40,29 +40,65 @@ namespace yaget::mt
 
         T operator =(const T& v)
         {
-            std::unique_lock<std::mutex> mutexLock(*mMutex);
+            std::unique_lock<std::mutex> mutexLock(mMutex);
             mData = v;
             return mData;
         }
 
         operator T() const
         {
-            std::unique_lock<std::mutex> mutexLock(*mMutex);
+            std::unique_lock<std::mutex> mutexLock(mMutex);
             return mData;
         }
 
         T Swap(const T& v)
         {
-            std::unique_lock<std::mutex> mutexLock(*mMutex);
+            std::unique_lock<std::mutex> mutexLock(mMutex);
             T oldData = mData;
             mData = v;
 
             return oldData;
         }
 
+        bool Get(T& v) const
+        {
+            std::unique_lock<std::mutex> mutexLock(mMutex, std::defer_lock);
+            if (mutexLock.try_lock())
+            {
+                v = mData;
+                return true;
+            }
+
+            return false;
+        }
+
+        struct Locker
+        {
+            Locker(Variable<T>& variable) : mVariable(variable)
+                , mMutexLock(mVariable.mMutex)
+                , mDataValue(mVariable.mData)
+            {
+            }
+
+            ~Locker()
+            {
+                // assign data value back to a Variable, assumption here that it's always changed
+                mVariable.mData = mDataValue;
+            }
+
+            Variable<T>& mVariable;
+            std::unique_lock<std::mutex> mMutexLock;
+            T mDataValue;
+        };
+
+        Locker GetLocker()
+        {
+            return Locker(*this);
+        }
+
     private:
         T mData;
-        mutable std::unique_ptr<std::mutex> mMutex = std::make_unique<std::mutex>();
+        mutable std::mutex mMutex;
     };
 
     
@@ -73,6 +109,7 @@ namespace yaget::mt
     struct SmartVariable : public Noncopyable<SmartVariable<T>>
     {
         using SmartType = std::shared_ptr<T>;
+        using SmartType2 = std::atomic<std::shared_ptr<T>>;
 
         // base interface to interact with
         SmartVariable() = default;

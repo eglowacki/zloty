@@ -13,6 +13,11 @@
 //      https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/profiling/concurrency-visualizer.md
 //      https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/debugger/allocation-hook-functions.md
 //
+//      Potential candidates for tracing. Includes visualizer gui app.
+//      https://github.com/wolfpld/tracy
+//      https://github.com/bombomby/optick
+//
+//      Currently we use chrome://tracing
 //
 //  #include "Metrics/Concurrency.h"
 //
@@ -114,12 +119,12 @@ namespace yaget::metrics
 
     // not converted yet
     inline void MarkEndThread(std::thread&) {}
-    inline void MarkEndThread(uint32_t) {}
+    //inline void MarkEndThread(uint32_t) {}
 
-    inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
-    inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
+    //inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
+    //inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
 
-    inline void Tick() {}
+    //inline void Tick() {}
 
 #else // YAGET_CONC_METRICS_ENABLED
 

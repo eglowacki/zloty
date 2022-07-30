@@ -534,8 +534,6 @@ size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>
         // and the second for assets that need to be loaded and converted
         for (const auto& tag : tagRecords)
         {
-            metrics::MarkStartTimeSpan(tag.Hash(), fmt::format("Loaded: {}", tag.mVTSName).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
-
             if (auto asset = FindAsset(tag))
             {
                 // asset already exist, return this
@@ -546,7 +544,6 @@ size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>
                 auto converter = [this, tag, blobAssetCallback, tagsCounter = tagsCounter](auto&& param) 
                 {
                     onBlobLoaded(param, tag, blobAssetCallback, tagsCounter); 
-                    metrics::MarkEndTimeSpan(tag.Hash(), YAGET_METRICS_CHANNEL_FILE_LINE);
                 };
 
                 fileNames.push_back(util::ExpendEnv(tag.mVTSName, nullptr));
@@ -580,8 +577,6 @@ size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>
                         std::string message = fmt::format("Asset '{}' did not get callbacked. '{}'.", it->mTag.mVTSName.c_str(), e.what());
                         YLOG_ERROR("VTS", message.c_str());
                     }
-
-                    metrics::MarkEndTimeSpan(it->mTag.Hash(), YAGET_METRICS_CHANNEL_FILE_LINE);
                 }
             });
         }

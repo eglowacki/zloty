@@ -78,7 +78,6 @@ namespace yaget::comp
         ~Coordinator();
 
         // Add component to pool and collection.
-        // This will create a new instance of T component allocator
         template<typename T, typename... Args>
         T* AddComponent(comp::Id_t id, Args&&... args);
 

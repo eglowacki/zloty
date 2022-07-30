@@ -15,7 +15,7 @@ TEST_F(YLog, Tagger)
     // any new changes run each individual line uncommented to ensure that asserts (so far, we do not have an easy way to control yaget asserts from crashing)
     //const char* Tag_Null = nullptr;
     //const char* Tag_Empty = "";
-    //ylog::Tagger tn(Tag_Empty);
+    //ylog::Tagger tn(Tag_Null);
     //ylog::Tagger tn(Tag_Empty);
 
     const char* Tag_One = "F";

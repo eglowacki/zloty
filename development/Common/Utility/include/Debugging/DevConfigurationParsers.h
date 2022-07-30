@@ -235,6 +235,7 @@ namespace yaget::dev
         j["Level"] = logging.Level;
         j["Filters"] = logging.Filters;
         j["Outputs"] = logging.Outputs;
+        j["PrintThreadName"] = logging.PrintThreadName;
     }
 
     namespace parsers { Strings ParseLogFilterTags(const Strings& newFilterTags, const Strings& currentFilterTags); }
@@ -278,6 +279,8 @@ namespace yaget::dev
             }
             return results;
         });
+
+        logging.PrintThreadName = yaget::json::GetValue(j, "PrintThreadName", logging.PrintThreadName);
     }
 
 
