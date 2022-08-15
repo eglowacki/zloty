@@ -19,7 +19,7 @@ void yaget::render::Waiter::Wait()
 //-------------------------------------------------------------------------------------------------
 void yaget::render::Waiter::BeginPause()
 {
-    // TODO Look at re-entrent lock (from the same thread)
+    // TODO Look at re-entrant lock (from the same thread)
     // rather then home grown
     if (mUsageCounter++)
     {

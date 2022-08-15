@@ -204,7 +204,7 @@ yaget::comp::Coordinator<P>::~Coordinator()
     }
     else
     {
-        YAGET_ASSERT(mItems.empty(), "Coordinator still has outstanding '%d' component(s): [%s]", mItems.size(), conv::Combine(mItems, "], [").c_str());
+        YAGET_ASSERT(mItems.empty(), "Coordinator [%s] still has outstanding '%d' component(s): [%s]", conv::Combine(mComponentNames, ", ").c_str(), mItems.size(), conv::Combine(mItems, "], [").c_str());
     }
 }
 

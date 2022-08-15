@@ -45,7 +45,7 @@ namespace yaget
 
         using WindowHandle_t = app::DisplaySurface::PlatformWindowHandle;
 
-        virtual ~Application() = default;
+        virtual ~Application();
 
         using TickLogic = std::function<void(const time::GameClock&, metrics::Channel&)>;
         using TickRender = TickLogic;

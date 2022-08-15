@@ -15,7 +15,56 @@ namespace
     {
         return flags & DXGI_ADAPTER_FLAG_SOFTWARE ? "Yes" : "No";
     }
+
+
 }
+
+template <>
+struct yaget::conv::Convertor<D3D_FEATURE_LEVEL>
+{
+    //static D3D_FEATURE_LEVEL FromString(const char* value)
+    //{
+    //    D3D_FEATURE_LEVEL result = D3D_FEATURE_LEVEL_1_0_CORE;
+
+    //    if (CompareI(value, "D3D Feature Level 12.2"))
+    //    {
+    //        result = D3D_FEATURE_LEVEL_12_2;
+    //    }
+    //    else if (CompareI(value, "D3D Feature Level 12.1"))
+    //    {
+    //        result = D3D_FEATURE_LEVEL_12_1;
+    //    }
+    //    else if (CompareI(value, "D3D Feature Level 12.0"))
+    //    {
+    //        result = D3D_FEATURE_LEVEL_12_0;
+    //    }
+
+    //    return result;
+    //}
+
+    static std::string ToString(D3D_FEATURE_LEVEL value)
+    {
+        std::string result;
+
+        switch (D3D_FEATURE_LEVEL_12_2)
+        {
+        case D3D_FEATURE_LEVEL_12_2:
+            result = "D3D Feature Level 12.2";
+            break;
+        case D3D_FEATURE_LEVEL_12_1:
+            result = "D3D Feature Level 12.1";
+            break;
+        case D3D_FEATURE_LEVEL_12_0:
+            result = "D3D Feature Level 12.0";
+            break;
+        default:
+            YLOG_ERROR("DEVI", "Unsupported D3D_FEATURE_LEVEL: '%d' conversion to string.", static_cast<int>(value));
+            return "?";
+        }
+
+        return result;
+    }
+};
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::Adapter::Adapter(app::WindowFrame /*windowFrame*/)
@@ -98,6 +147,19 @@ yaget::render::platform::Adapter::Adapter(app::WindowFrame /*windowFrame*/)
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Device4 interface");
 
     YAGET_RENDER_SET_DEBUG_NAME(mDevice.Get(), "Yaget Device");
+
+    // print feature level
+    // TODO: make some data structure that holds various feature levels at run time for current graphics setup.
+    D3D12_FEATURE_DATA_FEATURE_LEVELS feature_level{};
+    feature_level.NumFeatureLevels = 3;
+    D3D_FEATURE_LEVEL requested[3] = {D3D_FEATURE_LEVEL_12_2, D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0};
+    feature_level.pFeatureLevelsRequested = requested;
+
+    hr = mDevice->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &feature_level, sizeof(feature_level));
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not check feature support");
+
+    const auto maxFeatureLevelSupported = conv::Convertor<D3D_FEATURE_LEVEL>::ToString(feature_level.MaxSupportedFeatureLevel);
+    YLOG_NOTICE("DEVI", "Device supports: '%s' set.", conv::Convertor<D3D_FEATURE_LEVEL>::ToString(feature_level.MaxSupportedFeatureLevel).c_str());
 
 #if YAGET_DEBUG_RENDER == 1
     mDeviceDebugger.ActivateMessageSeverity(mDevice);

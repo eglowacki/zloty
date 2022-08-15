@@ -7,9 +7,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(YAGET_DEPENDENCIES_PATH)\DirectX-Headers-12\include\directx;$(YAGET_DEPENDENCIES_PATH)\DirectX-Headers-12\include\dxguids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
+    <Link />
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>

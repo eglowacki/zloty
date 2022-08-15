@@ -19,5 +19,5 @@
 
 namespace yaget::editor
 {
-    int Run(yaget::args::Options& options);
+    int Run(const yaget::args::Options& options);
 }

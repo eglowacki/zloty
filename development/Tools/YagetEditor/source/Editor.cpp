@@ -10,7 +10,7 @@
 #include <source_location>
 
 
-int yaget::editor::Run(yaget::args::Options& options)
+int yaget::editor::Run(const yaget::args::Options& options)
 {
     const io::VirtualTransportSystem::AssetResolvers resolvers = {
         { "JSON", io::ResolveAsset<yaget::io::JsonAsset> }

@@ -10,8 +10,8 @@
       <AdditionalIncludeDirectories>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Render\Include\DX12;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>YagetRender12$(YAGET_DEBUG_SUFFIX).lib;DirectX-Guids.lib;DXGI.lib;D3d12.lib;d3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(YAGET_DEPENDENCIES_PATH)\DirectX-Headers-12\builds\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>YagetRender12$(YAGET_DEBUG_SUFFIX).lib;DirectXTK12.lib;DirectX-Guids.lib;DXGI.lib;D3d12.lib;d3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(YAGET_DEPENDENCIES_PATH)\DirectX-Headers-12\builds\$(Configuration);$(YAGET_DEPENDENCIES_PATH)\DirectXTK12-07.29.2022\builds\bin\CMake\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <FxCompile />
   </ItemDefinitionGroup>

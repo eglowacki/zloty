@@ -136,6 +136,12 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
 
 
 //-------------------------------------------------------------------------------------------------
+yaget::Application::~Application()
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
 int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRender /*= {}*/, const TickIdle& tickIdle /*= {}*/, const QuitLogic& shutdownLogicCallback /*= {}*/, const QuitApplication& quitCallback /*= {}*/)
 {
     // kick off separate thread for rendering

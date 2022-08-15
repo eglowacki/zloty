@@ -809,7 +809,7 @@ void yaget::util::ThrowOnError(long hr, const std::string& message, const char* 
     {
         _com_error cr(HRESULT_FROM_WIN32(hr));
         const char* errorMessage = cr.ErrorMessage();
-        auto textError = fmt::format("HRESULT = {}, {}. Error: {}", hr, message, errorMessage);
+        auto textError = fmt::format("HRESULT = {}, {}. Platform error: {}", hr, message, errorMessage);
         if (platform::IsDebuggerAttached())
         {
             YLOG_PERROR("UTIL", file, line, functionName, textError.c_str());

@@ -491,6 +491,11 @@ std::vector<std::string> getAllFilesInDir(const std::string &dirPath, const std:
 
 void platform::SetThreadName(const char* threadName, uint32_t t)
 {
+    // we should try to use this:
+    //HRESULT result = ::SetThreadDescription(::GetCurrentThread(), conv::utf8_to_wide(threadName).c_str());
+    //YAGET_UTIL_THROW_ON_RROR(result, "Could not set thread name");
+    // and
+    //HRESULT ::GetThreadDescription(HANDLE hThread, PWSTR  *ppszThreadDescription);
     THREADNAME_INFO info;
     info.dwType = 0x1000;
     info.szName = threadName;
@@ -504,7 +509,6 @@ void platform::SetThreadName(const char* threadName, uint32_t t)
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {}
-
 }
 
 void platform::SetThreadName(const char* threadName, std::thread& t)

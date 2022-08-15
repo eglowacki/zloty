@@ -82,6 +82,9 @@ namespace yaget
             static_assert(meta::tuple_is_unique_v<Row>, "Duplicate element types in Policy");
 
 #ifndef YAGET_RELEASE
+            // NOTE: EG: Not sure if I like this be a compile define
+            // This is probably more useful per to let user declare RowPolicy
+            // with this option
             using AutoCleanup = bool;
 #endif // YAGET_RELEASE
         };
@@ -93,30 +96,6 @@ namespace yaget
             using Global = bool;
         };
 
-        // game system
-        namespace gs
-        {
-            // Used a as policy in GameSystem to handle last entity/item during iteration
-            // T how the last and end element iteration is handled
-            template <bool T>
-            struct EndMarker
-            {
-                static constexpr bool val = true;
-            };
-
-            template <>
-            struct EndMarker<false>
-            {
-                static constexpr bool val = false;
-            };
-
-            // Used to specify how to handle end of items in GameSystem::Update method. 
-            // If Yes, then call Update with comp::END_ID_MARKER, otherwise
-            // skip that after iterating over all ids.
-            struct EndMarkerYes : EndMarker<true> {};
-            struct EndMarkerNo : EndMarker<false> {};
-
-        } // namespace gs
     } // namespace comp
 
     namespace items
