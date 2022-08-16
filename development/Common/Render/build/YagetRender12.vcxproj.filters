@@ -26,6 +26,9 @@
     <Filter Include="Source Files\Platform Files\MemAlloc Files">
       <UniqueIdentifier>{d867235c-ceca-4bec-9f48-68476b7e930b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Polygons Files">
+      <UniqueIdentifier>{9ce9ca10-6b21-4ceb-a596-3e81e3fc8316}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\Device.h">
@@ -85,6 +88,12 @@
     <ClInclude Include="..\include\DX12\Render\RenderCore.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Polygons\Polygon.h">
+      <Filter>Source Files\Polygons Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\RenderStringHelpers.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -137,6 +146,12 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp">
       <Filter>Source Files\Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Polygons\Polygon.cpp">
+      <Filter>Source Files\Polygons Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\RenderStringHelpers.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

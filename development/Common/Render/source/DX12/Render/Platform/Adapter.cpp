@@ -2,13 +2,14 @@
 #include "App/AppUtilities.h"
 #include "D3D12MemAlloc.h"
 #include "Debugging/DevConfiguration.h"
-#include "StringHelpers.h"
+#include "Render/RenderStringHelpers.h"
 #include "SwapChain.h"
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
 
 
+//-------------------------------------------------------------------------------------------------
 namespace 
 {
     std::string IsSoftware(uint32_t flags)
@@ -16,58 +17,11 @@ namespace
         return flags & DXGI_ADAPTER_FLAG_SOFTWARE ? "Yes" : "No";
     }
 
-
 }
 
-template <>
-struct yaget::conv::Convertor<D3D_FEATURE_LEVEL>
-{
-    //static D3D_FEATURE_LEVEL FromString(const char* value)
-    //{
-    //    D3D_FEATURE_LEVEL result = D3D_FEATURE_LEVEL_1_0_CORE;
-
-    //    if (CompareI(value, "D3D Feature Level 12.2"))
-    //    {
-    //        result = D3D_FEATURE_LEVEL_12_2;
-    //    }
-    //    else if (CompareI(value, "D3D Feature Level 12.1"))
-    //    {
-    //        result = D3D_FEATURE_LEVEL_12_1;
-    //    }
-    //    else if (CompareI(value, "D3D Feature Level 12.0"))
-    //    {
-    //        result = D3D_FEATURE_LEVEL_12_0;
-    //    }
-
-    //    return result;
-    //}
-
-    static std::string ToString(D3D_FEATURE_LEVEL value)
-    {
-        std::string result;
-
-        switch (D3D_FEATURE_LEVEL_12_2)
-        {
-        case D3D_FEATURE_LEVEL_12_2:
-            result = "D3D Feature Level 12.2";
-            break;
-        case D3D_FEATURE_LEVEL_12_1:
-            result = "D3D Feature Level 12.1";
-            break;
-        case D3D_FEATURE_LEVEL_12_0:
-            result = "D3D Feature Level 12.0";
-            break;
-        default:
-            YLOG_ERROR("DEVI", "Unsupported D3D_FEATURE_LEVEL: '%d' conversion to string.", static_cast<int>(value));
-            return "?";
-        }
-
-        return result;
-    }
-};
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::Adapter::Adapter(app::WindowFrame /*windowFrame*/)
+yaget::render::platform::Adapter::Adapter([[maybe_unused]] app::WindowFrame windowFrame, [[maybe_unused]] bool useDefault /*= false*/)
 {
     using namespace Microsoft::WRL;
 
@@ -191,6 +145,13 @@ const Microsoft::WRL::ComPtr<ID3D12Device4>& yaget::render::platform::Adapter::G
 const Microsoft::WRL::ComPtr<IDXGIFactory4>& yaget::render::platform::Adapter::GetFactory() const
 {
     return mFactory;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+D3D12MA::Allocator* yaget::render::platform::Adapter::GetAllocator() const
+{
+    return mAllocator.get();
 }
 
 

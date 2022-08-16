@@ -48,6 +48,7 @@ namespace yaget
 
 namespace yaget::render
 {
+    class Polygon;
     namespace platform
     {
         class Adapter;
@@ -74,6 +75,9 @@ namespace yaget::render
 
         std::unique_ptr<platform::Adapter> mAdapter;
         std::unique_ptr<platform::SwapChain> mSwapChain;
+
+        std::unique_ptr<Polygon> mPolygon;
+
     };
 
 }

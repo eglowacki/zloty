@@ -28,11 +28,12 @@ namespace yaget::render::platform
     class Adapter
     {
     public:
-        Adapter(app::WindowFrame windowFrame);
+        Adapter(app::WindowFrame windowFrame, bool useDefault = false);
         ~Adapter();
 
         const ComPtr<ID3D12Device4>& GetDevice() const;
         const ComPtr<IDXGIFactory4>& GetFactory() const;
+        D3D12MA::Allocator* GetAllocator() const;
 
     private:
 #if YAGET_DEBUG_RENDER == 1

@@ -30,5 +30,9 @@ namespace yaget::editor
     {
     public:
         RenderSystemsCoordinator(Messaging& m, render::DesktopApplication& app);
+        ~RenderSystemsCoordinator();
+
+    private:
+        comp::ItemIds mRenderItems;
     };
 }

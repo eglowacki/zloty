@@ -6,6 +6,7 @@
 #include "StringHelpers.h"
 #include "Time/GameClock.h"
 #include "Debugging/DevConfiguration.h"
+#include "Render/Polygons/Polygon.h"
 
 
 //-------------------------------------------------------------------------------------------------
@@ -13,6 +14,7 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame)
     : mWindowFrame{ windowFrame }
     , mAdapter{ std::make_unique<platform::Adapter>(mWindowFrame) }
     , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, mAdapter->GetDevice(), mAdapter->GetFactory().Get()) }
+    , mPolygon{ std::make_unique<Polygon>(mAdapter->GetAllocator()) }
 {
     YLOG_INFO("DEVI", "Device created and initialized.");
 }

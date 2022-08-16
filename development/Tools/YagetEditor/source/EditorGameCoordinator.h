@@ -30,5 +30,10 @@ namespace yaget::editor
     {
     public:
         EditorSystemsCoordinator(Messaging& m, Application& app);
+        ~EditorSystemsCoordinator();
+
+    private:
+        comp::ItemIds mItems;
+        comp::ItemIds mGlobalItems;
     };
 }

@@ -90,7 +90,6 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -164,6 +163,8 @@
     <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\DeviceDebugger.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h" />
+    <ClInclude Include="..\source\DX12\Render\Polygons\Polygon.h" />
+    <ClInclude Include="..\source\DX12\Render\RenderStringHelpers.h" />
     <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h" />
     <ClInclude Include="..\source\DX12\Render\UI\Layer.h" />
   </ItemGroup>
@@ -185,6 +186,8 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Platform\DeviceDebugger.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\SwapChain.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Polygons\Polygon.cpp" />
+    <ClCompile Include="..\source\DX12\Render\RenderStringHelpers.cpp" />
     <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp" />
     <ClCompile Include="..\source\DX12\Render\UI\Layer.cpp" />
     <ClCompile Include="..\source\DX12\Render\Waiter.cpp" />
