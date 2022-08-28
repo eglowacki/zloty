@@ -1,4 +1,9 @@
-remote_theme: pages-themes/slate@v0.2.0
-plugins:
-- jekyll-remote-theme # add this line to the plugins list if you already have one
+# Site settings
+title: YAGET
+author:
+  name: Edgar
+  email: edgar_glowacki@yahoo.com
+description: "Yet Another Game Engine Technolodgy."
 
+# Build settings
+remote_theme: jekyll/minima
