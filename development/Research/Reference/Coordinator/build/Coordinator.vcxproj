@@ -184,6 +184,7 @@
     <ResourceCompile Include="..\source\Coordinator.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\..\..\..\..\DirectX-Graphics-Samples\Samples\Desktop\D3D12HelloWorld\src\HelloTriangle\D3D12HelloTriangle.vcxproj" />
     <None Include="..\Data\Assets\Descriptions\Background.json" />
     <None Include="..\Data\Assets\Descriptions\Rectangle.json" />
     <None Include="..\Data\Assets\Materials\Position.json" />

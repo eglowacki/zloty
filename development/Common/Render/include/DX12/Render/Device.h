@@ -55,12 +55,16 @@ namespace yaget::render
         class Fence;
         class SwapChain;
     }
+    namespace info
+    {
+        struct Adapter;
+    }
 
     //-------------------------------------------------------------------------------------------------
     class DeviceB : public Noncopyable<DeviceB>
     {
     public:
-        DeviceB(app::WindowFrame windowFrame);
+        DeviceB(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo);
         ~DeviceB();
 
         void Resize();
@@ -77,6 +81,7 @@ namespace yaget::render
         std::unique_ptr<platform::SwapChain> mSwapChain;
 
         std::unique_ptr<Polygon> mPolygon;
+        std::unique_ptr<Polygon> mPolygon2;
 
     };
 

@@ -16,7 +16,7 @@
 #include "YagetCore.h"
 #include "Render/RenderCore.h"
 
-struct ID3D12Device4;
+struct ID3D12Device;
 struct ID3D12CommandQueue;
 struct ID3D12Fence1;
 
@@ -27,7 +27,7 @@ namespace yaget::render::platform
 	public:
 		enum class Type { Direct, Compute, Copy };
 		
-		CommandQueue(ID3D12Device4* device, Type type);
+		CommandQueue(ID3D12Device* device, Type type);
 		~CommandQueue();
 
 		void Execute();
@@ -41,7 +41,7 @@ namespace yaget::render::platform
 		ComPtr<ID3D12CommandQueue> mCommandQueue;
 		ComPtr<ID3D12Fence1> mFence;
 		HANDLE mFenceEvent{ nullptr };
-		uint64_t mFenceValue{ 0 };
+		std::atomic_uint64_t mFenceValue{ 0 };
 	};
 	
 } // namespace yaget::render::platform

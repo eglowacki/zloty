@@ -1,11 +1,11 @@
 #include "CommandQueue.h"
 #include "App/AppUtilities.h"
-#include "DeviceDebugger.h"
+#include "Render/Platform/DeviceDebugger.h"
 #include <d3d12.h>
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::CommandQueue::CommandQueue(ID3D12Device4* device, Type type)
+yaget::render::platform::CommandQueue::CommandQueue(ID3D12Device* device, Type type)
 {
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
     queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -41,8 +41,6 @@ yaget::render::platform::CommandQueue::CommandQueue(ID3D12Device4* device, Type 
     mFenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
     YAGET_UTIL_THROW_ON_RROR(mFenceEvent, "Could not create Event");
 
-    //mFenceValue = 1;
-
     YLOG_INFO("DEVI", "Command Queue created with Type: '%d'.", type);
 }
 
@@ -69,6 +67,8 @@ void yaget::render::platform::CommandQueue::Flush()
 uint64_t yaget::render::platform::CommandQueue::Signal()
 {
     const uint64_t fenceValueForSignal = ++mFenceValue;
+
+
     HRESULT hr = mCommandQueue->Signal(mFence.Get(), fenceValueForSignal);
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not signal DX12 Command Queue");
 
@@ -85,6 +85,7 @@ void yaget::render::platform::CommandQueue::WaitForFenceValue(uint64_t fenceValu
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Event On Completion");
 
         ::WaitForSingleObject(mFenceEvent, INFINITE);
+
     }
 }
 

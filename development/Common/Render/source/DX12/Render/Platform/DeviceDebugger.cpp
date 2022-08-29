@@ -1,13 +1,16 @@
-#include "DeviceDebugger.h"
+#include "Render/Platform/DeviceDebugger.h"
 #include "HashUtilities.h"
 
 #include "Debugging/DevConfiguration.h"
 
 #if YAGET_DEBUG_RENDER == 1
 
+YAGET_COMPILE_GLOBAL_SETTINGS("Debug Render Module Included")
+
 #include "App/AppUtilities.h"
 #include "StringHelpers.h"
 
+#include <filesystem>
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
@@ -23,7 +26,8 @@ yaget::render::platform::DeviceDebugger::DeviceDebugger()
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Debug interface");
 
         ComPtr<ID3D12Debug1> debugController1;
-        hr = debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
+        hr = debugController.As(&debugController1);
+        //hr = debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Debug1 interface");
 
         debugController1->EnableDebugLayer();
@@ -46,14 +50,14 @@ yaget::render::platform::DeviceDebugger::~DeviceDebugger()
         ComPtr<IDXGIDebug1> dxgiDebug;
         if (SUCCEEDED(::DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug))))
         {
-            dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(D3D12_RLDO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+            dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
         }
     }
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::DeviceDebugger::ActivateMessageSeverity(const ComPtr<ID3D12Device4>& device)
+void yaget::render::platform::DeviceDebugger::ActivateMessageSeverity(const ComPtr<ID3D12Device>& device)
 {
     if (yaget::dev::CurrentConfiguration().mInit.EnableRenderDebugLayer)
     {
@@ -122,8 +126,14 @@ void yaget::render::platform::DeviceDebugger::ActivateMessageSeverity(const ComP
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::SetDebugName(ID3D12Object* object, const std::string& name, const char* file, unsigned line)
 {
-    const auto message = fmt::format("'{}'\n{}({}) : ", name, file, line);
+    namespace fs = std::filesystem;
+
+    const auto message = fmt::format("{}-{}({})", name, fs::path(file).filename().generic_string(), line);
     const auto text = conv::utf8_to_wide(message);
     object->SetName(text.c_str());
 }
+#else // YAGET_DEBUG_RENDER == 1
+
+YAGET_COMPILE_GLOBAL_SETTINGS("Debug Render Module NOT Included")
+
 #endif // YAGET_DEBUG_RENDER == 1

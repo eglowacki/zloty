@@ -166,9 +166,6 @@
     <ClInclude Include="..\include\VTS\RenderConfigAssets.h">
       <Filter>VTS Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\PlatformDisplayModes.h">
-      <Filter>Render Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\VTS\DefaultResolvers.h">
       <Filter>VTS Files</Filter>
     </ClInclude>
@@ -326,9 +323,6 @@
     </ClCompile>
     <ClCompile Include="..\source\VTS\RenderConfigAssets.cpp">
       <Filter>VTS Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\PlatformDisplayModes.cpp">
-      <Filter>Render Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\Resources\ResourceActivator.cpp">
       <Filter>ResourceView Files\Helper Files</Filter>

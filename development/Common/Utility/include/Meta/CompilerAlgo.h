@@ -6,6 +6,8 @@
 //  Maintained by: Edgar
 //
 //  NOTES:
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of concepts and requires.
 //      https://en.cppreference.com/w/cpp/language/constraints
 //      template<typename T>
 //      concept Hashable = requires(T a)
@@ -27,7 +29,9 @@
 //      template<typename T>
 //      void f(T) requires Hashable<T> {}
 //
-//
+// 
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of having namspaces for 'versioning'.
 //      https://youtu.be/rUESOjhvLw0?t=354
 //      namespace yaget
 //      {
@@ -42,10 +46,52 @@
 //      }
 //      // to access
 //      yaget::FooBar foobar;
+// 
+// 
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of lambda usage to have a function only to be called once.
+//      https://www.youtube.com/watch?v=iWKewYYKPHk
+//      struct X
+//      {
+//          X()
+//          {
+//              static auto _ = []{ return 0; }();
+//          }
+//      };
 //
+//      // to use, it will only be called once, no matter how many times X is created.
+//      X x;
 //
-//
-//  #include "Meta/CompilerAlgo.h"
+// 
+//      * Example of folding expresion (print...).
+//      auto f = [](auto&&... args)
+//      {
+//           (std::cout << ... << args);
+//      };
+//      
+//      f(42, "Hello", 1.5);
+//      
+// 
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of lambdas in agregate
+//      tempplate <typename... Ts>
+//      struct overload : Ts...
+//      {
+//           using Ts::operator()...;
+//      };
+//      
+//      // uage:
+//      auto f = overload
+//      {
+//          [](int i) { std::cout >> "int stuff"; },
+//          [](float f) { std::cout >> "float stuff"; }
+//      };
+//      
+//      f(2);    // int stuff
+//      f(2.f);  // float stuff
+// 
+// 
+//      #include "Meta/CompilerAlgo.h"
 //
 //////////////////////////////////////////////////////////////////////
 //! \file

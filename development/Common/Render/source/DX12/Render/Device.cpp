@@ -1,22 +1,28 @@
 #include "Render/Device.h"
 #include "App/AppUtilities.h"
+#include "Debugging/DevConfiguration.h"
 #include "Metrics/Concurrency.h"
 #include "Platform/Adapter.h"
+#include "Render/Metrics/RenderMetrics.h"
 #include "Render/Platform/SwapChain.h"
+#include "Render/Polygons/Polygon.h"
 #include "StringHelpers.h"
 #include "Time/GameClock.h"
-#include "Debugging/DevConfiguration.h"
-#include "Render/Polygons/Polygon.h"
+
+#include <d3d12.h>
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame)
+yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo)
     : mWindowFrame{ windowFrame }
-    , mAdapter{ std::make_unique<platform::Adapter>(mWindowFrame) }
-    , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, mAdapter->GetDevice(), mAdapter->GetFactory().Get()) }
-    , mPolygon{ std::make_unique<Polygon>(mAdapter->GetAllocator()) }
+    , mAdapter{ std::make_unique<platform::Adapter>(mWindowFrame, adapterInfo) }
+    , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory()) }
+    , mPolygon{ std::make_unique<Polygon>(mAdapter->GetDevice(), mAdapter->GetAllocator(), false /*useTwo*/) }
+    , mPolygon2{ std::make_unique<Polygon>(mAdapter->GetDevice(), mAdapter->GetAllocator(), true /*useTwo*/) }
 {
+
     YLOG_INFO("DEVI", "Device created and initialized.");
+    PIXSetMarker(0x0, "Device created.");
 }
 
 
@@ -43,10 +49,8 @@ void yaget::render::DeviceB::SurfaceStateChange()
 }
 
 
-YAGET_COMPILE_SUPPRESS_START(4100, "unreferenced local variable")
-
 //-------------------------------------------------------------------------------------------------
-int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWindowHandle hWnd, uint32_t message, uint64_t wParam, int64_t lParam)
+int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWindowHandle /*hWnd*/, uint32_t /*message*/, uint64_t /*wParam*/, int64_t /*lParam*/)
 {
     return 0;
 }
@@ -55,7 +59,7 @@ int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWi
 //-------------------------------------------------------------------------------------------------
 void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metrics::Channel& channel)
 {
-    mSwapChain->Render(gameClock, channel);
+    mSwapChain->Render({ mPolygon.get(), mPolygon2.get() }, gameClock, channel);
 
     //constexpr time::TimeUnits_t waitTime = 1;
     //constexpr time::TimeUnits_t unitType = time::kMilisecondUnit;
@@ -63,5 +67,3 @@ void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metri
 
     mWaiter.Wait();
 }
-
-YAGET_COMPILE_SUPPRESS_END

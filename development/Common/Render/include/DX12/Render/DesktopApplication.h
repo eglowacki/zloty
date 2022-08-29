@@ -26,16 +26,7 @@ namespace yaget::render
     class DesktopApplication : public WindowApplication
     {
     public:
-        DesktopApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
-            : WindowApplication(title, director, vts, options)
-            , mDevice(app::WindowFrame(*this))
-        {
-            if (Input().IsAction("Quit App"))
-            {
-                Input().RegisterSimpleActionCallback("Quit App", [this]() { RequestQuit(); });
-            }
-        }
-
+        DesktopApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options, const yaget::render::info::Adapter& selectedAdapter);
         DeviceB& GetDevice() { return mDevice; }
 
     private:

@@ -29,6 +29,9 @@
     <Filter Include="Source Files\Polygons Files">
       <UniqueIdentifier>{9ce9ca10-6b21-4ceb-a596-3e81e3fc8316}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Metrics Files">
+      <UniqueIdentifier>{bbe02cd5-26d0-435a-876d-efdc6c28efcf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\Device.h">
@@ -94,6 +97,12 @@
     <ClInclude Include="..\source\DX12\Render\RenderStringHelpers.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\AdapterInfo.h">
+      <Filter>Source Files\Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h">
+      <Filter>Source Files\Metrics Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -152,6 +161,12 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\RenderStringHelpers.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\AdapterInfo.cpp">
+      <Filter>Source Files\Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp">
+      <Filter>Source Files\Metrics Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

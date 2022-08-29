@@ -808,8 +808,8 @@ void yaget::util::ThrowOnError(long hr, const std::string& message, const char* 
     if (FAILED(hr))
     {
         _com_error cr(HRESULT_FROM_WIN32(hr));
-        const char* errorMessage = cr.ErrorMessage();
-        auto textError = fmt::format("HRESULT = {}, {}. Platform error: {}", hr, message, errorMessage);
+        const char* platformErrorMessage = cr.ErrorMessage();
+        auto textError = fmt::format("{}. HRESULT: {:#x}, Platform error: {}", message, static_cast<unsigned long>(hr), platformErrorMessage);
         if (platform::IsDebuggerAttached())
         {
             YLOG_PERROR("UTIL", file, line, functionName, textError.c_str());
@@ -870,7 +870,7 @@ void yaget::util::DefaultOptions(args::Options& options)
         ("vts_fix", "Fix VTS errors.")
         ("log_write_tags", "Write out file to $(LogFolder) of all active log tags.")
         ("config_value", "Override individual configuration values --config_value = Debug.Metrics.TraceOn=false (no spaces around =)", args::value<std::vector<std::string>>())
-        ("render_software", "Force software renderer")
+        ("software_render", "Force software renderer")
         ;
 }
 

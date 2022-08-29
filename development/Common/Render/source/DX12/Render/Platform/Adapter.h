@@ -6,20 +6,16 @@
 // NOTES:
 //      Deals with adapter which will create Device
 //
-// #include "Adapter.h"
+// #include "Platform/Adapter.h"
 //
 /////////////////////////////////////////////////////////////////////////
 //! \file
 
 #pragma once
 
-#include "Render/RenderCore.h"
+#include "Render/AdapterInfo.h"
 #include "App/WindowFrame.h"
-#include "DeviceDebugger.h"
-
-struct IDXGIFactory4;
-struct ID3D12Device4;
-struct IDXGIAdapter4;
+#include "Render/Platform/DeviceDebugger.h"
 
 namespace D3D12MA { class Allocator; }
 
@@ -28,28 +24,24 @@ namespace yaget::render::platform
     class Adapter
     {
     public:
-        Adapter(app::WindowFrame windowFrame, bool useDefault = false);
+        Adapter(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo);
         ~Adapter();
 
-        const ComPtr<ID3D12Device4>& GetDevice() const;
-        const ComPtr<IDXGIFactory4>& GetFactory() const;
+        ID3D12Device* GetDevice() const;
+        IDXGIFactory* GetFactory() const;
         D3D12MA::Allocator* GetAllocator() const;
 
     private:
 #if YAGET_DEBUG_RENDER == 1
         DeviceDebugger mDeviceDebugger;
 #endif // YAGET_DEBUG_RENDER == 1
-        ComPtr<IDXGIFactory4> mFactory{};
-        ComPtr<IDXGIAdapter4> mAdapter{};
-        ComPtr<ID3D12Device4> mDevice{};
 
-        struct Deleter
-        {
-            void operator()(D3D12MA::Allocator* allocator) const;
-        };
+        ComPtr<IDXGIFactory> mFactory{};
+        ComPtr<IDXGIAdapter> mAdapter{};
+        ComPtr<ID3D12Device> mDevice{};
 
-        using AllocHolder = std::unique_ptr<D3D12MA::Allocator, Deleter>;
-        AllocHolder mAllocator;
+        unique_obj<D3D12MA::Allocator> mAllocator;
     };
 
-}
+} // namespace yaget::render::platform
+

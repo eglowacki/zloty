@@ -1,10 +1,13 @@
-#include "DeviceDebugger.h"
 #include "Render/Platform/SwapChain.h"
+#include "StringHelpers.h"
+#include "Render/Polygons/Polygon.h"
+#include "Render/Platform/DeviceDebugger.h"
+#include "Render/Metrics/RenderMetrics.h"
+#include "Render/AdapterInfo.h"
+#include "Math/YagetMath.h"
+#include "CommandQueue.h"
 #include "App/AppUtilities.h"
 #include "App/Application.h"
-#include "CommandQueue.h"
-#include "StringHelpers.h"
-#include "Math/YagetMath.h"
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
@@ -13,7 +16,7 @@
 namespace 
 {
     //-------------------------------------------------------------------------------------------------
-    bool CheckTearingSupport(const Microsoft::WRL::ComPtr<IDXGIFactory4>& factory)
+    bool CheckTearingSupport(const Microsoft::WRL::ComPtr<IDXGIFactory>& factory)
     {
         BOOL allowTearing = FALSE;
 
@@ -32,27 +35,39 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------------------
-    Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, IDXGIFactory4* factory, ID3D12CommandQueue* commandQueue, uint32_t numBackBuffers, bool tearingSupported)
+    Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, const yaget::render::info::Adapter& adapterInfo, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue, uint32_t numBackBuffers, bool tearingSupported)
     {
-        const auto [width, height] = windowFrame.GetSurface().GetSize<uint32_t>();
+        //const auto [width, height] = windowFrame.GetSurface().GetSize<uint32_t>();
+
+        const auto& adapterResolution = *adapterInfo.mOutputs.begin()->mResolutions.begin();
 
         DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
         swapChainDesc.BufferCount = numBackBuffers;
-        swapChainDesc.Width = width;
-        swapChainDesc.Height = height;
-        swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        swapChainDesc.Width = 0;
+        swapChainDesc.Height = 0;
+        swapChainDesc.Format = static_cast<DXGI_FORMAT>(adapterResolution.mFormat);
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
         swapChainDesc.SampleDesc = { 1, 0 };
-        swapChainDesc.Flags = tearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+        swapChainDesc.Flags = (tearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0) /*| DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH*/;
+
+        Microsoft::WRL::ComPtr<IDXGIFactory> baseFactory(factory);
+        Microsoft::WRL::ComPtr<IDXGIFactory2> factory2;
+        HRESULT hr = baseFactory.As(&factory2);
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get factory 2 interface");
 
         Microsoft::WRL::ComPtr<IDXGISwapChain1> swapChain;
-        HRESULT hr = factory->CreateSwapChainForHwnd(commandQueue, windowFrame.GetSurface().Handle<HWND>(), &swapChainDesc, nullptr, nullptr, &swapChain);
+        hr = factory2->CreateSwapChainForHwnd(commandQueue, windowFrame.GetSurface().Handle<HWND>(), &swapChainDesc, nullptr, nullptr, &swapChain);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 SwapChain");
 
+        // this can be used to extract actual buffer size (window size)
+        //DXGI_SWAP_CHAIN_DESC1 chainDesc = {};
+        //hr = swapChain->GetDesc1(&chainDesc);
+        //YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 swap chain description");
+
         // Disable the Alt+Enter fullscreen toggle feature. Switching to fullscreen will be handled manually.
-        hr = factory->MakeWindowAssociation(windowFrame.GetSurface().Handle<HWND>(), DXGI_MWA_NO_ALT_ENTER);
+        hr = factory2->MakeWindowAssociation(windowFrame.GetSurface().Handle<HWND>(), DXGI_MWA_NO_ALT_ENTER);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not make DX12 Window Association");
 
         Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain4;
@@ -63,7 +78,7 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------------------
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device4* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
     {
         D3D12_DESCRIPTOR_HEAP_DESC desc = {};
         desc.NumDescriptors = numDescriptors;
@@ -79,17 +94,19 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------------------
-    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator(ID3D12Device2* device, D3D12_COMMAND_LIST_TYPE type)
+    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
     {
         Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
         HRESULT hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&commandAllocator));
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command Allocator");
 
+        YAGET_RENDER_SET_DEBUG_NAME(commandAllocator.Get(), "Yaget Command Allocator");
+
         return commandAllocator;
     }
 
     //-------------------------------------------------------------------------------------------------
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device2* device, ID3D12CommandAllocator* commandAllocator, D3D12_COMMAND_LIST_TYPE type)
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device* device, ID3D12CommandAllocator* commandAllocator, D3D12_COMMAND_LIST_TYPE type)
     {
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
         HRESULT hr = device->CreateCommandList(0, type, commandAllocator, nullptr, IID_PPV_ARGS(&commandList));
@@ -102,6 +119,8 @@ namespace
         hr = commandList.As(&commandList2);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Command List2 interface");
 
+        YAGET_RENDER_SET_DEBUG_NAME(commandList2.Get(), "Yaget Command List");
+
         return commandList2;
     }
 
@@ -109,16 +128,15 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, const ComPtr<ID3D12Device4>& device, IDXGIFactory4* factory)
+yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory)
     : mWindowFrame{ std::move(windowFrame) }
     , mNumBackBuffers{ mWindowFrame.GetSurface().NumBackBuffers() }
     , mTearingSupported{ CheckTearingSupport(factory) }
     , mDevice{ device }
-    , mCommandQueue{ std::make_unique<platform::CommandQueue>(mDevice.Get(), platform::CommandQueue::Type::Direct) }
-    , mSwapChain{ CreateSwapChain(mWindowFrame, factory, mCommandQueue->GetCommandQueue().Get(), mNumBackBuffers, mTearingSupported) }
+    , mCommandQueue{ std::make_unique<platform::CommandQueue>(mDevice, platform::CommandQueue::Type::Direct) }
+    , mSwapChain{ CreateSwapChain(mWindowFrame, adapterInfo, factory, mCommandQueue->GetCommandQueue().Get(), mNumBackBuffers, mTearingSupported) }
     , mCurrentBackBufferIndex{ mSwapChain->GetCurrentBackBufferIndex() }
-    , mRTVDescriptorHeap{ CreateDescriptorHeap(mDevice.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, mNumBackBuffers) }
-    , mRTVDescriptorSize{ mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) }
+    , mRTVDescriptorHeap{ CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, mNumBackBuffers) }
     , mBackBuffers(mNumBackBuffers, nullptr)
     , mCommandAllocators(mNumBackBuffers, nullptr)
     , mFrameFenceValues(mNumBackBuffers, 0)
@@ -127,14 +145,14 @@ yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, cons
 
     for (int i = 0; i < mNumBackBuffers; ++i)
     {
-        auto commandAllocator = CreateCommandAllocator(mDevice.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
+        auto commandAllocator = CreateCommandAllocator(mDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
 
         YAGET_RENDER_SET_DEBUG_NAME(commandAllocator.Get(), fmt::format("Yaget Command Allocator: {}", i));
 
         mCommandAllocators[i] = commandAllocator;
     }
 
-    mCommandList = CreateCommandList(mDevice.Get(), mCommandAllocators[mCurrentBackBufferIndex].Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
+    mCommandList = CreateCommandList(mDevice, mCommandAllocators[mCurrentBackBufferIndex].Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
 
     Resize();
 
@@ -168,12 +186,17 @@ void yaget::render::platform::SwapChain::Resize()
     HRESULT hr = mSwapChain->GetDesc(&swapChainDesc);
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 SwapChain Description");
 
-    const auto [width, height] = mWindowFrame.GetSurface().GetSize<uint32_t>();
+    //const auto [width, height] = mWindowFrame.GetSurface().GetSize<uint32_t>();
 
-    YLOG_DEBUG("DEVI", "SwapChain::Resize: (%dx%d).", width, height);
-
-    hr = mSwapChain->ResizeBuffers(mNumBackBuffers, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
+    //hr = mSwapChain->ResizeBuffers(mNumBackBuffers, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
+    hr = mSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, swapChainDesc.Flags);
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not resize DX12 SwapChain");
+
+    // this can be used to extract actual buffer size (window size)
+    DXGI_SWAP_CHAIN_DESC1 chainDesc = {};
+    hr = mSwapChain->GetDesc1(&chainDesc);
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 swap chain description");
+    YLOG_DEBUG("DEVI", "SwapChain::Resize: (%dx%d).", chainDesc.Width, chainDesc.Height);
 
     mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
     UpdateRenderTargetViews();
@@ -181,8 +204,14 @@ void yaget::render::platform::SwapChain::Resize()
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::SwapChain::Render(const time::GameClock& gameClock, metrics::Channel& /*channel*/)
+void yaget::render::platform::SwapChain::Render(const std::vector<Polygon*>& polygons, const time::GameClock& gameClock, metrics::Channel& /*channel*/)
 {
+    PIXScopedEvent(PIX_COLOR(0, 0, 255), "Frame");
+
+    auto currentBBIndex1 = mSwapChain->GetCurrentBackBufferIndex(); currentBBIndex1;
+    UINT currentBBIndex2 = static_cast<UINT>(-1);
+    UINT currentBBIndex3 = static_cast<UINT>(-1);
+
     auto commandAllocator = mCommandAllocators[mCurrentBackBufferIndex];
     const auto backBuffer = mBackBuffers[mCurrentBackBufferIndex];
 
@@ -191,51 +220,75 @@ void yaget::render::platform::SwapChain::Render(const time::GameClock& gameClock
 
     mCommandList->Reset(commandAllocator.Get(), nullptr);
 
-    // Clear the render target.
+    // Transition to render target so we can start drawing commands to it
     {
         CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
         mCommandList->ResourceBarrier(1, &barrier);
-
-        const math3d::Color currentClearColor = math3d::Color::Lerp({ 0.4f, 0.6f, 0.9f }, { 0.6f, 0.9f, 0.4f }, mCurrentColorT);
-        mCurrentColorT += (gameClock.GetDeltaTimeSecond() * mColorTDirection) * 0.75f;
-        if (mCurrentColorT > 1.0f)
-        {
-            mColorTDirection = -1.0f;
-        }
-        else if (mCurrentColorT < 0.0f)
-        {
-            mColorTDirection = 1.0f;
-        }
-
-        const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), mCurrentBackBufferIndex, mRTVDescriptorSize);
-
-        mCommandList->ClearRenderTargetView(rtv, currentClearColor, 0, nullptr);
     }
+
+    //PrepareCommandList(gameClock, mCommandList.Get(), true);
+
+    // this should contain our drawing code here...
+    int clearScreenCounter = 0;
+    auto setup = [this, &gameClock, &clearScreenCounter](auto commandList)
+    {
+        PrepareCommandList(gameClock, commandList, clearScreenCounter == 0);
+        ++clearScreenCounter;
+    };
+
+    std::vector<ID3D12GraphicsCommandList*> accumulatedCommandLists;
+    accumulatedCommandLists.push_back(mCommandList.Get());
+    for (const auto& polygon : polygons)
+    {
+        auto commandLine = polygon->Render(nullptr, setup);
+
+        if (polygon == polygons.back())
+        {
+            CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+            commandLine->ResourceBarrier(1, &barrier);
+        }
+
+        hr = commandLine->Close();
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not close command list for polygon");
+
+        accumulatedCommandLists.push_back(commandLine);
+    }
+
+    if (accumulatedCommandLists.size() == 1)
+    {
+        CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+        accumulatedCommandLists.front()->ResourceBarrier(1, &barrier);
+    }
+
+    hr = accumulatedCommandLists.front()->Close();
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not close command list for polygon");
 
     // Present
     {
-        CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-        mCommandList->ResourceBarrier(1, &barrier);
+        //hr = mCommandList->Close();
+        //YAGET_UTIL_THROW_ON_RROR(hr, "Could not close DX12 Command List");
 
-        hr = mCommandList->Close();
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not close DX12 Command List");
-
-        ID3D12CommandList* const commandLists[] = { mCommandList.Get() };
-        mCommandQueue->GetCommandQueue()->ExecuteCommandLists(_countof(commandLists), commandLists);
-
-        mFrameFenceValues[mCurrentBackBufferIndex] = mCommandQueue->Signal();
+        const uint32_t numLists = static_cast<uint32_t>(accumulatedCommandLists.size());
+        mCommandQueue->GetCommandQueue()->ExecuteCommandLists(numLists, (ID3D12CommandList* const *)accumulatedCommandLists.data());
 
         const uint32_t syncInterval = mWindowFrame.GetSurface().VSync() ? 1 : 0;
         const uint32_t presentFlags = mTearingSupported && syncInterval == 0 ? DXGI_PRESENT_ALLOW_TEARING : 0;
 
+        currentBBIndex2 = mSwapChain->GetCurrentBackBufferIndex();
+
         hr = mSwapChain->Present(syncInterval, presentFlags);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not present DX12 Swap Chain");
 
-        mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
+        currentBBIndex3 = mSwapChain->GetCurrentBackBufferIndex();
 
+        mFrameFenceValues[mCurrentBackBufferIndex] = mCommandQueue->Signal();
         mCommandQueue->WaitForFenceValue(mFrameFenceValues[mCurrentBackBufferIndex]);
+
+        mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
     }
+
+    int z = 0;
+    z;
 }
 
 
@@ -251,11 +304,50 @@ void yaget::render::platform::SwapChain::UpdateRenderTargetViews()
         HRESULT hr = mSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer));
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 SwapChain Back Buffer");
 
-        YAGET_RENDER_SET_DEBUG_NAME(backBuffer.Get(), fmt::format("Yaget Back Buffer: {}", i));
+        YAGET_RENDER_SET_DEBUG_NAME(backBuffer.Get(), fmt::format("Yaget Back Buffer {}", i));
 
         mDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
         mBackBuffers[i] = backBuffer;
 
         rtvHandle.Offset(rtvDescriptorSize);
+    }
+}
+
+void yaget::render::platform::SwapChain::PrepareCommandList(const time::GameClock& gameClock, ID3D12GraphicsCommandList* commandList, bool clearRenderTarget)
+{
+    DXGI_SWAP_CHAIN_DESC1 chainDesc = {};
+    HRESULT hr = mSwapChain->GetDesc1(&chainDesc);
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 swap chain description");
+
+    D3D12_VIEWPORT viewport = {};
+    viewport.Width = static_cast<float>(chainDesc.Width);
+    viewport.Height = static_cast<float>(chainDesc.Height);
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    commandList->RSSetViewports(1, &viewport);
+
+    D3D12_RECT rect = {};
+    rect.right = chainDesc.Width;
+    rect.bottom = chainDesc.Height;
+    commandList->RSSetScissorRects(1, &rect);
+
+    const math3d::Color currentClearColor = math3d::Color::Lerp({ 0.4f, 0.6f, 0.9f }, { 0.6f, 0.9f, 0.4f }, mCurrentColorT);
+    mCurrentColorT += (gameClock.GetDeltaTimeSecond() * mColorTDirection) * 0.75f;
+    if (mCurrentColorT > 1.0f)
+    {
+        mColorTDirection = -1.0f;
+    }
+    else if (mCurrentColorT < 0.0f)
+    {
+        mColorTDirection = 1.0f;
+    }
+
+    const auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), mCurrentBackBufferIndex, rtvDescriptorSize);
+
+    commandList->OMSetRenderTargets(1, &rtv, FALSE, nullptr);
+    if (clearRenderTarget)
+    {
+        commandList->ClearRenderTargetView(rtv, currentClearColor, 0, nullptr);
     }
 }

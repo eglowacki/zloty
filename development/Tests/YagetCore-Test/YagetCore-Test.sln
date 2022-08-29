@@ -45,6 +45,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial1", "..\..\Research
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial2", "..\..\Research\Reference\LearningDirectX12-0.0.2\builds\Tutorial2\Tutorial2.vcxproj", "{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D3D12HelloTriangle", "..\..\..\..\..\DirectX-Graphics-Samples\Samples\Desktop\D3D12HelloWorld\src\HelloTriangle\D3D12HelloTriangle.vcxproj", "{5018F6A3-6533-4744-B1FD-727D199FD2E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -217,14 +219,28 @@ Global
 		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1}.RelWithDebInfo|x86.ActiveCfg = RelWithDebInfo|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.Debug|x64.ActiveCfg = Debug|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.Debug|x86.ActiveCfg = Debug|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.Debug|x86.Build.0 = Debug|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.MinSizeRel|x64.ActiveCfg = Debug|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.MinSizeRel|x64.Build.0 = Debug|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.MinSizeRel|x86.ActiveCfg = Debug|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.MinSizeRel|x86.Build.0 = Debug|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.Release|x64.ActiveCfg = Release|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.Release|x86.ActiveCfg = Release|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.Release|x86.Build.0 = Release|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.RelWithDebInfo|x64.ActiveCfg = Release|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.RelWithDebInfo|x64.Build.0 = Release|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.RelWithDebInfo|x86.ActiveCfg = Release|x64
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9}.RelWithDebInfo|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{7248B931-88B9-485C-9306-D98415C06F76} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
 		{ECE318D8-F03F-30A1-8137-80B90A4898E3} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
 		{CEBDDEC2-1B27-3F1A-9D08-5286B1E725F1} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
+		{5018F6A3-6533-4744-B1FD-727D199FD2E9} = {BF75A11A-D243-484D-8BBF-F97BD493A1ED}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5462B7EF-FA41-4DF9-B842-727A101BE0B1}

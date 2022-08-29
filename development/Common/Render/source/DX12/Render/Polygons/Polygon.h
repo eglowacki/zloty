@@ -4,7 +4,7 @@
 //  Copyright 08/15/2022 Edgar Glowacki.
 //
 // NOTES:
-//      First attempt at creating a renderable object in DX 12, like a triangle or a model composed of triangles
+//      First attempt at creating a renderable object in DX12, like a triangle or a model composed of triangles
 //
 // #include "Render/Polygons/Polygon.h"
 //
@@ -15,23 +15,35 @@
 
 #include "Render/RenderCore.h"
 
-struct ID3D12Resource;
+#include <functional>
+
+struct ID3D12CommandAllocator;
+struct ID3D12Device;
+struct ID3D12GraphicsCommandList;
+struct ID3D12PipelineState;
+struct ID3D12RootSignature;
+
 namespace D3D12MA
 {
-	class Allocation;
-	class Allocator;
+    class Allocation;
+    class Allocator;
 }
 
 namespace yaget::render
 {
-	class Polygon
-	{
-	public:
-		Polygon(D3D12MA::Allocator* allocator);
-		~Polygon();
+    class Polygon
+    {
+    public:
+        Polygon(ID3D12Device* device, D3D12MA::Allocator* allocator, bool useTwo);
+        ~Polygon();
 
-	private:
-		ComPtr<ID3D12Resource> mTriangleData;
-		D3D12MA::Allocation* mAllocation = nullptr;
-	};
+        ID3D12GraphicsCommandList* Render(ID3D12GraphicsCommandList* commandList, std::function<void(ID3D12GraphicsCommandList* commandList)> setup);
+
+    private:
+        ComPtr<ID3D12RootSignature> mRootSignature;
+        ComPtr<ID3D12PipelineState> mPipelineState;
+        ComPtr<ID3D12CommandAllocator> mCommandAllocator;
+        ComPtr<ID3D12GraphicsCommandList> mCommandList;
+        unique_obj<D3D12MA::Allocation> mAllocation;
+    };
 }

@@ -245,7 +245,8 @@ namespace
             // let's check for config_view option and dump some configuration values
             if (options.find<bool>("options_view", false))
             {
-                YLOG_NOTICE("MAIN", "\n%s", util::DisplayCurrentConfiguration(&options).c_str());
+                //YLOG_NOTICE("MAIN", "\n%s", util::DisplayCurrentConfiguration(&options).c_str());
+                yaget::platform::DebuggerOutput(util::DisplayCurrentConfiguration(&options));
 
                 if (!options.find<bool>("generate_config", false))
                 {
@@ -289,7 +290,9 @@ namespace
 
                 nlohmann::json jsonBlock;
                 to_json(jsonBlock, configuration);
-                YLOG_NOTICE("MAIN", "\n%s", json::PrettyPrint(jsonBlock).c_str());
+                const auto blockString = "\n" + json::PrettyPrint(jsonBlock);
+                YLOG_NOTICE("MAIN", "%s", blockString.c_str());
+                platform::DebuggerOutput(blockString);
 
                 return system::InitializationResult::Helped;
             }

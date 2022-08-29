@@ -1,5 +1,4 @@
 #include "Render/Waiter.h"
-#include "Platform/Support.h"
 
 
 //-------------------------------------------------------------------------------------------------
@@ -7,11 +6,11 @@ void yaget::render::Waiter::Wait()
 {
     if (mPauseCounter == true)
     {
-        YLOG_NOTICE("DEVI", "Waiter - We are requested to pause from Thread: '%s'. Stopping.", yaget::platform::GetCurrentThreadName().c_str());
+        YLOG_NOTICE("DEVI", "Waiter - We are requested to pause. Stopping.");
         mWaitForRenderThread.notify_one();
         std::unique_lock<std::mutex> locker(mPauseRenderMutex);
         mRenderPaused.wait(locker);
-        YLOG_NOTICE("DEVI", "Waiter - Resuming Render from Thread: '%s'.", yaget::platform::GetCurrentThreadName().c_str());
+        YLOG_NOTICE("DEVI", "Waiter - Resuming Render.");
     }
 }
 
@@ -27,11 +26,11 @@ void yaget::render::Waiter::BeginPause()
     }
 
     // We should use Concurrency (perf) locker to keep track in RAD
-    YLOG_NOTICE("DEVI", "Waiter - Requesting Render pause from Thread: '%s'.", yaget::platform::GetCurrentThreadName().c_str());
+    YLOG_NOTICE("DEVI", "Waiter - Requesting Render pause.");
     std::unique_lock<std::mutex> locker(mPauseRenderMutex);
     mPauseCounter = true;
     mWaitForRenderThread.wait(locker);
-    YLOG_NOTICE("DEVI", "Waiter - Render is Paused (resizing commences...) from Thread: '%s'.", yaget::platform::GetCurrentThreadName().c_str());
+    YLOG_NOTICE("DEVI", "Waiter - Render is Paused (resizing commences...).");
 }
 
 
@@ -43,7 +42,7 @@ void yaget::render::Waiter::EndPause()
         return;
     }
 
-    YLOG_NOTICE("DEVI", "Waiter - Render can start (resizing done) from Thread: '%s'.", yaget::platform::GetCurrentThreadName().c_str());
+    YLOG_NOTICE("DEVI", "Waiter - Render can start (resizing done).");
     mPauseCounter = false;
     mRenderPaused.notify_one();
 }
