@@ -33,5 +33,7 @@ namespace yaget::math
     using Vector3i = mathter::Vector<int, 3, false>;
     using Vector2i = mathter::Vector<int, 2, false>;
 
+    using Color = mathter::Vector<float, 4, false>;
+
 } // namespace yaget::math
 

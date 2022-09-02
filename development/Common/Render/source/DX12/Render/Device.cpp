@@ -59,7 +59,8 @@ int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWi
 //-------------------------------------------------------------------------------------------------
 void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metrics::Channel& channel)
 {
-    mSwapChain->Render({ mPolygon.get(), mPolygon2.get() }, gameClock, channel);
+    const std::vector<Polygon*> polygons{ mPolygon.get() };//, mPolygon2.get() };
+    mSwapChain->Render(polygons, gameClock, channel);
 
     //constexpr time::TimeUnits_t waitTime = 1;
     //constexpr time::TimeUnits_t unitType = time::kMilisecondUnit;

@@ -3,10 +3,13 @@
 #include "Fmt/format.h"
 #include "Render/Platform/D3D12MemAlloc.h"
 #include "Render/Platform/DeviceDebugger.h"
+#include "Render/Platform/ResourceCompiler.h"
 #include "MathFacade.h"
 
 #include <d3dx12.h>
 #include <d3dcompiler.h>
+#include <CommonStates.h>
+#include <VertexTypes.h>
 
 namespace
 {
@@ -17,7 +20,7 @@ namespace
                 float4 color : COLOR;
             };
 
-            PSInput VSMain(float4 position : POSITION, float4 color : COLOR)
+            PSInput VSMain(float4 position : SV_POSITION, float4 color : COLOR)
             {
                 PSInput result;
 
@@ -33,6 +36,8 @@ namespace
             }
         )";
 
+    const int numTriangles = 1;
+
     const float aspectRatio = 1.0f;
     struct Vertex
     {
@@ -41,77 +46,65 @@ namespace
     };
 
     const Vertex vertices[] = {
-        { { 0.0f, 1.0f * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-        { { 1.0f, -1.0f * aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-        { { -1.0f, -1.0f * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
+        { { 0.0f, 1.0f * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 0.99f } },
+        { { 1.0f, -1.0f * aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.f } },
+        { { -1.0f, -1.0f * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 0.f } }
     };
 
     const Vertex vertices2[] = {
-        { { 0.0f, 1.0f * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-        { { 1.0f, 0.0f * aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-        { { -1.0f, 0.0f * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
+        { { 0.0f, 1.0f * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 0.99f } },
+        { { 1.0f, 0.0f * aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.f } },
+        { { -1.0f, 0.0f * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 0.f } }
     };
 
-    // Define the vertex input layout.
-    D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+    yaget::render::ComPtr<ID3D12RootSignature> CreateRootSignature(ID3D12Device* device)
     {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-    };
+        CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+        rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+        yaget::render::ComPtr<ID3DBlob> signature;
+        yaget::render::ComPtr<ID3DBlob> error;
+        HRESULT hr = ::D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error);
+        YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not serialize root signature. {}", error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
+
+        yaget::render::ComPtr<ID3D12RootSignature> rootSignature;
+        hr = device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create root signature.");
+
+        return rootSignature;
+    }
 
 }
 // namespace
 
 
+//-------------------------------------------------------------------------------------------------
 yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* allocator, bool useTwo)
+    : mRootSignature{ CreateRootSignature(device) }
 {
-    CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-    rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-    ComPtr<ID3DBlob> signature;
-    ComPtr<ID3DBlob> error;
-    HRESULT hr = ::D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error);
-    YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not serialize root signature. {}", error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
-
-    hr = device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&mRootSignature));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create root signature.");
     YAGET_RENDER_SET_DEBUG_NAME(mRootSignature.Get(), fmt::format("Yaget-Poly Root Signature"));
-
-    ComPtr<ID3DBlob> vertexShader;
-    ComPtr<ID3DBlob> pixelShader;
-
-#if YAGET_DEBUG_RENDER == 1
-    // Enable better shader debugging with the graphics debugging tools.
-    UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#else // YAGET_DEBUG_RENDER == 1
-    UINT compileFlags = 0;
-#endif // YAGET_DEBUG_RENDER == 1
 
     const size_t sourceLen = std::strlen(shaderSource);
 
-    hr = ::D3DCompile2(shaderSource, sourceLen, nullptr, nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, 0, nullptr, 0, &vertexShader, &error);
-    YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not compile '{}' shader. {}", "vertex", error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
-
-    hr = ::D3DCompile2(shaderSource, sourceLen, nullptr, nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, 0, nullptr, 0, &pixelShader, &error);
-    YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not compile '{}' shader. {}", "pixel", error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
+    ResourceCompiler vertexCompiler({ shaderSource, sourceLen }, "VSMain", "vs_5_0");
+    ResourceCompiler pixelCompiler({ shaderSource, sourceLen }, "PSMain", "ps_5_0");
 
     // Describe and create the graphics pipeline state object (PSO).
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-    psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+    psoDesc.InputLayout = DirectX::VertexPositionColor::InputLayout;
     psoDesc.pRootSignature = mRootSignature.Get();
-    psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-    psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
-    psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-    psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-    psoDesc.RasterizerState.DepthClipEnable = FALSE;
-    psoDesc.DepthStencilState.DepthEnable = FALSE;
-    psoDesc.DepthStencilState.StencilEnable = FALSE;
+    psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexCompiler.GetCompiled());
+    psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelCompiler.GetCompiled());
+    psoDesc.RasterizerState = DirectX::CommonStates::CullCounterClockwise;
+    psoDesc.BlendState = DirectX::CommonStates::Opaque;
+    psoDesc.DepthStencilState = DirectX::CommonStates::DepthNone;
     psoDesc.SampleMask = UINT_MAX;
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     psoDesc.NumRenderTargets = 1;
     psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
     psoDesc.SampleDesc.Count = 1;
-    hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState));
+
+    HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState));
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Pipeline State.");
     YAGET_RENDER_SET_DEBUG_NAME(mPipelineState.Get(), fmt::format("Yaget-Poly Pipeline State"));
 
@@ -120,7 +113,7 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
     YAGET_RENDER_SET_DEBUG_NAME(mCommandAllocator.Get(), fmt::format("Yaget-Poly Command Allocator"));
 
     // Create the command list.
-    hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocator.Get(), mPipelineState.Get(), IID_PPV_ARGS(&mCommandList));
+    hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocator.Get(), nullptr, IID_PPV_ARGS(&mCommandList));
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not create command list.");
     YAGET_RENDER_SET_DEBUG_NAME(mCommandList.Get(), fmt::format("Yaget-Poly Command List"));
 
@@ -129,7 +122,7 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
     hr = mCommandList->Close();
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not Close command list after creation.");
 
-    const uint64_t verticesBufferSize = sizeof(vertices);
+    const uint64_t verticesBufferSize = sizeof(vertices) * numTriangles;
 
     D3D12_RESOURCE_DESC resourceDesc = {};
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -162,79 +155,80 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
     mAllocation.reset(allocation);
     mAllocation->SetName(L"PolygonOneTriangle");
 
+    const float scale = 0.5f;
+    const math3d::Vector3 offset{ -(1.0f - scale), (1.0f - scale), 0.0f };
+
+    std::vector<Vertex> scaledTriangle;
+    for (auto i = 0; i < numTriangles; ++i)
+    {
+        auto selectedVertex0 = useTwo ? vertices2[0] : vertices[0];
+        selectedVertex0.position *= scale;
+        selectedVertex0.position += offset;
+
+        auto selectedVertex1 = useTwo ? vertices2[1] : vertices[1];
+        selectedVertex1.position *= scale;
+        selectedVertex1.position += offset;
+
+        auto selectedVertex2 = useTwo ? vertices2[2] : vertices[2];
+        selectedVertex2.position *= scale;
+        selectedVertex2.position += offset;
+
+        scaledTriangle.push_back(selectedVertex0);
+        scaledTriangle.push_back(selectedVertex1);
+        scaledTriangle.push_back(selectedVertex2);
+    }
+
     void* bufferData = nullptr;
     hr = triangleData->Map(0, nullptr, &bufferData);
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not map Polygon buffer for write.");
 
-    memcpy(bufferData, useTwo ? vertices2 : vertices, verticesBufferSize);
+    memcpy(bufferData, scaledTriangle.data(), verticesBufferSize);
     triangleData->Unmap(0, nullptr);
 }
 
 
+//-------------------------------------------------------------------------------------------------
 yaget::render::Polygon::~Polygon()
 {
 }
 
 
+//-------------------------------------------------------------------------------------------------
 ID3D12GraphicsCommandList* yaget::render::Polygon::Render(ID3D12GraphicsCommandList* commandList, std::function<void(ID3D12GraphicsCommandList* commandList)> setup)
 {
     ID3D12GraphicsCommandList* operatingCommandList = commandList ? commandList : mCommandList.Get();
     operatingCommandList;
 
-    if (commandList)
-    {
-        if (setup)
-        {
-            setup(commandList);
-        }
-
-        commandList->SetGraphicsRootSignature(mRootSignature.Get());
-        commandList->SetPipelineState(mPipelineState.Get());
-
-        auto triangleData = mAllocation->GetResource();
-        const uint64_t verticesBufferSize = sizeof(vertices);
-
-        D3D12_VERTEX_BUFFER_VIEW triangleDataView;
-        triangleDataView.BufferLocation = triangleData->GetGPUVirtualAddress();
-        triangleDataView.SizeInBytes = verticesBufferSize;
-        triangleDataView.StrideInBytes = sizeof(Vertex);
-
-        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        commandList->IASetVertexBuffers(0, 1, &triangleDataView);
-        commandList->DrawInstanced(3, 1, 0, 0);
-
-        return nullptr;
-    }
-    else
+    if (!commandList)
     {
         HRESULT hr = mCommandAllocator->Reset();
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not reset command allocator.");
 
         hr = mCommandList->Reset(mCommandAllocator.Get(), mPipelineState.Get());
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not reset command list.");
-
-        if (setup)
-        {
-            setup(mCommandList.Get());
-        }
-
-        mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
-        mCommandList->SetPipelineState(mPipelineState.Get());
-
-        auto triangleData = mAllocation->GetResource();
-        const uint64_t verticesBufferSize = sizeof(vertices);
-
-        D3D12_VERTEX_BUFFER_VIEW triangleDataView;
-        triangleDataView.BufferLocation = triangleData->GetGPUVirtualAddress();
-        triangleDataView.SizeInBytes = verticesBufferSize;
-        triangleDataView.StrideInBytes = sizeof(Vertex);
-
-        mCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        mCommandList->IASetVertexBuffers(0, 1, &triangleDataView);
-        mCommandList->DrawInstanced(3, 1, 0, 0);
-
-        return mCommandList.Get();
     }
+
+    if (setup)
+    {
+        setup(operatingCommandList);
+    }
+
+    operatingCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+    operatingCommandList->SetPipelineState(mPipelineState.Get());
+
+    auto triangleData = mAllocation->GetResource();
+    const uint64_t verticesBufferSize = sizeof(vertices) * numTriangles;
+
+    D3D12_VERTEX_BUFFER_VIEW triangleDataView;
+    triangleDataView.BufferLocation = triangleData->GetGPUVirtualAddress();
+    triangleDataView.SizeInBytes = verticesBufferSize;
+    triangleDataView.StrideInBytes = sizeof(DirectX::VertexPositionColor);
+
+    operatingCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    operatingCommandList->IASetVertexBuffers(0, 1, &triangleDataView);
+    operatingCommandList->DrawInstanced(3 * numTriangles, 1, 0, 0);
+
+    return operatingCommandList;
 }
 
 

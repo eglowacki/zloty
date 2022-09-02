@@ -1,9 +1,10 @@
 /////////////////////////////////////////////////////////////////////////
 // RenderCore.h
 //
-//  Copyright TODAYS_DATE_GOES_HERE Edgar Glowacki.
+//  Copyright 07/12/2022 Edgar Glowacki.
 //
 // NOTES:
+//  Default includes and bits for render library
 //      
 //
 // #include "Render/RenderCore.h"

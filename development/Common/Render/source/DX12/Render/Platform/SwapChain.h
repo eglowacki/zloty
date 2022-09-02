@@ -14,9 +14,9 @@
 #pragma once
 
 
-#include "YagetCore.h"
-#include "App/WindowFrame.h"
 #include "Render/RenderCore.h"
+#include "App/WindowFrame.h"
+#include "Render/Platform/Commander.h"
 
 
 struct IDXGISwapChain4;
@@ -26,7 +26,6 @@ struct ID3D12DescriptorHeap;
 struct ID3D12Resource;
 struct ID3D12CommandAllocator;
 struct ID3D12GraphicsCommandList;
-//struct ID3D12GraphicsCommandList2;
 
 namespace yaget
 {
@@ -64,6 +63,7 @@ namespace yaget::render::platform
         uint32_t mCurrentBackBufferIndex = 0;
 
         ComPtr<ID3D12DescriptorHeap> mRTVDescriptorHeap;
+        Commander mCommander;
 
         std::vector<ComPtr<ID3D12Resource>> mBackBuffers;
         std::vector<ComPtr<ID3D12CommandAllocator>> mCommandAllocators;

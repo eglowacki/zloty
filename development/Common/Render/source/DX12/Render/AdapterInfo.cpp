@@ -2,6 +2,7 @@
 #include "App/AppUtilities.h"
 #include "Debugging/DevConfiguration.h"
 #include "Render/Platform/DeviceDebugger.h"
+#include "Render/RenderStringHelpers.h"
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
@@ -274,8 +275,16 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
     featureLevels.pFeatureLevelsRequested = requested;
 
     hr = hardwareDevice->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &featureLevels, sizeof(featureLevels));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not check feature support");
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not check feature level support");
     YAGET_UTIL_THROW_ASSERT("DEVI", featureLevels.MaxSupportedFeatureLevel >= adapter.mFeatureLevel, "Supported feature level is not compitable with requested.");
+    YLOG_NOTICE("DEVI", "Maximum Feature Level: %s.", conv::Convertor<D3D_FEATURE_LEVEL>::ToString(featureLevels.MaxSupportedFeatureLevel).c_str());
+
+    D3D12_FEATURE_DATA_D3D12_OPTIONS7 featureData{};
+    hr = hardwareDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &featureData, sizeof(featureData));
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not check feature mesh shader tier 1 support");
+    hr = hardwareDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &featureData, sizeof(featureData));
+    YLOG_NOTICE("DEVI", "Mesh shader tier 1 support: %s.", featureData.MeshShaderTier >= D3D12_MESH_SHADER_TIER_1 ? "Yes" : "No");
+
 
     return { hardwareDevice, hardwareAdapter, factory };
 }
