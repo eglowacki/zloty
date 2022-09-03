@@ -296,14 +296,26 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
     YAGET_RENDER_SET_DEBUG_NAME(hardwareDevice.Get(), "Yaget Device");
 
     //-------------------------------------------------------------
-    // testing helper functions to get dx features
+    DXGI_QUERY_VIDEO_MEMORY_INFO infoLocal = {};
+    DXGI_QUERY_VIDEO_MEMORY_INFO infoNonLocal = {};
+
+    hr = hardwareAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &infoLocal);
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not query local video memory");
+
+    hr = hardwareAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &infoNonLocal);
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not query non-local video memory");
+
+    std::string optionsText;
+
     CD3DX12FeatureSupport featureSupport;
     hr = featureSupport.Init(hardwareDevice.Get());
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not get feature supprt class created.");
 
-    std::string optionsText;
+    optionsText += "    Video Memory: " + conv::ToThousandsSep(infoLocal.Budget) + " bytes\n";
+    optionsText += "    RAM Memory:   " + conv::ToThousandsSep(infoNonLocal.Budget) + " bytes\n";
+
     auto bindingTier = featureSupport.ResourceBindingTier();
-    optionsText = "    " + conv::Convertor<D3D12_RESOURCE_BINDING_TIER>::ToString(bindingTier) + "\n";
+    optionsText += "    " + conv::Convertor<D3D12_RESOURCE_BINDING_TIER>::ToString(bindingTier) + "\n";
 
     auto maxFeatureLevel = featureSupport.MaxSupportedFeatureLevel();
     optionsText += "    " + conv::Convertor<D3D_FEATURE_LEVEL>::ToString(maxFeatureLevel) + "\n";

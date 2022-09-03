@@ -30,7 +30,6 @@ namespace yaget::render::platform
 		CommandQueue(ID3D12Device* device, Type type);
 		~CommandQueue();
 
-		void Execute();
 		void Flush();
 		uint64_t Signal();
 		void WaitForFenceValue(uint64_t fenceValue) const;

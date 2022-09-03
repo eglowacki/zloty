@@ -4,13 +4,14 @@
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/Metrics/RenderMetrics.h"
 #include "Render/AdapterInfo.h"
-#include "MathFacade.h"
-#include "CommandQueue.h"
 #include "App/AppUtilities.h"
 #include "App/Application.h"
+#include "CommandQueue.h"
+#include "MathFacade.h"
 
 #include <d3dx12.h>
 #include <dxgi1_6.h>
+
 
 namespace 
 {
@@ -57,11 +58,6 @@ namespace
         Microsoft::WRL::ComPtr<IDXGISwapChain1> swapChain;
         hr = factory2->CreateSwapChainForHwnd(commandQueue, windowFrame.GetSurface().Handle<HWND>(), &swapChainDesc, nullptr, nullptr, &swapChain);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 SwapChain");
-
-        // this can be used to extract actual buffer size (window size)
-        //DXGI_SWAP_CHAIN_DESC1 chainDesc = {};
-        //hr = swapChain->GetDesc1(&chainDesc);
-        //YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 swap chain description");
 
         // Disable the Alt+Enter fullscreen toggle feature. Switching to fullscreen will be handled manually.
         hr = factory2->MakeWindowAssociation(windowFrame.GetSurface().Handle<HWND>(), DXGI_MWA_NO_ALT_ENTER);

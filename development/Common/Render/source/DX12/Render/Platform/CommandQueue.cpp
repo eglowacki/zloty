@@ -52,12 +52,6 @@ yaget::render::platform::CommandQueue::~CommandQueue() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::CommandQueue::Execute()
-{
-}
-
-
-//-------------------------------------------------------------------------------------------------
 void yaget::render::platform::CommandQueue::Flush()
 {
     uint64_t fenceValueForSignal = Signal();
