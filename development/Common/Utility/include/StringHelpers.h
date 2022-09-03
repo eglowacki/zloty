@@ -551,7 +551,7 @@ namespace yaget
 
                     if (tokens.size() > 1)
                     {
-                        v.second = Convertor<V1>::FromString(tokens[1].c_str());
+                        v.second = Convertor<V2>::FromString(tokens[1].c_str());
                     }
                 }
 
