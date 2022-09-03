@@ -28,7 +28,6 @@
 #include <vector>
 
 
-
 namespace yaget
 {
     namespace conv
