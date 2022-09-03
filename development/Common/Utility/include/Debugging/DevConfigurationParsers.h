@@ -151,7 +151,8 @@ namespace yaget::dev
     inline bool operator==(const Configuration::Graphics& lhs, const Configuration::Graphics& rhs)
     {
         return lhs.mDevice == rhs.mDevice &&
-            lhs.mMemoryReport == rhs.mMemoryReport;
+               lhs.mMemoryReport == rhs.mMemoryReport && 
+               lhs.mGPUTraceback == rhs.mGPUTraceback;
     }
 
     inline bool operator==(const Configuration& lhs, const Configuration& rhs)
@@ -411,6 +412,7 @@ namespace yaget::dev
     {
         j["Device"] = graphics.mDevice;
         j["MemoryReport"] = graphics.mMemoryReport;
+        j["GPUTraceback"] = graphics.mGPUTraceback;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -418,6 +420,7 @@ namespace yaget::dev
     {
         graphics.mDevice = json::GetValue(j, "Device", graphics.mDevice);
         graphics.mMemoryReport = json::GetValue(j, "MemoryReport", graphics.mMemoryReport);
+        graphics.mGPUTraceback = json::GetValue(j, "GPUTraceback", graphics.mGPUTraceback);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------

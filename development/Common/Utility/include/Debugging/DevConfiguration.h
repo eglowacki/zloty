@@ -168,6 +168,8 @@ namespace yaget
                 // asset file to initial device configuration (VTS.Section)
                 std::string mDevice;
                 bool mMemoryReport = false;
+                // activate GPU crash report
+                bool mGPUTraceback = false;
             };
             Graphics mGraphics;
 

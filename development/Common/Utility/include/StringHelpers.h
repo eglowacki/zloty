@@ -398,7 +398,7 @@ namespace yaget
 
             static std::string ToString(bool value)
             {
-                return value ? "1" : "0";
+                return value ? "True" : "False";
             }
         };
 

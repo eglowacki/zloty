@@ -871,6 +871,7 @@ void yaget::util::DefaultOptions(args::Options& options)
         ("log_write_tags", "Write out file to $(LogFolder) of all active log tags.")
         ("config_value", "Override individual configuration values --config_value = Debug.Metrics.TraceOn=false (no spaces around =)", args::value<std::vector<std::string>>())
         ("software_render", "Force software renderer")
+        ("gpu_traceback", "Activate GPU crash dump")
         ;
 }
 

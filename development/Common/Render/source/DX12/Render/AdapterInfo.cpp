@@ -4,7 +4,7 @@
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/RenderStringHelpers.h"
 
-#include <d3d12.h>
+#include <d3dx12.h>
 #include <dxgi1_6.h>
 
 #include <comdef.h>
@@ -19,6 +19,8 @@ namespace
         return flags & DXGI_ADAPTER_FLAG_SOFTWARE ? "Yes" : "No";
     }
     
+    //195 typedef void (GFSDK_AFTERMATH_CALL *PFN_GFSDK_Aftermath_GpuCrashDumpCb)(const void* pGpuCrashDump, const uint32_t gpuCrashDumpSize, void* pUserData);
+
     D3D_FEATURE_LEVEL DXfeatureLevels[] = 
     {
         D3D_FEATURE_LEVEL_12_2,
@@ -28,6 +30,30 @@ namespace
 
     ComPtr<IDXGIFactory7> CreateFactory()
     {
+        if (yaget::dev::CurrentConfiguration().mGraphics.mGPUTraceback)
+        {
+            static bool gpuTraceback = false;
+
+            if (!gpuTraceback)
+            {
+                gpuTraceback = true;
+
+                YLOG_NOTICE("DEVI", "GPU Debug Traceback activated.");
+
+                //Nsight Aftermath event markers and resource tracking is incompatible with the
+                //D3D debug layer and tools using D3D API interception, such as Microsoft PIX
+                //or Nsight Graphics.
+
+                //GFSDK_Aftermath_EnableGpuCrashDumps(GFSDK_Aftermath_Version_API, 
+                //    GFSDK_Aftermath_GpuCrashDumpWatchedApiFlags_DX,
+                //    GFSDK_Aftermath_GpuCrashDumpFeatureFlags_DeferDebugInfoCallbacks,
+                //    );
+
+                // do we need to disable on exit of application?
+                //  GFSDK_Aftermath_DisableGpuCrashDumps();
+            }
+        }
+
         UINT dxgiFactoryFlags = 0;
 
 #if YAGET_DEBUG_RENDER == 1
@@ -269,22 +295,38 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
 
     YAGET_RENDER_SET_DEBUG_NAME(hardwareDevice.Get(), "Yaget Device");
 
-    D3D12_FEATURE_DATA_FEATURE_LEVELS featureLevels{};
-    featureLevels.NumFeatureLevels = 1;
-    D3D_FEATURE_LEVEL requested[] = { static_cast<D3D_FEATURE_LEVEL>(adapter.mFeatureLevel) };
-    featureLevels.pFeatureLevelsRequested = requested;
+    //-------------------------------------------------------------
+    // testing helper functions to get dx features
+    CD3DX12FeatureSupport featureSupport;
+    hr = featureSupport.Init(hardwareDevice.Get());
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get feature supprt class created.");
 
-    hr = hardwareDevice->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &featureLevels, sizeof(featureLevels));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not check feature level support");
-    YAGET_UTIL_THROW_ASSERT("DEVI", featureLevels.MaxSupportedFeatureLevel >= adapter.mFeatureLevel, "Supported feature level is not compitable with requested.");
-    YLOG_NOTICE("DEVI", "Maximum Feature Level: %s.", conv::Convertor<D3D_FEATURE_LEVEL>::ToString(featureLevels.MaxSupportedFeatureLevel).c_str());
+    std::string optionsText;
+    auto bindingTier = featureSupport.ResourceBindingTier();
+    optionsText = "    " + conv::Convertor<D3D12_RESOURCE_BINDING_TIER>::ToString(bindingTier) + "\n";
 
-    D3D12_FEATURE_DATA_D3D12_OPTIONS7 featureData{};
-    hr = hardwareDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &featureData, sizeof(featureData));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not check feature mesh shader tier 1 support");
-    hr = hardwareDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &featureData, sizeof(featureData));
-    YLOG_NOTICE("DEVI", "Mesh shader tier 1 support: %s.", featureData.MeshShaderTier >= D3D12_MESH_SHADER_TIER_1 ? "Yes" : "No");
+    auto maxFeatureLevel = featureSupport.MaxSupportedFeatureLevel();
+    optionsText += "    " + conv::Convertor<D3D_FEATURE_LEVEL>::ToString(maxFeatureLevel) + "\n";
 
+    auto shaderModel = featureSupport.HighestShaderModel();
+    optionsText += "    " + conv::Convertor<D3D_SHADER_MODEL>::ToString(shaderModel) + "\n";
+
+    auto meshShaderTier = featureSupport.MeshShaderTier();
+    optionsText += "    " + conv::Convertor<D3D12_MESH_SHADER_TIER>::ToString(meshShaderTier) + "\n";
+
+    auto signatureVersion = featureSupport.HighestRootSignatureVersion();
+    optionsText += "    " + conv::Convertor<D3D_ROOT_SIGNATURE_VERSION>::ToString(signatureVersion) + "\n";
+
+    auto passesTier = featureSupport.RenderPassesTier();
+    optionsText += "    " + conv::Convertor<D3D12_RENDER_PASS_TIER>::ToString(passesTier) + "\n";
+
+    auto raytracingTier = featureSupport.RaytracingTier();
+    optionsText += "    " + conv::Convertor<D3D12_RAYTRACING_TIER>::ToString(raytracingTier) + "\n";
+
+    auto backgroundSupported = featureSupport.BackgroundProcessingSupported();
+    optionsText += "    Background Processing: " + conv::Convertor<bool>::ToString(backgroundSupported);
+
+    YLOG_NOTICE("DEVI", "D3D Features:\n%s", optionsText.c_str());
 
     return { hardwareDevice, hardwareAdapter, factory };
 }

@@ -277,6 +277,8 @@ std::string yaget::dev::Initialize(const args::Options& options, const char* con
     configuration.mInit.SoftwareRender = options.find<bool>("software_render", configuration.mInit.SoftwareRender);
     configuration.mInit.LogicTick = options.find<int>("logic_tick", configuration.mInit.LogicTick);
 
+    configuration.mGraphics.mGPUTraceback = options.find<bool>("gpu_traceback", configuration.mGraphics.mGPUTraceback);
+
     // process any configuration value overrides.
     // Debug.Metrics.TraceOn=false
     // Debug.Metrics.TraceOn='Hello World'

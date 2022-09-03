@@ -13,7 +13,7 @@
 						"filename": "$(LogFolder)/$(AppName).log"
 					}
 				},
-				"PrintThreadName":  true
+				"PrintThreadName": true
 			},
 			"Metrics": {
 				"AllowFallbackToFile": false,
@@ -23,7 +23,11 @@
 				"TraceOn": true
 			}
 		},
-
+		"Graphics": {
+			"Device": "",
+			"MemoryReport": false,
+			"GPUTraceback": false
+		},
 		"Init": {
 			"Aliases": {
 				"$(AssetsFolder)": {

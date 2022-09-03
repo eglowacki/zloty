@@ -5,14 +5,12 @@
 #include "Render/Metrics/RenderMetrics.h"
 #include "Render/AdapterInfo.h"
 #include "MathFacade.h"
-//#include "Math/YagetMath.h"
 #include "CommandQueue.h"
 #include "App/AppUtilities.h"
 #include "App/Application.h"
 
-#include <d3d12.h>
-#include <dxgi1_6.h>
 #include <d3dx12.h>
+#include <dxgi1_6.h>
 
 namespace 
 {
@@ -38,8 +36,6 @@ namespace
     //-------------------------------------------------------------------------------------------------
     Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, const yaget::render::info::Adapter& adapterInfo, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue, uint32_t numBackBuffers, bool tearingSupported)
     {
-        //const auto [width, height] = windowFrame.GetSurface().GetSize<uint32_t>();
-
         const auto& adapterResolution = *adapterInfo.mOutputs.begin()->mResolutions.begin();
 
         DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
@@ -278,6 +274,11 @@ void yaget::render::platform::SwapChain::Render(const std::vector<Polygon*>& pol
         const uint32_t presentFlags = mTearingSupported && syncInterval == 0 ? DXGI_PRESENT_ALLOW_TEARING : 0;
 
         hr = mSwapChain->Present(syncInterval, presentFlags);
+        if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+        {
+            // driver crashed, let's trigger GPU crash dump
+        }
+
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not present DX12 Swap Chain");
 
         mFrameFenceValues[mCurrentBackBufferIndex] = mCommandQueue->Signal();
