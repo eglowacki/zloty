@@ -16,7 +16,6 @@
 #include "YagetCore.h"
 #include "StringHelpers.h"
 #include <d3dx12.h>
-//#include <d3dcommon.h>
 
 namespace yaget::conv
 {
