@@ -578,8 +578,6 @@ namespace yaget
             }
         };
 
-        //size_t CalcSize(const std::string& nameType);
-
         inline std::string safe(const char* value) { return value ? value : ""; }
 
         //----------------------------------------------------------------------------------------------------------------------------------
