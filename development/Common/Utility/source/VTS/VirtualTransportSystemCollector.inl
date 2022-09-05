@@ -61,10 +61,6 @@ namespace
 	}
 
 
-
-	inline std::string to_string(const yaget::dev::Configuration::Init::VTSConfigList& /*value*/) { return "FOO"; }
-
-
 	// collect all files from all sections and make db to match. It calls doneCallback after all indexing is done.
 	class SectionEntriesCollector
 	{
@@ -123,15 +119,15 @@ namespace
 
 				//VTS::VTSConfigList
 				mCounter = std::accumulate(configList.begin(), configList.end(), static_cast<size_t>(0), [](const auto& runningTotal, const auto& vtsConfig)
-					{
-						return runningTotal + vtsConfig.Path.size();
-					});
+				{
+					return runningTotal + vtsConfig.Path.size();
+				});
 
 				std::string command = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly, Recursive FROM Sections ORDER BY Name;");
 				VTS::VTSConfigList sectionRecords = mDatabase.DB().GetRowsTuple<VTS::VTS, SectionRecord, VTS::VTSConfigList>(command, [](const SectionRecord& record)
-					{
-						return VTS::VTS{ std::get<0>(record), std::get<1>(record), std::get<2>(record), std::get<3>(record), std::get<4>(record), std::get<5>(record) };
-					});
+				{
+					return VTS::VTS{ std::get<0>(record), std::get<1>(record), std::get<2>(record), std::get<3>(record), std::get<4>(record), std::get<5>(record) };
+				});
 
 				std::set_difference(configList.begin(), configList.end(), sectionRecords.begin(), sectionRecords.end(), std::inserter(newSection, newSection.end()));
 				std::set_difference(sectionRecords.begin(), sectionRecords.end(), configList.begin(), configList.end(), std::inserter(deletedSections, deletedSections.end()));
@@ -192,9 +188,9 @@ namespace
 				// there is no files to be processed
 				//UpdateDatabase();
 				mRequestPool.AddTask([this]()
-					{
-						UpdateDatabase();
-					});
+				{
+					UpdateDatabase();
+				});
 			}
 			else
 			{
@@ -210,59 +206,59 @@ namespace
 
 					// trigger request for to call lambda for each vtsEntry, and then check each Path element for validity, and then calling updateSection with files in that Path[n]
 					mRequestPool.AddTask([this, vtsEntry, updateSection]()
+					{
+						for (auto&& p : vtsEntry.Path)
 						{
-							for (auto&& p : vtsEntry.Path)
+							metrics::Channel channel(fmt::format("Indexing Section: {}", vtsEntry.Name).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
+							fs::path proposedPath = util::ExpendEnv(p, nullptr);
+
+							YAGET_ASSERT(fs::is_directory(proposedPath) || fs::is_regular_file(proposedPath), "Proposed path: '%s' expended from '%s' used in Section: '%s' is not a directory or a file.", proposedPath.generic_string().c_str(), p.c_str(), vtsEntry.Name.c_str());
+
+							Strings newFileSet;
 							{
-								metrics::Channel channel(fmt::format("Indexing Section: {}", vtsEntry.Name).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
-								fs::path proposedPath = util::ExpendEnv(p, nullptr);
+								metrics::Channel channel("Processing found files", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-								YAGET_ASSERT(fs::is_directory(proposedPath) || fs::is_regular_file(proposedPath), "Proposed path: '%s' expended from '%s' used in Section: '%s' is not a directory or a file.", proposedPath.generic_string().c_str(), p.c_str(), vtsEntry.Name.c_str());
-
-								Strings newFileSet;
+								size_t envSize = proposedPath.string().size();
 								{
-									metrics::Channel channel("Processing found files", YAGET_METRICS_CHANNEL_FILE_LINE);
+									metrics::Channel channel("Getting Files from disk.", YAGET_METRICS_CHANNEL_FILE_LINE);
 
-									size_t envSize = proposedPath.string().size();
-									{
-										metrics::Channel channel("Getting Files from disk.", YAGET_METRICS_CHANNEL_FILE_LINE);
-
-										newFileSet = io::file::GetFileNames(proposedPath.string(), vtsEntry.Recursive, [&vtsEntry](const std::string& fileName)
-											{
-												return std::any_of(vtsEntry.Filters.begin(), vtsEntry.Filters.end(), [&fileName](const std::string& filter) {return WildCompare(filter, fileName); });
-											});
-									}
-
-									{
-										metrics::Channel channel("Transforming found file names.", YAGET_METRICS_CHANNEL_FILE_LINE);
-
-										std::transform(newFileSet.begin(), newFileSet.end(), newFileSet.begin(), [p, envSize](const std::string& fileName)
-											{
-												std::string newPath = p + std::string(fileName.begin() + envSize, fileName.end());
-												std::transform(newPath.begin(), newPath.end(), newPath.begin(), [](std::string::value_type c) { return c == '\\' ? '/' : c; });
-												return newPath;
-											});
-									}
-								}
-
-								if (false)//newFileSet.size() == 100000)
-								{
-									mCounter += 1;
-									Strings firstHalf(newFileSet.begin(), newFileSet.begin() + 50000);
-									Strings secondHalf(newFileSet.begin() + 50000, newFileSet.end());
-
-									updateSection(vtsEntry.Name, firstHalf, p);
-
-									mRequestPool.AddTask([vtsEntry, updateSection, secondHalf, p]()
+									newFileSet = io::file::GetFileNames(proposedPath.string(), vtsEntry.Recursive, [&vtsEntry](const std::string& fileName)
 										{
-											updateSection(vtsEntry.Name, secondHalf, p);
+											return std::any_of(vtsEntry.Filters.begin(), vtsEntry.Filters.end(), [&fileName](const std::string& filter) {return WildCompare(filter, fileName); });
 										});
 								}
-								else
+
 								{
-									updateSection(vtsEntry.Name, newFileSet, p);
+									metrics::Channel channel("Transforming found file names.", YAGET_METRICS_CHANNEL_FILE_LINE);
+
+									std::transform(newFileSet.begin(), newFileSet.end(), newFileSet.begin(), [p, envSize](const std::string& fileName)
+										{
+											std::string newPath = p + std::string(fileName.begin() + envSize, fileName.end());
+											std::transform(newPath.begin(), newPath.end(), newPath.begin(), [](std::string::value_type c) { return c == '\\' ? '/' : c; });
+											return newPath;
+										});
 								}
 							}
-						});
+
+							if (false)//newFileSet.size() == 100000)
+							{
+								mCounter += 1;
+								Strings firstHalf(newFileSet.begin(), newFileSet.begin() + 50000);
+								Strings secondHalf(newFileSet.begin() + 50000, newFileSet.end());
+
+								updateSection(vtsEntry.Name, firstHalf, p);
+
+								mRequestPool.AddTask([vtsEntry, updateSection, secondHalf, p]()
+									{
+										updateSection(vtsEntry.Name, secondHalf, p);
+									});
+							}
+							else
+							{
+								updateSection(vtsEntry.Name, newFileSet, p);
+							}
+						}
+					});
 				}
 			}
 		}
@@ -355,9 +351,9 @@ namespace
 							else
 							{
 								auto it = std::find_if(deletedBlobs.begin(), deletedBlobs.end(), [&vtsName](const auto& param)
-									{
-										return std::get<2>(param) == vtsName;
-									});
+								{
+									return std::get<2>(param) == vtsName;
+								});
 
 								if (it != deletedBlobs.end())
 								{
@@ -433,11 +429,11 @@ namespace
 
 			// fire callback on separate thread from here, since recipient of this message will delete us
 			std::thread notifier = std::thread([](DoneCallback doneCallback)
-				{
-					metrics::MarkStartThread(platform::CurrentThreadId(), "INDXDONE");
+			{
+				metrics::MarkStartThread(platform::CurrentThreadId(), "INDXDONE");
 
-					doneCallback();
-				}, mDoneCallback);
+				doneCallback();
+			}, mDoneCallback);
 
 			notifier.detach();
 		}

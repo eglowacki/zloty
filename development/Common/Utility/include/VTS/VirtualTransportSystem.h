@@ -178,8 +178,8 @@ namespace yaget
             std::shared_ptr<Asset> AddAsset(const std::shared_ptr<Asset>& asset);
             void RemoveAsset(const io::Tag& tag);
             std::shared_ptr<Asset> FindAsset(const io::Tag& tag) const;
-            bool AttachTransientBlobNonMT(const std::vector<std::shared_ptr<io::Asset>>& assets, db::Transaction& transaction);
-            bool AttachTransientBlobNonMT(const std::shared_ptr<io::Asset>& asset, db::Transaction& transaction) { return AttachTransientBlobNonMT(std::vector<std::shared_ptr<io::Asset>>{ asset }, transaction); }
+            bool AttachTransientBlobNonMT(const std::vector<std::shared_ptr<io::Asset>>& assets, yaget::db::Transaction& transaction);
+            bool AttachTransientBlobNonMT(const std::shared_ptr<io::Asset>& asset, yaget::db::Transaction& transaction) { return AttachTransientBlobNonMT(std::vector<std::shared_ptr<io::Asset>>{ asset }, transaction); }
 
             AssetResolver FindAssetConverter(const std::string& converterType) const;
 
