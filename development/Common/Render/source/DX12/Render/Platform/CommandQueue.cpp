@@ -39,6 +39,18 @@ namespace
 
         return commandQueue;
     }
+
+    yaget::render::ComPtr<ID3D12Fence1> CreateFence(ID3D12Device* device)
+    {
+        yaget::render::ComPtr<ID3D12Fence1> fence;
+
+        HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Fence");
+
+        YAGET_RENDER_SET_DEBUG_NAME(fence.Get(), "Yaget Fence");
+
+        return fence;
+    }
 } // namespace
 
 
@@ -107,9 +119,9 @@ const Microsoft::WRL::ComPtr<struct ID3D12CommandQueue>& yaget::render::platform
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandQueuesSet::CommandQueuesSet(ID3D12Device* device)
 {
-    mCommandQueues[CommandQueue::Type::Direct] = CreateCommandQueue(device, CommandQueue::Type::Direct);
-    mCommandQueues[CommandQueue::Type::Compute] = CreateCommandQueue(device, CommandQueue::Type::Compute);
-    mCommandQueues[CommandQueue::Type::Copy] = CreateCommandQueue(device, CommandQueue::Type::Copy);
+    mCommandQueues[CommandQueue::Type::Direct] = CommandQueueData(device, CommandQueue::Type::Direct);
+    mCommandQueues[CommandQueue::Type::Compute] = CommandQueueData(device, CommandQueue::Type::Compute);
+    mCommandQueues[CommandQueue::Type::Copy] = CommandQueueData(device, CommandQueue::Type::Copy);
 }
 
 
@@ -124,5 +136,14 @@ ID3D12CommandQueue* yaget::render::platform::CommandQueuesSet::GetCommandQueue(C
 {
     YAGET_UTIL_THROW_ASSERT("DEVI", mCommandQueues.find(type) != mCommandQueues.end(), fmt::format("Invalid command queue type: {}.", conv::Convertor<CommandQueue::Type>::ToString(type)));
 
-    return mCommandQueues.find(type)->second.Get();
+    return mCommandQueues.find(type)->second.mCommandQueue.Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::CommandQueuesSet::CommandQueueData::CommandQueueData(ID3D12Device* device, CommandQueue::Type type)
+    : mCommandQueue{ CreateCommandQueue(device, type) }
+    , mFence{ CreateFence(device) }
+    , mFenceValues{ 0 }
+{
 }

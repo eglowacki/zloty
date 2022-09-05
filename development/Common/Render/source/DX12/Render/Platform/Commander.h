@@ -27,17 +27,17 @@ namespace colors { struct Color; }
 namespace yaget::render::platform
 {
     //-------------------------------------------------------------------------------------------------
-	class Commander
-	{
-	public:
-		Commander(uint32_t rtvDescriptorHandleSize, ID3D12DescriptorHeap* descriptorHeap);
-		~Commander();
+    class Commander
+    {
+    public:
+        Commander(uint32_t rtvDescriptorHandleSize, ID3D12DescriptorHeap* descriptorHeap);
+        ~Commander();
 
-		void SetRenderTarget(IDXGISwapChain2* swapChain, ID3D12GraphicsCommandList* commandList, uint32_t buferIndex);
-		void ClearRenderTarget(const colors::Color& color, ID3D12GraphicsCommandList* commandList, uint32_t buferIndex);
+        void SetRenderTarget(IDXGISwapChain2* swapChain, ID3D12GraphicsCommandList* commandList, uint32_t frameIndex);
+        void ClearRenderTarget(const colors::Color& color, ID3D12GraphicsCommandList* commandList, uint32_t frameIndex);
 
-	private:
-		const uint32_t mRTVDescriptorHandleSize = 0;
-		ID3D12DescriptorHeap* mDescriptorHeap = nullptr;
-	};
+    private:
+        const uint32_t mRTVDescriptorHandleSize = 0;
+        ID3D12DescriptorHeap* mDescriptorHeap = nullptr;
+    };
 }

@@ -56,7 +56,17 @@ namespace yaget::render::platform
         ID3D12CommandQueue* GetCommandQueue(CommandQueue::Type type) const;
 
     private:
-        std::map<CommandQueue::Type, ComPtr<ID3D12CommandQueue>> mCommandQueues;
+        struct CommandQueueData
+        {
+            CommandQueueData(ID3D12Device* device, CommandQueue::Type type);
+            CommandQueueData() = default;
+
+            ComPtr<ID3D12CommandQueue> mCommandQueue;
+            ComPtr<ID3D12Fence1> mFence;
+            uint32_t mFenceValues = 0;
+        };
+
+        std::map<CommandQueue::Type, CommandQueueData> mCommandQueues;
     };
 
 } // namespace yaget::render::platform

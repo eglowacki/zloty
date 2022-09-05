@@ -15,13 +15,11 @@ yaget::render::platform::Commander::Commander(uint32_t rtvDescriptorHandleSize, 
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::Commander::~Commander()
-{
-}
+yaget::render::platform::Commander::~Commander() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::Commander::SetRenderTarget(IDXGISwapChain2* swapChain, ID3D12GraphicsCommandList* commandList, uint32_t buferIndex)
+void yaget::render::platform::Commander::SetRenderTarget(IDXGISwapChain2* swapChain, ID3D12GraphicsCommandList* commandList, uint32_t frameIndex)
 {
     DXGI_SWAP_CHAIN_DESC1 chainDesc = {};
     HRESULT hr = swapChain->GetDesc1(&chainDesc);
@@ -39,16 +37,16 @@ void yaget::render::platform::Commander::SetRenderTarget(IDXGISwapChain2* swapCh
     rect.bottom = chainDesc.Height;
     commandList->RSSetScissorRects(1, &rect);
 
-    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), buferIndex, mRTVDescriptorHandleSize);
+    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, mRTVDescriptorHandleSize);
     commandList->OMSetRenderTargets(1, &rtv, false, nullptr);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::Commander::ClearRenderTarget(const colors::Color& color, ID3D12GraphicsCommandList* commandList, uint32_t buferIndex)
+void yaget::render::platform::Commander::ClearRenderTarget(const colors::Color& color, ID3D12GraphicsCommandList* commandList, uint32_t frameIndex)
 {
     const float clearColor[] = { color.R(), color.B(), color.G(), color.A() };
 
-    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), buferIndex, mRTVDescriptorHandleSize);
+    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, mRTVDescriptorHandleSize);
     commandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
 }
