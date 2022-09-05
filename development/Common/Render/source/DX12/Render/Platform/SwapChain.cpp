@@ -289,6 +289,13 @@ void yaget::render::platform::SwapChain::Render(const std::vector<Polygon*>& pol
 
 
 //-------------------------------------------------------------------------------------------------
+ID3D12CommandAllocator* yaget::render::platform::SwapChain::GetActiveAllocator() const
+{
+    return mCommandAllocators[mCurrentBackBufferIndex].Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::platform::SwapChain::UpdateRenderTargetViews()
 {
     const auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);

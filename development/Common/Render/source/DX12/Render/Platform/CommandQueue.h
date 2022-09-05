@@ -6,14 +6,13 @@
 // NOTES:
 //      This handles command queue and fence
 //
-// #include "CommandQueue.h"
+// #include "Render/Platform/CommandQueue.h"
 //
 /////////////////////////////////////////////////////////////////////////
 //! \file
 
 #pragma once
 
-#include "YagetCore.h"
 #include "Render/RenderCore.h"
 
 struct ID3D12Device;
@@ -22,25 +21,42 @@ struct ID3D12Fence1;
 
 namespace yaget::render::platform
 {
-	class CommandQueue
-	{
-	public:
-		enum class Type { Direct, Compute, Copy };
-		
-		CommandQueue(ID3D12Device* device, Type type);
-		~CommandQueue();
+    //-------------------------------------------------------------------------------------------------
+    class CommandQueue
+    {
+    public:
+        enum class Type { Direct, Compute, Copy };
+        
+        CommandQueue(ID3D12Device* device, Type type);
+        ~CommandQueue();
 
-		void Flush();
-		uint64_t Signal();
-		void WaitForFenceValue(uint64_t fenceValue) const;
+        void Flush();
+        uint64_t Signal();
+        void WaitForFenceValue(uint64_t fenceValue) const;
 
-		const ComPtr<ID3D12CommandQueue>& GetCommandQueue() const;
+        const ComPtr<ID3D12CommandQueue>& GetCommandQueue() const;
 
-	private:
-		ComPtr<ID3D12CommandQueue> mCommandQueue;
-		ComPtr<ID3D12Fence1> mFence;
-		HANDLE mFenceEvent{ nullptr };
-		std::atomic_uint64_t mFenceValue{ 0 };
-	};
-	
+    private:
+        ComPtr<ID3D12CommandQueue> mCommandQueue;
+        ComPtr<ID3D12Fence1> mFence;
+        HANDLE mFenceEvent{ nullptr };
+        std::atomic_uint64_t mFenceValue{ 0 };
+    };
+    
+
+    //-------------------------------------------------------------------------------------------------
+    // This class manages and exposes various types of Command Queues
+    // This should replace the class above (CommandQueue)
+    class CommandQueuesSet
+    {
+    public:
+        CommandQueuesSet(ID3D12Device* device);
+        ~CommandQueuesSet();
+
+        ID3D12CommandQueue* GetCommandQueue(CommandQueue::Type type) const;
+
+    private:
+        std::map<CommandQueue::Type, ComPtr<ID3D12CommandQueue>> mCommandQueues;
+    };
+
 } // namespace yaget::render::platform

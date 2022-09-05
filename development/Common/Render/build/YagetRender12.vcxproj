@@ -165,7 +165,9 @@
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\Adapter.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\CommandAllocators.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\Commander.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\CommandListPool.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\CommandQueue.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\DeviceDebugger.h" />
@@ -189,7 +191,9 @@
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Platform\CommandAllocators.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Commander.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Platform\CommandListPool.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\CommandQueue.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\D3D12MemAlloc.cpp">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level3</WarningLevel>

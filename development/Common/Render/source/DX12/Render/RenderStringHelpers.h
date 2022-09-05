@@ -15,6 +15,8 @@
 
 #include "YagetCore.h"
 #include "StringHelpers.h"
+#include "Render/Platform/CommandQueue.h"
+
 #include <d3dx12.h>
 
 namespace yaget::conv
@@ -267,6 +269,34 @@ namespace yaget::conv
             default:
                 result = fmt::format("Unknown Mesh Shader Tier {:#x}", value);
                 YLOG_ERROR("DEVI", "Invalid D3D12_COMMAND_LIST_TYPE_DIRECT value: '%s' conversion to string.", result.c_str());
+            }
+
+            return result;
+        }
+    };
+
+    //-------------------------------------------------------------------------------------------------
+    template <>
+    struct Convertor<yaget::render::platform::CommandQueue::Type>
+    {
+        static std::string ToString(yaget::render::platform::CommandQueue::Type value)
+        {
+            std::string result;
+
+            switch (value)
+            {
+            case yaget::render::platform::CommandQueue::Type::Direct:
+                result = "Command Direct";
+                break;
+            case yaget::render::platform::CommandQueue::Type::Compute:
+                result = "Command Compute";
+                break;
+            case yaget::render::platform::CommandQueue::Type::Copy:
+                result = "Command Copy";
+                break;
+            default:
+                result = fmt::format("Unknown CommandQueue type {:#x}", value);
+                YLOG_ERROR("DEVI", "Invalid CommandQueue::Type value: '%s' conversion to string.", result.c_str());
             }
 
             return result;

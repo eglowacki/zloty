@@ -52,6 +52,9 @@ namespace yaget::render
     namespace platform
     {
         class Adapter;
+        class CommandAllocators;
+        class CommandQueuesSet;
+        class CommandListPool;
         class Fence;
         class SwapChain;
     }
@@ -79,6 +82,9 @@ namespace yaget::render
 
         std::unique_ptr<platform::Adapter> mAdapter;
         std::unique_ptr<platform::SwapChain> mSwapChain;
+        std::unique_ptr<platform::CommandAllocators> mCommandAllocators;
+        std::unique_ptr<platform::CommandQueuesSet> mCommandQueuesSet;
+        std::unique_ptr<platform::CommandListPool> mCommandListPool;
 
         std::unique_ptr<Polygon> mPolygon;
         std::unique_ptr<Polygon> mPolygon2;

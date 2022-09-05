@@ -109,6 +109,12 @@
     <ClInclude Include="..\source\DX12\Render\Platform\ResourceCompiler.h">
       <Filter>Source Files\Platform Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Platform\CommandListPool.h">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Platform\CommandAllocators.h">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -178,6 +184,12 @@
       <Filter>Source Files\Platform Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Platform\ResourceCompiler.cpp">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Platform\CommandListPool.cpp">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Platform\CommandAllocators.cpp">
       <Filter>Source Files\Platform Files</Filter>
     </ClCompile>
   </ItemGroup>

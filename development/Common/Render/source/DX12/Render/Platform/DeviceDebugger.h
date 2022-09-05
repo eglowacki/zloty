@@ -23,6 +23,7 @@ struct ID3D12Device;
 
 namespace yaget::render::platform
 {
+    //-------------------------------------------------------------------------------------------------
     class DeviceDebugger
     {
     public:

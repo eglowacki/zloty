@@ -39,6 +39,7 @@ namespace yaget
 
 namespace yaget::render::platform
 {
+    //-------------------------------------------------------------------------------------------------
     class CommandQueue;
 
     class SwapChain
@@ -49,6 +50,9 @@ namespace yaget::render::platform
 
         void Resize();
         void Render(const std::vector<Polygon*>& polygons, const time::GameClock& gameClock, metrics::Channel& channel);
+
+        ID3D12CommandAllocator* GetActiveAllocator() const;
+        uint32_t GetCurrentBackBufferIndex() const { return mCurrentBackBufferIndex; }
 
     private:
         void UpdateRenderTargetViews();

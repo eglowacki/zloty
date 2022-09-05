@@ -26,6 +26,7 @@ namespace colors { struct Color; }
 
 namespace yaget::render::platform
 {
+    //-------------------------------------------------------------------------------------------------
 	class Commander
 	{
 	public:
