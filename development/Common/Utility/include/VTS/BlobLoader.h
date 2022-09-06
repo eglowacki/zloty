@@ -42,7 +42,8 @@ namespace yaget
 
             bool Save(const io::Buffer& dataBuffer, const std::string& fileName);
 
-            // Process all fileNames and call converter for each one. fileNames.size() == convertors.size()
+            // Process all fileNames and call converter for each one. 
+            // fileNames.size() == convertors.size() or fileNames.size() && convertors.size() == 1
             void AddTask(const Strings& fileNames, const std::vector<Convertor>& convertors);
             // Allows to have just one converter applied to all file names
             void AddTask(const Strings& fileNames, Convertor convertor);

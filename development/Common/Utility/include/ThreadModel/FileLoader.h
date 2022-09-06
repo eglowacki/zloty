@@ -51,15 +51,14 @@ namespace yaget::io
         FileLoader();
         ~FileLoader() override;
 
-        void Start();
-
         void Load(const Strings& filePathList, const std::vector<DoneCallback_t>& doneCallbacks) override;
         bool Save(const io::Buffer& dataBuffer, const std::string& fileName) override;
 
         using FileDataPtr = std::unique_ptr<FileData>;
 
     private:
-        void Stop();
+        void StartLoader();
+        void StopLoader();
 
         typedef void *Handle_t;
         Handle_t mIOPort = nullptr;
@@ -77,7 +76,18 @@ namespace yaget::io
         std::atomic_bool mQuit{ false };
     };
 
-}
+
+    class NetworkLoader : public DataLoader
+    {
+    public:
+        NetworkLoader();
+        ~NetworkLoader() override;
+
+        void Load(const Strings& filePathList, const std::vector<DoneCallback_t>& doneCallbacks) override;
+        bool Save(const io::Buffer& dataBuffer, const std::string& fileName) override;
+    };
+
+} // namespace yaget::io
 
 
 
