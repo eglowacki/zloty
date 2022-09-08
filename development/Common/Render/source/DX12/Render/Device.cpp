@@ -25,7 +25,7 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::rende
     , mAdapter{ std::make_unique<platform::Adapter>(mWindowFrame, adapterInfo) }
     , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory()) }
     , mCommandAllocators{ std::make_unique<platform::CommandAllocators>(mAdapter->GetDevice(), mWindowFrame.GetSurface().NumBackBuffers()) }
-    , mCommandQueuesSet{ std::make_unique<platform::CommandQueuesSet>(mAdapter->GetDevice()) }
+    , mCommandQueues{ std::make_unique<platform::CommandQueues>(mAdapter->GetDevice()) }
     , mCommandListPool{ std::make_unique<platform::CommandListPool>(mAdapter->GetDevice(), NumCommands) }
     , mPolygon{ std::make_unique<Polygon>(mAdapter->GetDevice(), mAdapter->GetAllocator(), false /*useTwo*/) }
     , mPolygon2{ std::make_unique<Polygon>(mAdapter->GetDevice(), mAdapter->GetAllocator(), true /*useTwo*/) }
@@ -72,7 +72,7 @@ void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metri
     auto allocator = mCommandAllocators->GetCommandAllocator(platform::CommandQueue::Type::Direct, mSwapChain->GetCurrentBackBufferIndex());
     auto handle = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator);
 
-    auto commandQueue = mCommandQueuesSet->GetCommandQueue(platform::CommandQueue::Type::Direct);
+    auto commandQueue = mCommandQueues->GetCommandQueue(platform::CommandQueue::Type::Direct);
     commandQueue;
 
     //ID3D12CommandList* commands[] = { handle.GetCommandList() };

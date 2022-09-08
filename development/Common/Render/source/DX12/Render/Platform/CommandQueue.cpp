@@ -117,7 +117,7 @@ const Microsoft::WRL::ComPtr<struct ID3D12CommandQueue>& yaget::render::platform
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::CommandQueuesSet::CommandQueuesSet(ID3D12Device* device)
+yaget::render::platform::CommandQueues::CommandQueues(ID3D12Device* device)
 {
     mCommandQueues[CommandQueue::Type::Direct] = CommandQueueData(device, CommandQueue::Type::Direct);
     mCommandQueues[CommandQueue::Type::Compute] = CommandQueueData(device, CommandQueue::Type::Compute);
@@ -126,13 +126,13 @@ yaget::render::platform::CommandQueuesSet::CommandQueuesSet(ID3D12Device* device
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::CommandQueuesSet::~CommandQueuesSet()
+yaget::render::platform::CommandQueues::~CommandQueues()
 {
 }
 
 
 //-------------------------------------------------------------------------------------------------
-ID3D12CommandQueue* yaget::render::platform::CommandQueuesSet::GetCommandQueue(CommandQueue::Type type) const
+ID3D12CommandQueue* yaget::render::platform::CommandQueues::GetCommandQueue(CommandQueue::Type type) const
 {
     YAGET_UTIL_THROW_ASSERT("DEVI", mCommandQueues.find(type) != mCommandQueues.end(), fmt::format("Invalid command queue type: {}.", conv::Convertor<CommandQueue::Type>::ToString(type)));
 
@@ -141,7 +141,7 @@ ID3D12CommandQueue* yaget::render::platform::CommandQueuesSet::GetCommandQueue(C
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::CommandQueuesSet::CommandQueueData::CommandQueueData(ID3D12Device* device, CommandQueue::Type type)
+yaget::render::platform::CommandQueues::CommandQueueData::CommandQueueData(ID3D12Device* device, CommandQueue::Type type)
     : mCommandQueue{ CreateCommandQueue(device, type) }
     , mFence{ CreateFence(device) }
     , mFenceValues{ 0 }

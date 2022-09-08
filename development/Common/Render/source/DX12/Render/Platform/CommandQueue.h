@@ -47,11 +47,11 @@ namespace yaget::render::platform
     //-------------------------------------------------------------------------------------------------
     // This class manages and exposes various types of Command Queues
     // This should replace the class above (CommandQueue)
-    class CommandQueuesSet
+    class CommandQueues
     {
     public:
-        CommandQueuesSet(ID3D12Device* device);
-        ~CommandQueuesSet();
+        CommandQueues(ID3D12Device* device);
+        ~CommandQueues();
 
         ID3D12CommandQueue* GetCommandQueue(CommandQueue::Type type) const;
 
