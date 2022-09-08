@@ -99,22 +99,19 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------------------
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device* device, ID3D12CommandAllocator* commandAllocator, D3D12_COMMAND_LIST_TYPE type)
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
     {
-        Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
-        HRESULT hr = device->CreateCommandList(0, type, commandAllocator, nullptr, IID_PPV_ARGS(&commandList));
+        Microsoft::WRL::ComPtr<ID3D12Device4> device4;
+        HRESULT hr = device->QueryInterface<ID3D12Device4>(&device4);
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create ID3D12Device4 interface");
+        
+        Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList;
+        hr = device4->CreateCommandList1(0, type, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&commandList));
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command List");
 
-        hr = commandList->Close();
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not close DX12 Command List");
+        YAGET_RENDER_SET_DEBUG_NAME(commandList.Get(), "Yaget Command List");
 
-        Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList2;
-        hr = commandList.As(&commandList2);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Command List2 interface");
-
-        YAGET_RENDER_SET_DEBUG_NAME(commandList2.Get(), "Yaget Command List");
-
-        return commandList2;
+        return commandList;
     }
 
 } // namespace
@@ -146,7 +143,7 @@ yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, cons
         mCommandAllocators[i] = commandAllocator;
     }
 
-    mCommandList = CreateCommandList(mDevice, mCommandAllocators[mCurrentBackBufferIndex].Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
+    mCommandList = CreateCommandList(mDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
 
     Resize();
     YLOG_INFO("DEVI", "Swap Chain created with '%d' Back Buffers, VSync: '%s' and Tearing Supported: '%s'.", mNumBackBuffers, conv::ToBool(mWindowFrame.GetSurface().VSync()).c_str(), conv::ToBool(mTearingSupported).c_str());
