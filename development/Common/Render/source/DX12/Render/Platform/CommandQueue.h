@@ -63,7 +63,7 @@ namespace yaget::render::platform
 
             ComPtr<ID3D12CommandQueue> mCommandQueue;
             ComPtr<ID3D12Fence1> mFence;
-            uint32_t mFenceValues = 0;
+            uint32_t mFenceValue = 0;
         };
 
         std::map<CommandQueue::Type, CommandQueueData> mCommandQueues;

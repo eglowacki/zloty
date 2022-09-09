@@ -2,6 +2,7 @@
 #include "App/AppUtilities.h"
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/RenderStringHelpers.h"
+#include "fmt/format.h"
 
 #include <d3d12.h>
 
@@ -29,6 +30,9 @@ namespace
         case render::platform::CommandQueue::Type::Copy:
             queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
             break;
+
+        default:
+            YAGET_UTIL_THROW("DEVI", fmt::format("Invalid Command Type Queue: {}.", conv::Convertor<render::platform::CommandQueue::Type>::ToString(type)));
         }
 
         render::ComPtr<ID3D12CommandQueue> commandQueue;
@@ -126,9 +130,7 @@ yaget::render::platform::CommandQueues::CommandQueues(ID3D12Device* device)
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::CommandQueues::~CommandQueues()
-{
-}
+yaget::render::platform::CommandQueues::~CommandQueues() = default;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -144,6 +146,6 @@ ID3D12CommandQueue* yaget::render::platform::CommandQueues::GetCommandQueue(Comm
 yaget::render::platform::CommandQueues::CommandQueueData::CommandQueueData(ID3D12Device* device, CommandQueue::Type type)
     : mCommandQueue{ CreateCommandQueue(device, type) }
     , mFence{ CreateFence(device) }
-    , mFenceValues{ 0 }
+    , mFenceValue{ 0 }
 {
 }
