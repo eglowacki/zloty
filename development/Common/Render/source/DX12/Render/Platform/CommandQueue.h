@@ -85,6 +85,8 @@ namespace yaget::render::platform
             void Wait(uint64_t signalValue) const;
 
             void Execute(ID3D12GraphicsCommandList4* commandList);
+            void Execute(std::vector<ID3D12GraphicsCommandList4*> commands);
+
             ID3D12CommandQueue* GetCommandQueue() const;
 
         private:

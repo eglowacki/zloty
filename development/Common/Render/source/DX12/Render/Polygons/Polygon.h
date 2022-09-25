@@ -42,8 +42,6 @@ namespace yaget::render
     private:
         ComPtr<ID3D12RootSignature> mRootSignature;
         ComPtr<ID3D12PipelineState> mPipelineState;
-        ComPtr<ID3D12CommandAllocator> mCommandAllocator;
-        ComPtr<ID3D12GraphicsCommandList> mCommandList;
         unique_obj<D3D12MA::Allocation> mAllocation;
     };
 }

@@ -108,20 +108,6 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Pipeline State.");
     YAGET_RENDER_SET_DEBUG_NAME(mPipelineState.Get(), fmt::format("Yaget-Poly Pipeline State"));
 
-    hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mCommandAllocator));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create command allocator.");
-    YAGET_RENDER_SET_DEBUG_NAME(mCommandAllocator.Get(), fmt::format("Yaget-Poly Command Allocator"));
-
-    // Create the command list.
-    hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocator.Get(), nullptr, IID_PPV_ARGS(&mCommandList));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create command list.");
-    YAGET_RENDER_SET_DEBUG_NAME(mCommandList.Get(), fmt::format("Yaget-Poly Command List"));
-
-    // Command lists are created in the recording state, but there is nothing
-    // to record yet. The main loop expects it to be closed, so close it now.
-    hr = mCommandList->Close();
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not Close command list after creation.");
-
     const uint64_t verticesBufferSize = sizeof(vertices) * numTriangles;
 
     D3D12_RESOURCE_DESC resourceDesc = {};
@@ -188,25 +174,15 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::Polygon::~Polygon()
-{
-}
+yaget::render::Polygon::~Polygon() = default;
 
 
 //-------------------------------------------------------------------------------------------------
 ID3D12GraphicsCommandList* yaget::render::Polygon::Render(ID3D12GraphicsCommandList* commandList, std::function<void(ID3D12GraphicsCommandList* commandList)> setup)
 {
-    ID3D12GraphicsCommandList* operatingCommandList = commandList ? commandList : mCommandList.Get();
-    operatingCommandList;
+    YAGET_ASSERT(commandList, "commandList is null");
 
-    if (!commandList)
-    {
-        HRESULT hr = mCommandAllocator->Reset();
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not reset command allocator.");
-
-        hr = mCommandList->Reset(mCommandAllocator.Get(), mPipelineState.Get());
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not reset command list.");
-    }
+    ID3D12GraphicsCommandList* operatingCommandList = commandList;
 
     if (setup)
     {

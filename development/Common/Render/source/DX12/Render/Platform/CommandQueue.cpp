@@ -250,8 +250,16 @@ void yaget::render::platform::CommandQueues::CQ::Wait(uint64_t signalValue) cons
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::CommandQueues::CQ::Execute(ID3D12GraphicsCommandList4* commandList)
 {
-    ID3D12CommandList* commands[] = { commandList };
-    mCommandQueueData.mCommandQueue->ExecuteCommandLists(1, commands);
+    std::vector<ID3D12GraphicsCommandList4*> commands{ commandList };
+
+    Execute(commands);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::CommandQueues::CQ::Execute(std::vector<ID3D12GraphicsCommandList4*> commands)
+{
+    mCommandQueueData.mCommandQueue->ExecuteCommandLists(static_cast<UINT>(commands.size()), (ID3D12CommandList* const*)&commands[0]);
 }
 
 
