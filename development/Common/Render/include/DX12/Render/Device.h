@@ -81,14 +81,12 @@ namespace yaget::render
         Waiter mWaiter;
 
         std::unique_ptr<platform::Adapter> mAdapter;
-        std::unique_ptr<platform::SwapChain> mSwapChain;
-        std::unique_ptr<platform::CommandAllocators> mCommandAllocators;
-        std::unique_ptr<platform::CommandQueues> mCommandQueues;
-        std::unique_ptr<platform::CommandListPool> mCommandListPool;
-
         std::unique_ptr<Polygon> mPolygon;
         std::unique_ptr<Polygon> mPolygon2;
-
+        std::unique_ptr<platform::CommandAllocators> mCommandAllocators;
+        std::unique_ptr<platform::CommandQueues> mCommandQueues;
+        std::unique_ptr<platform::SwapChain> mSwapChain;
+        std::unique_ptr<platform::CommandListPool> mCommandListPool;
     };
 
 }

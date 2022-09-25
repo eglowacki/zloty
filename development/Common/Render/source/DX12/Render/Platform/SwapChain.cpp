@@ -118,13 +118,13 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory)
+yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue)
     : mWindowFrame{ std::move(windowFrame) }
     , mNumBackBuffers{ mWindowFrame.GetSurface().NumBackBuffers() }
     , mTearingSupported{ CheckTearingSupport(factory) }
     , mDevice{ device }
     , mCommandQueue{ std::make_unique<platform::CommandQueue>(mDevice, platform::CommandQueue::Type::Direct) }
-    , mSwapChain{ CreateSwapChain(mWindowFrame, adapterInfo, factory, mCommandQueue->GetCommandQueue().Get(), mNumBackBuffers, mTearingSupported) }
+    , mSwapChain{ CreateSwapChain(mWindowFrame, adapterInfo, factory, commandQueue ? commandQueue : mCommandQueue->GetCommandQueue().Get(), mNumBackBuffers, mTearingSupported) }
     , mCurrentBackBufferIndex{ mSwapChain->GetCurrentBackBufferIndex() }
     , mRTVDescriptorHeap{ CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, mNumBackBuffers) }
     , mCommander{ mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV), mRTVDescriptorHeap.Get() }
@@ -190,6 +190,20 @@ void yaget::render::platform::SwapChain::Resize()
 
     mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
     UpdateRenderTargetViews();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+ID3D12Resource* yaget::render::platform::SwapChain::GetCurrentRenderTarget() const
+{
+    return mBackBuffers[mCurrentBackBufferIndex].Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+ID3D12DescriptorHeap* yaget::render::platform::SwapChain::GetDescriptorHeap() const
+{
+    return mRTVDescriptorHeap.Get();
 }
 
 
@@ -282,6 +296,27 @@ void yaget::render::platform::SwapChain::Render(const std::vector<Polygon*>& pol
 
     int z = 0;
     z;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::SwapChain::Present(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/)
+{
+    const uint32_t syncInterval = mWindowFrame.GetSurface().VSync() ? 1 : 0;
+    const uint32_t presentFlags = mTearingSupported && syncInterval == 0 ? DXGI_PRESENT_ALLOW_TEARING : 0;
+
+    HRESULT hr = mSwapChain->Present(syncInterval, presentFlags);
+    if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+    {
+        // driver crashed, let's trigger GPU crash dump
+    }
+
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not present DX12 Swap Chain");
+
+    //mFrameFenceValues[mCurrentBackBufferIndex] = mCommandQueue->Signal();
+    //mCommandQueue->WaitForFenceValue(mFrameFenceValues[mCurrentBackBufferIndex]);
+
+    mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
 }
 
 

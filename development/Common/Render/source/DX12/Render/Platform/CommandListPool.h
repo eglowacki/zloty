@@ -20,9 +20,12 @@
 
 
 struct ID3D12CommandAllocator;
-struct ID3D12GraphicsCommandList4;
+struct ID3D12DescriptorHeap;
 struct ID3D12Device;
+struct ID3D12GraphicsCommandList4;
+struct ID3D12Resource;
 
+namespace colors { struct Color; } 
 
 namespace yaget::render::platform
 {
@@ -33,12 +36,17 @@ namespace yaget::render::platform
         CommandListPool(ID3D12Device* device, uint32_t numCommands);
         ~CommandListPool();
 
-        struct Handle
+        struct Handle : private Noncopyable<Handle>
         {
             Handle(CommandListPool& commandPool, ComPtr<ID3D12GraphicsCommandList4> commandList, CommandQueue::Type type);
             ~Handle();
 
-            ID3D12GraphicsCommandList4* GetCommandList() const { return mCommandList.Get(); }
+            void TransitionToRenderTarget(ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex);
+            void TransitionToPresent(ID3D12Resource* renderTarget);
+            void ClearRenderTarget(const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex);
+
+            operator ID3D12GraphicsCommandList4*() const { return mCommandList.Get(); }
+            ID3D12GraphicsCommandList4* operator->() const { return mCommandList.Get(); }
 
         private:
             CommandListPool& mCommandPool;

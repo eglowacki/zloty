@@ -4,10 +4,48 @@
 #include "Render/RenderStringHelpers.h"
 #include "fmt/format.h"
 
+#include <type_traits>
 #include <d3d12.h>
 
 namespace
 {
+    template <typename T, T beginVal, T endVal>
+    class Iterator 
+    {
+        typedef typename std::underlying_type<T>::type val_t;
+
+    public:
+        Iterator(const T& f) : mVal(static_cast<val_t>(f)) {}
+        Iterator() : mVal(static_cast<val_t>(beginVal)) {}
+
+        Iterator operator++() 
+        {
+            ++mVal;
+            return *this;
+        }
+
+        T operator*() 
+        {
+            return static_cast<T>(mVal); 
+        }
+
+        Iterator begin() 
+        {
+            return *this; 
+        }
+
+        Iterator end() 
+        {
+            static const Iterator endIter = ++Iterator(endVal);
+            return endIter;
+        }
+
+        bool operator!=(const Iterator& i) { return mVal != i.mVal; }
+
+    private:
+        int mVal;
+    };
+
     yaget::render::ComPtr<ID3D12CommandQueue> CreateCommandQueue(ID3D12Device* device, yaget::render::platform::CommandQueue::Type type)
     {
         using namespace yaget;
@@ -121,11 +159,15 @@ const Microsoft::WRL::ComPtr<struct ID3D12CommandQueue>& yaget::render::platform
 
 
 //-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandQueues::CommandQueues(ID3D12Device* device)
 {
-    mCommandQueues[CommandQueue::Type::Direct] = CommandQueueData(device, CommandQueue::Type::Direct);
-    mCommandQueues[CommandQueue::Type::Compute] = CommandQueueData(device, CommandQueue::Type::Compute);
-    mCommandQueues[CommandQueue::Type::Copy] = CommandQueueData(device, CommandQueue::Type::Copy);
+    using CQIterator = Iterator<CommandQueue::Type, CommandQueue::Type::Direct, CommandQueue::Type::Copy> ;
+
+    for (CommandQueue::Type i : CQIterator()) 
+    {
+        mCommandQueues[i] = CommandQueueData(device, i);
+    }
 }
 
 
@@ -133,12 +175,21 @@ yaget::render::platform::CommandQueues::CommandQueues(ID3D12Device* device)
 yaget::render::platform::CommandQueues::~CommandQueues() = default;
 
 
-//-------------------------------------------------------------------------------------------------
-ID3D12CommandQueue* yaget::render::platform::CommandQueues::GetCommandQueue(CommandQueue::Type type) const
+yaget::render::platform::CommandQueues::CQ yaget::render::platform::CommandQueues::GetCQ(CommandQueue::Type type, bool finished)
 {
     YAGET_UTIL_THROW_ASSERT("DEVI", mCommandQueues.find(type) != mCommandQueues.end(), fmt::format("Invalid command queue type: {}.", conv::Convertor<CommandQueue::Type>::ToString(type)));
 
-    return mCommandQueues.find(type)->second.mCommandQueue.Get();
+    return CQ(mCommandQueues.find(type)->second, finished);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::CommandQueues::Reset()
+{
+    for (auto& [key, value] : mCommandQueues)
+    {
+        value.Flush();
+    }
 }
 
 
@@ -146,6 +197,117 @@ ID3D12CommandQueue* yaget::render::platform::CommandQueues::GetCommandQueue(Comm
 yaget::render::platform::CommandQueues::CommandQueueData::CommandQueueData(ID3D12Device* device, CommandQueue::Type type)
     : mCommandQueue{ CreateCommandQueue(device, type) }
     , mFence{ CreateFence(device) }
+    , mFenceEvent{ ::CreateEvent(nullptr, FALSE, FALSE, nullptr) }
     , mFenceValue{ 0 }
 {
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::CommandQueues::CommandQueueData::~CommandQueueData()
+{
+    if (mCommandQueue)
+    {
+        Flush();
+    }
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::CommandQueues::CommandQueueData::CommandQueueData(CommandQueueData&& other) noexcept
+    : mCommandQueue{ std::move(other.mCommandQueue) }
+    , mFence{ std::move(other.mFence) }
+    , mFenceEvent{ std::move(other.mFenceEvent) }
+    , mFenceValue{ other.mFenceValue.load() }
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::CommandQueues::CommandQueueData& yaget::render::platform::CommandQueues::CommandQueueData::operator=(CommandQueueData&& other) noexcept
+{
+    if (this != &other)
+    {
+        mCommandQueue = std::move(other.mCommandQueue);
+        mFence = std::move(other.mFence);
+        mFenceEvent = std::move(other.mFenceEvent);
+        mFenceValue = other.mFenceValue.load();
+    }
+
+    return *this;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+uint64_t yaget::render::platform::CommandQueues::CommandQueueData::Signal()
+{
+    mFenceValue++;
+    const uint64_t fenceValueForSignal = mFenceValue;
+
+    HRESULT hr = mCommandQueue->Signal(mFence.Get(), fenceValueForSignal);
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not signal DX12 Command Queue");
+
+    return fenceValueForSignal;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::CommandQueues::CommandQueueData::Wait(uint64_t signalValue) const
+{
+    if (mFence->GetCompletedValue() < signalValue)
+    {
+        HRESULT hr = mFence->SetEventOnCompletion(signalValue, mFenceEvent);
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Event On Completion");
+
+        ::WaitForSingleObject(mFenceEvent, INFINITE);
+    }
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::CommandQueues::CommandQueueData::Flush()
+{
+    const auto signalValue = Signal();
+    Wait(signalValue);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::platform::CommandQueues::CQ::CQ(CommandQueueData& cqData, bool finished)
+    : mCommandQueueData(cqData)
+{
+    if (finished)
+    {
+        mCommandQueueData.Flush();
+    }
+}
+
+
+//-------------------------------------------------------------------------------------------------
+uint64_t yaget::render::platform::CommandQueues::CQ::Signal()
+{
+    const auto signalValue = mCommandQueueData.Signal();
+    return signalValue;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::CommandQueues::CQ::Wait(uint64_t signalValue) const
+{
+    mCommandQueueData.Wait(signalValue);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::CommandQueues::CQ::Execute(ID3D12GraphicsCommandList4* commandList)
+{
+    ID3D12CommandList* commands[] = { commandList };
+    mCommandQueueData.mCommandQueue->ExecuteCommandLists(1, commands);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+ID3D12CommandQueue* yaget::render::platform::CommandQueues::CQ::GetCommandQueue() const
+{
+    return mCommandQueueData.mCommandQueue.Get();
 }

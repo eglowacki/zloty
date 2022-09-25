@@ -19,13 +19,14 @@
 #include "Render/Platform/Commander.h"
 
 
-struct IDXGISwapChain4;
-struct IDXGIFactory;
-struct ID3D12Device;
-struct ID3D12DescriptorHeap;
-struct ID3D12Resource;
 struct ID3D12CommandAllocator;
+struct ID3D12CommandQueue;
+struct ID3D12DescriptorHeap;
+struct ID3D12Device;
 struct ID3D12GraphicsCommandList;
+struct ID3D12Resource;
+struct IDXGIFactory;
+struct IDXGISwapChain4;
 
 namespace yaget
 {
@@ -45,11 +46,15 @@ namespace yaget::render::platform
     class SwapChain
     {
     public:
-        SwapChain(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory);
+        SwapChain(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue);
         ~SwapChain();
 
         void Resize();
+        ID3D12Resource* GetCurrentRenderTarget() const;
+        ID3D12DescriptorHeap* GetDescriptorHeap() const;
+
         void Render(const std::vector<Polygon*>& polygons, const time::GameClock& gameClock, metrics::Channel& channel);
+        void Present(const time::GameClock& gameClock, metrics::Channel& channel);
 
         ID3D12CommandAllocator* GetActiveAllocator() const;
         uint32_t GetCurrentBackBufferIndex() const { return mCurrentBackBufferIndex; }

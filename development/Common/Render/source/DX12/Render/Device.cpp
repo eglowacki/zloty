@@ -23,12 +23,12 @@ namespace
 yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo)
     : mWindowFrame{ windowFrame }
     , mAdapter{ std::make_unique<platform::Adapter>(mWindowFrame, adapterInfo) }
-    , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory()) }
-    , mCommandAllocators{ std::make_unique<platform::CommandAllocators>(mAdapter->GetDevice(), mWindowFrame.GetSurface().NumBackBuffers()) }
-    , mCommandQueues{ std::make_unique<platform::CommandQueues>(mAdapter->GetDevice()) }
-    , mCommandListPool{ std::make_unique<platform::CommandListPool>(mAdapter->GetDevice(), NumCommands) }
     , mPolygon{ std::make_unique<Polygon>(mAdapter->GetDevice(), mAdapter->GetAllocator(), false /*useTwo*/) }
     , mPolygon2{ std::make_unique<Polygon>(mAdapter->GetDevice(), mAdapter->GetAllocator(), true /*useTwo*/) }
+    , mCommandAllocators{ std::make_unique<platform::CommandAllocators>(mAdapter->GetDevice(), mWindowFrame.GetSurface().NumBackBuffers()) }
+    , mCommandQueues{ std::make_unique<platform::CommandQueues>(mAdapter->GetDevice()) }
+    , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory(), mCommandQueues->GetCQ(platform::CommandQueue::Type::Direct, false /*finished*/).GetCommandQueue()) }
+    , mCommandListPool{ std::make_unique<platform::CommandListPool>(mAdapter->GetDevice(), NumCommands) }
 {
 
     YLOG_INFO("DEVI", "Device created and initialized.");
@@ -40,6 +40,7 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::rende
 yaget::render::DeviceB::~DeviceB()
 {
     YLOG_INFO("DEVI", "Device shutdown.");
+    mCommandQueues->Reset();
 }
 
 
@@ -48,6 +49,7 @@ void yaget::render::DeviceB::Resize()
 {
     Waiter::Lock scoper(mWaiter);
 
+    mCommandQueues->Reset();
     mSwapChain->Resize();
 }
 
@@ -65,28 +67,40 @@ int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWi
     return 0;
 }
 
-
+YAGET_COMPILE_SUPPRESS_START(4100, "'': unreferenced local variable")
 //-------------------------------------------------------------------------------------------------
 void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metrics::Channel& channel)
 {
-    auto allocator = mCommandAllocators->GetCommandAllocator(platform::CommandQueue::Type::Direct, mSwapChain->GetCurrentBackBufferIndex());
-    auto handle = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator);
+    const auto frameIndex = mSwapChain->GetCurrentBackBufferIndex();
+    auto allocator = mCommandAllocators->GetCommandAllocator(platform::CommandQueue::Type::Direct, frameIndex);
+    auto commandHandle = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator);
 
-    auto commandQueue = mCommandQueues->GetCommandQueue(platform::CommandQueue::Type::Direct);
-    commandQueue;
+    auto renderTarget = mSwapChain->GetCurrentRenderTarget();
+    auto descriptorHeap = mSwapChain->GetDescriptorHeap();
 
-    //ID3D12CommandList* commands[] = { handle.GetCommandList() };
-    //commandQueue->ExecuteCommandLists(1, commands);
+    const colors::Color color = colors::CadetBlue;
+
+    commandHandle.TransitionToRenderTarget(renderTarget, descriptorHeap, frameIndex);
+    commandHandle.ClearRenderTarget(color, renderTarget, descriptorHeap, frameIndex);
+
+    auto commandQueue = mCommandQueues->GetCQ(platform::CommandQueue::Type::Direct, true /*finished*/);
 
     const std::vector<Polygon*> polygons{ mPolygon.get(), mPolygon2.get() };
-    mSwapChain->Render(polygons, gameClock, channel);
+    for (auto& polygon : polygons)
+    {
+        polygon->Render(commandHandle, {});
+    }
 
-    //constexpr time::TimeUnits_t waitTime = 1;
-    //constexpr time::TimeUnits_t unitType = time::kMilisecondUnit;
-    //yaget::platform::Sleep(waitTime, unitType);
+    commandHandle.TransitionToPresent(renderTarget);
 
-    HRESULT hr = handle.GetCommandList()->Close();
+    HRESULT hr = commandHandle->Close();
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not close command list for polygon");
+
+    commandQueue.Execute(commandHandle);
+
+    mSwapChain->Present(gameClock, channel);
+    //mSwapChain->Render(polygons, gameClock, channel);
 
     mWaiter.Wait();
 }
+YAGET_COMPILE_SUPPRESS_END
