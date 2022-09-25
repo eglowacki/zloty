@@ -216,7 +216,7 @@ TEST_F(VTS, TransportSystem)
 
         EXPECT_EQ(vts.GetNumTags(blobFile), 1);
         EXPECT_EQ(vts.GetNumTags(Section("SourceDocs@Attach/FOO.txt")), 1);   // check for case insensitive in Filter part
-        EXPECT_EQ(vts.GetNumTags(Section("SourceDocs@Attach/fOO.tXT")), 1);
+        EXPECT_EQ(vts.GetNumTags(Section("SourceDocs@attach/fOO.tXT")), 1);
 
         io::BLobLoader<TestAsset> bLobLoader(vts, blobFile);
         auto checkedAsset = bLobLoader.Assets();
