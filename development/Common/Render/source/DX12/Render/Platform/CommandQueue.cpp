@@ -162,7 +162,7 @@ const Microsoft::WRL::ComPtr<struct ID3D12CommandQueue>& yaget::render::platform
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandQueues::CommandQueues(ID3D12Device* device)
 {
-    using CQIterator = Iterator<CommandQueue::Type, CommandQueue::Type::Direct, CommandQueue::Type::Copy> ;
+    using CQIterator = Iterator<CommandQueue::Type, CommandQueue::Type::Direct, CommandQueue::Type::Copy>;
 
     for (CommandQueue::Type i : CQIterator()) 
     {
