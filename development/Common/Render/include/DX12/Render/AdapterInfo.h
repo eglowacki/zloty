@@ -78,6 +78,13 @@ namespace yaget::render::info
                 !mOutputs.empty() &&
                 mOutputs.begin()->IsValid();
         }
+
+        const Resolution& GetSelectedResolution() const
+        {
+            YAGET_ASSERT(IsValid(), "Adpater is not valid");
+
+            return *mOutputs.begin()->mResolutions.begin();
+        }
     };
 
     using Adapters = std::vector<Adapter>;

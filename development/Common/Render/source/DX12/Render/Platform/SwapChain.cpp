@@ -37,7 +37,7 @@ namespace
     //-------------------------------------------------------------------------------------------------
     Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, const yaget::render::info::Adapter& adapterInfo, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue, uint32_t numBackBuffers, bool tearingSupported)
     {
-        const auto& adapterResolution = *adapterInfo.mOutputs.begin()->mResolutions.begin();
+        const auto& adapterResolution = adapterInfo.GetSelectedResolution();
 
         DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
         swapChainDesc.BufferCount = numBackBuffers;
