@@ -2,15 +2,13 @@
 #include "Metrics/PerformanceTracer.h"
 #include "App/AppUtilities.h"
 #include "App/FileUtilities.h"
-#include "StringHelpers.h"
+#include "Debugging/DevConfiguration.h"
 #include "Json/JsonHelpers.h"
+#include "Platform/Support.h"
+#include "StringHelpers.h"
 
 #include <filesystem>
 
-#include "Debugging/DevConfiguration.h"
-
-
-#include "Platform/Support.h"
 namespace fs = std::filesystem;
 
 const int holder = yaget::meta::print_size_at_compile<yaget::metrics::TraceRecord>();
