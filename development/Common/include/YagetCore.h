@@ -57,11 +57,10 @@ namespace yaget
     template <typename T>
     class Noncopyable
     {
-    public:
+    protected:
         Noncopyable(const Noncopyable&) = delete;
         T& operator=(const T&) = delete;
-
-    protected:
+    
         Noncopyable() = default;
         ~Noncopyable() = default;
     };
@@ -69,11 +68,10 @@ namespace yaget
     template <typename T>
     class NonCopyMove : public Noncopyable<T>
     {
-    public:
+    protected:
         NonCopyMove(NonCopyMove&& other) = delete;
         T& operator=(T&& other) = delete;
 
-    protected:
         NonCopyMove() = default;
         ~NonCopyMove() = default;
     };
