@@ -50,37 +50,24 @@ namespace yaget::render::platform
         ~SwapChain();
 
         void Resize();
+        void Present(const time::GameClock& gameClock, metrics::Channel& channel);
+
+        uint32_t GetCurrentBackBufferIndex() const { return mCurrentBackBufferIndex; }
         ID3D12Resource* GetCurrentRenderTarget() const;
         ID3D12DescriptorHeap* GetDescriptorHeap() const;
 
-        void Render(const std::vector<Polygon*>& polygons, const time::GameClock& gameClock, metrics::Channel& channel);
-        void Present(const time::GameClock& gameClock, metrics::Channel& channel);
-
-        ID3D12CommandAllocator* GetActiveAllocator() const;
-        uint32_t GetCurrentBackBufferIndex() const { return mCurrentBackBufferIndex; }
-
     private:
         void UpdateRenderTargetViews();
-        void PrepareCommandList(const time::GameClock& gameClock, ID3D12GraphicsCommandList* commandList, bool clearRenderTarget);
 
         app::WindowFrame mWindowFrame;
         int mNumBackBuffers = 2;
         bool mTearingSupported = false;
         ID3D12Device* mDevice = nullptr;
-        std::unique_ptr<platform::CommandQueue> mCommandQueue;
         ComPtr<IDXGISwapChain4> mSwapChain;
         uint32_t mCurrentBackBufferIndex = 0;
 
         ComPtr<ID3D12DescriptorHeap> mRTVDescriptorHeap;
-        Commander mCommander;
-
         std::vector<ComPtr<ID3D12Resource>> mBackBuffers;
-        std::vector<ComPtr<ID3D12CommandAllocator>> mCommandAllocators;
-        std::vector<uint64_t> mFrameFenceValues;
-
-        ComPtr<ID3D12GraphicsCommandList> mCommandList;
-        float mCurrentColorT = 0.0f;
-        float mColorTDirection = 1.0f;
     };
 
 } // namespace yaget::render::platform

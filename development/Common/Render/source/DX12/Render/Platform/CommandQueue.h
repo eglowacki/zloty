@@ -26,7 +26,7 @@ namespace yaget::render::platform
     class CommandQueue
     {
     public:
-        enum class Type { Direct, Compute, Copy };
+        enum class Type { Direct, Compute, Copy, End };
         
         CommandQueue(ID3D12Device* device, Type type);
         ~CommandQueue();

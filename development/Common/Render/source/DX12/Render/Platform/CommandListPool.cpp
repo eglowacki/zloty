@@ -1,6 +1,7 @@
 #include "Render/Platform/CommandListPool.h"
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/RenderStringHelpers.h"
+#include "Render/EnumConversion.h"
 #include "App/AppUtilities.h"
 
 #include <ranges>
@@ -29,9 +30,11 @@ namespace
         return commandList4;
     }
 
-    yaget::render::platform::CommandListPool::CommandsList CreateCommandsList(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type, uint32_t numCommands)
+    yaget::render::platform::CommandListPool::CommandsList CreateCommandsList(ID3D12Device* device, yaget::render::platform::CommandQueue::Type cqType, uint32_t numCommands)
     {
         using namespace yaget::render::platform;
+
+        D3D12_COMMAND_LIST_TYPE type = yaget::render::ConvertCommandQueueType(cqType);
 
         CommandListPool::CommandsList commandsList;
 
@@ -49,9 +52,12 @@ namespace
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandListPool::CommandListPool(ID3D12Device* device, uint32_t numCommands)
 {
-    mFreeCommandsList[CommandQueue::Type::Direct] = CreateCommandsList(device, D3D12_COMMAND_LIST_TYPE_DIRECT, numCommands);
-    mFreeCommandsList[CommandQueue::Type::Compute] = CreateCommandsList(device, D3D12_COMMAND_LIST_TYPE_COMPUTE, numCommands);
-    mFreeCommandsList[CommandQueue::Type::Copy] = CreateCommandsList(device, D3D12_COMMAND_LIST_TYPE_COPY, numCommands);
+    using CQIterator = yaget::meta::EnumIterator<CommandQueue::Type, CommandQueue::Type::Direct, CommandQueue::Type::End, false>;
+
+    for (CommandQueue::Type i : CQIterator()) 
+    {
+        mFreeCommandsList[i] = CreateCommandsList(device, i, numCommands);
+    }
 }
 
 
@@ -62,8 +68,8 @@ yaget::render::platform::CommandListPool::~CommandListPool() = default;
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandListPool::Handle yaget::render::platform::CommandListPool::GetCommandList(yaget::render::platform::CommandQueue::Type type, ID3D12CommandAllocator* commandAllocator)
 {
-    YAGET_UTIL_THROW_ASSERT("DEVI", !mFreeCommandsList[type].empty(), fmt::format("There is no command list in free container for type: {}", yaget::conv::Convertor<yaget::render::platform::CommandQueue::Type>::ToString(type)));
-    YAGET_UTIL_THROW_ASSERT("DEVI", commandAllocator, fmt::format("Command Allocoator parameter is NULL for type: {}", yaget::conv::Convertor<yaget::render::platform::CommandQueue::Type>::ToString(type)));
+    YAGET_ASSERT(!mFreeCommandsList[type].empty(), "There is no command list in free container for type: %s", yaget::conv::Convertor<yaget::render::platform::CommandQueue::Type>::ToString(type).c_str());
+    YAGET_ASSERT(commandAllocator, "Command Allocoator parameter is NULL for type: %s", yaget::conv::Convertor<yaget::render::platform::CommandQueue::Type>::ToString(type).c_str());
 
     auto command = mFreeCommandsList[type].front();
     mFreeCommandsList[type].pop();
@@ -102,7 +108,7 @@ yaget::render::platform::CommandListPool::Handle::~Handle()
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::CommandListPool::Handle::TransitionToRenderTarget(ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex)
 {
-    YAGET_UTIL_THROW_ASSERT("DEVI", renderTarget, "Parameter renderTarget is null.");
+    YAGET_ASSERT(renderTarget, "Parameter renderTarget is null.");
 
     const CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
     mCommandList->ResourceBarrier(1, &barrier);
@@ -135,6 +141,8 @@ void yaget::render::platform::CommandListPool::Handle::TransitionToRenderTarget(
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::CommandListPool::Handle::TransitionToPresent(ID3D12Resource* renderTarget)
 {
+    YAGET_ASSERT(renderTarget, "Parameter renderTarget is null.");
+
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     mCommandList->ResourceBarrier(1, &barrier);
 }
@@ -143,6 +151,9 @@ void yaget::render::platform::CommandListPool::Handle::TransitionToPresent(ID3D1
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::CommandListPool::Handle::ClearRenderTarget(const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex)
 {
+    YAGET_ASSERT(renderTarget, "Parameter renderTarget is null.");
+    YAGET_ASSERT(descriptorHeap, "Parameter descriptorHeap is null.");
+
     const float clearColor[] = { color.R(), color.B(), color.G(), color.A() };
 
     ComPtr<ID3D12Device4> device;
@@ -154,25 +165,3 @@ void yaget::render::platform::CommandListPool::Handle::ClearRenderTarget(const c
     const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(descriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, descriptorHandleSize);
     mCommandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
 }
-
-//void yaget::render::platform::CommandListPool::Handle::TransitionToRenderTarget(ID3D12Resource* /*renderTarget*/)
-//{
-    //DXGI_SWAP_CHAIN_DESC1 chainDesc = {};
-    //HRESULT hr = swapChain->GetDesc1(&chainDesc);
-    //YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 swap chain description");
-
-    //D3D12_VIEWPORT viewport = {};
-    //viewport.Width = static_cast<float>(chainDesc.Width);
-    //viewport.Height = static_cast<float>(chainDesc.Height);
-    //viewport.MinDepth = 0.0f;
-    //viewport.MaxDepth = 1.0f;
-    //commandList->RSSetViewports(1, &viewport);
-
-    //D3D12_RECT rect = {};
-    //rect.right = chainDesc.Width;
-    //rect.bottom = chainDesc.Height;
-    //commandList->RSSetScissorRects(1, &rect);
-
-    //const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, mRTVDescriptorHandleSize);
-    //commandList->OMSetRenderTargets(1, &rtv, false, nullptr);
-//}

@@ -2,6 +2,7 @@
 #include "App/AppUtilities.h"
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/RenderStringHelpers.h"
+#include "Render/EnumConversion.h"
 #include "fmt/format.h"
 
 #include <type_traits>
@@ -9,44 +10,7 @@
 
 namespace
 {
-    template <typename T, T beginVal, T endVal>
-    class Iterator 
-    {
-        typedef typename std::underlying_type<T>::type val_t;
-
-    public:
-        Iterator(const T& f) : mVal(static_cast<val_t>(f)) {}
-        Iterator() : mVal(static_cast<val_t>(beginVal)) {}
-
-        Iterator operator++() 
-        {
-            ++mVal;
-            return *this;
-        }
-
-        T operator*() 
-        {
-            return static_cast<T>(mVal); 
-        }
-
-        Iterator begin() 
-        {
-            return *this; 
-        }
-
-        Iterator end() 
-        {
-            static const Iterator endIter = ++Iterator(endVal);
-            return endIter;
-        }
-
-        bool operator!=(const Iterator& i) { return mVal != i.mVal; }
-
-    private:
-        int mVal;
-    };
-
-    yaget::render::ComPtr<ID3D12CommandQueue> CreateCommandQueue(ID3D12Device* device, yaget::render::platform::CommandQueue::Type type)
+    yaget::render::ComPtr<ID3D12CommandQueue> CreateCommandQueue(ID3D12Device* device, yaget::render::platform::CommandQueue::Type cqType)
     {
         using namespace yaget;
 
@@ -55,29 +19,13 @@ namespace
         queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
         queueDesc.NodeMask = 0;
 
-        switch (type)
-        {
-        case render::platform::CommandQueue::Type::Direct:
-            queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-            break;
-
-        case render::platform::CommandQueue::Type::Compute:
-            queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-            break;
-
-        case render::platform::CommandQueue::Type::Copy:
-            queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
-            break;
-
-        default:
-            YAGET_UTIL_THROW("DEVI", fmt::format("Invalid Command Type Queue: {}.", conv::Convertor<render::platform::CommandQueue::Type>::ToString(type)));
-        }
+        queueDesc.Type = yaget::render::ConvertCommandQueueType(cqType);
 
         render::ComPtr<ID3D12CommandQueue> commandQueue;
         HRESULT hr = device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue));
-        YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not create DX12 Command Queue for type: {}.", conv::Convertor<render::platform::CommandQueue::Type>::ToString(type)));
+        YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not create DX12 Command Queue for type: {}.", conv::Convertor<render::platform::CommandQueue::Type>::ToString(cqType)));
 
-        YAGET_RENDER_SET_DEBUG_NAME(commandQueue.Get(), fmt::format("Yaget CommandQueue-{}", conv::Convertor<render::platform::CommandQueue::Type>::ToString(type)));
+        YAGET_RENDER_SET_DEBUG_NAME(commandQueue.Get(), fmt::format("Yaget CommandQueue-{}", conv::Convertor<render::platform::CommandQueue::Type>::ToString(cqType)));
 
         return commandQueue;
     }
@@ -162,7 +110,7 @@ const Microsoft::WRL::ComPtr<struct ID3D12CommandQueue>& yaget::render::platform
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandQueues::CommandQueues(ID3D12Device* device)
 {
-    using CQIterator = Iterator<CommandQueue::Type, CommandQueue::Type::Direct, CommandQueue::Type::Copy>;
+    using CQIterator = yaget::meta::EnumIterator<CommandQueue::Type, CommandQueue::Type::Direct, CommandQueue::Type::End, false>;
 
     for (CommandQueue::Type i : CQIterator()) 
     {
@@ -175,9 +123,10 @@ yaget::render::platform::CommandQueues::CommandQueues(ID3D12Device* device)
 yaget::render::platform::CommandQueues::~CommandQueues() = default;
 
 
+//-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandQueues::CQ yaget::render::platform::CommandQueues::GetCQ(CommandQueue::Type type, bool finished)
 {
-    YAGET_UTIL_THROW_ASSERT("DEVI", mCommandQueues.find(type) != mCommandQueues.end(), fmt::format("Invalid command queue type: {}.", conv::Convertor<CommandQueue::Type>::ToString(type)));
+    YAGET_ASSERT(mCommandQueues.find(type) != mCommandQueues.end(), "Invalid command queue type: %s.", conv::Convertor<CommandQueue::Type>::ToString(type).c_str());
 
     return CQ(mCommandQueues.find(type)->second, finished);
 }

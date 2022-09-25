@@ -19,6 +19,31 @@ namespace
     constexpr uint32_t NumCommands = 6;
 }
 
+yaget::render::ColorInterpolator::ColorInterpolator(const colors::Color& startColor, const colors::Color& endColor)
+    : mStartColor{ startColor }
+    , mEndColor{ endColor }
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+colors::Color yaget::render::ColorInterpolator::GetColor(const time::GameClock& gameClock)
+{
+    const math3d::Color adjustedColor = math3d::Color::Lerp(mStartColor, mEndColor, mCurrentColorT);
+    mCurrentColorT += (gameClock.GetDeltaTimeSecond() * mColorTDirection) * 0.75f;
+    if (mCurrentColorT > 1.0f)
+    {
+        mColorTDirection = -1.0f;
+    }
+    else if (mCurrentColorT < 0.0f)
+    {
+        mColorTDirection = 1.0f;
+    }
+
+    return adjustedColor;
+}
+
+
 //-------------------------------------------------------------------------------------------------
 yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo)
     : mWindowFrame{ windowFrame }
@@ -29,6 +54,7 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::rende
     , mCommandQueues{ std::make_unique<platform::CommandQueues>(mAdapter->GetDevice()) }
     , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory(), mCommandQueues->GetCQ(platform::CommandQueue::Type::Direct, false /*finished*/).GetCommandQueue()) }
     , mCommandListPool{ std::make_unique<platform::CommandListPool>(mAdapter->GetDevice(), NumCommands) }
+    , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
 {
 
     YLOG_INFO("DEVI", "Device created and initialized.");
@@ -78,7 +104,7 @@ void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metri
     auto renderTarget = mSwapChain->GetCurrentRenderTarget();
     auto descriptorHeap = mSwapChain->GetDescriptorHeap();
 
-    const colors::Color color = colors::CadetBlue;
+    const colors::Color color = mColorInterpolator.GetColor(gameClock);
 
     commandHandle.TransitionToRenderTarget(renderTarget, descriptorHeap, frameIndex);
     commandHandle.ClearRenderTarget(color, renderTarget, descriptorHeap, frameIndex);
@@ -99,7 +125,6 @@ void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metri
     commandQueue.Execute(commandHandle);
 
     mSwapChain->Present(gameClock, channel);
-    //mSwapChain->Render(polygons, gameClock, channel);
 
     mWaiter.Wait();
 }

@@ -37,6 +37,7 @@
 #include "Render/RenderCore.h"
 #include "App/WindowFrame.h"
 #include "Render/Waiter.h"
+#include "MathFacade.h"
 
 
 namespace yaget
@@ -63,6 +64,23 @@ namespace yaget::render
         struct Adapter;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
+    class ColorInterpolator
+    {
+    public:
+        ColorInterpolator(const colors::Color& startColor, const colors::Color& endColor);
+
+        colors::Color GetColor(const time::GameClock& gameClock);
+
+    private:
+        const colors::Color mStartColor = colors::White;
+        const colors::Color mEndColor = colors::Black;
+        float mCurrentColorT = 0.0f;
+        float mColorTDirection = 1.0f;
+    };
+
+
     //-------------------------------------------------------------------------------------------------
     class DeviceB : public Noncopyable<DeviceB>
     {
@@ -87,6 +105,8 @@ namespace yaget::render
         std::unique_ptr<platform::CommandQueues> mCommandQueues;
         std::unique_ptr<platform::SwapChain> mSwapChain;
         std::unique_ptr<platform::CommandListPool> mCommandListPool;
+
+        ColorInterpolator mColorInterpolator;
     };
 
 }

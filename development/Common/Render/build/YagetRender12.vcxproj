@@ -163,6 +163,7 @@
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_rectpack.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_textedit.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_truetype.h" />
+    <ClInclude Include="..\source\DX12\Render\EnumConversion.h" />
     <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\Adapter.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\CommandAllocators.h" />

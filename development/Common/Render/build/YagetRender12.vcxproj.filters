@@ -115,6 +115,9 @@
     <ClInclude Include="..\source\DX12\Render\Platform\CommandAllocators.h">
       <Filter>Source Files\Platform Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\EnumConversion.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">

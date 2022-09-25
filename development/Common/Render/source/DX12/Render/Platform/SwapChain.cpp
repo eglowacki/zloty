@@ -87,18 +87,6 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------------------
-    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
-    {
-        Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
-        HRESULT hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&commandAllocator));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command Allocator");
-
-        YAGET_RENDER_SET_DEBUG_NAME(commandAllocator.Get(), "Yaget Command Allocator");
-
-        return commandAllocator;
-    }
-
-    //-------------------------------------------------------------------------------------------------
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
     {
         Microsoft::WRL::ComPtr<ID3D12Device4> device4;
@@ -123,62 +111,36 @@ yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, cons
     , mNumBackBuffers{ mWindowFrame.GetSurface().NumBackBuffers() }
     , mTearingSupported{ CheckTearingSupport(factory) }
     , mDevice{ device }
-    , mCommandQueue{ std::make_unique<platform::CommandQueue>(mDevice, platform::CommandQueue::Type::Direct) }
-    , mSwapChain{ CreateSwapChain(mWindowFrame, adapterInfo, factory, commandQueue ? commandQueue : mCommandQueue->GetCommandQueue().Get(), mNumBackBuffers, mTearingSupported) }
+    , mSwapChain{ CreateSwapChain(mWindowFrame, adapterInfo, factory, commandQueue, mNumBackBuffers, mTearingSupported) }
     , mCurrentBackBufferIndex{ mSwapChain->GetCurrentBackBufferIndex() }
     , mRTVDescriptorHeap{ CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, mNumBackBuffers) }
-    , mCommander{ mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV), mRTVDescriptorHeap.Get() }
     , mBackBuffers(mNumBackBuffers, nullptr)
-    , mCommandAllocators(mNumBackBuffers, nullptr)
-    , mFrameFenceValues(mNumBackBuffers, 0)
 {
     UpdateRenderTargetViews();
-
-    for (int i = 0; i < mNumBackBuffers; ++i)
-    {
-        auto commandAllocator = CreateCommandAllocator(mDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
-
-        YAGET_RENDER_SET_DEBUG_NAME(commandAllocator.Get(), fmt::format("Yaget Command Allocator: {}", i));
-
-        mCommandAllocators[i] = commandAllocator;
-    }
-
-    mCommandList = CreateCommandList(mDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
-
     Resize();
+
     YLOG_INFO("DEVI", "Swap Chain created with '%d' Back Buffers, VSync: '%s' and Tearing Supported: '%s'.", mNumBackBuffers, conv::ToBool(mWindowFrame.GetSurface().VSync()).c_str(), conv::ToBool(mTearingSupported).c_str());
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::SwapChain::~SwapChain()
-{
-    mCommandQueue->Flush();
-}
+yaget::render::platform::SwapChain::~SwapChain() = default;
 
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::SwapChain::Resize()
 {
-    // Flush the GPU queue to make sure the swap chain's back buffers
-    // are not being referenced by an in-flight command list.
-    mCommandQueue->Flush();
-
     for (int i = 0; i < mNumBackBuffers; ++i)
     {
         // Any references to the back buffers must be released
         // before the swap chain can be resized.
         mBackBuffers[i].Reset();
-        mFrameFenceValues[i] = mFrameFenceValues[mCurrentBackBufferIndex];
     }
 
     DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
     HRESULT hr = mSwapChain->GetDesc(&swapChainDesc);
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 SwapChain Description");
 
-    //const auto [width, height] = mWindowFrame.GetSurface().GetSize<uint32_t>();
-
-    //hr = mSwapChain->ResizeBuffers(mNumBackBuffers, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
     hr = mSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, swapChainDesc.Flags);
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not resize DX12 SwapChain");
 
@@ -208,98 +170,6 @@ ID3D12DescriptorHeap* yaget::render::platform::SwapChain::GetDescriptorHeap() co
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::SwapChain::Render(const std::vector<Polygon*>& polygons, const time::GameClock& gameClock, metrics::Channel& /*channel*/)
-{
-    PIXScopedEvent(PIX_COLOR(0, 0, 255), "Frame");
-
-    auto commandAllocator = mCommandAllocators[mCurrentBackBufferIndex];
-    const auto renderTarget = mBackBuffers[mCurrentBackBufferIndex].Get();
-
-    HRESULT hr = commandAllocator->Reset();
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not reset DX12 Command Allocator");
-    mCommandList->Reset(commandAllocator.Get(), nullptr);
-
-    // Transition to render target so we can start drawing commands to it
-    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    mCommandList->ResourceBarrier(1, &barrier);
-
-    // this should contain our drawing code here...
-    auto setup = [this, &gameClock](auto commandList)
-    {
-        PrepareCommandList(gameClock, commandList, false);
-    };
-
-    const bool oneList = false;
-    std::vector<ID3D12GraphicsCommandList*> accumulatedCommandLists;
-    accumulatedCommandLists.push_back(mCommandList.Get());
-    PrepareCommandList(gameClock, accumulatedCommandLists.back(), true);
-
-    for (const auto& polygon : polygons)
-    {
-        if (oneList)
-        {
-            polygon->Render(mCommandList.Get(), setup);
-        }
-        else
-        {
-            auto commandLine = polygon->Render(nullptr, setup);
-            accumulatedCommandLists.push_back(commandLine);
-        }
-    }
-
-    for (const auto& commandList : accumulatedCommandLists)
-    {
-        if (commandList == accumulatedCommandLists.back())
-        {
-            CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-            commandList->ResourceBarrier(1, &barrier);
-        }
-
-        hr = commandList->Close();
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not close command list for polygon");
-    }
-
-    // Present
-    {
-        const bool singleExecution = true;
-
-        if (singleExecution)
-        {
-            const uint32_t numLists = static_cast<uint32_t>(accumulatedCommandLists.size());
-            mCommandQueue->GetCommandQueue()->ExecuteCommandLists(numLists, (ID3D12CommandList* const *)accumulatedCommandLists.data());
-        }
-        else
-        {
-            for (const auto& commandList : accumulatedCommandLists)
-            {
-                ID3D12CommandList* commands[] = { commandList };
-                mCommandQueue->GetCommandQueue()->ExecuteCommandLists(1, commands);
-            }
-        }
-
-        const uint32_t syncInterval = mWindowFrame.GetSurface().VSync() ? 1 : 0;
-        const uint32_t presentFlags = mTearingSupported && syncInterval == 0 ? DXGI_PRESENT_ALLOW_TEARING : 0;
-
-        hr = mSwapChain->Present(syncInterval, presentFlags);
-        if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
-        {
-            // driver crashed, let's trigger GPU crash dump
-        }
-
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not present DX12 Swap Chain");
-
-        mFrameFenceValues[mCurrentBackBufferIndex] = mCommandQueue->Signal();
-        mCommandQueue->WaitForFenceValue(mFrameFenceValues[mCurrentBackBufferIndex]);
-
-        mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
-    }
-
-    int z = 0;
-    z;
-}
-
-
-//-------------------------------------------------------------------------------------------------
 void yaget::render::platform::SwapChain::Present(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/)
 {
     const uint32_t syncInterval = mWindowFrame.GetSurface().VSync() ? 1 : 0;
@@ -313,17 +183,7 @@ void yaget::render::platform::SwapChain::Present(const time::GameClock& /*gameCl
 
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not present DX12 Swap Chain");
 
-    //mFrameFenceValues[mCurrentBackBufferIndex] = mCommandQueue->Signal();
-    //mCommandQueue->WaitForFenceValue(mFrameFenceValues[mCurrentBackBufferIndex]);
-
     mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
-}
-
-
-//-------------------------------------------------------------------------------------------------
-ID3D12CommandAllocator* yaget::render::platform::SwapChain::GetActiveAllocator() const
-{
-    return mCommandAllocators[mCurrentBackBufferIndex].Get();
 }
 
 
@@ -345,26 +205,5 @@ void yaget::render::platform::SwapChain::UpdateRenderTargetViews()
         mBackBuffers[i] = backBuffer;
 
         rtvHandle.Offset(rtvDescriptorSize);
-    }
-}
-
-void yaget::render::platform::SwapChain::PrepareCommandList(const time::GameClock& gameClock, ID3D12GraphicsCommandList* commandList, bool clearRenderTarget)
-{
-    mCommander.SetRenderTarget(mSwapChain.Get(), commandList, mCurrentBackBufferIndex);
-
-    if (clearRenderTarget)
-    {
-        const math3d::Color clearColor = math3d::Color::Lerp({ 0.4f, 0.6f, 0.9f }, { 0.6f, 0.9f, 0.4f }, mCurrentColorT);
-        mCurrentColorT += (gameClock.GetDeltaTimeSecond() * mColorTDirection) * 0.75f;
-        if (mCurrentColorT > 1.0f)
-        {
-            mColorTDirection = -1.0f;
-        }
-        else if (mCurrentColorT < 0.0f)
-        {
-            mColorTDirection = 1.0f;
-        }
-
-        mCommander.ClearRenderTarget(clearColor, commandList, mCurrentBackBufferIndex);
     }
 }

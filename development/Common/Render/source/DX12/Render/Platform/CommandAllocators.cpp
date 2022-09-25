@@ -1,6 +1,7 @@
 #include "Render/Platform/CommandAllocators.h"
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/RenderStringHelpers.h"
+#include "Render/EnumConversion.h"
 #include "App/AppUtilities.h"
 
 #include <d3dx12.h>
@@ -8,9 +9,13 @@
 
 namespace
 {
-    yaget::render::platform::CommandAllocators::AllocatorsList CreateCommandAllocator(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type, uint32_t numAllocators)
+    yaget::render::platform::CommandAllocators::AllocatorsList CreateCommandAllocator(ID3D12Device* device, yaget::render::platform::CommandQueue::Type cqType, uint32_t numAllocators)
     {
-        yaget::render::platform::CommandAllocators::AllocatorsList allocatorsList;
+        using namespace yaget::render::platform;
+
+       CommandAllocators::AllocatorsList allocatorsList;
+
+        D3D12_COMMAND_LIST_TYPE type = yaget::render::ConvertCommandQueueType(cqType);
 
         for (auto i = 0u; i < numAllocators; ++i)
         {
@@ -32,10 +37,12 @@ namespace
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandAllocators::CommandAllocators(ID3D12Device* device, uint32_t numAllocators)
 {
-    mCommandAllocatorList[CommandQueue::Type::Direct] = CreateCommandAllocator(device, D3D12_COMMAND_LIST_TYPE_DIRECT, numAllocators);
-    mCommandAllocatorList[CommandQueue::Type::Compute] = CreateCommandAllocator(device, D3D12_COMMAND_LIST_TYPE_COMPUTE, numAllocators);
-    mCommandAllocatorList[CommandQueue::Type::Copy] = CreateCommandAllocator(device, D3D12_COMMAND_LIST_TYPE_COPY, numAllocators);
+    using CQIterator = yaget::meta::EnumIterator<CommandQueue::Type, CommandQueue::Type::Direct, CommandQueue::Type::End, false>;
 
+    for (CommandQueue::Type i : CQIterator()) 
+    {
+        mCommandAllocatorList[i] = CreateCommandAllocator(device, i, numAllocators);
+    }
 }
 
 

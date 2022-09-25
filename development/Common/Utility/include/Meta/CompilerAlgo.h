@@ -554,6 +554,43 @@ namespace yaget::meta
         return 0;
     }
 
+    template <typename T, T beginVal, T endVal, bool iterateOverLast = true>
+    class EnumIterator 
+    {
+        typedef typename std::underlying_type<T>::type val_t;
+
+    public:
+        EnumIterator(const T& f) : mVal(static_cast<val_t>(f)) {}
+        EnumIterator() : mVal(static_cast<val_t>(beginVal)) {}
+
+        EnumIterator operator++() 
+        {
+            ++mVal;
+            return *this;
+        }
+
+        T operator*() 
+        {
+            return static_cast<T>(mVal); 
+        }
+
+        EnumIterator begin() 
+        {
+            return *this; 
+        }
+
+        EnumIterator end() 
+        {
+            static const EnumIterator endIter = ++EnumIterator(iterateOverLast ? endVal : static_cast<T>(static_cast<val_t>(endVal) - 1));
+            return endIter;
+        }
+
+        bool operator!=(const EnumIterator& i) { return mVal != i.mVal; }
+
+    private:
+        int mVal;
+    };
+
 } // namespace yaget::meta
 
 
