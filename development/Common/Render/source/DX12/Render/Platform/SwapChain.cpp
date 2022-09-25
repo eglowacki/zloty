@@ -35,7 +35,7 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------------------
-    Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, const yaget::render::info::Adapter& adapterInfo, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue, uint32_t numBackBuffers, bool tearingSupported)
+    yaget::render::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, const yaget::render::info::Adapter& adapterInfo, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue, uint32_t numBackBuffers, bool tearingSupported)
     {
         const auto& adapterResolution = adapterInfo.GetSelectedResolution();
 
@@ -50,12 +50,12 @@ namespace
         swapChainDesc.SampleDesc = { 1, 0 };
         swapChainDesc.Flags = (tearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0) /*| DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH*/;
 
-        Microsoft::WRL::ComPtr<IDXGIFactory> baseFactory(factory);
-        Microsoft::WRL::ComPtr<IDXGIFactory2> factory2;
+        yaget::render::ComPtr<IDXGIFactory> baseFactory(factory);
+        yaget::render::ComPtr<IDXGIFactory2> factory2;
         HRESULT hr = baseFactory.As(&factory2);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not get factory 2 interface");
 
-        Microsoft::WRL::ComPtr<IDXGISwapChain1> swapChain;
+        yaget::render::ComPtr<IDXGISwapChain1> swapChain;
         hr = factory2->CreateSwapChainForHwnd(commandQueue, windowFrame.GetSurface().Handle<HWND>(), &swapChainDesc, nullptr, nullptr, &swapChain);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 SwapChain");
 
@@ -63,7 +63,7 @@ namespace
         hr = factory2->MakeWindowAssociation(windowFrame.GetSurface().Handle<HWND>(), DXGI_MWA_NO_ALT_ENTER);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not make DX12 Window Association");
 
-        Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain4;
+        yaget::render::ComPtr<IDXGISwapChain4> swapChain4;
         hr = swapChain.As(&swapChain4);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 SwapChain4 interface");
 
@@ -71,13 +71,13 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------------------
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+    yaget::render::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
     {
         D3D12_DESCRIPTOR_HEAP_DESC desc = {};
         desc.NumDescriptors = numDescriptors;
         desc.Type = type;
     
-        Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
+        yaget::render::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
         HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap));
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 DescriptorHeap");
 
@@ -87,13 +87,13 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------------------
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
+    yaget::render::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
     {
-        Microsoft::WRL::ComPtr<ID3D12Device4> device4;
+        yaget::render::ComPtr<ID3D12Device4> device4;
         HRESULT hr = device->QueryInterface<ID3D12Device4>(&device4);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not create ID3D12Device4 interface");
         
-        Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList;
+        yaget::render::ComPtr<ID3D12GraphicsCommandList2> commandList;
         hr = device4->CreateCommandList1(0, type, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&commandList));
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command List");
 
