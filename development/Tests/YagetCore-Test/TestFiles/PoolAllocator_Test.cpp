@@ -52,29 +52,29 @@ TEST_F(PoolAllocators, Basic)
 
     // check if ctor and dtor runs on allocated object (TestClass)
     TestClass* testClass = testPoolAllocator.Allocate();
-    //--CHECK(testClass);
-    //--CHECK_EQUAL(testClass->z, kTesterNumber);
+    EXPECT_TRUE(testClass);
+    EXPECT_EQ(testClass->z, kTesterNumber);
     testPoolAllocator.Free(testClass);
 
     TestClass* smartTestClass = nullptr;
-    //--CHECK_EQUAL(testClass->z, -kTesterNumber);
+    EXPECT_EQ(testClass->z, -kTesterNumber);
 
     // check if ctor and dtor runs on allocated object (TestClass), but with shared_ptr
     {
         std::shared_ptr<TestClass> testClassHandle = memory::New(testPoolAllocator);
-        //--CHECK(testClassHandle);
-        //--CHECK_EQUAL(testClassHandle->z, kTesterNumber);
+        EXPECT_TRUE(testClassHandle);
+        EXPECT_EQ(testClassHandle->z, kTesterNumber);
 
         // since we really do not free the memory, we keep raw pointer so we can check outside this block that dtor was run on shared_ptr DO NOT DO THIS IN PRODUCTION CODE
         smartTestClass = testClassHandle.get();
     }
-    //--CHECK_EQUAL(smartTestClass->z, -kTesterNumber);
+    EXPECT_EQ(smartTestClass->z, -kTesterNumber);
 
     // check if ctor and dtor runs on allocated object (TestClass) with ctor parameters
     testClass = testPoolAllocator.Allocate(kUserNumber);
-    //--CHECK_EQUAL(testClass->z, kUserNumber);
+    EXPECT_EQ(testClass->z, kUserNumber);
     testPoolAllocator.Free(testClass);
-    //--CHECK_EQUAL(testClass->z, -kUserNumber);
+    EXPECT_EQ(testClass->z, -kUserNumber);
 }
 
 TEST_F(PoolAllocators, Capacity)
