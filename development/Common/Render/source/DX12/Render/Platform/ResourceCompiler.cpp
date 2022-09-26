@@ -5,20 +5,44 @@
 #include <d3dx12.h>
 #include <d3dcompiler.h>
 
+#include <dxcapi.h>         // Be sure to link with dxcompiler.lib.
+#include <d3d12shader.h>    // Shader reflection.
+
+// New compiler for shaders
+// https://github.com/microsoft/DirectXShaderCompiler/wiki/Using-dxc.exe-and-dxcompiler.dll
+
+
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const char* entryName, const char* target)
+yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const char* entryName, const char* target, bool useNewestCompiler)
 {
+    if (useNewestCompiler)
+    {
+        ComPtr<IDxcUtils> utils;
+        HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create instance of IDxcUtils");
+
+        ComPtr<IDxcCompiler3> compiler;
+        hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create instance of IDxcCompiler3");
+
+        ComPtr<IDxcIncludeHandler> pIncludeHandler;
+        hr = utils->CreateDefaultIncludeHandler(&pIncludeHandler);
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Default Include Handler");
+    }
+    else
+    {
 #if YAGET_DEBUG_RENDER == 1
-    // Enable better shader debugging with the graphics debugging tools.
-    UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+        // Enable better shader debugging with the graphics debugging tools.
+        UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #else // YAGET_DEBUG_RENDER == 1
-    UINT compileFlags = 0;
+        UINT compileFlags = 0;
 #endif // YAGET_DEBUG_RENDER == 1
 
-    ComPtr<ID3DBlob> error;
-    HRESULT hr = ::D3DCompile(data.first, data.second, nullptr, nullptr, nullptr, entryName, target, compileFlags, 0, &mShaderBlob, &error);
-    YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not compile shader with entry point: '{}' and target: '{}'. {}", entryName, target, (error ? static_cast<const char*>(error->GetBufferPointer()) : "")));
+        ComPtr<ID3DBlob> error;
+        HRESULT hr = ::D3DCompile(data.first, data.second, nullptr, nullptr, nullptr, entryName, target, compileFlags, 0, &mShaderBlob, &error);
+        YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not compile shader with entry point: '{}' and target: '{}'. {}", entryName, target, (error ? static_cast<const char*>(error->GetBufferPointer()) : "")));
+    }
 }
 
 

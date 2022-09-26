@@ -139,12 +139,18 @@ void yaget::render::platform::CommandListPool::Handle::TransitionToRenderTarget(
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::CommandListPool::Handle::TransitionToPresent(ID3D12Resource* renderTarget)
+void yaget::render::platform::CommandListPool::Handle::TransitionToPresent(ID3D12Resource* renderTarget, bool closeCommand)
 {
     YAGET_ASSERT(renderTarget, "Parameter renderTarget is null.");
 
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     mCommandList->ResourceBarrier(1, &barrier);
+
+    if (closeCommand)
+    {
+        HRESULT hr = mCommandList->Close();
+        YAGET_UTIL_THROW_ON_RROR(hr, "Could not close command list");
+    }
 }
 
 

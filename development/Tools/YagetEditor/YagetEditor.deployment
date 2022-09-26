@@ -1,7 +1,9 @@
 {
   "Configuration": {
     "Common": [
-      "Dependencies/WinPIXEventRuntime-1.0.220810001/bin/x64/WinPixEventRuntime.dll"
+      "Dependencies/WinPIXEventRuntime-1.0.220810001/bin/x64/WinPixEventRuntime.dll",
+      "Dependencies/DirectXShaderCompiler-07.2022/bin/x64\\dxcompiler.dll",
+      "Dependencies/DirectXShaderCompiler-07.2022/bin/x64\\dxil.dll"
     ],
     "Release": [
       "Dependencies/assimp-5.0.1/builds/bin/Release/assimp-vc143-mt.dll"

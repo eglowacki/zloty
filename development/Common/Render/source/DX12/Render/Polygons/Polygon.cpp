@@ -86,8 +86,8 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
 
     const size_t sourceLen = std::strlen(shaderSource);
 
-    ResourceCompiler vertexCompiler({ shaderSource, sourceLen }, "VSMain", "vs_5_0");
-    ResourceCompiler pixelCompiler({ shaderSource, sourceLen }, "PSMain", "ps_5_0");
+    ResourceCompiler vertexCompiler({ shaderSource, sourceLen }, "VSMain", "vs_5_0", false /*useNewestCompiler*/);
+    ResourceCompiler pixelCompiler({ shaderSource, sourceLen }, "PSMain", "ps_5_0", false /*useNewestCompiler*/);
 
     // Describe and create the graphics pipeline state object (PSO).
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};

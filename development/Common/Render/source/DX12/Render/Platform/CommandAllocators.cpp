@@ -53,9 +53,9 @@ yaget::render::platform::CommandAllocators::~CommandAllocators() = default;
 //-------------------------------------------------------------------------------------------------
 ID3D12CommandAllocator* yaget::render::platform::CommandAllocators::GetCommandAllocator(CommandQueue::Type type, uint32_t allocatorIndex) const
 {
-    YAGET_UTIL_THROW_ASSERT("DEVI", mCommandAllocatorList.find(type) != mCommandAllocatorList.end() && 
+    YAGET_ASSERT(mCommandAllocatorList.find(type) != mCommandAllocatorList.end() && 
                                     mCommandAllocatorList.find(type)->second.size() > allocatorIndex, 
-                                    fmt::format("There is no command allocator for type: {}", yaget::conv::Convertor<CommandQueue::Type>::ToString(type)));
+                                    "There is no command allocator for type: %s", yaget::conv::Convertor<CommandQueue::Type>::ToString(type).c_str());
 
     return mCommandAllocatorList.find(type)->second[allocatorIndex].Get();
 }

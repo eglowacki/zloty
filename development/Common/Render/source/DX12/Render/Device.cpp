@@ -93,39 +93,37 @@ int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWi
     return 0;
 }
 
-YAGET_COMPILE_SUPPRESS_START(4100, "'': unreferenced local variable")
+
 //-------------------------------------------------------------------------------------------------
 void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metrics::Channel& channel)
 {
     const auto frameIndex = mSwapChain->GetCurrentBackBufferIndex();
     auto allocator = mCommandAllocators->GetCommandAllocator(platform::CommandQueue::Type::Direct, frameIndex);
-    auto commandHandle = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator);
+    auto commandHandleA = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator);
 
     auto renderTarget = mSwapChain->GetCurrentRenderTarget();
     auto descriptorHeap = mSwapChain->GetDescriptorHeap();
 
     const colors::Color color = mColorInterpolator.GetColor(gameClock);
 
-    commandHandle.TransitionToRenderTarget(renderTarget, descriptorHeap, frameIndex);
-    commandHandle.ClearRenderTarget(color, renderTarget, descriptorHeap, frameIndex);
+    commandHandleA.TransitionToRenderTarget(renderTarget, descriptorHeap, frameIndex);
+    commandHandleA.ClearRenderTarget(color, renderTarget, descriptorHeap, frameIndex);
+
+    mPolygon->Render(commandHandleA, {});
+
+    commandHandleA.TransitionToPresent(renderTarget, true /*closeCommand*/);
+
+    auto commandHandleB = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator);
+    commandHandleB.TransitionToRenderTarget(renderTarget, descriptorHeap, frameIndex);
+
+    mPolygon2->Render(commandHandleB, {});
+
+    commandHandleB.TransitionToPresent(renderTarget, true /*closeCommand*/);
 
     auto commandQueue = mCommandQueues->GetCQ(platform::CommandQueue::Type::Direct, true /*finished*/);
-
-    const std::vector<Polygon*> polygons{ mPolygon.get(), mPolygon2.get() };
-    for (auto& polygon : polygons)
-    {
-        polygon->Render(commandHandle, {});
-    }
-
-    commandHandle.TransitionToPresent(renderTarget);
-
-    HRESULT hr = commandHandle->Close();
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not close command list for polygon");
-
-    commandQueue.Execute(commandHandle);
+    commandQueue.Execute({ commandHandleA, commandHandleB });
 
     mSwapChain->Present(gameClock, channel);
 
     mWaiter.Wait();
 }
-YAGET_COMPILE_SUPPRESS_END

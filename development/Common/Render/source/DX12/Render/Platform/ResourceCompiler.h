@@ -24,7 +24,7 @@ namespace yaget::render
     class ResourceCompiler
     {
     public:
-        ResourceCompiler(io::BufferView data, const char* entryName, const char* target);
+        ResourceCompiler(io::BufferView data, const char* entryName, const char* target, bool useNewestCompiler);
         ID3D10Blob* GetCompiled() const;
 
     private:

@@ -42,7 +42,7 @@ namespace yaget::render::platform
             ~Handle();
 
             void TransitionToRenderTarget(ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex);
-            void TransitionToPresent(ID3D12Resource* renderTarget);
+            void TransitionToPresent(ID3D12Resource* renderTarget, bool closeCommand);
             void ClearRenderTarget(const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex);
 
             operator ID3D12GraphicsCommandList4*() const { return mCommandList.Get(); }
