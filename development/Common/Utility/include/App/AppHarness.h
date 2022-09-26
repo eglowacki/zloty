@@ -40,7 +40,6 @@ namespace yaget::app
             // this will force first time ever initialization if current ids struct with setting
             // main thread id as current one. If user utilizes different thread as a "main",
             // it can call this before calling Harness
-
             const auto mainId = dev::CurrentThreadIds().Main;
             metrics::MarkStartThread(mainId, "MAIN");
 
@@ -56,7 +55,6 @@ namespace yaget::app
                 return -1;
             }
 
-            //const auto mainId = dev::CurrentThreadIds().Main;
             metrics::MarkAddMessage("Started Game", metrics::MessageScope::Process, 0);
 
             int returnResult = 0;
