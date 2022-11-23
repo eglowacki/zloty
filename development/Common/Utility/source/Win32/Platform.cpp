@@ -397,9 +397,14 @@ namespace
             return "";
         }
 
+        const platform::ThreadNames& GetThreadNames() const
+        {
+            return mNames;
+        }
+
     private:
         mutable std::mutex mMutex;
-        std::map<uint32_t, std::string> mNames;
+        platform::ThreadNames mNames;
     };
     ThreadNames threadNames;
 
@@ -538,6 +543,11 @@ uint32_t platform::GetThreadId(std::thread& t)
 uint32_t platform::CurrentThreadId()
 {
     return ::GetCurrentThreadId();
+}
+
+const platform::ThreadNames& platform::GetThreadNames()
+{
+    return threadNames.GetThreadNames();
 }
 
 void platform::Sleep(SleepPredicate sleepPredicate)

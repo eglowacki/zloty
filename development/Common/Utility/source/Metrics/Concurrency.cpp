@@ -120,7 +120,6 @@ void yaget::metrics::MarkAddMessage(const std::string& message, MessageScope sco
 void yaget::metrics::MarkStartThread(uint32_t threadId, const char* threadName)
 {
     platform::SetThreadName(threadName, threadId);
-    GetSaver().SetThreadName(threadName, threadId);
 }
 
 

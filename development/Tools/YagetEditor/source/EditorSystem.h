@@ -21,12 +21,12 @@
 
 namespace yaget::editor
 {
-    class EditorSystem : public yaget::comp::gs::GameSystem<comp::gs::NoEndMarker, Messaging, EditorComponent*, EmptyComponent*, BlankComponent*>
+    class EditorSystem : public yaget::comp::gs::GameSystem<comp::gs::NoEndMarker, Messaging, /*EditorComponent*,*/ EmptyComponent*, BlankComponent*>
     {
     public:
         EditorSystem(Messaging& messaging, Application& app);
 
     private:
-        void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, EditorComponent* editorComponent, EmptyComponent* emptyComponent, const BlankComponent* blankComponent);
+        void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, /*EditorComponent* editorComponent,*/ EmptyComponent* emptyComponent, const BlankComponent* blankComponent);
     };
 }

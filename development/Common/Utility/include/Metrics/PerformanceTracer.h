@@ -47,7 +47,6 @@ namespace yaget::metrics
         ~TraceCollector();
 
         void AddProfileStamp(TraceRecord&& result);
-        void SetThreadName(const char* threadName, std::size_t t);
 
     private:
         void DataSaver();

@@ -131,7 +131,9 @@ yaget::metrics::TraceCollector::~TraceCollector()
         SaveCurrentProfileStamps();
         YAGET_ASSERT(mProfileStamps.empty(), "There are still '%d' entries left in Profile Stamps.", mProfileStamps.size());
 
-        for (const auto& [id, name] : mThreadNames)
+        const auto& threadNames = yaget::platform::GetThreadNames();
+
+        for (const auto& [id, name] : threadNames)
         {
             mOutputStream << ",{";
             mOutputStream << "\"name\":\"thread_name\",";
@@ -175,14 +177,6 @@ void yaget::metrics::TraceCollector::AddProfileStamp(yaget::metrics::TraceRecord
             YLOG_DEBUG("METR", "Accumulated profile results: '%d' results using '%s' bytes of memory.", num, bytes.c_str());
         }
     }
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void yaget::metrics::TraceCollector::SetThreadName(const char* threadName, std::size_t t)
-{
-    std::unique_lock<std::mutex> mutexLock(mmThreadNameMutex);
-    mThreadNames[t] = threadName ? threadName : "";
 }
 
 

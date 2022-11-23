@@ -282,16 +282,16 @@ namespace yaget::meta
     // Index then can be used to get element from tuple at that position
     // constexpr std::size_t index = meta::Index<T, Row>::value;
     // return std::get<index>(mDataStorage);
-    template <class T, class Tuple>
+    template <typename T, typename Tuple>
     struct Index;
 
-    template <class T, class... Types>
+    template <typename T, typename... Types>
     struct Index<T, std::tuple<T, Types...>>
     {
         static constexpr std::size_t value = 0;
     };
 
-    template <class T, class U, class... Types>
+    template <typename T, typename U, typename... Types>
     struct Index<T, std::tuple<U, Types...>>
     {
         static constexpr std::size_t value = 1 + Index<T, std::tuple<Types...>>::value;

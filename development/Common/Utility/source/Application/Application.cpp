@@ -24,6 +24,8 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
 
     metrics::Channel channel("RenderThread", YAGET_METRICS_CHANNEL_FILE_LINE);
 
+    YLOG_INFO("APP", "Started Render Task...");
+
     mRenderClock.Resync();
     time::Microsecond_t lastRenderTime = mRenderClock.GetRealTime();
 
@@ -47,6 +49,7 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
         mRenderClock.Tick(deltaTime);
     }
 
+    YLOG_INFO("APP", "Ended Render Task.");
     dev::CurrentThreadIds().RefreshRender(0);
 }
 
@@ -57,8 +60,9 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
     dev::CurrentThreadIds().RefreshLogic(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Logic, "LOGIC");
 
-
     metrics::Channel channel("GameThread", YAGET_METRICS_CHANNEL_FILE_LINE);
+
+    YLOG_INFO("APP", "Started Logic Task...");
 
     const time::Microsecond_t kFixedDeltaTime = time::GetDeltaTime(dev::CurrentConfiguration().mInit.LogicTick);
     const metrics::PerformancePolicy defaultPerformancePolicy;
@@ -131,6 +135,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
         shutdownLogicCallback(mApplicationClock, channel);
     }
 
+    YLOG_INFO("APP", "Ended Logic Task.");
     dev::CurrentThreadIds().RefreshLogic(0);
 }
 
