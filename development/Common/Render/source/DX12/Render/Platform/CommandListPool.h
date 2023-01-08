@@ -38,12 +38,12 @@ namespace yaget::render::platform
 
         struct Handle : private Noncopyable<Handle>
         {
-            Handle(CommandListPool& commandPool, ComPtr<ID3D12GraphicsCommandList4> commandList, CommandQueue::Type type);
+            Handle(CommandListPool& commandPool, ComPtr<ID3D12GraphicsCommandList4> commandList, CommandQueue::Type type, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex);
             ~Handle();
 
-            void TransitionToRenderTarget(ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex);
-            void TransitionToPresent(ID3D12Resource* renderTarget, bool closeCommand);
-            void ClearRenderTarget(const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex);
+            void TransitionToRenderTarget();
+            void TransitionToPresent(bool closeCommand);
+            void ClearRenderTarget(const colors::Color& color);
 
             operator ID3D12GraphicsCommandList4*() const { return mCommandList.Get(); }
             ID3D12GraphicsCommandList4* operator->() const { return mCommandList.Get(); }
@@ -52,9 +52,13 @@ namespace yaget::render::platform
             CommandListPool& mCommandPool;
             ComPtr<ID3D12GraphicsCommandList4> mCommandList;
             CommandQueue::Type mType;
+
+            ID3D12Resource* mRenderTarget = nullptr;
+            ID3D12DescriptorHeap* mDescriptorHeap = nullptr;
+            uint32_t mFrameIndex = 0;
         };
 
-        Handle GetCommandList(CommandQueue::Type type, ID3D12CommandAllocator* commandAllocator);
+        Handle GetCommandList(CommandQueue::Type type, ID3D12CommandAllocator* commandAllocator, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex);
 
         using CommandsList = std::queue<ComPtr<ID3D12GraphicsCommandList4>>;
 

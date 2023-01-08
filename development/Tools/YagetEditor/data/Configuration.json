@@ -59,7 +59,8 @@
 					}
 				}
 			],
-			"WindowOptions": "UserOptions@WindowConfiguration"
+			"WindowOptions": "UserOptions@WindowConfiguration",
+			"VSync": false
 
 		}
 	}

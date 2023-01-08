@@ -11,6 +11,8 @@ void yaget::editor::RenderSystem::OnUpdate([[maybe_unused]] comp::Id_t id, const
 {
     if (id == comp::END_ID_MARKER)
     {
+        //gameClock;
+        //channel;
         mDevice.RenderFrame(gameClock, channel);
     }
 }

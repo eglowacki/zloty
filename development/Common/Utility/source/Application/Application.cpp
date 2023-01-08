@@ -1,6 +1,7 @@
 #include "App/Application.h"
 #include "Debugging/DevConfiguration.h"
 #include "Items/ItemsDirector.h"
+#include "MemoryManager/NewAllocator.h"
 
 
 //-------------------------------------------------------------------------------------------------
@@ -19,6 +20,8 @@ yaget::Application::Application(const std::string& title, items::Director& direc
 //-------------------------------------------------------------------------------------------------
 void yaget::Application::onRenderTask(const Application::TickLogic& renderCallback)
 {
+    memory::RecordAllocations recordAllocations;
+
     dev::CurrentThreadIds().RefreshRender(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Render, "RENDER");
 
@@ -57,6 +60,8 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
 //-------------------------------------------------------------------------------------------------
 void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickLogic& shutdownLogicCallback)
 {
+    memory::RecordAllocations recordAllocations;
+
     dev::CurrentThreadIds().RefreshLogic(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Logic, "LOGIC");
 

@@ -26,6 +26,9 @@
 //      https://vzout.com/c++/directx12_tutorial.html
 //
 //      https://www.3dgep.com/learning-directx-12-2/
+// 
+//      NVidia Do's & Dont's
+//      https://developer.nvidia.com/dx12-dos-and-donts
 //
 // #include "Render/Device.h"
 //
@@ -107,6 +110,10 @@ namespace yaget::render
         std::unique_ptr<platform::CommandListPool> mCommandListPool;
 
         ColorInterpolator mColorInterpolator;
+
+        // map of mapping between frame buffer index and which fence value is associated with that buffer index;
+        using FrameFenceValues = std::map<uint32_t, uint64_t>;
+        FrameFenceValues mFrameFenceValues;
     };
 
 }

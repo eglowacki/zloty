@@ -66,10 +66,10 @@ yaget::render::platform::CommandListPool::~CommandListPool() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::CommandListPool::Handle yaget::render::platform::CommandListPool::GetCommandList(yaget::render::platform::CommandQueue::Type type, ID3D12CommandAllocator* commandAllocator)
+yaget::render::platform::CommandListPool::Handle yaget::render::platform::CommandListPool::GetCommandList(yaget::render::platform::CommandQueue::Type type, ID3D12CommandAllocator* commandAllocator, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex)
 {
-    YAGET_ASSERT(!mFreeCommandsList[type].empty(), "There is no command list in free container for type: %s", yaget::conv::Convertor<yaget::render::platform::CommandQueue::Type>::ToString(type).c_str());
-    YAGET_ASSERT(commandAllocator, "Command Allocoator parameter is NULL for type: %s", yaget::conv::Convertor<yaget::render::platform::CommandQueue::Type>::ToString(type).c_str());
+    YAGET_ASSERT(!mFreeCommandsList[type].empty(), "There is no command list in free container for type: %s", conv::Convertor<platform::CommandQueue::Type>::ToString(type).c_str());
+    YAGET_ASSERT(commandAllocator, "Command Allocoator parameter is NULL for type: %s", conv::Convertor<platform::CommandQueue::Type>::ToString(type).c_str());
 
     auto command = mFreeCommandsList[type].front();
     mFreeCommandsList[type].pop();
@@ -77,7 +77,7 @@ yaget::render::platform::CommandListPool::Handle yaget::render::platform::Comman
     HRESULT hr = command->Reset(commandAllocator, nullptr);
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not reset Command List");
 
-    return Handle(*this, command.Get(), type);
+    return Handle(*this, command.Get(), type, renderTarget, descriptorHeap, frameIndex);
 }
 
 
@@ -89,12 +89,15 @@ void yaget::render::platform::CommandListPool::FreeUsed(ComPtr<ID3D12GraphicsCom
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::CommandListPool::Handle::Handle(CommandListPool& commandPool, ComPtr<ID3D12GraphicsCommandList4> commandList, CommandQueue::Type type)
+yaget::render::platform::CommandListPool::Handle::Handle(CommandListPool& commandPool, ComPtr<ID3D12GraphicsCommandList4> commandList, CommandQueue::Type type, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex)
     : mCommandPool(commandPool)
     , mCommandList(commandList)
     , mType(type)
+    , mRenderTarget(renderTarget)
+    , mDescriptorHeap(descriptorHeap)
+    , mFrameIndex(frameIndex)
 {
-    YAGET_UTIL_THROW_ASSERT("DEVI", mCommandList, "commandList paramter is NULL.");
+    YAGET_UTIL_THROW_ASSERT("DEVI", mCommandList, "commandList parameter is NULL.");
 }
 
 
@@ -106,14 +109,15 @@ yaget::render::platform::CommandListPool::Handle::~Handle()
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::CommandListPool::Handle::TransitionToRenderTarget(ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex)
+void yaget::render::platform::CommandListPool::Handle::TransitionToRenderTarget()
 {
-    YAGET_ASSERT(renderTarget, "Parameter renderTarget is null.");
+    YAGET_ASSERT(mRenderTarget, "mRenderTarget is null.");
+    YAGET_ASSERT(mDescriptorHeap, "mDescriptorHeap is null.");
 
-    const CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    const CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(mRenderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
     mCommandList->ResourceBarrier(1, &barrier);
 
-    D3D12_RESOURCE_DESC desc = renderTarget->GetDesc();
+    D3D12_RESOURCE_DESC desc = mRenderTarget->GetDesc();
 
     D3D12_VIEWPORT viewport = {};
     viewport.Width = static_cast<float>(desc.Width);
@@ -128,22 +132,22 @@ void yaget::render::platform::CommandListPool::Handle::TransitionToRenderTarget(
     mCommandList->RSSetScissorRects(1, &rect);
 
     ComPtr<ID3D12Device4> device;
-    HRESULT hr = renderTarget->GetDevice(IID_PPV_ARGS(&device));
+    HRESULT hr = mRenderTarget->GetDevice(IID_PPV_ARGS(&device));
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not get device from render target");
 
     const auto descriptorHandleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(descriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, descriptorHandleSize);
+    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), mFrameIndex, descriptorHandleSize);
     mCommandList->OMSetRenderTargets(1, &rtv, false, nullptr);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::CommandListPool::Handle::TransitionToPresent(ID3D12Resource* renderTarget, bool closeCommand)
+void yaget::render::platform::CommandListPool::Handle::TransitionToPresent(bool closeCommand)
 {
-    YAGET_ASSERT(renderTarget, "Parameter renderTarget is null.");
+    YAGET_ASSERT(mRenderTarget, "mRenderTarget is null.");
 
-    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(mRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     mCommandList->ResourceBarrier(1, &barrier);
 
     if (closeCommand)
@@ -155,19 +159,19 @@ void yaget::render::platform::CommandListPool::Handle::TransitionToPresent(ID3D1
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::CommandListPool::Handle::ClearRenderTarget(const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex)
+void yaget::render::platform::CommandListPool::Handle::ClearRenderTarget(const colors::Color& color)
 {
-    YAGET_ASSERT(renderTarget, "Parameter renderTarget is null.");
-    YAGET_ASSERT(descriptorHeap, "Parameter descriptorHeap is null.");
+    YAGET_ASSERT(mRenderTarget, "mRenderTarget is null.");
+    YAGET_ASSERT(mDescriptorHeap, "mDescriptorHeap is null.");
 
     const float clearColor[] = { color.R(), color.B(), color.G(), color.A() };
 
     ComPtr<ID3D12Device4> device;
-    HRESULT hr = renderTarget->GetDevice(IID_PPV_ARGS(&device));
+    HRESULT hr = mRenderTarget->GetDevice(IID_PPV_ARGS(&device));
     YAGET_UTIL_THROW_ON_RROR(hr, "Could not get device from render target");
 
     const auto descriptorHandleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(descriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, descriptorHandleSize);
+    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(mDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), mFrameIndex, descriptorHandleSize);
     mCommandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
 }

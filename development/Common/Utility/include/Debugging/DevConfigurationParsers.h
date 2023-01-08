@@ -365,6 +365,8 @@ namespace yaget::dev
         //j["ResY"] = init.ResY;
         //j["LogicTick"] = init.LogicTick;
 
+        j["VSync"] = init.VSync;
+
         j["VTS"] = init.mVTSConfig;
         j["Aliases"] = init.mEnvironmentList;
         j["WindowOptions"] = init.mWindowOptions;
@@ -379,6 +381,8 @@ namespace yaget::dev
         //init.ResX = json::GetValue(j, "ResX", init.ResX);
         //init.ResY = json::GetValue(j, "ResY", init.ResY);
         //init.LogicTick = json::GetValue(j, "LogicTick", init.LogicTick);
+
+        init.VSync = json::GetValue(j, "VSync", init.VSync);
 
         if (yaget::json::IsSectionValid(j, "VTS", ""))
         {

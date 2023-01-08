@@ -57,5 +57,9 @@ ID3D12CommandAllocator* yaget::render::platform::CommandAllocators::GetCommandAl
                                     mCommandAllocatorList.find(type)->second.size() > allocatorIndex, 
                                     "There is no command allocator for type: %s", yaget::conv::Convertor<CommandQueue::Type>::ToString(type).c_str());
 
-    return mCommandAllocatorList.find(type)->second[allocatorIndex].Get();
+    auto allocator = mCommandAllocatorList.find(type)->second[allocatorIndex].Get();
+    HRESULT hr = allocator->Reset();
+    YAGET_UTIL_THROW_ON_RROR(hr, "Could not reset allocator");
+
+    return allocator;
 }

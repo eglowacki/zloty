@@ -56,6 +56,10 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::rende
     , mCommandListPool{ std::make_unique<platform::CommandListPool>(mAdapter->GetDevice(), NumCommands) }
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
 {
+    for (uint32_t i = 0; i < static_cast<uint32_t>(mWindowFrame.GetSurface().NumBackBuffers()); ++i)
+    {
+        mFrameFenceValues[i] = 0;
+    }
 
     YLOG_INFO("DEVI", "Device created and initialized.");
     PIXSetMarker(0x0, "Device created.");
@@ -98,30 +102,36 @@ int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWi
 void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metrics::Channel& channel)
 {
     const auto frameIndex = mSwapChain->GetCurrentBackBufferIndex();
+
+    const auto fenceValue = mFrameFenceValues[frameIndex];
+    auto commandQueue = mCommandQueues->GetCQ(platform::CommandQueue::Type::Direct, false /*finished*/);
+    commandQueue.Wait(fenceValue);
+
     auto allocator = mCommandAllocators->GetCommandAllocator(platform::CommandQueue::Type::Direct, frameIndex);
-    auto commandHandleA = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator);
 
     auto renderTarget = mSwapChain->GetCurrentRenderTarget();
     auto descriptorHeap = mSwapChain->GetDescriptorHeap();
 
     const colors::Color color = mColorInterpolator.GetColor(gameClock);
 
-    commandHandleA.TransitionToRenderTarget(renderTarget, descriptorHeap, frameIndex);
-    commandHandleA.ClearRenderTarget(color, renderTarget, descriptorHeap, frameIndex);
+    auto commandHandleA = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator, renderTarget, descriptorHeap, frameIndex);
+    commandHandleA.TransitionToRenderTarget();
+    commandHandleA.ClearRenderTarget(color);
 
     mPolygon->Render(commandHandleA, {});
 
-    commandHandleA.TransitionToPresent(renderTarget, true /*closeCommand*/);
+    commandHandleA.TransitionToPresent(true /*closeCommand*/);
 
-    auto commandHandleB = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator);
-    commandHandleB.TransitionToRenderTarget(renderTarget, descriptorHeap, frameIndex);
+    auto commandHandleB = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator, renderTarget, descriptorHeap, frameIndex);
+    commandHandleB.TransitionToRenderTarget();
 
     mPolygon2->Render(commandHandleB, {});
 
-    commandHandleB.TransitionToPresent(renderTarget, true /*closeCommand*/);
+    commandHandleB.TransitionToPresent(true /*closeCommand*/);
 
-    auto commandQueue = mCommandQueues->GetCQ(platform::CommandQueue::Type::Direct, true /*finished*/);
     commandQueue.Execute({ commandHandleA, commandHandleB });
+    mFrameFenceValues[frameIndex] = commandQueue.Signal();
+    //commandQueue.Execute(commandHandleA);
 
     mSwapChain->Present(gameClock, channel);
 

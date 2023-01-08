@@ -219,6 +219,7 @@
     <ClInclude Include="..\include\Logger\YLog.h" />
     <ClInclude Include="..\include\Math\Interpolators.h" />
     <ClInclude Include="..\include\Math\YagetMath.h" />
+    <ClInclude Include="..\include\MemoryManager\NewAllocator.h" />
     <ClInclude Include="..\include\MemoryManager\PoolAllocator.h" />
     <ClInclude Include="..\include\Meta\CompilerAlgo.h" />
     <ClInclude Include="..\include\Meta\Hana.h" />

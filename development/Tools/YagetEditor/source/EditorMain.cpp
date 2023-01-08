@@ -7,6 +7,7 @@
 #include "LoggerCpp/OutputFile.h"
 
 #include "MemoryManager/PoolAllocator.h"
+#include "MemoryManager/NewAllocator.h"
 
 #include "Metrics/Concurrency.h"
 
@@ -31,7 +32,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     YAGET_CHECKVERSION;
 
     using namespace yaget;
-                                                                                                    
+
+    memory::InitializeAllocations();
 
     args::Options options("Yaget.Editor", "Yaget Editor.");
 
@@ -46,6 +48,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
         return editor::Run(options);
     });
+
+    memory::ReportAllocations();
 
     return result;
 }

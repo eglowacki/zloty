@@ -203,7 +203,8 @@ uint64_t yaget::render::platform::CommandQueues::CommandQueueData::Signal()
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::CommandQueues::CommandQueueData::Wait(uint64_t signalValue) const
 {
-    if (mFence->GetCompletedValue() < signalValue)
+    const auto fenceValue = mFence->GetCompletedValue();
+    if (fenceValue < signalValue)
     {
         HRESULT hr = mFence->SetEventOnCompletion(signalValue, mFenceEvent);
         YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Event On Completion");
