@@ -198,6 +198,9 @@ namespace
         int argCount = argc;
         char** argValues = argv;
 
+        // example of converting argc/argv into vector of string views
+        //std::vector<std::string_view> args(argv, std::next(argv, static_cast<std::ptrdiff_t>(argc)));
+
         Releaser releaser;
 
         if (commandLine)
