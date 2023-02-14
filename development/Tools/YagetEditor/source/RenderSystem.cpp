@@ -2,7 +2,7 @@
 #include "Render/DesktopApplication.h"
 
 yaget::editor::RenderSystem::RenderSystem(Messaging& messaging, render::DesktopApplication& app)
-    : GameSystem("EditorSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); })
+    : GameSystem("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); })
     , mDevice(app.GetDevice())
 {
 }
