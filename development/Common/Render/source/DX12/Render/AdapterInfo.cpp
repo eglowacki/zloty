@@ -78,17 +78,17 @@ namespace
 yaget::render::info::Filters yaget::render::info::GetDefaultFilters()
 {
     yaget::render::info::Filters filters{
-        [](auto level)
+        .mFeatureLevel = [](auto level)
         {   
             return level >= D3D_FEATURE_LEVEL_12_0;
         },
-        nullptr,
-        nullptr,
-        [](auto format)
+        .mAdapter = nullptr,
+        .mOutput = nullptr,
+        .mFormat = [](auto format)
         {
             return format == DXGI_FORMAT_R8G8B8A8_UNORM;
         },
-        [](auto resolution)
+        .mResolution = [](auto resolution)
         {
             return resolution.mRefreshRate >= 60;
         }
