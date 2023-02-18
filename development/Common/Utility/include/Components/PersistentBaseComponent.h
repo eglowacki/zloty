@@ -48,7 +48,7 @@ namespace yaget::comp::db
     //    : PersistentBaseComponent(id, std::tie(param1, param2))
     //{}
     //
-    template <typename PT, typename PS, int Cap = 64>
+    template <typename PT, typename PS, int Cap = comp::DefaultPoolSize>
     class PersistentBaseComponent : public BaseComponent<Cap>
     {
     public:
