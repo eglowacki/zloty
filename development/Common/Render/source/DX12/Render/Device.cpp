@@ -19,6 +19,8 @@ namespace
     constexpr uint32_t NumCommands = 6;
 }
 
+
+//-------------------------------------------------------------------------------------------------
 yaget::render::ColorInterpolator::ColorInterpolator(const colors::Color& startColor, const colors::Color& endColor)
     : mStartColor{ startColor }
     , mEndColor{ endColor }
