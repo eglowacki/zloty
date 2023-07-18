@@ -58,6 +58,7 @@
     <ClCompile Include="TestFiles\BlobLoader_Test.cpp" />
     <ClCompile Include="TestFiles\CompilerAlgo_Test.cpp" />
     <ClCompile Include="TestFiles\Configuration_Test.cpp" />
+    <ClCompile Include="TestFiles\CoordinatorSet_Test.cpp" />
     <ClCompile Include="TestFiles\Coordinator_Test.cpp" />
     <ClCompile Include="TestFiles\File_Test.cpp" />
     <ClCompile Include="TestFiles\GameClock_Test.cpp" />

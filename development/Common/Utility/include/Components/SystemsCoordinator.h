@@ -45,6 +45,12 @@ namespace yaget::comp::gs
         template <typename C>
         const comp::Coordinator<C>& GetCoordinator() const;
 
+        template <typename SY>
+        SY& GetSystem();
+
+        template <typename SY>
+        const SY& GetSystem() const;
+
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
@@ -107,6 +113,9 @@ void yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::Tick(const time::GameCl
     // possibly run each system on own thread, taking Policy (usage) into account
     meta::for_each(mSystems, [this, &gameClock, &channel](auto& gameSystem)
     {
+        const auto& message = fmt::format("System Tick {}", gameSystem->NiceName());
+        metrics::Channel systemChannel(message, YAGET_METRICS_CHANNEL_FILE_LINE);
+
         gameSystem->Tick(mCoordinatorSet, gameClock, channel);
     });
 }
@@ -127,6 +136,24 @@ template <typename C>
 const yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetCoordinator() const
 {
     return mCoordinatorSet.template GetCoordinator<C>();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename... S>
+template <typename SY>
+SY& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetSystem()
+{
+    return *std::get< std::shared_ptr<SY>>(mSystems).get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename... S>
+template <typename SY>
+const SY& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetSystem() const
+{
+    return *std::get< std::shared_ptr<SY>>(mSystems).get();
 }
 
 

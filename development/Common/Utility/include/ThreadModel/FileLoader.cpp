@@ -153,7 +153,7 @@ void yaget::io::FileLoader::StopLoader()
     mQuit = true;
     [[maybe_unused]] bool bResult = ::PostQueuedCompletionStatus(mIOPort, 0, io::FileData::kStopKey, nullptr) != 0;
     mLoaderThread.reset();
-    std::unique_lock<std::mutex> locker(mListMutex);
+    metrics::UniqueLock locker(mListMutex, "Stop Loader", YAGET_METRICS_CHANNEL_FILE_LINE);
     mFilesToProcess.clear();
 }
 
@@ -230,7 +230,7 @@ void yaget::io::FileLoader::StartLoader()
 
             if (nextFile)
             {
-                metrics::Channel span(fmt::format("Processing {} b", conv::ToThousandsSep(key.second)).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
+                metrics::Channel span(fmt::format("Processing {} b", conv::ToThousandsSep(key.second)), YAGET_METRICS_CHANNEL_FILE_LINE);
 
                 // if Process returns false, no need for more processing, otherwise, do not remove it from mFilesToProcess
                 if (!nextFile->Process(key.second))

@@ -18,7 +18,9 @@
 #pragma once
 
 #include "Components/ComponentTypes.h"
+#include "Metrics/Concurrency.h"
 #include <functional>
+#include <fmt/format.h>
 
 
 namespace yaget
@@ -30,7 +32,6 @@ namespace yaget
 
 namespace yaget::comp::gs
 {
-
     struct NoEndMarker {};
     struct GenerateEndMarker {};
 
@@ -76,6 +77,8 @@ namespace yaget::comp::gs
             }
         }
 
+        const char* NiceName() const { return mNiceName; }
+
     protected:
         GameSystem(const char* niceName, Messaging& messaging, Application& /*app*/, UpdateFunctor updateFunctor)
             : mMessaging(messaging)
@@ -88,6 +91,9 @@ namespace yaget::comp::gs
     private:
         void Update(yaget::comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const Row& row)
         {
+            //const auto& message = fmt::format("Update Entity Id: {}", id);
+            //metrics::Channel systemChannel(message, YAGET_METRICS_CHANNEL_FILE_LINE);
+
             // NOTE how can we convert row to new row with some of them being const modified?
             auto newRow = std::tuple_cat(std::tie(id, gameClock, channel), row);
             std::apply(mUpdateFunctor, newRow);

@@ -18,6 +18,7 @@
 
 #include "Components/ComponentTypes.h"
 #include "Components/GameCoordinatorGenerator.h"
+#include "Metrics/Concurrency.h"
 
 
 namespace yaget::comp
@@ -119,6 +120,9 @@ namespace yaget::comp
         template<typename R>
         std::size_t ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
 
+        template<typename T>
+        memory::PoolAllocator<T>& GetAllocator() const;
+
     private:
         // Helper method to find a specific component allocator
         template<typename T>
@@ -153,7 +157,8 @@ namespace yaget::comp
         Allocators mAllocators{};
 
         // Actual item created from Allocators
-        std::map<comp::Id_t, FullRow> mItems{};
+        using ItemsCollection = std::unordered_map<comp::Id_t, FullRow>;
+        ItemsCollection mItems{};
 
         // map from unique bits to all id's which contain that specific set of components
         using Patterns = std::unordered_map<PatternSet, std::set<comp::Id_t>>;
@@ -346,19 +351,25 @@ template<typename P>
 template<typename R>
 typename yaget::comp::ItemIds yaget::comp::Coordinator<P>::GetItemIds() const
 {
+    metrics::Channel system("Coordinator.GetItemIds ", YAGET_METRICS_CHANNEL_FILE_LINE);
+
     std::set<yaget::comp::Id_t> results;
 
-    PatternSet requestBits = meta::tuple_bit_pattern_v<FullRow, typename R::Row>;
-    if (requestBits.any())
-    {
-        for (const auto& it : mPatterns)
+    // We only want to get results if R::Row element(s) exist in FullRow, otherwise just reutunr empty results
+    //if constexpr (meta::tuple_is_element_v<typename R::Row, FullRow>)
+    //{
+        PatternSet requestBits = meta::tuple_bit_pattern_v<FullRow, typename R::Row>;
+        if (requestBits.any())
         {
-            if ((it.first & requestBits) == requestBits)
+            for (const auto& it : mPatterns)
             {
-                results.insert(it.second.begin(), it.second.end());
+                if ((it.first & requestBits) == requestBits)
+                {
+                    results.insert(it.second.begin(), it.second.end());
+                }
             }
         }
-    }
+    //}
 
     return results;
 }
@@ -380,9 +391,18 @@ yaget::memory::PoolAllocator<T>& yaget::comp::Coordinator<P>::FindAllocator() co
 }
 
 template<typename P>
+template<typename T>
+yaget::memory::PoolAllocator<T>& yaget::comp::Coordinator<P>::GetAllocator() const
+{
+    return FindAllocator<T>();
+}
+
+template<typename P>
 template<typename R>
 void yaget::comp::Coordinator<P>::ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback)
 {
+    metrics::Channel system("Coordinator.ForEach ", YAGET_METRICS_CHANNEL_FILE_LINE);
+
     for (const auto& id : ids)
     {
         const auto requestedRow = FindItem<R>(id);
@@ -397,8 +417,16 @@ template<typename P>
 template<typename R>
 std::size_t yaget::comp::Coordinator<P>::ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback)
 {
-    const auto ids = GetItemIds<R>();
-    ForEach<R>(ids, callback);
+    // We only want to get results if R::Row element(s) exist in FullRow, otherwise just reutunr empty results
+    //if constexpr (meta::tuple_is_element_v<typename R::Row, FullRow>)
+    //{
+        const auto ids = GetItemIds<R>();
+        ForEach<R>(ids, callback);
 
-    return ids.size();
+        return ids.size();
+    //}
+    //else
+    //{
+    //    return 0;
+    //}
 }

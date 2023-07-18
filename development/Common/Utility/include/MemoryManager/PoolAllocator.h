@@ -135,6 +135,41 @@ namespace yaget
                 bool IsFull() const { return mFlags.all(); }
                 bool IsEmpty() const { return mFlags.none(); }
 
+                int GetNextUsedSlot(int slotId) const
+                {
+                    if (slotId != INVALID_SLOT)
+                    {
+                        if (IsFull())
+                        {
+                            return slotId;
+                        }
+                        else
+                        {
+                            for (size_t i = slotId; i < mFlags.size(); ++i)
+                            {
+                                if (mFlags.test(i))
+                                {
+                                    return static_cast<int>(i);
+                                }
+                            }
+                        }
+                    }
+
+                    return INVALID_SLOT;
+                }
+
+                T* GetElement(int slotId)
+                {
+                    YAGET_ASSERT(slotId != INVALID_SLOT && slotId < E, "Memory slot parameter '%d' for '%s' is invalid.", slotId, typeid(T).name());
+
+                    char* memoryBlock = &mMemory[slotId * kStrideSize] + kHeaderSize;
+                    T* element = reinterpret_cast<T*>(memoryBlock);
+
+                    YAGET_ASSERT(GetBlockHeader(element)->mSlotIndex != INVALID_SLOT, "Memory slot index '%d' for '%s' is not marked as allocated.", slotId, typeid(T).name());
+
+                    return element;
+                }
+
                 static BlockHeader* GetBlockHeader(T* instance)
                 {
                     YAGET_ASSERT(instance, "Param instance of type '%s' is nullptr.", typeid(T).name());
@@ -299,7 +334,149 @@ namespace yaget
                 // TODO: If we want to handle removing empty lines, we will also need to adjust mLineIndex in BlockHeader
             }
 
+            // Work based on https://www.internalpointers.com/post/writing-custom-iterators-modern-cpp
+            struct Iterator
+            {
+                using iterator_category = std::forward_iterator_tag;
+                using difference_type = std::ptrdiff_t;
+                using value_type = T;
+                using pointer = T*;     // or also value_type*
+                using reference = T&;   // or also value_type&
+                using Allocator = PoolAllocator<T, E>;
+
+                Iterator(Allocator* allocator)
+                    : mAllocator(allocator)
+                    , mLineIndex(0)
+                    , mElementIndex(0)
+                    , mPtr(nullptr)
+                {
+                    auto poolLineSlot = mAllocator->GetNextUsedSlot(mLineIndex, mElementIndex);
+                    mLineIndex = poolLineSlot.first;
+                    mElementIndex = poolLineSlot.second;
+
+                    if (Allocator::IsPoolLineSlotValid(poolLineSlot))
+                    {
+                        mPtr = mAllocator->GetElemment(mLineIndex, mElementIndex);
+                    }
+                }
+
+                Iterator()
+                {}
+
+                reference operator*() const
+                {
+                    YAGET_ASSERT(mPtr, "Invalid element '%s'.", typeid(T).name());
+
+                    return *mPtr;
+                }
+
+                pointer operator->()
+                {
+                    return mPtr;
+                }
+
+                // Prefix increment
+                Iterator& operator++() 
+                {
+                    ++mElementIndex;
+
+                    auto poolLineSlot = mAllocator->GetNextUsedSlot(mLineIndex, mElementIndex);
+                    mLineIndex = poolLineSlot.first;
+                    mElementIndex = poolLineSlot.second;
+
+                    if (Allocator::IsPoolLineSlotValid(poolLineSlot))
+                    {
+                        mPtr = mAllocator->GetElemment(mLineIndex, mElementIndex);
+                    }
+                    else
+                    {
+                        mPtr = nullptr;
+                    }
+
+                    return *this;
+                }
+
+                // Postfix increment
+                Iterator operator++(int)
+                {
+                    Iterator tmp = *this;
+                    ++(*this); 
+                    return tmp; 
+                }
+
+                bool operator== (const Iterator& element) 
+                {
+                    return mPtr == element.mPtr && mLineIndex == element.mLineIndex && mElementIndex == element.mElementIndex;
+                };
+
+                bool operator!= (const Iterator& element)
+                {
+                    return !(*this == element);
+                };
+
+            private:
+                Allocator* mAllocator = nullptr;
+                int mLineIndex = PoolLine::INVALID_SLOT;
+                int mElementIndex = PoolLine::INVALID_SLOT;
+                pointer mPtr = nullptr;
+            };
+
+            Iterator begin()
+            {
+                return Iterator(this);
+            }
+
+            Iterator end()
+            {
+                return Iterator();
+            }
+
         private:
+            // first  - line index
+            // second - element/slot index
+            using PoolLineSlot = std::pair<int, int>;
+            PoolLineSlot GetNextUsedSlot(int poolLineId, int slotId) const
+            {
+                if (slotId >= Size)
+                {
+                    slotId = 0;
+                    ++poolLineId;
+                }
+
+                if (poolLineId != PoolLine::INVALID_SLOT && poolLineId < mMemoryLines.size())
+                {
+                    if (mMemoryLines[poolLineId]->IsFull())
+                    {
+                        return { poolLineId, slotId };
+                    }
+                    else
+                    {
+                        for (size_t i = poolLineId; i < mMemoryLines.size(); ++i)
+                        {
+                            slotId = mMemoryLines[i]->GetNextUsedSlot(slotId);
+                            if (slotId != PoolLine::INVALID_SLOT)
+                            {
+                                return { static_cast<int>(i), slotId };
+                            }
+                        }
+                    }
+                }
+
+                return { PoolLine::INVALID_SLOT, PoolLine::INVALID_SLOT };
+            }
+
+            static bool IsPoolLineSlotValid(const PoolLineSlot& poolLineSlot)
+            {
+                return poolLineSlot.first != PoolLine::INVALID_SLOT && poolLineSlot.second != PoolLine::INVALID_SLOT;
+            }
+
+            T* GetElemment(int poolLineId, int slotId)
+            {
+                YAGET_ASSERT(poolLineId != PoolLine::INVALID_SLOT && poolLineId < mMemoryLines.size() && slotId != PoolLine::INVALID_SLOT, "Invalid parameters, poolLineId: '%d', slotId: '%d' for '%s'.", poolLineId, slotId, typeid(T).name());
+
+                return mMemoryLines[poolLineId]->GetElement(slotId);
+            }
+
             using PoolLine = internal::PoolAllocatorLine<T, Size>;
             using PoolLinePtr = std::unique_ptr<PoolLine>;
             std::vector<PoolLinePtr> mMemoryLines{};

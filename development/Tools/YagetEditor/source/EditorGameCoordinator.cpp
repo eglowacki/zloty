@@ -12,6 +12,7 @@ yaget::editor::EditorSystemsCoordinator::EditorSystemsCoordinator(Messaging& m, 
 
     const auto id = idCache.GetId(IdType::Burnable);
     coordinator.AddComponent<EmptyComponent>(id);
+    coordinator.AddComponent<BlankComponent>(id);
     mItems.insert(id);
 
     globalCoordinator.AddComponent<EditorComponent>(id);

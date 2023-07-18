@@ -609,6 +609,18 @@ namespace yaget
             return Combine(indexes, delimiter);
         }
 
+        template<typename K, typename V>
+        std::string Combine(const std::unordered_map<K, V>& values, const char* delimiter)
+        {
+            std::vector<K> indexes;
+            for (const auto& [key, value] : values)
+            {
+                indexes.push_back(key);
+            }
+
+            return Combine(indexes, delimiter);
+        }
+
     } // namespace conv
 
     //! compare if sourceString can match filterString pattern

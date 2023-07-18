@@ -30,13 +30,18 @@ app::BlankApplication::BlankApplication(const std::string& title, items::Directo
 {
 }
 
+bool app::BlankApplication::onMessagePump(const time::GameClock& /*gameClock*/)
+{
+    return !mQuit;
+}
+
 void app::BlankApplication::Cleanup()
 {
 }
 
-bool app::BlankApplication::onMessagePump(const time::GameClock& /*gameClock*/)
+bool app::BlankApplication::IsSuspended() const
 {
-    return !mQuit;
+    return false;
 }
 
 ConsoleApplication::ConsoleApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)

@@ -28,6 +28,7 @@
 //#include "ComponentTypes.h"
 #include "Components/Coordinator.h"
 #include "Meta/Hana.h"
+#include "Metrics/Concurrency.h"
 #include <functional>
 
 
@@ -83,7 +84,7 @@ namespace yaget::comp
             using RequestRow = R;
 
             RequestRow templateRow{};
-            using Rows = std::map<Id_t, RequestRow>;
+            using Rows = std::unordered_map<Id_t, RequestRow>;
             Rows rows;
 
             // walk over each coordinator and extract which RequestRow component belong to coordinator
@@ -111,6 +112,9 @@ namespace yaget::comp
                 // it no RowPolicy
                 if constexpr (hana::size(transformedRow))
                 {
+                    //const auto& message = fmt::format("Update Entity Id: {}", id);
+                    metrics::Channel systemChannel("Collecting Entities", YAGET_METRICS_CHANNEL_FILE_LINE);
+
                     // create our RowPolicy object and get type
                     constexpr auto qrow = boost::hana::unpack(transformedRow, []<typename... T0>([[maybe_unused]] T0... args)
                     {
@@ -121,6 +125,8 @@ namespace yaget::comp
 
                     [[maybe_unused]] std::size_t numItems = coordinator.template ForEach<QueryRow>([&rows, &templateRow]([[maybe_unused]] comp::Id_t id, const auto& row)
                     {
+                        //metrics::Channel systemChannel("ForEach Entities", YAGET_METRICS_CHANNEL_FILE_LINE);
+
                         if constexpr (internal::is_global<CoordType>)
                         {
                             meta::tuple_copy(row, templateRow);
@@ -138,6 +144,8 @@ namespace yaget::comp
                     });
                 }
             });
+
+            metrics::Channel systemChannel("Ticking Entities", YAGET_METRICS_CHANNEL_FILE_LINE);
 
             const bool validTemplateRow = templateRow != RequestRow{};
             if (rows.empty() && validTemplateRow)

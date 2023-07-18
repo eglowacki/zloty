@@ -168,11 +168,20 @@ namespace yaget
                 , mTag(tag)
             {}
 
+            void SetAccumulator(int* accumulator)
+            {
+                mAccumulator = accumulator;
+            }
+
             ~TimeScoper()
             {
                 const time::Microsecond_t endTime = platform::GetRealTime(time::kMicrosecondUnit);
                 const time::Microsecond_t runTime = endTime - mStartTime;
                 const int timeDiff = time::FromTo<int>(runTime, time::kMicrosecondUnit, TU);
+                if (mAccumulator)
+                {
+                    *mAccumulator += timeDiff;
+                }
 
                 YLOG_PNOTICE(mTag, mFile, mLine, mFunction, "%s: '%s' (%s).", mMessage, conv::ToThousandsSep(timeDiff).c_str(), UnitName(TU).c_str());
             }
@@ -184,6 +193,7 @@ namespace yaget
             uint32_t mLine = 0;
             const char* mFunction = "";
             const char* mTag = "PROF";
+            int* mAccumulator = nullptr;
         };
 
 #if YAGET_METRIC_GATHER == 1
