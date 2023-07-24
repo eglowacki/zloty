@@ -250,8 +250,10 @@ namespace yaget
         class PoolAllocator : public Noncopyable<PoolAllocator<T, E>>
         {
         public:
-            using Type = T;
             static constexpr int Size = E;
+            using Type = T;
+
+            using PoolLine = internal::PoolAllocatorLine<T, Size>;
 
             PoolAllocator() = default;
             ~PoolAllocator() = default;
@@ -477,7 +479,6 @@ namespace yaget
                 return mMemoryLines[poolLineId]->GetElement(slotId);
             }
 
-            using PoolLine = internal::PoolAllocatorLine<T, Size>;
             using PoolLinePtr = std::unique_ptr<PoolLine>;
             std::vector<PoolLinePtr> mMemoryLines{};
             int mLastLineIndex = PoolLine::INVALID_SLOT;

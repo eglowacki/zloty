@@ -16,7 +16,7 @@
     },
     {
       "Id": "cbea5305-77d8-48b2-be52-10b7a4be3e95",
-      "Command": " --gtest_filter=Threading.Condition"
+      "Command": " --gtest_filter=PoolAllocators.Iterators"
     },
     {
       "Id": "5869dbec-0b19-4c61-90bd-08658a645c6d",

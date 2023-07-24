@@ -7,6 +7,9 @@
 #include "Exception/Exception.h"
 #include "Metrics/Gather.h"
 #include "TestHelpers/TestHelpers.h"
+
+//#include "ImageLoaders/lodepng.h"
+
 #include <functional>
 
 class PoolAllocators : public ::testing::Test
@@ -40,6 +43,8 @@ namespace
         }
         int z;
     };
+
+
 
 } // namespace
 
@@ -204,4 +209,67 @@ TEST_F(PoolAllocators, Performance)
     time::Microsecond_t endTimeMicr = platform::GetRealTime(time::kMicrosecondUnit);
     time::Microsecond_t totalTimeMicr = endTimeMicr - startTimeMicr;
     YLOG_INFO("PROF", "new for '%d' items took '%d' microseconds.", kNumberItems, totalTimeMicr);
+}
+
+TEST_F(PoolAllocators, Iterators)
+{
+    using namespace yaget;
+    constexpr int kPoolLineSize = 64;
+    constexpr int kPoolSize = 64;
+    constexpr const int kNumberItems = kPoolLineSize * kPoolSize;
+
+    using PoolAllocator = memory::PoolAllocator<TestClass, kPoolLineSize>;
+    PoolAllocator testPoolAllocator;
+
+    auto allocateCounter = 0;
+    for (int i = 0; i < kPoolSize; i += 2)
+    {
+        for (int j = 0; j < kPoolLineSize; ++j)
+        {
+            auto* newObject = testPoolAllocator.Allocate(allocateCounter++);
+
+            //TC testClass = memory::New(testPoolAllocator, i);
+            //objectList.push_back(testClass);
+            int z = 0;
+            z;
+        }
+    }
+
+    const std::string filename = util::ExpendEnv("$(LogFolder)/PoolAllocImage", "png");
+
+    std::vector<image::pixel_byte> bytes;
+    bytes.resize(kPoolLineSize * kPoolSize);
+    std::fill(bytes.begin(), bytes.end(), 0);
+
+    int itemCounter = 0;
+
+    for (auto it = testPoolAllocator.begin(); it != testPoolAllocator.end(); ++it)
+    {
+        auto object = &(*it);
+        
+        auto* blockHeader = PoolAllocator::PoolLine::GetBlockHeader(object);
+        const auto cellNumber = blockHeader->mLineIndex * kPoolSize + blockHeader->mSlotIndex;
+
+        EXPECT_TRUE(object->z == cellNumber);
+
+        bytes[object->z] = 255;
+
+        ++itemCounter;
+    }
+
+    const auto result = image::EncodeSave(filename, bytes, kPoolLineSize, kPoolSize, 0/*LodePNGColorType LCT_GREY*/);
+
+    itemCounter = 0;
+    for (auto it = testPoolAllocator.begin(); it != testPoolAllocator.end(); ++it)
+    {
+        auto* object = &(*it);
+
+        testPoolAllocator.Free(object);
+        EXPECT_TRUE(object->z == -itemCounter);
+
+        ++itemCounter;
+    }                                   
+
+    int z = 0;
+    z;
 }
