@@ -221,12 +221,10 @@ namespace yaget
             template<typename T>
             constexpr int GetCapacity()
             {
-                constexpr bool has_member_capacity = requires(T a)
+                if constexpr (constexpr bool has_member_capacity = requires(T a)
                 {
                     a.Capacity > 0;
-                };
-
-                if constexpr (has_member_capacity)
+                })
                 {
                     return T::Capacity;
                 }
