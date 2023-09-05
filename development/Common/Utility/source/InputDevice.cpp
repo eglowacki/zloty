@@ -517,23 +517,7 @@ void input::InputDevice::TriggerAction(const std::string& actionName, int32_t mo
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::RegisterSimpleActionCallback(const std::string& actionName, input::ActionNonParamCallback_t actionCallback)
 {
-    //struct CallbackWrapper
-    //{
-    //    void operator()(const std::string& /*actionName*/, uint64_t /*timeStamp*/, int32_t /*mouseX*/, int32_t /*mouseY*/, uint32_t /*flags*/) const
-    //    {
-    //        mActionCallback();
-    //    }
-
-    //    input::ActionNonParamCallback_t mActionCallback;
-    //};
-
-    auto wrapper = [actionCallback](auto&&... params)
-    {
-        actionCallback();
-    };
-
     RegisterActionCallback(actionName, [actionCallback](auto&&... /*params*/) { actionCallback(); });
-    //RegisterActionCallback(actionName, CallbackWrapper({ actionCallback }));
 }
 
 
