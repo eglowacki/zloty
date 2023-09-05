@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "pv": {
+      "commandName": "Project",
+      "commandLineArgs": "--file=c:\\foo"
+    }
+  }
+}
