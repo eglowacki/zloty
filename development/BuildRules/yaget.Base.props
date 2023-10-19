@@ -8,7 +8,7 @@
     <Import Project="yaget.fmt.props" />
     <Import Project="yaget.terminal.props" />
     <Import Project="yaget.hana.props" />
-    <Import Project="yaget.Math.DXTK.props" />
+    <Import Project="Props\yaget.Math.DXTK.props" />
     <Import Project="yaget.Mather.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">

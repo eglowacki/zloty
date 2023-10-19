@@ -3,6 +3,7 @@
   <PropertyGroup Label="UserMacros">
     <YAGET_BRANCH_FOLDER>zloty\development</YAGET_BRANCH_FOLDER>
     <YAGET_DEPENDENCIES_PATH>$(YAGET_ROOT_FOLDER)/$(YAGET_DEPENDENCIES_FOLDER)</YAGET_DEPENDENCIES_PATH>
+    <YAGET_MODULE_PATH>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Dependencies</YAGET_MODULE_PATH>
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
@@ -14,6 +15,9 @@
     </BuildMacro>
     <BuildMacro Include="YAGET_DEPENDENCIES_PATH">
       <Value>$(YAGET_DEPENDENCIES_PATH)</Value>
+    </BuildMacro>
+    <BuildMacro Include="YAGET_MODULE_PATH">
+      <Value>$(YAGET_MODULE_PATH)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>
