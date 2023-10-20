@@ -5,7 +5,7 @@
     <Import Project="yaget.Math.props" />
     <Import Project="yaget.flatbuffers.props" />
     <Import Project="yaget.nlohmann_json.props" />
-    <Import Project="yaget.fmt.props" />
+    <Import Project="Props\yaget.fmt.props" />
     <Import Project="yaget.terminal.props" />
     <Import Project="yaget.hana.props" />
     <Import Project="Props\yaget.Math.DXTK.props" />

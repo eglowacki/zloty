@@ -109,7 +109,7 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
             YAGET_UTIL_THROW_ASSERT("DIRE", itemId != comp::INVALID_ID, fmt::format("ItemId in this scope is invalid. Is '{}' token as a first line in loadout file missing?", comp::db::NewItem_Token));
 
             comp::db::hash_combine(loadoutVersion, command);
-            sqlLoadout.emplace_back(fmt::format(command, itemId));
+            sqlLoadout.emplace_back(fmt::vformat(command, fmt::make_format_args(itemId)));
         }
 
         const char* hashesTable = "Hashes";
@@ -135,7 +135,7 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
             if (!database.ExecuteStatement(sqCommand, nullptr))
             {
                 transaction.Rollback();
-                YAGET_UTIL_THROW("DIRE", fmt::format("Could not update {} '{}' sql query '{}'. {}.", hashesTable, sqCommand, ParseErrors(database)));
+                YAGET_UTIL_THROW("DIRE", fmt::format("Could not update {} '{}' sql query '{}'.", hashesTable, sqCommand, ParseErrors(database)));
             }
 
             YLOG_INFO("DIRE", "Items Director's loadout is done, added: '%d' items.", sqlLoadout.size());
