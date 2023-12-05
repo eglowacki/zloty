@@ -28,6 +28,8 @@ namespace yaget::app
 {
     enum class Appearance { Fullscreen, Window, Borderless };
 
+    inline auto format_as(Appearance f) { return fmt::underlying(f); }
+
     NLOHMANN_JSON_SERIALIZE_ENUM(Appearance, {
         { Appearance::Fullscreen, "Fullscreen" },
         { Appearance::Window, "Window" },

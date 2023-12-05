@@ -1,3 +1,6 @@
 [submodule "development/Dependencies/DirectXTK12-06.2023"]
 	path = development/Dependencies/DirectXTK12-06.2023
 	url = https://github.com/microsoft/DirectXTK12.git
+[submodule "development/Dependencies/fmt-10.1"]	
+	path = development/Dependencies/fmt-10.1
+	url = https://github.com/fmtlib/fmt.git
