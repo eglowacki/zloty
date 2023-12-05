@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "HashUtilities.h"
 #include "YagetCore.h"
 #include "Metrics/Gather.h"
 #include "Debugging/Assert.h"
@@ -64,6 +65,10 @@ namespace yaget
                 {
                     if (this != &other)
                     {
+                        if (!IsEmpty())
+                        {
+                            
+                        }
                         mFlags = std::move(other.mFlags);
                         mMemory = std::move(other.mMemory);
                     }
@@ -135,6 +140,21 @@ namespace yaget
                 bool IsFull() const { return mFlags.all(); }
                 bool IsEmpty() const { return mFlags.none(); }
 
+                using HashResult = size_t;
+                HashResult ToHash() const
+                {
+                    if constexpr (std::numeric_limits<HashResult>::digits >= E)
+                    {
+                        const std::hash<HashResult> hasher;
+                        return hasher(mFlags.to_ullong());
+                    }
+                    else
+                    {
+                        const std::hash<std::string> hasher;
+                        return hasher(mFlags.to_string());
+                    }
+                }
+
                 int GetNextUsedSlot(int slotId) const
                 {
                     if (slotId != INVALID_SLOT)
@@ -205,6 +225,19 @@ namespace yaget
                     return INVALID_SLOT;
                 }
 
+                // run dtor's on all allocated objects
+                void ClearLine()
+                {
+                    for (size_t i = 0; i < mFlags.size(); ++i)
+                    {
+                        if (mFlags[i])
+                        {
+                            T* element = GetElement(i);
+                            Free(element);
+                        }
+                    }
+                }
+
                 static constexpr size_t kElementSize = sizeof(T);
                 static constexpr size_t kHeaderSize = sizeof(BlockHeader);
                 static constexpr size_t kStrideSize = kElementSize + kHeaderSize;
@@ -221,10 +254,12 @@ namespace yaget
             template<typename T>
             constexpr int GetCapacity()
             {
-                if constexpr (constexpr bool has_member_capacity = requires(T a)
+                constexpr bool has_member_capacity = requires(T a)
                 {
                     a.Capacity > 0;
-                })
+                };
+
+                if constexpr (has_member_capacity)
                 {
                     return T::Capacity;
                 }
@@ -332,6 +367,20 @@ namespace yaget
                 blockHeader->mLineIndex = PoolLine::INVALID_SLOT;
 
                 // TODO: If we want to handle removing empty lines, we will also need to adjust mLineIndex in BlockHeader
+            }
+
+            size_t ToHash() const
+            {
+                const std::hash<internal::PoolAllocatorLine<T, E>> lineHasher;
+                size_t currentHash{};
+
+                for (const auto& line : mMemoryLines)
+                {
+            		size_t lineHashValue = lineHasher(*line.get());
+                    conv::hash_combine(currentHash, lineHashValue);
+                }
+
+                return currentHash;
             }
 
             // Work based on https://www.internalpointers.com/post/writing-custom-iterators-modern-cpp
@@ -497,3 +546,30 @@ namespace yaget
     } // namespace memory
 
 } // namespace yaget
+
+
+template <typename T, int E>
+struct std::hash<yaget::memory::internal::PoolAllocatorLine<T, E>>
+{
+    using argument_type = yaget::memory::internal::PoolAllocatorLine<T, E>;
+    using result_type = std::size_t;
+
+    result_type operator()(const argument_type& line) const
+    {
+        //const std::hash<std::string> hasher;
+        //return static_cast<result_type>(hasher(line.ToString()));
+        return line.ToHash();
+    }
+};
+
+template <typename T, int E>
+struct std::hash<yaget::memory::PoolAllocator<T, E>>
+{
+    using argument_type = yaget::memory::PoolAllocator<T, E>;
+    using result_type = std::size_t;
+
+    result_type operator()(const argument_type& pool) const
+    {
+        return pool.ToHash();
+    }
+};

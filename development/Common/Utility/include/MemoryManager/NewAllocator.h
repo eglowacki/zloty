@@ -7,6 +7,8 @@
 //
 //  NOTES:
 //      Utility functions for memory management
+//
+//      https://drmemory.org/page_running.html
 //      
 //  #include "MemoryManager/NewAllocator.h"
 // 

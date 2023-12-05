@@ -1,3 +1,5 @@
+#include "HashUtilities.h"
+
 #include "Items/ItemsDirector.h"
 #include "App/AppUtilities.h"
 #include "Meta/CompilerAlgo.h"

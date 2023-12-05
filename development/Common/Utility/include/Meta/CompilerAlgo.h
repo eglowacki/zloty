@@ -89,8 +89,20 @@
 //      
 //      f(2);    // int stuff
 //      f(2.f);  // float stuff
+//
+//
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of using span, views & ranges
+//      for (const auto& arg : std::span<const char>(argv, argc) | std::ranges::views::drop(2))
+//      {
+//          std::cout <<arg << '\n';
+//      }
 // 
-// 
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of using ship <=> operator
+//      const auto operator<=>(const S2&) const = default;
+//
+//
 //      #include "Meta/CompilerAlgo.h"
 //
 //////////////////////////////////////////////////////////////////////

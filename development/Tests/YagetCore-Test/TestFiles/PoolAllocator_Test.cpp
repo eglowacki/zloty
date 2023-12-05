@@ -214,7 +214,7 @@ TEST_F(PoolAllocators, Performance)
 TEST_F(PoolAllocators, Iterators)
 {
     using namespace yaget;
-    constexpr int kPoolLineSize = 64;
+    constexpr int kPoolLineSize = 128;
     constexpr int kPoolSize = 64;
     constexpr const int kNumberItems = kPoolLineSize * kPoolSize;
 
@@ -248,7 +248,7 @@ TEST_F(PoolAllocators, Iterators)
         auto object = &(*it);
         
         auto* blockHeader = PoolAllocator::PoolLine::GetBlockHeader(object);
-        const auto cellNumber = blockHeader->mLineIndex * kPoolSize + blockHeader->mSlotIndex;
+        const auto cellNumber = blockHeader->mLineIndex * kPoolLineSize + blockHeader->mSlotIndex;
 
         EXPECT_TRUE(object->z == cellNumber);
 
@@ -272,4 +272,24 @@ TEST_F(PoolAllocators, Iterators)
 
     int z = 0;
     z;
+}
+
+TEST_F(PoolAllocators, Hashes)
+{
+    using namespace yaget;
+    constexpr int kPoolLineSize = 64;
+    constexpr int kPoolSize = 64;
+    constexpr const int kNumberItems = kPoolLineSize * kPoolSize;
+
+    using PoolAllocator = memory::PoolAllocator<TestClass, kPoolLineSize>;
+    //PoolAllocator testPoolAllocator;
+
+    //std::hash<PoolAllocator> hash_fn;
+    //auto result = hash_fn(testPoolAllocator);
+
+    //using PoolLine = PoolAllocator::PoolLine;
+
+    int z = 0;
+    z;
+
 }

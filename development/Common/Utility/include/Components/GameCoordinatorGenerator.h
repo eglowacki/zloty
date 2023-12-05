@@ -23,7 +23,7 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
+#include "HashUtilities.h"
 #include "StringHelpers.h"
 #include "sqlite/SQLite.h"
 #include "Components/Component.h"
@@ -33,17 +33,6 @@
 
 namespace yaget::comp::db
 {
-
-    inline void hash_combine(int64_t& /*seed*/) { }
-
-    template <typename T, typename... Rest>
-    inline void hash_combine(int64_t& seed, const T& v, Rest... rest)
-    {
-        std::hash<T> hasher;
-        seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-        hash_combine(seed, rest...);
-    }
-
     namespace internal
     {
         const Strings stripKeywords{
@@ -194,14 +183,14 @@ namespace yaget::comp::db
             const auto& columnNames = comp::db::GetPolicyRowNames<ParameterNames>();
             const auto& typeNames = comp::db::GetPolicyRowTypes<ParameterPack>();
 
-            hash_combine(schemaVersion, tableName);
+            conv::hash_combine(schemaVersion, tableName);
             if (!columnNames.empty())
             {
                 auto cn_it = columnNames.begin();
                 auto tn_it = typeNames.begin();
                 for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
                 {
-                    hash_combine(schemaVersion, *cn_it, *tn_it);
+                    conv::hash_combine(schemaVersion, *cn_it, *tn_it);
                 }
             }
         });
