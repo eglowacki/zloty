@@ -110,7 +110,7 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
 
             YAGET_UTIL_THROW_ASSERT("DIRE", itemId != comp::INVALID_ID, fmt::format("ItemId in this scope is invalid. Is '{}' token as a first line in loadout file missing?", comp::db::NewItem_Token));
 
-            comp::db::hash_combine(loadoutVersion, command);
+            conv::hash_combine(loadoutVersion, command);
             sqlLoadout.emplace_back(fmt::vformat(command, fmt::make_format_args(itemId)));
         }
 
