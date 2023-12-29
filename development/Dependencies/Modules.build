@@ -9,8 +9,11 @@
 
     "Modules": {
         "DirectXTK12": {
-            "version": "06.2023",
-            "git": "https://github.com/microsoft"
+            "version": "06.2023"
+        },
+        "fmt": {
+            "version": "10.1",
+			"tests": [ "bin/Debug/format-test.exe", "bin/Release/format-test.exe" ]
         }
     }
 }
