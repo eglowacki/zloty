@@ -14,8 +14,6 @@
         "fmt": {
             "version": "10.1",
 			"tests": [ "bin/Debug/format-test.exe", "bin/Release/format-test.exe" ]
-        },
-        "terminal": {
-            "version": "10.1",
+        }
     }
 }
