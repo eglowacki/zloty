@@ -4,3 +4,6 @@
 [submodule "development/Dependencies/fmt-10.1"]	
 	path = development/Dependencies/fmt-10.1
 	url = https://github.com/fmtlib/fmt.git
+[submodule "development/Dependencies/terminal"]	
+	path = development/Dependencies/terminal
+	url = https://github.com/jupyter-xeus/cpp-terminal.git
