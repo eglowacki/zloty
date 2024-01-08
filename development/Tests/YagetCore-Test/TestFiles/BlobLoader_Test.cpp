@@ -52,7 +52,7 @@ namespace
         Strings filesToTest;
         for (int i = 0; i < maxNumFiles; ++i)
         {
-            const fs::path blobFile = destFolder / fmt::format(fileNumber, i);
+            const fs::path blobFile = destFolder / fmt::vformat(fileNumber, fmt::make_format_args(i));
             filesToTest.emplace_back(blobFile.generic_string());
             io::file::SaveFile(filesToTest.back(), dataBuffer);
         }

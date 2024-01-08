@@ -1,3 +1,2 @@
 # Ignore patterns for yaget dependencies
-
 development/Dependencies/**/builds/
