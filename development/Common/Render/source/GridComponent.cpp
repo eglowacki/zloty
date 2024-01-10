@@ -33,7 +33,7 @@ void render::GridComponent::OnReset()
     }
     catch (const std::exception& e)
     {
-        const auto& textError = fmt::format("Did not initialize GridComponent '{}'. Error: {}", Id(), e.what());
+        const auto& textError = fmt::format("Did not initialize GridComponent '{}'. Error: {}", static_cast<comp::Id_t>(Id()), e.what());
         YAGET_UTIL_THROW("REND", textError);
     }
 

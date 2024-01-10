@@ -37,7 +37,7 @@ void yaget::render::GeometryComponent::OnReset()
 
 void yaget::render::GeometryComponent::onRender(const RenderTarget* /*renderTarget*/, const math3d::Matrix& /*matrix*/)
 {
-    mDevice.ActivatedResource(nullptr, fmt::format("    Geometry '{}' Started. This: {}", Id(), static_cast<void*>(this)).c_str());
+    mDevice.ActivatedResource(nullptr, fmt::format("    Geometry '{}' Started. This: {}", static_cast<comp::Id_t>(Id()), static_cast<void*>(this)).c_str());
 
     bool result = mDescriptionsWatcher->Process([this](auto description)
     {
@@ -82,7 +82,7 @@ void yaget::render::GeometryComponent::onUpdateGui(UpdateGuiType updateGuiType)
     {
         auto loc = mPerObjectConstants.mMatrix.Translation();
 
-        bool visible = ImGui::TreeNode(fmt::format("Entity Id: '{}'", Id()).c_str());
+        bool visible = ImGui::TreeNode(fmt::format("Entity Id: '{}'", static_cast<comp::Id_t>(Id())).c_str());
         std::string locText = conv::Convertor<math3d::Vector3>::ToString(loc);
         ImGui::SameLine();
         yaget::gui::Text(fmt::format("Position: '{}'", locText), math3d::Color{ 0.6f, 0.6f, 0.6f, 1.0f });

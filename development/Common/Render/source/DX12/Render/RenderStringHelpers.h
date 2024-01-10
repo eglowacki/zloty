@@ -19,6 +19,15 @@
 
 #include <d3dx12.h>
 
+inline auto format_as(D3D_FEATURE_LEVEL f) { return fmt::underlying(f); }
+inline auto format_as(D3D12_RESOURCE_BINDING_TIER f) { return fmt::underlying(f); }
+inline auto format_as(D3D_SHADER_MODEL f) { return fmt::underlying(f); }
+inline auto format_as(D3D_ROOT_SIGNATURE_VERSION f) { return fmt::underlying(f); }
+inline auto format_as(D3D12_RENDER_PASS_TIER f) { return fmt::underlying(f); }
+inline auto format_as(D3D12_RAYTRACING_TIER f) { return fmt::underlying(f); }
+inline auto format_as(D3D12_MESH_SHADER_TIER f) { return fmt::underlying(f); }
+inline auto format_as(D3D12_COMMAND_LIST_TYPE f) { return fmt::underlying(f); }
+
 namespace yaget::conv
 {
     //-------------------------------------------------------------------------------------------------

@@ -18,6 +18,8 @@
 #include "YagetCore.h"
 #include "VTS/RenderResolvedAssets.h"
 
+inline auto format_as(D3D_DRIVER_TYPE f) { return fmt::underlying(f); }
+inline auto format_as(D3D_FEATURE_LEVEL f) { return fmt::underlying(f); }
 
 namespace yaget
 {

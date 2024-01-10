@@ -37,7 +37,7 @@ void render::LineComponent::OnReset()
     }
     catch (const std::exception& e)
     {
-        const auto& textError = fmt::format("Did not initialize LineComponent '{}'. Error: {}", Id(), e.what());
+        const auto& textError = fmt::format("Did not initialize LineComponent '{}'. Error: {}", static_cast<comp::Id_t>(Id()), e.what());
         YAGET_UTIL_THROW("REND", textError);
     }
 
