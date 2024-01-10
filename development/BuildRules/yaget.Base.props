@@ -7,9 +7,9 @@
     <Import Project="yaget.nlohmann_json.props" />
     <Import Project="Props\yaget.fmt.props" />
     <Import Project="yaget.terminal.props" />
-    <Import Project="yaget.hana.props" />
     <Import Project="Props\yaget.Math.DXTK.props" />
     <Import Project="yaget.Mather.props" />
+    <Import Project="Props\yaget.boost.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
     <YAGET_RUN_FOLDER>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\bin\$(ProjectName)\$(Platform).$(Configuration)\</YAGET_RUN_FOLDER>
