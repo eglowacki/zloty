@@ -89,6 +89,12 @@ namespace yaget::comp::gs
         return app.Run(internal::Updater<TG, M, A>(messaging, app), internal::Updater<TR, M, A>(messaging, app));
     }
 
+    template <typename TG, typename M, typename A>
+    int RunGame(M& messaging, A& app)
+    {
+        return app.Run(internal::Updater<TG, M, A>(messaging, app));
+    }
+
 } // namespace yaget::comp::gs
 
 
