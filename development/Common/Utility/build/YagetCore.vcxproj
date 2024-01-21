@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\Components\SystemsCoordinator.cpp" />
     <ClCompile Include="..\include\ThreadModel\FileLoader.cpp" />
     <ClCompile Include="..\source\Application\Display.cpp" />
     <ClCompile Include="..\source\Application\WindowFrame.cpp" />
@@ -40,6 +39,7 @@
     <ClCompile Include="..\source\Components\PayloadStager.cpp" />
     <ClCompile Include="..\source\Components\PhysicsComponent.cpp" />
     <ClCompile Include="..\source\Components\ScriptComponent.cpp" />
+    <ClCompile Include="..\source\Components\SystemsCoordinator.cpp" />
     <ClCompile Include="..\source\Database\Database.cpp" />
     <ClCompile Include="..\source\Debugging\Assert.cpp" />
     <ClCompile Include="..\source\Debugging\DevConfiguration.cpp">

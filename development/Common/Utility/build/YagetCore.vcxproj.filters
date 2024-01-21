@@ -281,9 +281,6 @@
     <ClCompile Include="..\source\Components\PersistentBaseComponent.cpp">
       <Filter>Component Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\Components\SystemsCoordinator.cpp">
-      <Filter>Logger Files\LoggerCpp Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\GameSystem\Messaging.cpp">
       <Filter>GameSystem Files</Filter>
     </ClCompile>
@@ -301,6 +298,9 @@
     </ClCompile>
     <ClCompile Include="..\source\Application\WindowFrame.cpp">
       <Filter>Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\SystemsCoordinator.cpp">
+      <Filter>Component Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
