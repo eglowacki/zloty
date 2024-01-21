@@ -50,7 +50,7 @@ namespace yaget::comp::gs
     //      void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, ScoreComponent* boardComponent);
     //};
     //
-    template <typename E, typename M, typename... Comps>
+    template <typename CS, typename E, typename M, typename... Comps>
     class GameSystem : public Noncopyable<GameSystem<E, M, Comps...>>
     {
     public:
@@ -63,10 +63,9 @@ namespace yaget::comp::gs
 
         // framework calls this on same cadence (every tick...)
         // In default case that is SystemsCoordinator class
-        template <typename CS>
-        void Tick(CS& coordinatorSet, const time::GameClock& gameClock, metrics::Channel& channel)
+        void Tick(const time::GameClock& gameClock, metrics::Channel& channel)
         {
-            coordinatorSet.template ForEach<Row>([this, &gameClock, &channel](yaget::comp::Id_t id, const auto& row)
+            mCoordinatorSet.template ForEach<Row>([this, &gameClock, &channel](yaget::comp::Id_t id, const auto& row)
             {
                 Update(id, gameClock, channel, row);
                 return true;
@@ -80,11 +79,34 @@ namespace yaget::comp::gs
 
         const char* NiceName() const { return mNiceName; }
 
+        template <typename C>
+        comp::Coordinator<C>& GetCoordinator()
+        {
+            return mCoordinatorSet.template GetCoordinator<C>();
+        }
+
+        template <typename C>
+        const comp::Coordinator<C>& GetCoordinator() const
+        {
+            return mCoordinatorSet.template GetCoordinator<C>();
+        }
+
+        //CS& CoordinatorSet()
+        //{
+        //    return mCoordinatorSet;
+        //}
+
+        //const CS& CoordinatorSet() const
+        //{
+        //    return mCoordinatorSet;
+        //}
+
     protected:
-        GameSystem(const char* niceName, Messaging& messaging, Application& /*app*/, UpdateFunctor updateFunctor)
+        GameSystem(const char* niceName, Messaging& messaging, Application& /*app*/, UpdateFunctor updateFunctor, CS& coordinatorSet)
             : mMessaging(messaging)
             , mNiceName(niceName)
             , mUpdateFunctor(updateFunctor)
+            , mCoordinatorSet(coordinatorSet)
         {}
 
         Messaging& mMessaging;
@@ -102,6 +124,7 @@ namespace yaget::comp::gs
 
         const char* mNiceName = nullptr;
         UpdateFunctor mUpdateFunctor;
+        CS& mCoordinatorSet;
     };
 
 }
