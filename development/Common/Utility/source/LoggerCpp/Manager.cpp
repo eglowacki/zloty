@@ -47,17 +47,47 @@ namespace
 #endif // YAGET_SHIPPING
         }
 
+        // return true if tag is filtered (do not show)
+        bool IsFilter(uint32_t tag) const
+        {
+            const auto it = mTagFilters.find(tag);
+            return it != mTagFilters.end();
+        }
+
+        void AddFilter(uint32_t tag)
+        {
+            mTagFilters.insert(tag);
+        }
+
+        void RemoveFilter(uint32_t tag)
+        {
+            mTagFilters.erase(tag);
+        }
+
+        bool IsOverrideFilter(uint32_t tag) const
+        {
+            const auto it = mOverriteTagFilters.find(tag);
+            return it != mOverriteTagFilters.end();
+        }
+
+        void AddOverrideFilter(uint32_t tag)
+        {
+            mOverriteTagFilters.insert(tag);
+        }
+
         yaget::ylog::Channel::Map mChannelMap;                       ///< Map of shared pointer of Channel objects
         yaget::ylog::Output::Vector mOutputList;                     ///< List of Output objects
         yaget::ylog::Log::Level mDefaultLevel = yaget::ylog::Log::Log::Level::eDebug;    ///< Default Log::Level of any new Channel
         
         using TagFilters_t = std::set<uint32_t>;
-        TagFilters_t mTagFilters;
-        TagFilters_t mOverriteTagFilters;
         TagFilters_t mTags;
 
         using OutputTypes = std::map<std::string, yaget::ylog::Manager::OutputCreator>;
         OutputTypes mRegisteredOutputTypes;
+
+    private:
+        TagFilters_t mTagFilters;
+        TagFilters_t mOverriteTagFilters;
     };
 
     ManagerData& md()
@@ -186,9 +216,8 @@ bool yaget::ylog::Manager::IsValidTag(uint32_t tag)
 
 bool yaget::ylog::Manager::IsFilter(uint32_t tag)
 {
-    auto& d = md();
-    const auto it = d.mTagFilters.find(tag);
-    return it != d.mTagFilters.end();
+    const auto& d = md();
+    return d.IsFilter(tag);
 }
 
 bool yaget::ylog::Manager::IsSeverityFilter(ylog::Log::Level severity, uint32_t /*tag*/)
@@ -199,24 +228,23 @@ bool yaget::ylog::Manager::IsSeverityFilter(ylog::Log::Level severity, uint32_t 
 void yaget::ylog::Manager::AddFilter(uint32_t tag)
 {
     auto& d = md();
-    d.mTagFilters.insert(tag);
+    d.AddFilter(tag);
 }
 
 bool yaget::ylog::Manager::IsOverrideFilter(uint32_t tag)
 {
-    auto& d = md();
-    const auto it = d.mOverriteTagFilters.find(tag);
-    return it != d.mOverriteTagFilters.end();
+    const auto& d = md();
+    return d.IsOverrideFilter(tag);
 }
 
 void yaget::ylog::Manager::AddOverrideFilter(uint32_t tag)
 {
     auto& d = md();
-    d.mOverriteTagFilters.insert(tag);
+    d.AddOverrideFilter(tag);
 }
 
 void yaget::ylog::Manager::RemoveFilter(uint32_t tag)
 {
     auto& d = md();
-    d.mTagFilters.erase(tag);
+    d.RemoveFilter(tag);
 }
