@@ -18,7 +18,7 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
         #include "Logger/LogTags.h"
         #include "Render/Logger/RenderLogTags.h"
         "SPAM",
-        "EDIT"
+        "EDIT",
     };
 
     return tags;
