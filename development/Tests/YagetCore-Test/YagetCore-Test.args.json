@@ -12,11 +12,11 @@
     },
     {
       "Id": "ee6f596d-443a-4cb5-bdd0-56434d22845f",
-      "Command": " --gtest_filter=BlobLoader.*"
+      "Command": "--gtest_filter=BlobLoader.*"
     },
     {
       "Id": "cbea5305-77d8-48b2-be52-10b7a4be3e95",
-      "Command": " --gtest_filter=PoolAllocators.Iterators"
+      "Command": "--gtest_filter=PoolAllocators.Iterators"
     },
     {
       "Id": "5869dbec-0b19-4c61-90bd-08658a645c6d",
