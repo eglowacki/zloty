@@ -50,7 +50,7 @@ Log::~Log()
 {
     if (!mIsFiltered)
     {
-        mTime.Make();
+        //mTime.Make();
         FormatLineMessage();
         mLogger.output(*this);
     }
@@ -126,6 +126,7 @@ void Log::Write(const char* file, unsigned line, const char* functionName, uint3
 
         if (!mIsFiltered)
         {
+            mTime.Make();
             mFileName = file ? file : "unknown file";
             mFileLine = line;
             mFunctionName = functionName ? functionName : "unknown function";
@@ -174,12 +175,12 @@ void Log::FormatLineMessage()
         scratchBuffer[scratchBufferSize-2] = ']';
         scratchBuffer[scratchBufferSize-1] = '\0';
 
-        threadName = scratchBuffer;
-    }
-
-    for (int i = 0; i < 2; ++i)
-    {
-        char* buffer = mFormatedBuffers[i];                 // time channel sev:tag
+        threadName = scratchBuffer;                         //
+    }                                                       //                                 line  function
+                                                            //                              file
+    for (int i = 0; i < 2; ++i)                             //                            split
+    {                                                       //                          message
+        char* buffer = mFormatedBuffers[i];                 // time channel sev:tag  thread
         int result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%-4s]%s %s%s%s(%d) : %s\n",
             timeText.c_str(), channelName.c_str(),
             severityText, ":", tagger.c_str(),
