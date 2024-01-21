@@ -1,0 +1,10 @@
+{
+  "FileVersion": 2,
+  "Id": "d4fd7c63-ba28-4324-81e4-f53ea7f1dbfa",
+  "Items": [
+    {
+      "Id": "b005930a-39b6-44b1-94b6-02af20d4b90c",
+      "Command": "--vts_fix"
+    }
+  ]
+}
