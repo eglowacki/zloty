@@ -329,6 +329,21 @@ namespace yaget
 
         //----------------------------------------------------------------------------------------------------------------------------------
         template <>
+        struct Convertor<unsigned short>
+        {
+            static unsigned short FromString(const char* value)
+            {
+                return yaget::conv::AtoN<unsigned short>(value);
+            }
+
+            static std::string ToString(unsigned short value)
+            {
+                return std::to_string(value);
+            }
+        };
+
+        //----------------------------------------------------------------------------------------------------------------------------------
+        template <>
         struct Convertor<int>
         {
             static int FromString(const char* value)
