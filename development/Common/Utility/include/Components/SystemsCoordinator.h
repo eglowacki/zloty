@@ -107,7 +107,7 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
     {
         using BaseType = T0;
         using SystemType = typename BaseType::element_type;
-        system = std::make_shared<SystemType>(mMessaging, app);
+        system = std::make_shared<SystemType>(mMessaging, app, mCoordinatorSet);
     });
 }
 
@@ -122,7 +122,7 @@ void yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::Tick(const time::GameCl
         const auto& message = fmt::format("System Tick {}", gameSystem->NiceName());
         metrics::Channel systemChannel(message, YAGET_METRICS_CHANNEL_FILE_LINE);
 
-        gameSystem->Tick(mCoordinatorSet, gameClock, channel);
+        gameSystem->Tick(gameClock, channel);
     });
 }
 
