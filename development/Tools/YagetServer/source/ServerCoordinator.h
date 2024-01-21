@@ -30,10 +30,6 @@ namespace yaget::server
     {
     public:
         ServerSystemsCoordinator(Messaging& m, Application& app);
-        ~ServerSystemsCoordinator();
-
-    private:
-        //comp::ItemIds mItems;
-        //boost::asio::io_context mIoContext;
+        ~ServerSystemsCoordinator() = default;
     };
 }

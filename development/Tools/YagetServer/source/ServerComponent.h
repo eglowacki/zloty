@@ -28,9 +28,8 @@ namespace yaget::server
     public:
         ServerComponent(comp::Id_t id, boost::asio::io_context& ioContext, boost::asio::ip::port_type port);;
 
-        boost::asio::io_context& mIoContext;
-
     private:
+        boost::asio::io_context& mIoContext;
         boost::asio::ip::tcp::endpoint mEndpoint;
         boost::asio::ip::tcp::acceptor mAcceptor;
         boost::asio::ip::tcp::socket mSocket;

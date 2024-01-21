@@ -28,9 +28,8 @@ namespace yaget::client
     public:
         ClientComponent(comp::Id_t id, boost::asio::io_context& ioContext, boost::asio::ip::tcp::endpoint serverConnection);;
 
-        boost::asio::io_context& mIoContext;
-
     private:
+        boost::asio::io_context& mIoContext;
         boost::asio::ip::tcp::endpoint mServerConnection;
         boost::asio::ip::tcp::resolver mResolver;
         boost::asio::ip::tcp::socket mSocket;

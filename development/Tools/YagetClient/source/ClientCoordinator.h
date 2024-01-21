@@ -30,10 +30,6 @@ namespace yaget::client
     {
     public:
         ClientSystemsCoordinator(Messaging& m, Application& app);
-        ~ClientSystemsCoordinator();
-
-    private:
-        comp::ItemIds mItems;
-        boost::asio::io_context mIoContext;
+        ~ClientSystemsCoordinator() = default;
     };
 }

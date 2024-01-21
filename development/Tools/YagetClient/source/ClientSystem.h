@@ -21,12 +21,16 @@
 
 namespace yaget::client
 {
-    class ClientSystem : public comp::gs::GameSystem<comp::gs::NoEndMarker, Messaging, ClientComponent*>
+    class ClientSystem : public comp::gs::GameSystem<EntityCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, ClientComponent*>
     {
     public:
-        ClientSystem(Messaging& messaging, Application& app);
+        ClientSystem(Messaging& messaging, Application& app, EntityCoordinatorSet& coordinatorSet);
+        ~ClientSystem();
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const ClientComponent* clientComponent);
+
+        comp::ItemIds mItems;
+        boost::asio::io_context mIoContext;
     };
 } // namespace yaget::client

@@ -21,10 +21,11 @@
 
 namespace yaget::server
 {
-    class ServerSystem : public comp::gs::GameSystem<comp::gs::NoEndMarker, Messaging, ServerComponent*>
+    class ServerSystem : public comp::gs::GameSystem<EntityCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, ServerComponent*>
     {
     public:
-        ServerSystem(Messaging& messaging, Application& app);
+        ServerSystem(Messaging& messaging, Application& app, EntityCoordinatorSet& coordinatorSet);
+        ~ServerSystem();
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const ServerComponent* serverComponent);
