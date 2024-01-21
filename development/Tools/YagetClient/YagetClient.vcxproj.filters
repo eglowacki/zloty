@@ -24,9 +24,6 @@
     <ClCompile Include="source\ClientComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\ClientCoordinator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\ClientMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -39,9 +36,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="source\ClientComponent.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\ClientCoordinator.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="source\ClientSystem.h">

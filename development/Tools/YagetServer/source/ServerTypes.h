@@ -23,10 +23,15 @@
 
 namespace yaget::server
 {
+    class ServerSystem;
+
     using Messaging = comp::gs::Messaging<std::shared_ptr<char>>;
 
     using Entity = comp::RowPolicy<ServerComponent*>;
 
     using EntityCoordinator = comp::Coordinator<Entity>;
     using EntityCoordinatorSet = comp::CoordinatorSet<EntityCoordinator>;
+
+    using ServerSystemsCoordinator = comp::gs::SystemsCoordinator<EntityCoordinatorSet, Messaging, Application, ServerSystem>;
+
 }

@@ -145,14 +145,12 @@
   <ItemGroup>
     <ClCompile Include="source\Client.cpp" />
     <ClCompile Include="source\ClientComponent.cpp" />
-    <ClCompile Include="source\ClientCoordinator.cpp" />
     <ClCompile Include="source\ClientMain.cpp" />
     <ClCompile Include="source\ClientSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\Client.h" />
     <ClInclude Include="source\ClientComponent.h" />
-    <ClInclude Include="source\ClientCoordinator.h" />
     <ClInclude Include="source\ClientSystem.h" />
     <ClInclude Include="source\ClientTypes.h" />
   </ItemGroup>

@@ -23,10 +23,14 @@
 
 namespace yaget::client
 {
+    class ClientSystem;
+
     using Messaging = comp::gs::Messaging<std::shared_ptr<char>>;
 
     using Entity = comp::RowPolicy<ClientComponent*>;
 
     using EntityCoordinator = comp::Coordinator<Entity>;
     using EntityCoordinatorSet = comp::CoordinatorSet<EntityCoordinator>;
+
+    using ClientSystemsCoordinator = comp::gs::SystemsCoordinator<EntityCoordinatorSet, Messaging, Application, ClientSystem>;
 }

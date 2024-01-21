@@ -133,14 +133,12 @@
   <ItemGroup>
     <ClCompile Include="source\Server.cpp" />
     <ClCompile Include="source\ServerComponent.cpp" />
-    <ClCompile Include="source\ServerCoordinator.cpp" />
     <ClCompile Include="source\ServerMain.cpp" />
     <ClCompile Include="source\ServerSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\Server.h" />
     <ClInclude Include="source\ServerComponent.h" />
-    <ClInclude Include="source\ServerCoordinator.h" />
     <ClInclude Include="source\ServerSystem.h" />
     <ClInclude Include="source\ServerTypes.h" />
   </ItemGroup>
