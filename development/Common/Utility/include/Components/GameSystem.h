@@ -18,6 +18,7 @@
 #pragma once
 
 #include "Components/ComponentTypes.h"
+#include "Components/Coordinator.h"
 #include "Metrics/Concurrency.h"
 #include <functional>
 #include <fmt/format.h>
