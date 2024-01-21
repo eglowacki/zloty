@@ -1,5 +1,5 @@
 ﻿#include "Client.h"
-#include "ClientCoordinator.h"
+#include "ClientSystem.h"
 
 #include "App/ConsoleApplication.h"
 #include "Items/ItemsDirector.h"
