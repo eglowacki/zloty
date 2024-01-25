@@ -27,6 +27,8 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
 YAGET_BRAND_NAME_F("Beyond Limits")
 YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::server,server::")
 
+
+//---------------------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
     YAGET_CHECKVERSION;

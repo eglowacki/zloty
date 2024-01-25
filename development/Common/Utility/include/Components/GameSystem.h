@@ -91,16 +91,6 @@ namespace yaget::comp::gs
             return mCoordinatorSet.template GetCoordinator<C>();
         }
 
-        //CS& CoordinatorSet()
-        //{
-        //    return mCoordinatorSet;
-        //}
-
-        //const CS& CoordinatorSet() const
-        //{
-        //    return mCoordinatorSet;
-        //}
-
     protected:
         GameSystem(const char* niceName, Messaging& messaging, Application& /*app*/, UpdateFunctor updateFunctor, CS& coordinatorSet)
             : mMessaging(messaging)

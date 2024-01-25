@@ -10,6 +10,7 @@
 #include <iostream>
 
 
+//---------------------------------------------------------------------------------------------------------------------
 int yaget::server::Run(const yaget::args::Options& options)
 {
     const io::VirtualTransportSystem::AssetResolvers resolvers = {

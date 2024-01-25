@@ -103,6 +103,32 @@
 //      const auto operator<=>(const S2&) const = default;
 //
 //
+//      void handler()
+//      {
+//          try
+//          {
+//              throw;
+//          }
+//          catch (const std::runtime_error& e)
+//          {
+//          }
+//          catch (const std::exception& e)
+//          {
+//          }
+//      }
+//      int main()
+//      {
+//          try
+//          {
+//              do_work(true); // throw some exception from inside
+//          }
+//          catch(...)
+//          {
+//              handler();
+//          }
+//      }
+//
+//
 //      #include "Meta/CompilerAlgo.h"
 //
 //////////////////////////////////////////////////////////////////////
