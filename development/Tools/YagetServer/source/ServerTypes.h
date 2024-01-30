@@ -17,6 +17,7 @@
 
 #include "YagetCore.h"
 #include "ServerComponent.h"
+#include "SessionComponent.h"
 
 #include "Components/SystemsCoordinator.h"
 #include "GameSystem/Messaging.h"
@@ -24,14 +25,15 @@
 namespace yaget::server
 {
     class ServerSystem;
+    class SessionSystem;
 
     using Messaging = comp::gs::Messaging<std::shared_ptr<char>>;
 
-    using Entity = comp::RowPolicy<ServerComponent*>;
+    using Entity = comp::RowPolicy<ServerComponent*, SessionComponent*>;
 
     using EntityCoordinator = comp::Coordinator<Entity>;
     using EntityCoordinatorSet = comp::CoordinatorSet<EntityCoordinator>;
 
-    using ServerSystemsCoordinator = comp::gs::SystemsCoordinator<EntityCoordinatorSet, Messaging, Application, ServerSystem>;
+    using ServerSystemsCoordinator = comp::gs::SystemsCoordinator<EntityCoordinatorSet, Messaging, Application, ServerSystem, SessionSystem>;
 
 }

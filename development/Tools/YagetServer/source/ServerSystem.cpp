@@ -13,9 +13,17 @@ yaget::server::ServerSystem::ServerSystem(Messaging& messaging, Application& app
 
     boost::asio::ip::port_type port = app.Options.find<int>("port", 25000);
 
-    const auto id = idCache.GetId(IdType::Burnable);
-    coordinator.AddComponent<ServerComponent>(id, mIoContext, port);
-    mItems.insert(id);
+    try
+    {
+        const auto id = idCache.GetId(IdType::Burnable);
+        coordinator.AddComponent<ServerComponent>(id, mIoContext, port);
+        mItems.insert(id);
+    }
+    catch (const boost::system::system_error& ec)
+    {
+        const auto errorMessage = ec.what();
+        YLOG_INFO("SERV", "Networking error: '%s'.", errorMessage);
+    }
 }
 
 

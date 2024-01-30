@@ -32,5 +32,6 @@ namespace yaget::client
 
         comp::ItemIds mItems;
         boost::asio::io_context mIoContext;
+        ClientComponent::Ticket_t mConnectionTicket{};
     };
 } // namespace yaget::client

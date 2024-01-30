@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
     args::Options options("Yaget.Server", "Yaget Server.");
     options.add_options()
-        ("p,port", "Specifies which port server is using for connection.")
+        ("p,port", "Specifies which port server is using for connection.", args::value<int>())
     ;
 
     const int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputConsole, ylog::OutputDebug>(argc, argv, options, nullptr, 0, [&options]()

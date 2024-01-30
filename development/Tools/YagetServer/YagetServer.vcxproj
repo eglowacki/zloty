@@ -135,12 +135,16 @@
     <ClCompile Include="source\ServerComponent.cpp" />
     <ClCompile Include="source\ServerMain.cpp" />
     <ClCompile Include="source\ServerSystem.cpp" />
+    <ClCompile Include="source\SessionComponent.cpp" />
+    <ClCompile Include="source\SessionSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\Server.h" />
     <ClInclude Include="source\ServerComponent.h" />
     <ClInclude Include="source\ServerSystem.h" />
     <ClInclude Include="source\ServerTypes.h" />
+    <ClInclude Include="source\SessionComponent.h" />
+    <ClInclude Include="source\SessionSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="data\KeyBindings.json">

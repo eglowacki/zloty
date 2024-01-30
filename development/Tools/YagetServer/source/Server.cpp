@@ -1,5 +1,6 @@
 ﻿#include "Server.h"
 #include "ServerSystem.h"
+#include "SessionSystem.h"
 
 #include "App/ConsoleApplication.h"
 #include "Items/ItemsDirector.h"

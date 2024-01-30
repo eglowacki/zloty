@@ -40,7 +40,8 @@ int main(int argc, char* argv[])
 
     args::Options options("Yaget.Client", "Yaget Client.");
     options.add_options()
-        ("a,address", "Specifies which server connect to. IP:Port.")
+        ("a,address", "Specifies which server connect to. IP:Port.", args::value<std::string>())
+        ("t,ticket", "Server connection ticket, acquired from external (gateway) sources.", args::value<int>())
     ;
 
     const int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputConsole, ylog::OutputDebug>(argc, argv, options, nullptr, 0, [&options]()
