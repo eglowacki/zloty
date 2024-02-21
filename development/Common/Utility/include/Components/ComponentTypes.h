@@ -28,6 +28,7 @@ namespace yaget
         // that entity is composed of.
         using Id_t = uint64_t;
 
+        // list of items
         using ItemIds = std::set<comp::Id_t>;
 
         // Any id's that are marked as persistent, will have high bit set, actual high bit 0x8000000000000000
