@@ -91,9 +91,6 @@ WindowApplication::WindowApplication(const std::string& title, items::Director& 
     ::RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
 }
 
-WindowApplication::~WindowApplication()
-{ 
-}
 
 int64_t yaget::WindowApplication::ProcessUserInput(uint32_t message, uint64_t wParam, int64_t lParam)
 {

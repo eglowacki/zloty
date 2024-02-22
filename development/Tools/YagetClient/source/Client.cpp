@@ -1,6 +1,7 @@
 ﻿#include "Client.h"
 #include "ClientSystem.h"
 
+
 #include "App/ConsoleApplication.h"
 #include "Items/ItemsDirector.h"
 #include "VTS/ResolvedAssets.h"
@@ -22,7 +23,7 @@ int yaget::client::Run(const yaget::args::Options& options)
     io::tool::VirtualTransportSystemDefault vts(vtsConfig, resolvers);
 
     // for now we always reset Director while changes to schema are WIP
-    items::BlankDefaultDirector director(vts, "Director", items::Director::RuntimeMode::Reset);
+    items::DefaultDirector<ClientSystemsCoordinator> director(vts, "Director", items::Director::RuntimeMode::Reset);
     app::DefaultConsole app("Yaget.Client", director, vts, options);
     Messaging messaging{};
 

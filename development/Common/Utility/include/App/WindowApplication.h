@@ -33,7 +33,6 @@ namespace yaget
     {
     public:
         WindowApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
-        ~WindowApplication() override;
 
         app::DisplaySurface GetSurface() const override;
 

@@ -31,6 +31,6 @@ namespace yaget::server
         SessionComponent(comp::Id_t id, boost::asio::io_context& ioContext);
 
     private:
-        const boost::asio::io_context* mIoContext;
+        boost::asio::io_context* const mIoContext;
     };
 }
