@@ -182,6 +182,7 @@
     <ClInclude Include="..\include\Components\CoordinatorSet.h" />
     <ClInclude Include="..\include\Components\GameCoordinatorGenerator.h" />
     <ClInclude Include="..\include\Components\GameSystem.h" />
+    <ClInclude Include="..\include\Components\GameSystemInline.h" />
     <ClInclude Include="..\include\Components\SystemsCoordinator.h" />
     <ClInclude Include="..\include\Components\LocationComponent.h" />
     <ClInclude Include="..\include\Components\PayloadStager.h" />

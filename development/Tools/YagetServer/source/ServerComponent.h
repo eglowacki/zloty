@@ -18,6 +18,8 @@
 
 #include "Components/Component.h"
 #include "Components/ComponentTypes.h"
+#include "NetworkTypes.h"
+
 #include <boost/asio/ip/tcp.hpp>
 
 
@@ -26,15 +28,13 @@ namespace yaget::server
     class ServerComponent : public comp::BaseComponent<>
     {
     public:
-        using Ticket_t = uint32_t;
-
         ServerComponent(comp::Id_t id, boost::asio::io_context& ioContext, boost::asio::ip::port_type port);;
 
     private:
         void ListenForSession();
         void AuthorizeSession(boost::asio::ip::tcp::endpoint endpoint);
 
-        Ticket_t GetTicket(boost::asio::ip::tcp::endpoint endpoint) const;
+        network::Ticket_t GetTicket(boost::asio::ip::tcp::endpoint endpoint) const;
 
         using ConnectionBuffer = std::array<char, 64>;
         struct Session
@@ -51,7 +51,7 @@ namespace yaget::server
             boost::asio::ip::tcp::socket mSocket;
 
             ConnectionBuffer mConnectionBuffer;
-            Ticket_t mTicket{};
+            network::Ticket_t mTicket{};
 
             std::string EndpointString() const
             {

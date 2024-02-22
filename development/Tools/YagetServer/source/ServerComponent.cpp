@@ -2,21 +2,6 @@
 
 #include <boost/asio/read.hpp>
 
-//---------------------------------------------------------------------------------------------------------------------
-void accept_handler(const boost::system::error_code& error)
-{
-    if (!error)
-    {
-        // Accept succeeded.
-        int z = 0;
-        z;
-        YLOG_INFO("SERV", "Connection established with client 'xxx'.");
-    }
-
-    int y = 0;
-    y;
-}
-
 
 //---------------------------------------------------------------------------------------------------------------------
 yaget::server::ServerComponent::ServerComponent(comp::Id_t id, boost::asio::io_context& ioContext, boost::asio::ip::port_type port)
@@ -84,7 +69,7 @@ void yaget::server::ServerComponent::AuthorizeSession(boost::asio::ip::tcp::endp
 
         YLOG_INFO("SERV", "Client connection '%s' request authorized.", session.EndpointString().c_str());
 
-        const auto bufferSize = AuthToken.size() + sizeof(Ticket_t);
+        const auto bufferSize = AuthToken.size() + sizeof(network::Ticket_t);
         boost::asio::async_read(session.mSocket, boost::asio::buffer(session.mConnectionBuffer.data(), bufferSize), [this, &session, bufferSize, endpoint](boost::system::error_code error, std::size_t size)
         {
             if (!error)
@@ -92,7 +77,7 @@ void yaget::server::ServerComponent::AuthorizeSession(boost::asio::ip::tcp::endp
                 if (size == bufferSize)
                 {
                     const char* authId = session.mConnectionBuffer.data();
-                    Ticket_t ticket = static_cast<Ticket_t>(*(session.mConnectionBuffer.data() + AuthToken.size()));
+                    const auto ticket = static_cast<network::Ticket_t>(*(session.mConnectionBuffer.data() + AuthToken.size()));
 
                     if (std::memcmp(authId, AuthToken.data(), AuthToken.size()) == 0 && ticket == session.mTicket)
                     {
@@ -138,7 +123,7 @@ void yaget::server::ServerComponent::AuthorizeSession(boost::asio::ip::tcp::endp
 
 
 //---------------------------------------------------------------------------------------------------------------------
-yaget::server::ServerComponent::Ticket_t yaget::server::ServerComponent::GetTicket(boost::asio::ip::tcp::endpoint endpoint) const
+yaget::network::Ticket_t yaget::server::ServerComponent::GetTicket(boost::asio::ip::tcp::endpoint endpoint) const
 {
     return 5;
 }

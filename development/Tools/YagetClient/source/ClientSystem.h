@@ -18,6 +18,7 @@
 
 #include "Components/GameSystem.h"
 #include "ClientTypes.h"
+#include "ClientComponent.h"
 
 namespace yaget::client
 {
@@ -25,13 +26,12 @@ namespace yaget::client
     {
     public:
         ClientSystem(Messaging& messaging, Application& app, EntityCoordinatorSet& coordinatorSet);
-        ~ClientSystem();
+        ~ClientSystem() = default;
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const ClientComponent* clientComponent);
 
-        comp::ItemIds mItems;
         boost::asio::io_context mIoContext;
-        ClientComponent::Ticket_t mConnectionTicket{};
+        network::Ticket_t mConnectionTicket{};
     };
 } // namespace yaget::client

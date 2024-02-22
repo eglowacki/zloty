@@ -87,6 +87,9 @@
     <Filter Include="Metric Files">
       <UniqueIdentifier>{3b1d8fab-c945-4a26-b127-f8d1f87dd6a5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component Files\Inlines">
+      <UniqueIdentifier>{c96c02dc-c695-488b-ae53-c0e9e8eb0947}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
@@ -613,6 +616,9 @@
     </ClInclude>
     <ClInclude Include="..\include\MemoryManager\NewAllocator.h">
       <Filter>MemoryManager Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\GameSystemInline.h">
+      <Filter>Component Files\Inlines</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

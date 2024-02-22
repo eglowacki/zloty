@@ -18,6 +18,8 @@
 
 #include "Components/Component.h"
 #include "Components/ComponentTypes.h"
+#include "NetworkTypes.h"
+
 #include <boost/asio/ip/tcp.hpp>
 
 
@@ -26,9 +28,12 @@ namespace yaget::client
     class ClientComponent : public comp::BaseComponent<>
     {
     public:
-        using Ticket_t = uint32_t;
+        ClientComponent(comp::Id_t id, boost::asio::io_context& ioContext, boost::asio::ip::tcp::endpoint serverConnection, network::Ticket_t ticket);;
 
-        ClientComponent(comp::Id_t id, boost::asio::io_context& ioContext, boost::asio::ip::tcp::endpoint serverConnection, Ticket_t ticket);;
+        void CurrentStatus()
+        {
+            mStatus = Status::Closed;
+        }
 
     private:
         void ConnectToSever(boost::asio::ip::tcp::resolver::results_type resolvedConnection);
@@ -41,11 +46,11 @@ namespace yaget::client
             Connected
         };
 
-        boost::asio::io_context& mIoContext;
+        boost::asio::io_context* mIoContext{};
         boost::asio::ip::tcp::endpoint mServerConnection;
         boost::asio::ip::tcp::resolver mResolver;
         boost::asio::ip::tcp::socket mSocket;
-        Ticket_t mTicket{};
+        network::Ticket_t mTicket{};
 
         Status mStatus = Status::Closed;    // do we really need this?
 

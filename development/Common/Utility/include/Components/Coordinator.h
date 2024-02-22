@@ -83,12 +83,16 @@ namespace yaget::comp
         T* AddComponent(comp::Id_t id, Args&&... args);
 
         // Remove and delete component. It will set component to nullptr
+        // Return true if there are still any other components left with id,
+        // otherwise return false
         template<typename T>
-        void RemoveComponent(comp::Id_t id, T*& component);
+        bool RemoveComponent(comp::Id_t id, T*& component);
 
         // Remove and delete component type from item id
+        // Return true if there are still any other components left with id,
+        // otherwise return false
         template<typename T>
-        void RemoveComponent(comp::Id_t id);
+        bool RemoveComponent(comp::Id_t id);
 
         // Remove all components with this id
         void RemoveComponents(comp::Id_t id);
@@ -246,7 +250,7 @@ T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
 
 template<typename P>
 template<typename T>
-void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
+bool yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
 {
     YAGET_ASSERT(component, "Component parameter of type: '%s' is nulptr.", typeid(T).name());
     YAGET_ASSERT(mItems.contains(id), "Item id: '%d' of type: '%s' does not exist in collection.", id, typeid(T).name());
@@ -272,17 +276,20 @@ void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
         if (newBits.any())
         {
             mPatterns[newBits].insert(id);
+            return true;
         }
     }
+
+    return false;
 }
 
 template<typename P>
 template<typename T>
-void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id)
+bool yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id)
 {
     auto it = mItems.find(id);
     YAGET_ASSERT(it != mItems.end(), "Item id: '%d' of type: '%s' does not exist in collection.", id, typeid(T).name());
-    RemoveComponent(id, std::get<T*>(it->second));
+    return RemoveComponent(id, std::get<T*>(it->second));
 }
 
 template<typename P>

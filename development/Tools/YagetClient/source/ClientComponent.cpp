@@ -5,12 +5,12 @@
 
 
 //---------------------------------------------------------------------------------------------------------------------
-yaget::client::ClientComponent::ClientComponent(comp::Id_t id, boost::asio::io_context& ioContext, boost::asio::ip::tcp::endpoint serverConnection, Ticket_t ticket)
+yaget::client::ClientComponent::ClientComponent(comp::Id_t id, boost::asio::io_context& ioContext, boost::asio::ip::tcp::endpoint serverConnection, network::Ticket_t ticket)
     : comp::BaseComponent<>(id)
-    , mIoContext(ioContext)
+    , mIoContext(&ioContext)
     , mServerConnection(std::move(serverConnection))
-    , mResolver(mIoContext)
-    , mSocket(mIoContext)
+    , mResolver(*mIoContext)
+    , mSocket(*mIoContext)
     , mTicket(ticket)
 {
     YLOG_INFO("CLNT", "Resolving address to server: '%s:%d'...", mServerConnection.address().to_string().c_str(), mServerConnection.port());
@@ -68,7 +68,7 @@ void yaget::client::ClientComponent::AuthToSever()
     std::copy_n(AuthToken.begin(), AuthToken.size(), mNetworkPocketBuffer.begin());
     mWriteOffset += AuthToken.size();
 
-    constexpr auto ticketSize = sizeof(Ticket_t);
+    constexpr auto ticketSize = sizeof(network::Ticket_t);
     std::copy_n(&mTicket, ticketSize, mNetworkPocketBuffer.begin() + mWriteOffset);
     mWriteOffset += ticketSize;
 

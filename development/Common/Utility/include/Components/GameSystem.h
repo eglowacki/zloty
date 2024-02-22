@@ -21,8 +21,6 @@
 #include "Components/Coordinator.h"
 #include "Metrics/Concurrency.h"
 #include <functional>
-#include <fmt/format.h>
-
 
 namespace yaget
 {
@@ -33,6 +31,35 @@ namespace yaget
 
 namespace yaget::comp::gs
 {
+    // helper functions for bookkeeping of which items/components belong to which Coordinators
+    namespace internalgs
+    {
+        template <
+            typename TTuple,
+            size_t Index = 0,
+            size_t Size = std::tuple_size_v<std::remove_reference_t<TTuple>>,
+            typename TElement,
+            typename TCollection
+        >
+        constexpr void add_to_collection(TElement&& id, TCollection& collection);
+
+        template <
+            typename TTuple,
+            size_t Index = 0,
+            size_t Size = std::tuple_size_v<std::remove_reference_t<TTuple>>,
+            typename TCoordinatorSet,
+            typename TCollection
+        >
+        constexpr void remove_all_from_collection(TCoordinatorSet&& coordinatorSet, TCollection& collection);
+
+        template <typename TElement, typename TCollection>
+        constexpr void add_item_to_collection(size_t Index, TElement&& id, TCollection& collection);
+
+        template <typename TElement, typename TCollection>
+        constexpr void remove_item_from_collection(size_t Index, TElement&& id, TCollection& collection);
+
+    } // namespace internalgs
+
     struct NoEndMarker {};
     struct GenerateEndMarker {};
 
@@ -51,9 +78,11 @@ namespace yaget::comp::gs
     //};
     //
     template <typename CS, typename E, typename M, typename... Comps>
-    class GameSystem : public Noncopyable<GameSystem<E, M, Comps...>>
+    class GameSystem : public Noncopyable<GameSystem<CS, E, M, Comps...>>
     {
     public:
+        static_assert(CS::NumCoordinators < 2, "There are bugs with having more then one coordinator when using CoordinatorSet");
+
         using EndMarker = E;
         using Messaging = M;
         using RowPolicy = comp::RowPolicy<Comps...>;
@@ -63,108 +92,45 @@ namespace yaget::comp::gs
 
         // framework calls this on same cadence (every tick...)
         // In default case that is SystemsCoordinator class
-        void Tick(const time::GameClock& gameClock, metrics::Channel& channel)
-        {
-            mCoordinatorSet.template ForEach<Row>([this, &gameClock, &channel](yaget::comp::Id_t id, const auto& row)
-            {
-                Update(id, gameClock, channel, row);
-                return true;
-            });
-
-            if constexpr (std::is_same_v<EndMarker, GenerateEndMarker>)
-            {
-                Update(END_ID_MARKER, gameClock, channel, {});
-            }
-        }
+        void Tick(const time::GameClock& gameClock, metrics::Channel& channel);
 
         const char* NiceName() const { return mNiceName; }
 
         template <typename C>
-        comp::Coordinator<C>& GetCoordinator()
-        {
-            return mCoordinatorSet.template GetCoordinator<C>();
-        }
+        comp::Coordinator<C>& GetCoordinator();
 
         template <typename C>
-        const comp::Coordinator<C>& GetCoordinator() const
-        {
-            return mCoordinatorSet.template GetCoordinator<C>();
-        }
+        const comp::Coordinator<C>& GetCoordinator() const;
+
+        template <typename C, typename CT, typename... Args>
+        CT* AddComponent(comp::Id_t id, Args&&... args);
+
+        template <typename C, typename CT>
+        void RemoveComponent(comp::Id_t id);
+
+        template <typename C>
+        void RemoveComponents(comp::Id_t id);
+
+        ~GameSystem();
 
     protected:
-        GameSystem(const char* niceName, Messaging& messaging, Application& /*app*/, UpdateFunctor updateFunctor, CS& coordinatorSet)
-            : mMessaging(messaging)
-            , mNiceName(niceName)
-            , mUpdateFunctor(updateFunctor)
-            , mCoordinatorSet(coordinatorSet)
-        {}
+        GameSystem(const char* niceName, Messaging& messaging, Application& app, UpdateFunctor updateFunctor, CS& coordinatorSet);
 
         Messaging& mMessaging;
 
     private:
-        void Update(yaget::comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const Row& row)
-        {
-            //const auto& message = fmt::format("Update Entity Id: {}", id);
-            //metrics::Channel systemChannel(message, YAGET_METRICS_CHANNEL_FILE_LINE);
-
-            // NOTE how can we convert row to new row with some of them being const modified?
-            auto newRow = std::tuple_cat(std::tie(id, gameClock, channel), row);
-            std::apply(mUpdateFunctor, newRow);
-        }
+        void Update(yaget::comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const Row& row);
 
         const char* mNiceName = nullptr;
         UpdateFunctor mUpdateFunctor;
         CS& mCoordinatorSet;
+
+        using Items = std::array<comp::ItemIds, std::tuple_size_v<typename CS::Coordinators>>;
+        Items mItems;
     };
 
-}
+} // namespace yaget::comp::gs
 
-
-////#include "Components/GameSystemInl.h"
-//namespace yaget::comp_new
-//{
-//    template <typename E, typename ... Comps>
-//    template <typename T>
-//    void GameSystem<E, Comps...>::Tick(T& /*coordinatorSet*/)
-//    {
-//        //coordinatorSet.ForEach<RowPolicy>([](comp::Id_t id, RowPolicy row)
-//        //{
-//        //    id;
-//        //    row;
-//        //    return true;
-//
-//        //});
-//    }
-//
-//}
-//
-//#if 0
-//metrics::Channel channelUpdate(mNiceName.c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
-//
-//[[maybe_unused]] bool updateCalled = coordinator.ForEach<RowPolicy>([&gameClock, &channel, this](comp::Id_t id, const auto& row)
-//    {
-//        if (IsUpdateNeeded(id))
-//        {
-//            Update(id, gameClock, channel, row);
-//            // timer needs to be removed if it's stopped. This happens to FireOnce timer when it actually fired
-//            if (auto it = mTimers.find(id); it != std::end(mTimers) && it->second.mFireTimer == FireTimer::Stop)
-//            {
-//                ActivateTimer(id, gameClock, 0, FireTimer::Stop);
-//            }
-//
-//            return true;
-//        }
-//
-//        return false;
-//    });
-//
-//// we only want to call end id marker if there were any id's processed
-//if constexpr (EndMarker::val)
-//{
-//    if (updateCalled)
-//    {
-//        Update(comp::END_ID_MARKER, gameClock, channel, Row());
-//    }
-//}
-//#endif
-//#include "Components/GameSystemDeprecated.h"
+#define YAGET_GAME_SYSTEM_INCLUDE_IMPLEMENTATION
+#include "Components/GameSystemInline.h"
+#undef YAGET_GAME_SYSTEM_INCLUDE_IMPLEMENTATION

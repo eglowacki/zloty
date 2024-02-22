@@ -73,6 +73,9 @@ namespace yaget::comp
     class CoordinatorSet
     {
     public:
+        using Coordinators = std::tuple<T...>;
+        static constexpr size_t NumCoordinators = std::tuple_size_v<std::remove_reference_t<Coordinators>>;
+
         using FullRow = coordinator_row_combine_t<T...>;
         static_assert(meta::tuple_is_unique_v<FullRow>, "Duplicate element types in CoordinatorSet FullRow");
         const Strings mComponentNames = comp::db::GetPolicyRowNames<FullRow>();
@@ -186,25 +189,25 @@ namespace yaget::comp
             return std::get<comp::Coordinator<C>>(mCoordinators);
         }
 
-        //// Iterate over each item in ids collection and call callback on each item
-        //template<typename R>
-        //void ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback)
-        //{
-        //    
-        //}
+        template <std::size_t Index>
+        auto& GetCoordinator()
+        {
+            return std::get<Index>(mCoordinators);
+        }
 
-        //// Iterate over all items that conform to pattern R
-        //// Return number of matched items, or 0 if none.
-        //template<typename... R>
-        //std::size_t ForEach(std::function<bool(comp::Id_t id, const typename Row& row)> callback)
-        //{
-        //    
-        //}
+        template <std::size_t Index>
+        const auto& GetCoordinator() const
+        {
+            return std::get<Index>(mCoordinators);
+        }
+
+        template <typename TCoordinator>
+        constexpr std::size_t GetCoordinatorIndex() const
+        {
+            return meta::Index<TCoordinator, Coordinators>::value;
+        }
 
     private:
-        using Coordinators = std::tuple<T...>;
-        static constexpr size_t NumCoordinators = std::tuple_size_v<std::remove_reference_t<Coordinators>>;
-
         Coordinators mCoordinators;
     };
 }
