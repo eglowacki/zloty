@@ -15,14 +15,15 @@ yaget::client::ClientSystem::ClientSystem(Messaging& messaging, Application& app
     mConnectionTicket = app.Options.find<int>("ticket", 0);
     YLOG_INFO("CLNT", "Connection Ticket: '%d'.", mConnectionTicket);
 
-    const auto id = idspace::get_burnable(idCache);
-
     const auto& address = app.Options.find<std::string>("address", "127.0.0.1:25000");
+    YLOG_INFO("CLNT", "Server address: '%s'.", address.c_str());
+
     boost::system::error_code ec;
     const auto serverEndPoint = network::CreateEndPoint(address, ec);
     network::ThrowOnError(ec, fmt::format("Could not make a valid address from '{}'", address));
         
-    auto* client = AddComponent<Entity, ClientComponent>(id, mIoContext, serverEndPoint, mConnectionTicket);
+    const auto id = idspace::get_burnable(idCache);
+    auto* client = AddComponent<ClientComponent>(id, mIoContext, serverEndPoint, mConnectionTicket);
 
 //#define YAGET_TEST_POINTER_TYPES
 #ifdef YAGET_TEST_POINTER_TYPES

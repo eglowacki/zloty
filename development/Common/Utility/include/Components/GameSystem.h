@@ -102,7 +102,7 @@ namespace yaget::comp::gs
         template <typename C>
         const comp::Coordinator<C>& GetCoordinator() const;
 
-        template <typename C, typename CT, typename... Args>
+        template <typename CT, typename... Args>
         CT* AddComponent(comp::Id_t id, Args&&... args);
 
         template <typename C, typename CT>

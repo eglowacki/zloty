@@ -25,12 +25,11 @@ namespace yaget::server
     {
     public:
         ServerSystem(Messaging& messaging, Application& app, EntityCoordinatorSet& coordinatorSet);
-        ~ServerSystem();
+        ~ServerSystem() = default;
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const ServerComponent* serverComponent);
 
-        comp::ItemIds mItems;
         boost::asio::io_context mIoContext;
     };
 } // namespace yaget::server
