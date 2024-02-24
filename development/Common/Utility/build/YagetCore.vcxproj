@@ -40,6 +40,7 @@
     <ClCompile Include="..\source\Components\PhysicsComponent.cpp" />
     <ClCompile Include="..\source\Components\ScriptComponent.cpp" />
     <ClCompile Include="..\source\Components\SystemsCoordinator.cpp" />
+    <ClCompile Include="..\source\Core\ErrorHandlers.cpp" />
     <ClCompile Include="..\source\Database\Database.cpp" />
     <ClCompile Include="..\source\Debugging\Assert.cpp" />
     <ClCompile Include="..\source\Debugging\DevConfiguration.cpp">
@@ -189,6 +190,7 @@
     <ClInclude Include="..\include\Components\PersistentBaseComponent.h" />
     <ClInclude Include="..\include\Components\PhysicsComponent.h" />
     <ClInclude Include="..\include\Components\ScriptComponent.h" />
+    <ClInclude Include="..\include\Core\ErrorHandlers.h" />
     <ClInclude Include="..\include\Database\Database.h" />
     <ClInclude Include="..\include\Debugging\Assert.h" />
     <ClInclude Include="..\include\Debugging\DevConfiguration.h" />

@@ -1,7 +1,7 @@
 ﻿#include "ClientSystem.h"
 
 #include "Network/ErrorHandlers.h"
-#include "Network\EndPoints.h"
+#include "Network/EndPoints.h"
 
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ yaget::client::ClientSystem::ClientSystem(Messaging& messaging, Application& app
 
     boost::system::error_code ec;
     const auto serverEndPoint = network::CreateEndPoint(address, ec);
-    network::ThrowOnError(ec, fmt::format("Could not make a valid address from '{}'", address));
+    error_handlers::ThrowOnError(ec, fmt::format("Could not make a valid address from '{}'", address));
         
     const auto id = idspace::get_burnable(idCache);
     auto* client = AddComponent<ClientComponent>(id, mIoContext, serverEndPoint, mConnectionTicket);

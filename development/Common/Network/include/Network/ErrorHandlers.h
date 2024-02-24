@@ -17,8 +17,7 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
-#include <source_location>
+#include "Core/ErrorHandlers.h"
 
 
 namespace boost::system
@@ -26,8 +25,9 @@ namespace boost::system
     class error_code;
 }
 
-namespace yaget::network
+namespace yaget::error_handlers
 {
     //const std::source_location& location = std::source_location::current()
     void ThrowOnError(const boost::system::error_code& ec, const std::string& message, const std::source_location& location = std::source_location::current());
-}
+
+} // namespace yaget::error_handlers

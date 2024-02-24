@@ -113,7 +113,7 @@ namespace yaget::comp::gs
                 if (!component)
                 {
                     auto& coordinator = GetCoordinator<typename Coordinator::Policy>();
-                    component = coordinator.template AddComponent<CT>(id, args...);
+                    component = coordinator.template AddComponent<CT>(id, std::forward<Args>(args)...);
 
                     const std::size_t index = mCoordinatorSet.template GetCoordinatorIndex<meta::strip_qualifiers_t<decltype(coordinator)>>();
                     internalgs::add_item_to_collection(index, id, mItems);
