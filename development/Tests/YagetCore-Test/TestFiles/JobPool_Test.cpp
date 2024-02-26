@@ -17,7 +17,7 @@ namespace yaget::ylog
     {
         yaget::Strings tags =
         {
-            #include "Logger/LogTags.h"
+            #include "Logger/CoreLogTags.h"
             "TEST"
         };
 

@@ -125,7 +125,6 @@ bool ConsoleApplication::onMessagePump(const time::GameClock& /*gameClock*/)
                 flags |= input::kButtonUp;
             }
 
-            YLOG_DEBUG("SPAM", "Pressed key is: '%d', with flags: '%d'", keyValue, flags);
             mInputDevice.KeyRecord(flags, keyValue);
         }
         break;

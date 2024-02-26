@@ -20,7 +20,7 @@ namespace yaget::error_handlers
 {
     void Throw(const char* tag, const std::string& message, const std::source_location& location = std::source_location::current());
 
-    inline void Throw(const std::string& message, const std::source_location& location = std::source_location::current()) { Throw("UTIL", message, location); }
+    inline void Throw(const std::string& message, const std::source_location& location = std::source_location::current()) { Throw("CORE", message, location); }
     inline void ThrowOnCheck(bool resultValid, const std::string& message, const std::source_location& location = std::source_location::current()) {if (!resultValid) { Throw(message, location); }}
 
     void ThrowOnError(bool resultValid, const std::string& message, const std::source_location& location = std::source_location::current());

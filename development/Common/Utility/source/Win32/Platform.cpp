@@ -248,7 +248,6 @@ namespace
             // let's check for config_view option and dump some configuration values
             if (options.find<bool>("options_view", false))
             {
-                //YLOG_NOTICE("MAIN", "\n%s", util::DisplayCurrentConfiguration(&options).c_str());
                 yaget::platform::DebuggerOutput(util::DisplayCurrentConfiguration(&options));
 
                 if (!options.find<bool>("generate_config", false))
@@ -262,7 +261,7 @@ namespace
                 // so generated json file will have it
                 dev::Configuration configuration;
 
-                configuration.mDebug.mLogging.Filters = { "MAIN", "TEST" };
+                configuration.mDebug.mLogging.Filters = { "CORE", "TEST" };
                 configuration.mDebug.mLogging.Outputs = {
                     { "Console", { { "Key1", "Value1" } } }
                 };
@@ -294,7 +293,7 @@ namespace
                 nlohmann::json jsonBlock;
                 to_json(jsonBlock, configuration);
                 const auto blockString = "\n" + json::PrettyPrint(jsonBlock);
-                YLOG_NOTICE("MAIN", "%s", blockString.c_str());
+                YLOG_NOTICE("CORE", "%s", blockString.c_str());
                 platform::DebuggerOutput(blockString);
 
                 return system::InitializationResult::Helped;
@@ -308,7 +307,7 @@ namespace
             std::string errorTitle = fmt::format("{} Startup Error", util::ExpendEnv("$(AppName)", nullptr));
 
             platform::DebuggerOutput(message);
-            YLOG_ERROR("MAIN", "%s .Terminating application. %s", message.c_str());
+            YLOG_ERROR("CORE", "%s .Terminating application. %s", message.c_str());
 
             if (platform::IsDebuggerAttached())
             {

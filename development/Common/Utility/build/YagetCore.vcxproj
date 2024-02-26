@@ -218,7 +218,7 @@
     <ClInclude Include="..\include\LoggerCpp\OutputDebug.h" />
     <ClInclude Include="..\include\LoggerCpp\OutputFile.h" />
     <ClInclude Include="..\include\LoggerCpp\Utils.h" />
-    <ClInclude Include="..\include\Logger\LogTags.h" />
+    <ClInclude Include="..\include\Logger\CoreLogTags.h" />
     <ClInclude Include="..\include\Logger\YLog.h" />
     <ClInclude Include="..\include\Math\Interpolators.h" />
     <ClInclude Include="..\include\Math\YagetMath.h" />

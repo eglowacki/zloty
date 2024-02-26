@@ -69,7 +69,7 @@ bool yaget::SQLite::Open(const char* fileName, DatabaseType openDatabaseAsType, 
         Batcher batcher(*this);
         if (initializeSchemaCallback && initializeSchemaCallback(*this, mDatabase))
         {
-            YLOG_INFO("SQL", "SQLite Database '%s' created. Version: '%s'", fileName, SQLITE_VERSION);
+            YLOG_INFO("DB", "SQLite Database '%s' created. Version: '%s'", fileName, SQLITE_VERSION);
         }
         else
         {

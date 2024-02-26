@@ -2,7 +2,7 @@
 	"Configuration" : {
 		"Debug": {
 			"Logging": {
-				"Filters": [ "INPT", "WIND", "MULT", "POOL", "SPAM", "!SERV" ],
+				"Filters": [ "INPT", "WIND", "MULT", "POOL", "!SERV" ],
 				"Level": "WARN",
 				"Outputs": {
 					"ylog::OutputDebug": {

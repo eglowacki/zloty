@@ -41,7 +41,7 @@ namespace yaget::app
             // main thread id as current one. If user utilizes different thread as a "main",
             // it can call this before calling Harness
             const auto mainId = dev::CurrentThreadIds().Main;
-            metrics::MarkStartThread(mainId, "MAIN");
+            metrics::MarkStartThread(mainId, "Main");
 
             using LogOutputs = std::tuple<Args...>;
             meta::for_each_type<LogOutputs>([](const auto& logType)
@@ -65,7 +65,7 @@ namespace yaget::app
             }
             catch (const ex::standard& e)
             {
-                YLOG_ERROR("MAIN", "Application terminated, Exception Error: '%s'", e.what());
+                YLOG_ERROR("CORE", "Application terminated, Exception Error: '%s'", e.what());
                 if (platform::IsDebuggerAttached())
                 {
                     platform::DebuggerBreak();

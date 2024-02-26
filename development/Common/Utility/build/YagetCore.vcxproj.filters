@@ -566,7 +566,7 @@
     <ClInclude Include="..\source\Logger\OutputMemory.cpp">
       <Filter>Logger Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Logger\LogTags.h">
+    <ClInclude Include="..\include\Logger\CoreLogTags.h">
       <Filter>Logger Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\TestHelpers\TestHelpers.h">

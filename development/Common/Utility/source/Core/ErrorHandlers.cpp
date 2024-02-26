@@ -14,7 +14,7 @@ void yaget::error_handlers::Throw(const char* tag, const std::string& message, c
 
     if (platform::IsDebuggerAttached())
     {
-        const char* logTag =  tag ? tag : "UTIL";
+        const char* logTag =  tag ? tag : "CORE";
         YLOG_PERROR(logTag, location.file_name(), location.line(), location.function_name(), textError.c_str());
         platform::DebuggerBreak();
     }

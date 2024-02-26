@@ -68,7 +68,7 @@ void yaget::test::InitializeEnvironment(const char* configBlockData /*= nullptr*
     std::string block = json::PrettyPrint(jsonBlock);
 
     system::InitializeSetup(block.c_str(), block.size(), true);
-    metrics::MarkStartThread(platform::CurrentThreadId(), "MAIN");
+    metrics::MarkStartThread(platform::CurrentThreadId(), "Main");
 }
 
 void yaget::test::ResetEnvironment()

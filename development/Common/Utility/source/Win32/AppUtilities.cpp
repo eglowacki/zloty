@@ -333,7 +333,7 @@ void yaget::util::AddToEnvironment(const yaget::util::EnvironmentList& envList)
             {
                 // We only want to generate warning if requested alias name is not the same as current
                 // otherwise we silently ignore the same value, since there is no change
-                YLOG_CWARNING("UTIL", 
+                YLOG_CWARNING("CORE", 
                     ExpendAll(it.second.Value) == alias->second.Value,
                     "Environment Alias: '%s' is marked as Read Only, can not be set from configuration. Current Value: '%s', Requested Value: '%s' [%s].", 
                     alias->first.c_str(), alias->second.Value.c_str(), ExpendAll(it.second.Value).c_str(), it.second.Value.c_str());

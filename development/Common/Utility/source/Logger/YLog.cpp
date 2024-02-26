@@ -68,7 +68,7 @@ void ylog::Initialize(const args::Options& options)
     // dump file with all registered tags using name and hash values
     if (options.find<bool>("log_write_tags", false))
     {
-        std::string fileName = util::ExpendEnv("$(LogFolder)/LogTags.txt", nullptr);
+        const std::string fileName = util::ExpendEnv("$(LogFolder)/LogTags.txt", nullptr);
         std::ofstream logTagsFile(fileName.c_str());
 
         logTagsFile << "; Currently registered log tags\n";

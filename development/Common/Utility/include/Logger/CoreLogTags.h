@@ -6,7 +6,7 @@
 //  {
 //      yaget::Strings tags =
 //      {
-//          #include "Logger/LogTags.h"
+//          #include "Logger/CoreLogTags.h"
 //          "YOUR_TAG_NAME_HERE",
 //          "ANOTHER_YOUR_TAG_NAME_HERE",
 //      };
@@ -16,48 +16,46 @@
 //
 
 // hashed values for core log tags
-//  INPT = 1414549065
-//  PROF = 1179603536
-//  APP  =  542134337
-//  UTIL = 1279874133
-//  METR = 1381254477
+//  APP  =    5263425
+//  ASET = 1413829441
+//  CLNT = 1414417475
+//  CORE = 1163022147
+//  DB   = 4261429828
 //  DEVV = 1448494404
-//  FILE = 1162627398
-//  IDS  =  542327881
-//  INPT = 1414549065
 //  DIRE = 1163020612
-//  POOL = 1280266064
-//  MULT = 1414288717
-//  INIT = 1414090313
-//  REND = 1145980242
-//  SQL  =  541872467
+//  FILE = 1162627398
+//  GSYS = 1398362951
+//  IDS  =    5456969
 //  IGUI = 1230325577
-//  VTS  =  542331990
-//  WIN  =  542001495
-//  PONG = 1196314448
+//  INIT = 1414090313
+//  INPT = 1414549065
+//  METR = 1381254477
+//  MULT = 1414288717
+//  POOL = 1280266064
+//  PROF = 1179603536
+//  SPAM = 1296126035
+//  VTS  =    5461078
+//  VTSD = 1146311766
+//  WATC = 1129595223
+//  WIN  =    5130583
 
-"MAIN",
+"CORE",
 "INPT",
 "PROF",
 "APP",
-"UTIL",
 "METR",
 "DEVV",
 "FILE",
 "IDS",
-"INPT",
 "DIRE",
 "POOL",
 "MULT",
 "INIT",
-"SQL",
+"DB",
 "IGUI",
 "VTS",
 "VTSD",
 "WATC",
-"CONV",
 "WIN",
-"WIND",
 "GSYS",
-"ASET",
-"DB", // make sure that last entry has , or you may get compile error or worst a silent false positive
+"ASET", // make sure that last entry has , or you may get compile error or worst a silent false positive

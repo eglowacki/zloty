@@ -17,8 +17,7 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
 {
     yaget::Strings tags =
     {
-        #include "Logger/LogTags.h"
-        "SPAM",
+        #include "Logger/CoreLogTags.h"
         "CLNT",
     };
 

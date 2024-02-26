@@ -6,7 +6,6 @@
 #include "LoggerCpp/OutputConsole.h"
 #include "LoggerCpp/OutputDebug.h"
 #include "LoggerCpp/OutputFile.h"
-//#include "MemoryManager/PoolAllocator.h"
 #include "MemoryManager/NewAllocator.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 
@@ -16,8 +15,7 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
 {
     yaget::Strings tags =
     {
-        #include "Logger/LogTags.h"
-        "SPAM",
+        #include "Logger/CoreLogTags.h"
         "SERV",
     };
 

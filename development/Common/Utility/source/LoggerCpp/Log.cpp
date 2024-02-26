@@ -107,7 +107,7 @@ void Log::Write(const char* file, unsigned line, const char* functionName, uint3
 {
     // Did you forget to registered this tag?
     // To register your tag in core library add 'YOUR_TAG_NAME"
-    // to Logger/LogTags.h file. For external library, executable,
+    // to Logger/CoreLogTags.h file. For external library, executable,
     // add to you GetRegisteredTags() function
     assert(Manager::IsValidTag(tag));
 
