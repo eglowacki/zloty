@@ -3,6 +3,8 @@
 #include "Exception/Exception.h"
 #include <SpriteFont.h>
 
+#include "Core/ErrorHandlers.h"
+
 
 yaget::render::FontResource::FontResource(Device& device, std::shared_ptr<io::render::FontAsset> asset)
     : ResourceView(device, asset->mTag, std::type_index(typeid(FontResource)))
@@ -17,7 +19,7 @@ yaget::render::FontResource::FontResource(Device& device, std::shared_ptr<io::re
     catch (const std::exception& e)
     {
         const auto& textError = fmt::format("Did not initialize font: '{}'. Error: {}", asset->mTag.ResolveVTS(), e.what());
-        YAGET_UTIL_THROW("REND", textError);
+        error_handlers::Throw("REND", textError);
     }
 }
 

@@ -8,6 +8,8 @@
 #include <type_traits>
 #include <d3d12.h>
 
+#include "Core/ErrorHandlers.h"
+
 namespace
 {
     yaget::render::ComPtr<ID3D12CommandQueue> CreateCommandQueue(ID3D12Device* device, yaget::render::platform::CommandQueue::Type cqType)
@@ -22,8 +24,8 @@ namespace
         queueDesc.Type = yaget::render::ConvertCommandQueueType(cqType);
 
         render::ComPtr<ID3D12CommandQueue> commandQueue;
-        HRESULT hr = device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue));
-        YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not create DX12 Command Queue for type: {}.", conv::Convertor<render::platform::CommandQueue::Type>::ToString(cqType)));
+        const HRESULT hr = device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue));
+        error_handlers::ThrowOnError(hr, fmt::format("Could not create DX12 Command Queue for type: {}.", conv::Convertor<render::platform::CommandQueue::Type>::ToString(cqType)));
 
         YAGET_RENDER_SET_DEBUG_NAME(commandQueue.Get(), fmt::format("Yaget CommandQueue-{}", conv::Convertor<render::platform::CommandQueue::Type>::ToString(cqType)));
 
@@ -34,8 +36,8 @@ namespace
     {
         yaget::render::ComPtr<ID3D12Fence1> fence;
 
-        HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Fence");
+        const HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Fence");
 
         YAGET_RENDER_SET_DEBUG_NAME(fence.Get(), "Yaget Fence");
 
@@ -49,14 +51,14 @@ yaget::render::platform::CommandQueue::CommandQueue(ID3D12Device* device, Type t
 {
     mCommandQueue = CreateCommandQueue(device, type);
 
-    HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Fence");
+    const HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence));
+    error_handlers::ThrowOnError(hr, "Could not create DX12 Fence");
 
     YAGET_RENDER_SET_DEBUG_NAME(mFence.Get(), "Yaget Fence");
     //mFence->AddRef(); // testing leak report
 
     mFenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
-    YAGET_UTIL_THROW_ON_RROR(mFenceEvent, "Could not create Event");
+    error_handlers::ThrowOnError(mFenceEvent, "Could not create Event");
 
     YLOG_INFO("DEVI", "Command Queue created with Type: '%s'.", yaget::conv::Convertor<Type>::ToString(type).c_str());
 }
@@ -79,8 +81,8 @@ uint64_t yaget::render::platform::CommandQueue::Signal()
 {
     const uint64_t fenceValueForSignal = ++mFenceValue;
 
-    HRESULT hr = mCommandQueue->Signal(mFence.Get(), fenceValueForSignal);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not signal DX12 Command Queue");
+    const HRESULT hr = mCommandQueue->Signal(mFence.Get(), fenceValueForSignal);
+    error_handlers::ThrowOnError(hr, "Could not signal DX12 Command Queue");
 
     return fenceValueForSignal;
 }
@@ -91,8 +93,8 @@ void yaget::render::platform::CommandQueue::WaitForFenceValue(uint64_t fenceValu
 {
     if (mFence->GetCompletedValue() < fenceValue)
     {
-        HRESULT hr = mFence->SetEventOnCompletion(fenceValue, mFenceEvent);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Event On Completion");
+        const HRESULT hr = mFence->SetEventOnCompletion(fenceValue, mFenceEvent);
+        error_handlers::ThrowOnError(hr, "Could not set DX12 Event On Completion");
 
         ::WaitForSingleObject(mFenceEvent, INFINITE);
     }
@@ -193,8 +195,8 @@ uint64_t yaget::render::platform::CommandQueues::CommandQueueData::Signal()
     mFenceValue++;
     const uint64_t fenceValueForSignal = mFenceValue;
 
-    HRESULT hr = mCommandQueue->Signal(mFence.Get(), fenceValueForSignal);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not signal DX12 Command Queue");
+    const HRESULT hr = mCommandQueue->Signal(mFence.Get(), fenceValueForSignal);
+    error_handlers::ThrowOnError(hr, "Could not signal DX12 Command Queue");
 
     return fenceValueForSignal;
 }
@@ -206,8 +208,8 @@ void yaget::render::platform::CommandQueues::CommandQueueData::Wait(uint64_t sig
     const auto fenceValue = mFence->GetCompletedValue();
     if (fenceValue < signalValue)
     {
-        HRESULT hr = mFence->SetEventOnCompletion(signalValue, mFenceEvent);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Event On Completion");
+        const HRESULT hr = mFence->SetEventOnCompletion(signalValue, mFenceEvent);
+        error_handlers::ThrowOnError(hr, "Could not set DX12 Event On Completion");
 
         ::WaitForSingleObject(mFenceEvent, INFINITE);
     }

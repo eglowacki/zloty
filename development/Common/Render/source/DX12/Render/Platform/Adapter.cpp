@@ -4,19 +4,21 @@
 
 #include <d3d12.h>
 
+#include "Core/ErrorHandlers.h"
+
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::Adapter::Adapter([[maybe_unused]] app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo)
 {
     auto [device, adapter, factory] = info::CreateDevice(adapterInfo);
     HRESULT hr = device.As(&mDevice);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get Device from CreateDevice.");
+    error_handlers::ThrowOnError(hr, "Could not get Device from CreateDevice.");
 
     hr = adapter.As(&mAdapter);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get Adapter from CreateDevice.");
+    error_handlers::ThrowOnError(hr, "Could not get Adapter from CreateDevice.");
 
     hr = factory.As(&mFactory);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get Factory from CreateDevice.");
+    error_handlers::ThrowOnError(hr, "Could not get Factory from CreateDevice.");
 
 #if YAGET_DEBUG_RENDER == 1
     mDeviceDebugger.ActivateMessageSeverity(mDevice);
@@ -28,7 +30,7 @@ yaget::render::platform::Adapter::Adapter([[maybe_unused]] app::WindowFrame wind
 
     D3D12MA::Allocator* allocator = nullptr;
     hr = D3D12MA::CreateAllocator(&allocatorDesc, &allocator);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get D3D12MA Allocator");
+    error_handlers::ThrowOnError(hr, "Could not get D3D12MA Allocator");
     mAllocator.reset(allocator);
 }
 

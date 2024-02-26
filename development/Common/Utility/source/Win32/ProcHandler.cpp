@@ -1,6 +1,7 @@
 #include "App/ProcHandler.h"
 #include "App/AppUtilities.h"
 #include "App/Display.h"
+#include "Core/ErrorHandlers.h"
 #include "Debugging/DevConfiguration.h"
 #include "Metrics/Concurrency.h"
 #include "VTS/ResolvedAssets.h"
@@ -27,14 +28,14 @@ namespace
     // return width, height of window which includes all decorations to fit canvas of resX by resY
     std::tuple<int, int> CalculateWindowFrame(HWND hWnd, int resX, int resY)
     {
-        RECT rcClient, rcWind;
-        POINT ptDiff;
+        RECT rcClient{}, rcWind{};
         bool result = ::GetClientRect(hWnd, &rcClient);
-        YAGET_UTIL_THROW_ON_RROR(result, "GetClientRect failed.");
+        yaget::error_handlers::ThrowOnError(result, "GetClientRect failed.");
 
         result = ::GetWindowRect(hWnd, &rcWind);
-        YAGET_UTIL_THROW_ON_RROR(result, "GetWindowRect failed.");
+        yaget::error_handlers::ThrowOnError(result, "GetWindowRect failed.");
 
+        POINT ptDiff{};
         ptDiff.x = (rcWind.right - rcWind.left) - rcClient.right;
         ptDiff.y = (rcWind.bottom - rcWind.top) - rcClient.bottom;
 
@@ -263,7 +264,7 @@ namespace
     {
         WINDOWPLACEMENT wp = {sizeof(WINDOWPLACEMENT)};
         bool result = ::GetWindowPlacement(hWnd, &wp);
-        YAGET_UTIL_THROW_ON_RROR(result, "GetWindowPlacement failed.");
+        yaget::error_handlers::ThrowOnError(result, "GetWindowPlacement failed.");
 
         windowLeft = wp.rcNormalPosition.left;
         windowTop = wp.rcNormalPosition.top;
@@ -272,7 +273,7 @@ namespace
 
         RECT rect;
         result = ::GetClientRect(hWnd, &rect);
-        YAGET_UTIL_THROW_ON_RROR(result, "GetClientRect failed.");
+        yaget::error_handlers::ThrowOnError(result, "GetClientRect failed.");
 
         resX = rect.right;
         resY = rect.bottom;
@@ -296,8 +297,8 @@ namespace
         if (appearance == app::Appearance::Window)
         {
             WINDOWPLACEMENT wp = {sizeof(WINDOWPLACEMENT)};
-            bool result = ::GetWindowPlacement(hWnd, &wp);
-            YAGET_UTIL_THROW_ON_RROR(result, "GetWindowPlacement failed.");
+            const bool result = ::GetWindowPlacement(hWnd, &wp);
+            yaget::error_handlers::ThrowOnError(result, "GetWindowPlacement failed.");
             if (wp.showCmd == SW_MAXIMIZE)
             {
                 windowAppearances[appearance].mMaximized = true;
@@ -343,16 +344,14 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
     WNDCLASSEX wc{ sizeof(WNDCLASSEX) };
     wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc = ProcHandler::WindowCallback;
-    wc.hInstance = GetModuleHandle(NULL);
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    // TODO this may not be needed, since we always paint window (render)
-    //wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+    wc.hInstance = ::GetModuleHandle(nullptr);
+    wc.hCursor = ::LoadCursor(nullptr, IDC_ARROW);
     wc.lpszClassName = WinName;
 
-    const auto result = RegisterClassEx(&wc);
-    YAGET_UTIL_THROW_ASSERT("WIN", result, "Did not RegisterClassEx");
+    const auto result = ::RegisterClassEx(&wc) != 0;
+    error_handlers::ThrowOnError(result, "Did not RegisterClassEx");
 
-    HWND winH = ::CreateWindowEx(NULL,
+    HWND winH = ::CreateWindowEx(0,
         WinName,                    // name of the window class
         mWindowTitle.c_str(),       // title of the window
         WS_OVERLAPPEDWINDOW,        // window style
@@ -410,7 +409,7 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
         //break;
 
     default:
-        YAGET_UTIL_THROW("WIN", fmt::vformat("Window Apperance Type: '{}' is not supported.", fmt::make_format_args(windowAppearance.mAppearance)));
+        error_handlers::Throw("WIN", fmt::vformat("Window Apperance Type: '{}' is not supported.", fmt::make_format_args(windowAppearance.mAppearance)));
     }
 
     YLOG_NOTICE("WIN", "Requested surface: '%s', Resolution: (%dx%d)", AppearanceNames[static_cast<int>(mActiveAppearance)], windowAppearance.mResX, windowAppearance.mResY);
@@ -576,14 +575,14 @@ void yaget::app::ProcHandler::ToggleBorderless()
         
         WINDOWPLACEMENT wp = { sizeof(WINDOWPLACEMENT) };
         bool result = ::GetWindowPlacement(mWindowHandle, &wp);
-        YAGET_UTIL_THROW_ON_RROR(result, "GetWindowPlacement failed in respose to ToggleBorderless.");
+        error_handlers::ThrowOnError(result, "GetWindowPlacement failed in response to ToggleBorderless.");
 
         wp.rcNormalPosition.left = windowAppearance.mLeft;
         wp.rcNormalPosition.top = windowAppearance.mTop;
         wp.rcNormalPosition.right = windowAppearance.mRight;
         wp.rcNormalPosition.bottom = windowAppearance.mBottom;
         result = ::SetWindowPlacement(mWindowHandle, &wp);
-        YAGET_UTIL_THROW_ON_RROR(result, "SetWindowPlacement failed in respose to ToggleBorderless.");
+        error_handlers::ThrowOnError(result, "SetWindowPlacement failed in response to ToggleBorderless.");
 
         mActiveAppearance = Appearance::Window;
     }
@@ -657,8 +656,8 @@ bool yaget::app::ProcHandler::IsSuspended() const
             if (HMONITOR monitor = ::MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST))
             {
                 uint32_t dpiX, dpiY;
-                HRESULT hr = ::GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
-                YAGET_UTIL_THROW_ON_RROR(hr, "Did not GetDpiForMonitor.");
+                const HRESULT hr = ::GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
+                error_handlers::ThrowOnError(hr, "Did not GetDpiForMonitor.");
                 UpdateDpiConfiguration(static_cast<float>(dpiX));
             }
 

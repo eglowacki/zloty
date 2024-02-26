@@ -1,10 +1,12 @@
 #include "Resources/ShaderResources.h"
-#include "Logger/YLog.h"
-#include "Device.h"
 #include "App/AppUtilities.h"
+#include "Core/ErrorHandlers.h"
+#include "Device.h"
+#include "Json/JsonHelpers.h"
+#include "Logger/YLog.h"
 #include "RenderHelpers.h"
 #include "Streams/Buffers.h"
-#include "Json/JsonHelpers.h"
+
 #include <filesystem>
 #include <d3dcompiler.h>
 #include <VertexTypes.h>
@@ -52,8 +54,8 @@ yaget::render::VertexShaderResource::VertexShaderResource(Device& device, std::s
     Device::ID3D11Device_t* hardwareDevice = mDevice.GetDevice();
 
     auto buffer = asset->mBuffer;
-    HRESULT hr = hardwareDevice->CreateVertexShader(buffer.first.get(), buffer.second, nullptr, &mVertexShader);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Vertex Shader");
+    const HRESULT hr = hardwareDevice->CreateVertexShader(buffer.first.get(), buffer.second, nullptr, &mVertexShader);
+    error_handlers::ThrowOnError(hr, "Could not create Vertex Shader");
 
     YAGET_SET_DEBUG_NAME(mVertexShader.Get(), asset->mTag.mName);
 
@@ -81,9 +83,9 @@ yaget::render::PixelShaderResource::PixelShaderResource(Device& device, std::sha
 {
     Device::ID3D11Device_t* hardwareDevice = mDevice.GetDevice();
 
-    auto buffer = asset->mBuffer;
-    HRESULT hr = hardwareDevice->CreatePixelShader(buffer.first.get(), buffer.second, nullptr, &mPixelShader);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Pixel Shader");
+    const auto buffer = asset->mBuffer;
+    const HRESULT hr = hardwareDevice->CreatePixelShader(buffer.first.get(), buffer.second, nullptr, &mPixelShader);
+    error_handlers::ThrowOnError(hr, "Could not create Pixel Shader");
 
     YAGET_SET_DEBUG_NAME(mPixelShader.Get(), asset->mTag.mName);
 
@@ -113,7 +115,7 @@ yaget::render::InputLayoutResource::InputLayoutResource(Device& device, std::sha
 
     ComPtr<ID3D11ShaderReflection> reflector;
     HRESULT hr = D3DReflect(buffer.first.get(), buffer.second, IID_ID3D11ShaderReflection, &reflector);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Vertex Shader Reflection");
+    error_handlers::ThrowOnError(hr, "Could not create Vertex Shader Reflection");
 
     // Get shader info
     D3D11_SHADER_DESC shaderDesc;
@@ -125,7 +127,7 @@ yaget::render::InputLayoutResource::InputLayoutResource(Device& device, std::sha
     {
         D3D11_SIGNATURE_PARAMETER_DESC paramDesc = {};
         hr = reflector->GetInputParameterDesc(i, &paramDesc);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get Input Parameter Desc");
+        error_handlers::ThrowOnError(hr, "Could not get Input Parameter Desc");
 
         // fill out input element desc
         D3D11_INPUT_ELEMENT_DESC elementDesc = {};
@@ -169,7 +171,7 @@ yaget::render::InputLayoutResource::InputLayoutResource(Device& device, std::sha
     Device::ID3D11Device_t* hardwareDevice = mDevice.GetDevice();
 
     hr = hardwareDevice->CreateInputLayout(elements.data(), static_cast<uint32_t>(elements.size()), buffer.first.get(), static_cast<uint32_t>(buffer.second), &mInputLayout);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create InputLayout.");
+    error_handlers::ThrowOnError(hr, "Could not create InputLayout.");
 
     YAGET_SET_DEBUG_NAME(mInputLayout.Get(), asset->mTag.mName);
 

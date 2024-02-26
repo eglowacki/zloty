@@ -1,18 +1,20 @@
 #include "Components/ModelComponent.h"
-#include "RenderMathFacade.h"
+#include "App/AppUtilities.h"
+#include "Core/ErrorHandlers.h"
+#include "Debugging/Assert.h"
 #include "Device.h"
+#include "RenderMathFacade.h"
 #include "Scene.h"
 #include "TextureResource.h"
 #include "Resources/ShaderResources.h"
-#include "Debugging/Assert.h"
 #include "RenderHelpers.h"
 #include "StringHelpers.h"
-#include "App/AppUtilities.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/RenderResolvedAssets.h"
 #include "Fmt/format.h"
 #include "Exception/Exception.h"
 #include "ImageLoaders/ImageProcessor.h"
+
 
 #include <filesystem>
 #include <d3dcompiler.h>
@@ -60,8 +62,8 @@ namespace
             bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA srd = { OurVertices, 0, 0 };
 
-            HRESULT hr = device->CreateBuffer(&bd, &srd, &buffer);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create vertex buffer");
+            const HRESULT hr = device->CreateBuffer(&bd, &srd, &buffer);
+            yaget::error_handlers::ThrowOnError(hr, "Could not create vertex buffer");
 
             return buffer;
         }
@@ -77,7 +79,7 @@ namespace
             D3D11_SUBRESOURCE_DATA srd = { elements, 0, 0 };
 
             HRESULT hr = device->CreateBuffer(&bd, &srd, &buffers.first);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create vertex buffer");
+            error_handlers::ThrowOnError(hr, "Could not create vertex buffer");
 
             if (indicies)
             {
@@ -93,7 +95,7 @@ namespace
                 initIndexData.SysMemSlicePitch = 0;
 
                 hr = device->CreateBuffer(&bufferIndexDesc, &initIndexData, &buffers.second);
-                YAGET_UTIL_THROW_ON_RROR(hr, "Could not create index buffer");
+                error_handlers::ThrowOnError(hr, "Could not create index buffer");
             }
 
             return buffers;
@@ -227,7 +229,7 @@ void render::QuadComponent::OnReset()
     D3D11_SUBRESOURCE_DATA vertexBufferData = { quadVertices, 0, 0 };
 
     HRESULT hr = d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &mVertexData[0].mVertexbuffer);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create vertex buffer");
+    error_handlers::ThrowOnError(hr, "Could not create vertex buffer");
 
     D3D11_BUFFER_DESC bufferIndexDesc = { 0 };
     bufferIndexDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -240,7 +242,7 @@ void render::QuadComponent::OnReset()
     initIndexData.pSysMem = indicies;
 
     hr = d3dDevice->CreateBuffer(&bufferIndexDesc, &initIndexData, &mVertexData[0].mIndexBuffer);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create index buffer");
+    error_handlers::ThrowOnError(hr, "Could not create index buffer");
 
     D3D11_RASTERIZER_DESC rasterizerDesc = {};
     rasterizerDesc.AntialiasedLineEnable = FALSE;
@@ -256,7 +258,7 @@ void render::QuadComponent::OnReset()
 
     // Create the rasterizer wire state object.
     hr = d3dDevice->CreateRasterizerState(&rasterizerDesc, &mRasterizerState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create rasterizer state");
+    error_handlers::ThrowOnError(hr, "Could not create rasterizer state");
 }
 
 void render::QuadComponent::OnRender(const RenderBuffer& /*renderBuffer*/, const math3d::Matrix& /*viewMatrix*/, const math3d::Matrix& /*projectionMatrix*/)

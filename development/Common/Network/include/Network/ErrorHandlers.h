@@ -27,7 +27,6 @@ namespace boost::system
 
 namespace yaget::error_handlers
 {
-    //const std::source_location& location = std::source_location::current()
     void ThrowOnError(const boost::system::error_code& ec, const std::string& message, const std::source_location& location = std::source_location::current());
 
 } // namespace yaget::error_handlers

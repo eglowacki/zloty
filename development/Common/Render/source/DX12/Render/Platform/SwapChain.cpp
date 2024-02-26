@@ -12,6 +12,8 @@
 #include <d3dx12.h>
 #include <dxgi1_6.h>
 
+#include "Core/ErrorHandlers.h"
+
 
 namespace 
 {
@@ -53,19 +55,19 @@ namespace
         yaget::render::ComPtr<IDXGIFactory> baseFactory(factory);
         yaget::render::ComPtr<IDXGIFactory2> factory2;
         HRESULT hr = baseFactory.As(&factory2);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get factory 2 interface");
+        yaget::error_handlers::ThrowOnError(hr, "Could not get factory 2 interface");
 
         yaget::render::ComPtr<IDXGISwapChain1> swapChain;
         hr = factory2->CreateSwapChainForHwnd(commandQueue, windowFrame.GetSurface().Handle<HWND>(), &swapChainDesc, nullptr, nullptr, &swapChain);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 SwapChain");
+        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 SwapChain");
 
         // Disable the Alt+Enter fullscreen toggle feature. Switching to fullscreen will be handled manually.
         hr = factory2->MakeWindowAssociation(windowFrame.GetSurface().Handle<HWND>(), DXGI_MWA_NO_ALT_ENTER);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not make DX12 Window Association");
+        yaget::error_handlers::ThrowOnError(hr, "Could not make DX12 Window Association");
 
         yaget::render::ComPtr<IDXGISwapChain4> swapChain4;
         hr = swapChain.As(&swapChain4);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 SwapChain4 interface");
+        yaget::error_handlers::ThrowOnError(hr, "Could not get DX12 SwapChain4 interface");
 
         return swapChain4;
     }
@@ -78,8 +80,8 @@ namespace
         desc.Type = type;
     
         yaget::render::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
-        HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 DescriptorHeap");
+        const HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap));
+        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 DescriptorHeap");
 
         YAGET_RENDER_SET_DEBUG_NAME(descriptorHeap.Get(), "Yaget Descriptor Heap");
 
@@ -91,11 +93,11 @@ namespace
     {
         yaget::render::ComPtr<ID3D12Device4> device4;
         HRESULT hr = device->QueryInterface<ID3D12Device4>(&device4);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create ID3D12Device4 interface");
+        yaget::error_handlers::ThrowOnError(hr, "Could not create ID3D12Device4 interface");
         
         yaget::render::ComPtr<ID3D12GraphicsCommandList2> commandList;
         hr = device4->CreateCommandList1(0, type, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&commandList));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command List");
+        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Command List");
 
         YAGET_RENDER_SET_DEBUG_NAME(commandList.Get(), "Yaget Command List");
 
@@ -139,15 +141,15 @@ void yaget::render::platform::SwapChain::Resize()
 
     DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
     HRESULT hr = mSwapChain->GetDesc(&swapChainDesc);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 SwapChain Description");
+    error_handlers::ThrowOnError(hr, "Could not get DX12 SwapChain Description");
 
     hr = mSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, swapChainDesc.Flags);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not resize DX12 SwapChain");
+    error_handlers::ThrowOnError(hr, "Could not resize DX12 SwapChain");
 
     // this can be used to extract actual buffer size (window size)
     DXGI_SWAP_CHAIN_DESC1 chainDesc = {};
     hr = mSwapChain->GetDesc1(&chainDesc);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 swap chain description");
+    error_handlers::ThrowOnError(hr, "Could not get DX12 swap chain description");
     YLOG_DEBUG("DEVI", "SwapChain::Resize: (%dx%d).", chainDesc.Width, chainDesc.Height);
 
     mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
@@ -175,13 +177,13 @@ void yaget::render::platform::SwapChain::Present(const time::GameClock& /*gameCl
     const uint32_t syncInterval = mWindowFrame.GetSurface().VSync() ? 1 : 0;
     const uint32_t presentFlags = mTearingSupported && syncInterval == 0 ? DXGI_PRESENT_ALLOW_TEARING : 0;
 
-    HRESULT hr = mSwapChain->Present(syncInterval, presentFlags);
+    const HRESULT hr = mSwapChain->Present(syncInterval, presentFlags);
     if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
     {
         // driver crashed, let's trigger GPU crash dump
     }
 
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not present DX12 Swap Chain");
+    error_handlers::ThrowOnError(hr, "Could not present DX12 Swap Chain");
 
     mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
 }
@@ -196,8 +198,8 @@ void yaget::render::platform::SwapChain::UpdateRenderTargetViews()
     for (int i = 0; i < mNumBackBuffers; ++i)
     {
         ComPtr<ID3D12Resource> backBuffer;
-        HRESULT hr = mSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 SwapChain Back Buffer");
+        const HRESULT hr = mSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer));
+        error_handlers::ThrowOnError(hr, "Could not get DX12 SwapChain Back Buffer");
 
         YAGET_RENDER_SET_DEBUG_NAME(backBuffer.Get(), fmt::format("Yaget Back Buffer {}", i));
 

@@ -1,6 +1,8 @@
 #include "Render/Platform/DeviceDebugger.h"
 #include "HashUtilities.h"
 
+#include "Core/ErrorHandlers.h"
+
 #include "Debugging/DevConfiguration.h"
 
 #if YAGET_DEBUG_RENDER == 1
@@ -23,12 +25,12 @@ yaget::render::platform::DeviceDebugger::DeviceDebugger()
     {
         ComPtr<ID3D12Debug> debugController;
         HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&debugController));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Debug interface");
+        error_handlers::ThrowOnError(hr, "Could not get DX12 Debug interface");
 
         ComPtr<ID3D12Debug1> debugController1;
         hr = debugController.As(&debugController1);
         //hr = debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Debug1 interface");
+        error_handlers::ThrowOnError(hr, "Could not get DX12 Debug1 interface");
 
         debugController1->EnableDebugLayer();
         debugController1->SetEnableGPUBasedValidation(true);
@@ -67,24 +69,24 @@ void yaget::render::platform::DeviceDebugger::ActivateMessageSeverity(const ComP
 
         ComPtr<ID3D12InfoQueue> infoQueue;
         HRESULT hr = device.As(&infoQueue);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 InfoQueue Device Interface");
+        error_handlers::ThrowOnError(hr, "Could not get DX12 InfoQueue Device Interface");
 
         if (breakOnCorruption)
         {
             hr = infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Break On 'Corruption' Severity");
+            error_handlers::ThrowOnError(hr, "Could not set DX12 Break On 'Corruption' Severity");
         }
 
         if (breakOnError)
         {
             hr = infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Break On 'Error' Severity");
+            error_handlers::ThrowOnError(hr, "Could not set DX12 Break On 'Error' Severity");
         }
 
         if (breakOnWarning)
         {
             hr = infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Break On 'Warning' Severity");
+            error_handlers::ThrowOnError(hr, "Could not set DX12 Break On 'Warning' Severity");
         }
 
 #if 0

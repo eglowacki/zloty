@@ -787,61 +787,6 @@ void yaget::util::DisplayDialog(const char* title, const char* message)
     }
 }
 
-
-//---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::Throw(const char* tag, const std::string& message, const char* file /*= nullptr*/, unsigned line /*= 0*/, const char* functionName /*= nullptr*/)
-{
-    if (platform::IsDebuggerAttached())
-    {
-        YLOG_PERROR(tag, file, line, functionName, message.c_str());
-        platform::DebuggerBreak();
-    }
-
-    const auto& textError = fmt::format("{}\n{}({}) {}", message, (file ? file : "no_file"), line, functionName);
-    throw ex::bad_init(textError);
-}
-
-
-//---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::ThrowOnError(long hr, const std::string& message, const char* file /*= nullptr*/, unsigned line /*= 0*/, const char* functionName /*= nullptr*/)
-{
-    if (FAILED(hr))
-    {
-        _com_error cr(HRESULT_FROM_WIN32(hr));
-        const char* platformErrorMessage = cr.ErrorMessage();
-        auto textError = fmt::format("{}. HRESULT: {:#x}, Platform error: {}", message, static_cast<unsigned long>(hr), platformErrorMessage);
-        if (platform::IsDebuggerAttached())
-        {
-            YLOG_PERROR("UTIL", file, line, functionName, textError.c_str());
-            platform::DebuggerBreak();
-        }
-
-        textError += fmt::format("\n{}({}) {}", (file ? file : "no_file"), line, functionName);
-        throw ex::bad_init(textError);
-    }
-}
-
-
-//---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::ThrowOnResult(const char* tag, bool result, const std::string& message, const char* file, unsigned line, const char* functionName /*= nullptr*/)
-{
-    if (!result)
-    {
-        Throw(tag, message, file, line, functionName);
-    }
-}
-
-
-//---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::ThrowOnError(bool resultValid, const std::string& message, const char* file, unsigned line, const char* functionName /*= nullptr*/)
-{
-    if (!resultValid)
-    {
-        const uint64_t hr = ::GetLastError();
-        util::ThrowOnError(static_cast<long>(hr), message, file, line, functionName);
-    }
-}
-
 #else
     #error  "Need to implement SelectOpenFileName, SelectSaveFileName, DisplayDialog, ThrowOnError for your platform."
 #endif // _WIN32

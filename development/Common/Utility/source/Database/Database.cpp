@@ -8,6 +8,8 @@
 
 #include <filesystem>
 
+#include "Core/ErrorHandlers.h"
+
 namespace
 {
     //-----------------------------------------------------------------------------------------------------------------------------------------------
@@ -67,14 +69,14 @@ namespace
                 if (dbVersion != excpectedVersion)
                 {
                     const auto& textError = fmt::format("Database '{}' has mismatched version. Expected: '{}', result: '{}'.", fileName, excpectedVersion, dbVersion);
-                    YAGET_UTIL_THROW("DB", textError);
+                    error_handlers::Throw("DB", textError);
                 }
             }
         }
         else
         {
             const auto& textError = fmt::format("Did not initialize database '{}'. {}.", fileName, conv::Combine(database.GetErrors(), "\n"));
-            YAGET_UTIL_THROW("DB", textError);
+            error_handlers::Throw("DB", textError);
         }
     }                                                                                           
 

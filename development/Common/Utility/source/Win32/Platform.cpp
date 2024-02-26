@@ -504,7 +504,7 @@ void platform::SetThreadName(const char* threadName, uint32_t t)
 {
     // we should try to use this:
     //HRESULT result = ::SetThreadDescription(::GetCurrentThread(), conv::utf8_to_wide(threadName).c_str());
-    //YAGET_UTIL_THROW_ON_RROR(result, "Could not set thread name");
+    //error_handlers::ThrowOnError(result, "Could not set thread name");
     // and
     //HRESULT ::GetThreadDescription(HANDLE hThread, PWSTR  *ppszThreadDescription);
     THREADNAME_INFO info;

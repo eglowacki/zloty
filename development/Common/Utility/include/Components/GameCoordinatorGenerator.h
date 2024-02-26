@@ -24,6 +24,7 @@
 #pragma once
 
 #include "HashUtilities.h"
+#include "Core/ErrorHandlers.h"
 #include "StringHelpers.h"
 #include "sqlite/SQLite.h"
 #include "Components/Component.h"
@@ -252,7 +253,7 @@ namespace yaget::comp::db
                     {
                         auto componentName = json::GetValue<std::string>(componentBlock, "Type", {});
                         // TODO: Check against FullRow if that particular componentName exists/is_valid
-                        YAGET_UTIL_THROW_ASSERT("GSYS", !componentName.empty(), "Component Type can not be empty and must have one of game components names.");
+                        yaget::error_handlers::ThrowOnCheck(!componentName.empty(), "Component Type can not be empty and must have one of game components names.");
 
                         if (!componentName.ends_with("Component") && PolicyName::AutoComponent)
                         {
@@ -297,7 +298,7 @@ namespace yaget::comp::db
                         for (const auto& item : block)
                         {
                             auto componentName = json::GetValue(item, "Type", std::string{});
-                            YAGET_UTIL_THROW_ASSERT("GSYS", !componentName.empty(), "Component Type can not be empty and must have one of game components names.");
+                            error_handlers::ThrowOnCheck(!componentName.empty(), "Component Type can not be empty and must have one of game components names.");
 
                             if (!componentName.ends_with("Component") && PolicyName::AutoComponent)
                             {

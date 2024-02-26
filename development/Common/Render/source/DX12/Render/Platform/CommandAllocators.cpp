@@ -6,6 +6,8 @@
 
 #include <d3dx12.h>
 
+#include "Core/ErrorHandlers.h"
+
 
 namespace
 {
@@ -20,8 +22,8 @@ namespace
         for (auto i = 0u; i < numAllocators; ++i)
         {
             Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
-            HRESULT hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&commandAllocator));
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command Allocator");
+            const HRESULT hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&commandAllocator));
+            yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Command Allocator");
 
             YAGET_RENDER_SET_DEBUG_NAME(commandAllocator.Get(), "Yaget Command Allocator");
 
@@ -58,8 +60,8 @@ ID3D12CommandAllocator* yaget::render::platform::CommandAllocators::GetCommandAl
                                     "There is no command allocator for type: %s", yaget::conv::Convertor<CommandQueue::Type>::ToString(type).c_str());
 
     auto allocator = mCommandAllocatorList.find(type)->second[allocatorIndex].Get();
-    HRESULT hr = allocator->Reset();
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not reset allocator");
+    const HRESULT hr = allocator->Reset();
+    error_handlers::ThrowOnError(hr, "Could not reset allocator");
 
     return allocator;
 }

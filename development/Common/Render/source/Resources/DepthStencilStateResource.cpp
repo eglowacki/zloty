@@ -5,6 +5,8 @@
 #include "HashUtilities.h"
 #include <d3d11.h>
 
+#include "Core/ErrorHandlers.h"
+
 
 // DepthEnable, 
 // D3D11_DEPTH_WRITE_MASK, 
@@ -28,8 +30,8 @@ yaget::render::state::DepthStencilStateResource::DepthStencilStateResource(Devic
     stateDesc.StencilReadMask = asset->mStencilReadMask;
     stateDesc.StencilWriteMask = asset->mStencilWriteMask;
 
-    HRESULT hr = hardwareDevice->CreateDepthStencilState(&stateDesc, &mState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Depth & Stencil state");
+    const HRESULT hr = hardwareDevice->CreateDepthStencilState(&stateDesc, &mState);
+    error_handlers::ThrowOnError(hr, "Could not create Depth & Stencil state");
     YAGET_SET_DEBUG_NAME(mState.Get(), asset->mTag.mName);
 
     std::size_t hashValue = conv::GenerateHash(stateDesc);

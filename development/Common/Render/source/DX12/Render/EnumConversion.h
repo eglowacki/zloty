@@ -19,10 +19,12 @@
 
 #include <d3dx12.h>
 
+#include "Core/ErrorHandlers.h"
+
 
 namespace yaget::render
 {
-    inline D3D12_COMMAND_LIST_TYPE ConvertCommandQueueType(yaget::render::platform::CommandQueue::Type cqType)
+    inline D3D12_COMMAND_LIST_TYPE ConvertCommandQueueType(platform::CommandQueue::Type cqType)
     {
         using namespace yaget::render::platform;
         D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -42,7 +44,7 @@ namespace yaget::render
             break;
 
         default:
-            YAGET_UTIL_THROW("DEVI", fmt::format("Invalid Command Type Queue: {}.", yaget::conv::Convertor<CommandQueue::Type>::ToString(cqType)));
+            error_handlers::Throw("DEVI", fmt::format("Invalid Command Type Queue: {}.", conv::Convertor<CommandQueue::Type>::ToString(cqType)));
         }
 
         return type;

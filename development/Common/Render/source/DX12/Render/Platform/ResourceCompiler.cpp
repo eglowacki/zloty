@@ -8,6 +8,8 @@
 #include <dxcapi.h>         // Be sure to link with dxcompiler.lib.
 #include <d3d12shader.h>    // Shader reflection.
 
+#include "Core/ErrorHandlers.h"
+
 // New compiler for shaders
 // https://github.com/microsoft/DirectXShaderCompiler/wiki/Using-dxc.exe-and-dxcompiler.dll
 
@@ -20,15 +22,15 @@ yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const cha
     {
         ComPtr<IDxcUtils> utils;
         HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create instance of IDxcUtils");
+        error_handlers::ThrowOnError(hr, "Could not create instance of IDxcUtils");
 
         ComPtr<IDxcCompiler3> compiler;
         hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create instance of IDxcCompiler3");
+        error_handlers::ThrowOnError(hr, "Could not create instance of IDxcCompiler3");
 
         ComPtr<IDxcIncludeHandler> pIncludeHandler;
         hr = utils->CreateDefaultIncludeHandler(&pIncludeHandler);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Default Include Handler");
+        error_handlers::ThrowOnError(hr, "Could not create Default Include Handler");
     }
     else
     {
@@ -40,8 +42,8 @@ yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const cha
 #endif // YAGET_DEBUG_RENDER == 1
 
         ComPtr<ID3DBlob> error;
-        HRESULT hr = ::D3DCompile(data.first, data.second, nullptr, nullptr, nullptr, entryName, target, compileFlags, 0, &mShaderBlob, &error);
-        YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not compile shader with entry point: '{}' and target: '{}'. {}", entryName, target, (error ? static_cast<const char*>(error->GetBufferPointer()) : "")));
+        const HRESULT hr = ::D3DCompile(data.first, data.second, nullptr, nullptr, nullptr, entryName, target, compileFlags, 0, &mShaderBlob, &error);
+        error_handlers::ThrowOnError(hr, fmt::format("Could not compile shader with entry point: '{}' and target: '{}'. {}", entryName, target, (error ? static_cast<const char*>(error->GetBufferPointer()) : "")));
     }
 }
 
@@ -58,22 +60,22 @@ yaget::render::ResourceReflector::ResourceReflector(io::BufferView data)
 {
     //ComPtr<ID3D12LibraryReflection> reflector;
     //HRESULT hr = ::D3DReflectLibrary(data, size, IID_ID3D12LibraryReflection, &reflector);
-    //YAGET_UTIL_THROW_ON_RROR(hr, "Could not get library reflection object for shader data");
+    //error_handlers::ThrowOnError(hr, "Could not get library reflection object for shader data");
 
     //D3D12_LIBRARY_DESC desc = {};
     //hr = mReflector->GetDesc(&desc);
-    //YAGET_UTIL_THROW_ON_RROR(hr, "Could not get library reflection description for shader data");
+    //error_handlers::ThrowOnError(hr, "Could not get library reflection description for shader data");
 
     //IID_ID3D12ShaderReflection
     ComPtr<ID3D12ShaderReflection> shaderReflectior;
     HRESULT hr = ::D3DReflect(data.first, data.second, IID_ID3D12ShaderReflection, &shaderReflectior);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get shader reflection object for shader data");
+    error_handlers::ThrowOnError(hr, "Could not get shader reflection object for shader data");
 
     //hr = shaderReflectior->QueryInterface(IID_ID3D12LibraryReflection, &reflector);
 
     D3D12_SHADER_DESC desc = {};
     hr = shaderReflectior->GetDesc(&desc);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get shader reflection description for shader data");
+    error_handlers::ThrowOnError(hr, "Could not get shader reflection description for shader data");
 
     YLOG_NOTICE("COMP", "Shader Reflection: Input Parameters = %d, Output Parameters = %d.", desc.InputParameters, desc.OutputParameters);
 
@@ -81,13 +83,13 @@ yaget::render::ResourceReflector::ResourceReflector(io::BufferView data)
     {
         D3D12_SIGNATURE_PARAMETER_DESC paramDesc = {};
         hr = shaderReflectior->GetInputParameterDesc(i, &paramDesc);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get input param description for shader data");
+        error_handlers::ThrowOnError(hr, "Could not get input param description for shader data");
 
         ID3D12ShaderReflectionVariable* shaderVariable = shaderReflectior->GetVariableByName(paramDesc.SemanticName);
 
         D3D12_SHADER_VARIABLE_DESC varDesc = {};
         hr = shaderVariable->GetDesc(&varDesc);
-        //YAGET_UTIL_THROW_ON_RROR(hr, "Could not get input shaderVariable for shader data");
+        //error_handlers::ThrowOnError(hr, "Could not get input shaderVariable for shader data");
 
 
         YLOG_NOTICE("COMP", "Shader Reflection: Input Parameter Index: %d, Name: '%s', SemanticIndex: %d, Register: %d.", i, paramDesc.SemanticName, paramDesc.SemanticIndex, paramDesc.Register);
@@ -97,7 +99,7 @@ yaget::render::ResourceReflector::ResourceReflector(io::BufferView data)
     {
         D3D12_SIGNATURE_PARAMETER_DESC paramDesc = {};
         hr = shaderReflectior->GetOutputParameterDesc(i, &paramDesc);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get output param description for shader data");
+        error_handlers::ThrowOnError(hr, "Could not get output param description for shader data");
 
         YLOG_NOTICE("COMP", "Shader Reflection: Output Parameter Index: %d, Name: '%s', SemanticIndex: %d, Register: %d.", i, paramDesc.SemanticName, paramDesc.SemanticIndex, paramDesc.Register);
     }

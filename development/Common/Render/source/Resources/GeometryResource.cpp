@@ -1,7 +1,9 @@
 #include "Resources/GeometryResource.h"
-#include "VTS/RenderResolvedAssets.h"
+#include "Core/ErrorHandlers.h"
 #include "Device.h"
 #include "imgui.h"
+#include "VTS/RenderResolvedAssets.h"
+
 #include <wrl/client.h>
 
 using namespace Microsoft::WRL;
@@ -45,8 +47,8 @@ namespace
             bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA srd = { OurVertices, 0, 0 };
 
-            HRESULT hr = device->CreateBuffer(&bd, &srd, &buffer);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create vertex buffer");
+            const HRESULT hr = device->CreateBuffer(&bd, &srd, &buffer);
+            error_handlers::ThrowOnError(hr, "Could not create vertex buffer");
 
             return buffer;
         }
@@ -62,7 +64,7 @@ namespace
             D3D11_SUBRESOURCE_DATA srd = { elements, 0, 0 };
 
             HRESULT hr = device->CreateBuffer(&bd, &srd, &buffers.first);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create vertex buffer");
+            error_handlers::ThrowOnError(hr, "Could not create vertex buffer");
 
             YAGET_SET_DEBUG_NAME(buffers.first.Get(), debugName);
 
@@ -80,7 +82,7 @@ namespace
                 initIndexData.SysMemSlicePitch = 0;
 
                 hr = device->CreateBuffer(&bufferIndexDesc, &initIndexData, &buffers.second);
-                YAGET_UTIL_THROW_ON_RROR(hr, "Could not create index buffer");
+                error_handlers::ThrowOnError(hr, "Could not create index buffer");
 
                 YAGET_SET_DEBUG_NAME(buffers.second.Get(), debugName);
             }
@@ -141,8 +143,8 @@ yaget::render::GeometryResource::GeometryResource(Device& device, std::shared_pt
     rasterizerDesc.ScissorEnable = FALSE;
     rasterizerDesc.SlopeScaledDepthBias = 0.0f;
 
-    HRESULT hr = hardwareDevice->CreateRasterizerState(&rasterizerDesc, &mWireRasterizerState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create wire rasterizer state");
+    const HRESULT hr = hardwareDevice->CreateRasterizerState(&rasterizerDesc, &mWireRasterizerState);
+    error_handlers::ThrowOnError(hr, "Could not create wire rasterizer state");
     YAGET_SET_DEBUG_NAME(mWireRasterizerState.Get(), asset->mTag.mName);
 
     std::size_t hashValue = asset->mTag.Hash();
@@ -202,8 +204,8 @@ yaget::render::GeometryResource::GeometryResource(Device& device, std::shared_pt
     rasterizerDesc.ScissorEnable = FALSE;
     rasterizerDesc.SlopeScaledDepthBias = 0.0f;
 
-    HRESULT hr = hardwareDevice->CreateRasterizerState(&rasterizerDesc, &mWireRasterizerState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create wire rasterizer state");
+    const HRESULT hr = hardwareDevice->CreateRasterizerState(&rasterizerDesc, &mWireRasterizerState);
+    error_handlers::ThrowOnError(hr, "Could not create wire rasterizer state");
     YAGET_SET_DEBUG_NAME(mWireRasterizerState.Get(), asset->mTag.mName);
 
     std::size_t hashValue = asset->mTag.Hash();

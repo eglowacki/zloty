@@ -5,6 +5,7 @@
 #include "HashUtilities.h"
 #include <d3d11.h>
 
+#include "Core/ErrorHandlers.h"
 
 
 yaget::render::state::RasterizerStateResource::RasterizerStateResource(Device& device, std::shared_ptr<io::render::RasterizerStateAsset> asset)
@@ -26,8 +27,8 @@ yaget::render::state::RasterizerStateResource::RasterizerStateResource(Device& d
     rasterizerDesc.SlopeScaledDepthBias = asset->mSlopeScaledDepthBias;
 
     // Create the rasterizer wire state object.
-    HRESULT hr = hardwareDevice->CreateRasterizerState(&rasterizerDesc, &mState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create rasterizer state");
+    const HRESULT hr = hardwareDevice->CreateRasterizerState(&rasterizerDesc, &mState);
+    error_handlers::ThrowOnError(hr, "Could not create rasterizer state");
     YAGET_SET_DEBUG_NAME(mState.Get(), asset->mTag.mName);
 
     std::size_t hashValue = conv::GenerateHash(rasterizerDesc);

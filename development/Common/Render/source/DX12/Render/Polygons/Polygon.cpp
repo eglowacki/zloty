@@ -11,6 +11,8 @@
 #include <CommonStates.h>
 #include <VertexTypes.h>
 
+#include "Core/ErrorHandlers.h"
+
 namespace
 {
     const char* shaderSource = 
@@ -65,11 +67,11 @@ namespace
         yaget::render::ComPtr<ID3DBlob> signature;
         yaget::render::ComPtr<ID3DBlob> error;
         HRESULT hr = ::D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error);
-        YAGET_UTIL_THROW_ON_RROR(hr, fmt::format("Could not serialize root signature. {}", error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
+        yaget::error_handlers::ThrowOnError(hr, fmt::format("Could not serialize root signature. {}", error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
 
         yaget::render::ComPtr<ID3D12RootSignature> rootSignature;
         hr = device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create root signature.");
+        yaget::error_handlers::ThrowOnError(hr, "Could not create root signature.");
 
         return rootSignature;
     }
@@ -105,7 +107,7 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
     psoDesc.SampleDesc.Count = 1;
 
     HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Pipeline State.");
+    error_handlers::ThrowOnError(hr, "Could not create Pipeline State.");
     YAGET_RENDER_SET_DEBUG_NAME(mPipelineState.Get(), fmt::format("Yaget-Poly Pipeline State"));
 
     const uint64_t verticesBufferSize = sizeof(vertices) * numTriangles;
@@ -135,7 +137,7 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
         nullptr,
         &allocation,
         IID_PPV_ARGS(&triangleData));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not CreateResource from allocator.");
+    error_handlers::ThrowOnError(hr, "Could not CreateResource from allocator.");
     YAGET_RENDER_SET_DEBUG_NAME(triangleData.Get(), fmt::format("Yaget-Poly Triangle Data"));
 
     mAllocation.reset(allocation);
@@ -166,7 +168,7 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
 
     void* bufferData = nullptr;
     hr = triangleData->Map(0, nullptr, &bufferData);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not map Polygon buffer for write.");
+    error_handlers::ThrowOnError(hr, "Could not map Polygon buffer for write.");
 
     memcpy(bufferData, scaledTriangle.data(), verticesBufferSize);
     triangleData->Unmap(0, nullptr);

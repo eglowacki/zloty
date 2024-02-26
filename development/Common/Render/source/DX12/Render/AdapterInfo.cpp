@@ -9,6 +9,8 @@
 
 #include <comdef.h>
 
+#include "Core/ErrorHandlers.h"
+
 //-------------------------------------------------------------------------------------------------
 namespace 
 {
@@ -60,13 +62,13 @@ namespace
         dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif // YAGET_DEBUG_RENDER == 1
 
-        ComPtr<IDXGIFactory2> compitableFactory{};
-        HRESULT hr = ::CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&compitableFactory));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Factory");
+        ComPtr<IDXGIFactory2> compatibleFactory{};
+        HRESULT hr = ::CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&compatibleFactory));
+        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Factory");
 
         ComPtr<IDXGIFactory7> factory{};
-        hr = compitableFactory.As(&factory);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get factory Interface 7 from from DXGI factory.");
+        hr = compatibleFactory.As(&factory);
+        yaget::error_handlers::ThrowOnError(hr, "Could not get factory Interface 7 from from DXGI factory.");
 
         return factory;
     }
@@ -110,7 +112,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
     {
         ComPtr<IDXGIAdapter1> adapter{};
         HRESULT hr = factory->EnumWarpAdapter(IID_PPV_ARGS(&adapter));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not enumerate warp adapter");
+        YAGET_UTIL_THRerror_handlers::ThrowOnErrorOW_ON_RROR(hr, "Could not enumerate warp adapter");
 
         foundAdapters.emplace_back(adapter);
     }
@@ -121,7 +123,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
         {
             DXGI_ADAPTER_DESC1 desc;
             HRESULT hr = adapter->GetDesc1(&desc);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 adapter descritpion");
+            error_handlers::ThrowOnError(hr, "Could not get DX12 adapter descritpion");
 
             if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
             {
@@ -147,7 +149,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
             {
                 DXGI_ADAPTER_DESC1 desc;
                 hr = adapter->GetDesc1(&desc);
-                YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 adapter descritpion");
+                error_handlers::ThrowOnError(hr, "Could not get DX12 adapter descritpion");
 
                 // do we want to keep this adapter?
                 if (!filters.IsAdapter(conv::wide_to_utf8(desc.Description)))
@@ -162,7 +164,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
                 {
                     DXGI_OUTPUT_DESC outputDesc{};
                     hr =  output->GetDesc(&outputDesc);
-                    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get adapter output descritpion");
+                    error_handlers::ThrowOnError(hr, "Could not get adapter output descritpion");
 
                     // do we want to keep this output?
                     if (!filters.IsOutput(conv::wide_to_utf8(outputDesc.DeviceName)))
@@ -178,7 +180,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
                         UINT numModes = 0;
 
                         hr = output->GetDisplayModeList(currentFormat, 0, &numModes, nullptr);
-                        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get number of display modes from adapter");
+                        error_handlers::ThrowOnError(hr, "Could not get number of display modes from adapter");
 
                         if (numModes)
                         {
@@ -192,7 +194,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
                             displayModes.resize(numModes);
 
                             hr = output->GetDisplayModeList(currentFormat, 0, &numModes, displayModes.data());
-                            YAGET_UTIL_THROW_ON_RROR(hr, "Could not get Display Mode List from adapter");
+                            error_handlers::ThrowOnError(hr, "Could not get Display Mode List from adapter");
 
                             //Strings resolutions;
                             for (const auto& display: displayModes)
@@ -283,15 +285,15 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
 
     ComPtr<IDXGIAdapter4> hardwareAdapter;
     HRESULT hr = factory->EnumAdapterByLuid(adapter.mId, IID_PPV_ARGS(&hardwareAdapter));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get requested Hardware Adpater");
+    error_handlers::ThrowOnError(hr, "Could not get requested Hardware Adpater");
 
     ComPtr<ID3D12Device2> device;
     hr = D3D12CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&device));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Device");
+    error_handlers::ThrowOnError(hr, "Could not create DX12 Device");
 
     ComPtr<ID3D12Device7> hardwareDevice{};
     hr = device->QueryInterface<ID3D12Device7>(&hardwareDevice);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Device4 interface");
+    error_handlers::ThrowOnError(hr, "Could not get DX12 Device4 interface");
 
     YAGET_RENDER_SET_DEBUG_NAME(hardwareDevice.Get(), "Yaget Device");
 
@@ -300,16 +302,16 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
     DXGI_QUERY_VIDEO_MEMORY_INFO infoNonLocal = {};
 
     hr = hardwareAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &infoLocal);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not query local video memory");
+    error_handlers::ThrowOnError(hr, "Could not query local video memory");
 
     hr = hardwareAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &infoNonLocal);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not query non-local video memory");
+    error_handlers::ThrowOnError(hr, "Could not query non-local video memory");
 
     std::string optionsText;
 
     CD3DX12FeatureSupport featureSupport;
     hr = featureSupport.Init(hardwareDevice.Get());
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get feature supprt class created.");
+    error_handlers::ThrowOnError(hr, "Could not get feature supprt class created.");
 
     optionsText += "    Video Memory: " + conv::ToThousandsSep(infoLocal.Budget) + " bytes\n";
     optionsText += "    RAM Memory:   " + conv::ToThousandsSep(infoNonLocal.Budget) + " bytes\n";

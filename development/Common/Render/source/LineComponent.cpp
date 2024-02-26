@@ -10,6 +10,8 @@
 #include "Effects.h"
 #include "App/Application.h"
 
+#include "Core/ErrorHandlers.h"
+
 using namespace yaget;
 using namespace DirectX;
 
@@ -38,7 +40,7 @@ void render::LineComponent::OnReset()
     catch (const std::exception& e)
     {
         const auto& textError = fmt::format("Did not initialize LineComponent '{}'. Error: {}", static_cast<comp::Id_t>(Id()), e.what());
-        YAGET_UTIL_THROW("REND", textError);
+        error_handlers::Throw("REND", textError);
     }
 
     mEffect->SetVertexColorEnabled(true);
@@ -50,7 +52,7 @@ void render::LineComponent::OnReset()
     HRESULT hr = d3dDevice->CreateInputLayout(VertexPositionColor::InputElements, VertexPositionColor::InputElementCount,
         shaderByteCode, byteCodeLength,
         mInputLayout.ReleaseAndGetAddressOf());
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create input layout for line component");
+    error_handlers::ThrowOnError(hr, "Could not create input layout for line component");
 }
 
 render::LineComponent::~LineComponent()

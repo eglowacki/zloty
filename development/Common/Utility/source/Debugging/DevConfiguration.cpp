@@ -16,6 +16,8 @@
 #include <filesystem>
 #include <fstream>
 
+#include "Core/ErrorHandlers.h"
+
 namespace fs = std::filesystem;
 
 
@@ -109,7 +111,7 @@ namespace
         catch (const std::exception& e)
         {
             std::string textError = fmt::format("Did not finished init configuration bindings from:\n{}.\nError: {}", configPath.generic_string(), e.what());
-            YAGET_UTIL_THROW("INIT", textError);
+            error_handlers::Throw("INIT", textError);
         }
     }
 

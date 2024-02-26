@@ -53,8 +53,8 @@ namespace
 
         ComPtr<ID3D12CommandQueue> commandQueue;
 
-        HRESULT hr = device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command Queue");
+        const HRESULT hr = device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue));
+        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Command Queue");
 
         return commandQueue;
     }
@@ -65,8 +65,8 @@ namespace
     {
         ComPtr<ID3D12CommandAllocator> commandAllocator;
 
-        HRESULT hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command Allocator");
+        const HRESULT hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator));
+        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Command Allocator");
 
         return commandAllocator;
     }
@@ -77,8 +77,8 @@ namespace
     {
         ComPtr<ID3D12Fence> fence;
 
-        HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Fence");
+        const HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Fence");
 
         return fence;
     }
@@ -88,7 +88,7 @@ namespace
     HANDLE CreateFenceEvent()
     {
         HANDLE fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-        YAGET_UTIL_THROW_ON_RROR(fenceEvent, "Could not DX12 Fence Event");
+        yaget::error_handlers::ThrowOnError(fenceEvent, "Could not DX12 Fence Event");
 
         return fenceEvent;
     }
@@ -143,11 +143,11 @@ namespace
             const char* errStr = static_cast<const char*>(error->GetBufferPointer());
 
             const auto message = fmt::format("Could not DX12 Serialize Versioned Root Signature. Additional error message: '%s'", errStr);
-            YAGET_UTIL_THROW_ON_RROR(hr, message.c_str());
+            error_handlers::ThrowOnError(hr, message.c_str());
         }
 
         hr = device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Root Signature");
+        error_handlers::ThrowOnError(hr, "Could not create DX12 Root Signature");
 
         rootSignature->SetName(L"Yaget Root Signature");
 
@@ -205,7 +205,7 @@ namespace
             const char* errStr = errors ? static_cast<const char*>(errors->GetBufferPointer()) : nullptr;
 
             const auto message = fmt::format("Could not compile DX12 Vertex Shader from file: '{}'{}", yaget::conv::wide_to_utf8(vertPath.c_str()), errStr ? std::string(". Additional error message : '") + errStr + "'" : "");
-            YAGET_UTIL_THROW_ON_RROR(hr, message.c_str());
+            error_handlers::ThrowOnError(hr, message.c_str());
         }
 
         hr = D3DCompileFromFile(fragPath.c_str(), nullptr, nullptr, "main", "ps_5_0", compileFlags, 0, &pixelShader, &errors);
@@ -214,7 +214,7 @@ namespace
             const char* errStr = static_cast<const char*>(errors->GetBufferPointer());
 
             const auto message = fmt::format("Could not DX12 Pixel Shader CompileFromFile. Additional error message: '%s'", errStr);
-            YAGET_UTIL_THROW_ON_RROR(hr, message.c_str());
+            error_handlers::ThrowOnError(hr, message.c_str());
         }
 
         std::ofstream vsOut(vertCompiledPath, std::ios::out | std::ios::binary), fsOut(fragCompiledPath, std::ios::out | std::ios::binary);
@@ -254,7 +254,7 @@ namespace
             heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
             hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&uniformBufferHeap));
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Create Descriptor Heap");
+            error_handlers::ThrowOnError(hr, "Could not create DX12 Create Descriptor Heap");
 
             D3D12_RESOURCE_DESC uboResourceDesc;
             uboResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -270,7 +270,7 @@ namespace
             uboResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
             hr = device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &uboResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&uniformBuffer));
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Create Committed Resource");
+            error_handlers::ThrowOnError(hr, "Could not create DX12 Create Committed Resource");
 
             uniformBufferHeap->SetName(L"Constant Buffer Upload Resource Heap");
 
@@ -290,7 +290,7 @@ namespace
             readRange.End = 0;
 
             hr = uniformBuffer->Map(0, &readRange, reinterpret_cast<void**>(&mappedUniformBuffer));
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not map DX12 Mapped Uniform Buffer");
+            error_handlers::ThrowOnError(hr, "Could not map DX12 Mapped Uniform Buffer");
 
             memcpy(mappedUniformBuffer, &uboVs, sizeof(uboVs));
             uniformBuffer->Unmap(0, &readRange);
@@ -364,7 +364,7 @@ namespace
         psoDesc.SampleDesc.Count = 1;
 
         hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Graphics Pipeline State");
+        error_handlers::ThrowOnError(hr, "Could not create DX12 Graphics Pipeline State");
     }
 
 
@@ -373,8 +373,8 @@ namespace
     ComPtr<ID3D12DebugDevice> CreateDebugDevice(const ComPtr<ID3D12Device>& device)
     {
         ComPtr<ID3D12DebugDevice> debugDevice;
-        HRESULT hr = device->QueryInterface(IID_PPV_ARGS(&debugDevice));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Debug Device");
+        const HRESULT hr = device->QueryInterface(IID_PPV_ARGS(&debugDevice));
+        error_handlers::ThrowOnError(hr, "Could not get DX12 Debug Device");
 
         return debugDevice;
     }
@@ -415,7 +415,7 @@ namespace
         vertexBufferResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
         HRESULT hr = device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &vertexBufferResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexBuffer));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Committed Resource for Vertex Buffer");
+        error_handlers::ThrowOnError(hr, "Could not create DX12 Committed Resource for Vertex Buffer");
 
         // Copy the triangle data to the vertex buffer.
         UINT8* pVertexDataBegin;
@@ -426,7 +426,7 @@ namespace
         readRange.End = 0;
 
         hr = vertexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not Map DX12 Vertex Buffer");
+        error_handlers::ThrowOnError(hr, "Could not Map DX12 Vertex Buffer");
 
         memcpy(pVertexDataBegin, vertexBufferData, vertexBufferSize);
         vertexBuffer->Unmap(0, nullptr);
@@ -464,7 +464,7 @@ namespace
         vertexBufferResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
         HRESULT hr = device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &vertexBufferResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&indexBuffer));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Committed Resource for Index Buffer");
+        error_handlers::ThrowOnError(hr, "Could not create DX12 Committed Resource for Index Buffer");
 
         // Copy the triangle data to the vertex buffer.
         UINT8* pVertexDataBegin;
@@ -475,7 +475,7 @@ namespace
         readRange.End = 0;
 
         hr = indexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not Map DX12 Index Buffer");
+        error_handlers::ThrowOnError(hr, "Could not Map DX12 Index Buffer");
 
         memcpy(pVertexDataBegin, indexBufferData, indexBufferSize);
         indexBuffer->Unmap(0, nullptr);
@@ -511,14 +511,14 @@ yaget::render::Device::Device(Application& app)
     CreatePipeline(mDevice, mRootSignature, mPipelineState, mUniformBuffer, mUniformBufferHeap, mMappedUniformBuffer, mUboVs);
 
     HRESULT hr = mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mCommandAllocator.Get(), mPipelineState.Get(), IID_PPV_ARGS(&mCommandList));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command List");
+    error_handlers::ThrowOnError(hr, "Could not create DX12 Command List");
 
     mCommandList->SetName(L"Yaget Command List");
 
     // Command lists are created in the recording state, but there is nothing
     // to record yet. The main loop expects it to be closed, so close it now.
     hr = mCommandList->Close();
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not close DX12 Command List");
+    error_handlers::ThrowOnError(hr, "Could not close DX12 Command List");
 
     CreateVertexBuffer(mDevice, mVertexBufferData, mVertexBuffer);
     // Initialize the vertex buffer view.
@@ -540,7 +540,7 @@ yaget::render::Device::Device(Application& app)
     // Signal and increment the fence value.
     const UINT64 fence = mFenceValue;
     hr = mCommandQueue->Signal(mFence.Get(), fence);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not signal DX12 Command Queue");
+    error_handlers::ThrowOnError(hr, "Could not signal DX12 Command Queue");
 
     mFenceValue++;
 
@@ -548,7 +548,7 @@ yaget::render::Device::Device(Application& app)
     if (mFence->GetCompletedValue() < fence)
     {
         hr = mFence->SetEventOnCompletion(fence, mFenceEvent);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Event On Completion");
+        error_handlers::ThrowOnError(hr, "Could not set DX12 Event On Completion");
         WaitForSingleObject(mFenceEvent, INFINITE);
     }
 
@@ -566,7 +566,7 @@ yaget::render::Device::~Device()
     mCommandList->Reset(mCommandAllocator.Get(), mPipelineState.Get());
     mCommandList->ClearState(mPipelineState.Get());
     HRESULT hr = mCommandList->Close();
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not close DX12 Command List");
+    error_handlers::ThrowOnError(hr, "Could not close DX12 Command List");
 
     ID3D12CommandList* ppCommandLists[] = { mCommandList.Get() };
     mCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
@@ -574,13 +574,13 @@ yaget::render::Device::~Device()
     // Wait for GPU to finish work
     const UINT64 fence = mFenceValue;
     hr = mCommandQueue->Signal(mFence.Get(), fence);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not signal DX12 mCommandQueue with mFence");
+    error_handlers::ThrowOnError(hr, "Could not signal DX12 mCommandQueue with mFence");
 
     mFenceValue++;
     if (mFence->GetCompletedValue() < fence)
     {
         hr = mFence->SetEventOnCompletion(fence, mFenceEvent);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not set DX12 Event On Completion");
+        error_handlers::ThrowOnError(hr, "Could not set DX12 Event On Completion");
 
         WaitForSingleObject(mFenceEvent, INFINITE);
     }
@@ -614,7 +614,7 @@ yaget::render::Device::~Device()
     mFence = nullptr;
 
     hr = mCommandAllocator->Reset();
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not reset DX12 mCommandAllocator");
+    error_handlers::ThrowOnError(hr, "Could not reset DX12 mCommandAllocator");
     mCommandAllocator = nullptr;
 
     mCommandQueue = nullptr;
@@ -722,10 +722,10 @@ void yaget::render::Device::SetupSwapChain()
 
         ComPtr<IDXGISwapChain1> swapchain;
         HRESULT hr = mAdapter->GetFactory()->CreateSwapChainForHwnd(mCommandQueue.Get(), mApplication.GetSurface().Handle<HWND>(), &swapchainDesc, fullscreenDesc, nullptr, &swapchain);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 SwapChain");
+        error_handlers::ThrowOnError(hr, "Could not get DX12 SwapChain");
 
         hr = swapchain->QueryInterface(__uuidof(IDXGISwapChain3), &mSwapchain);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 SwapChain3 Interface");
+        error_handlers::ThrowOnError(hr, "Could not get DX12 SwapChain3 Interface");
     }
 
     mFrameIndex = mSwapchain->GetCurrentBackBufferIndex();
@@ -744,8 +744,8 @@ void yaget::render::Device::InitBackBuffers()
         rtvHeapDesc.NumDescriptors = MaxRenderBuffers;
         rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
         rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-        HRESULT hr = mDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&mRtvHeap));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 DescriptorHeap Interface");
+        const HRESULT hr = mDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&mRtvHeap));
+        error_handlers::ThrowOnError(hr, "Could not get DX12 DescriptorHeap Interface");
 
         mRtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     }
@@ -758,7 +758,7 @@ void yaget::render::Device::InitBackBuffers()
         for (UINT n = 0; n < MaxRenderBuffers; ++n)
         {
             HRESULT hr = mSwapchain->GetBuffer(n, IID_PPV_ARGS(&mBackBuffers[n]));
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 BackBuffer as RenderTarget Interface");
+            error_handlers::ThrowOnError(hr, "Could not get DX12 BackBuffer as RenderTarget Interface");
 
             mDevice->CreateRenderTargetView(mBackBuffers[n].Get(), nullptr, rtvHandle);
             rtvHandle.ptr += (1 * mRtvDescriptorSize);
@@ -781,13 +781,13 @@ void yaget::render::Device::Resize()
 
     const UINT64 fence = mFenceValue;
     HRESULT hr = mCommandQueue->Signal(mFence.Get(), fence);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not signal DX12 Fence.");
+    error_handlers::ThrowOnError(hr, "Could not signal DX12 Fence.");
     ++mFenceValue;
 
     if (mFence->GetCompletedValue() < fence)
     {
         hr = mFence->SetEventOnCompletion(fence, mFenceEvent);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not DX12 SetEventOnCompletion");
+        error_handlers::ThrowOnError(hr, "Could not DX12 SetEventOnCompletion");
         WaitForSingleObjectEx(mFenceEvent, INFINITE, false);
     }
 

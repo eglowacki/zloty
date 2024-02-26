@@ -24,10 +24,18 @@ void yaget::error_handlers::Throw(const char* tag, const std::string& message, c
 }
 
 
-//void yaget::error_handlers::ThrowOnError(bool resultValid, const std::string& message, const std::source_location& location)
-//{
-//}
+//---------------------------------------------------------------------------------------------------------------------
+void yaget::error_handlers::ThrowOnError(bool resultValid, const std::string& message, const std::source_location& location)
+{
+    if (!resultValid)
+    {
+        const uint64_t hr = ::GetLastError();
+        ThrowOnError(static_cast<long>(hr), message, location);
+    }
+}
 
+
+//---------------------------------------------------------------------------------------------------------------------
 void yaget::error_handlers::ThrowOnError(long hr, const std::string& message, const std::source_location& location)
 {
     if (FAILED(hr))

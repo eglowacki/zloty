@@ -7,6 +7,8 @@
 #include <ranges>
 #include <d3dx12.h>
 
+#include "Core/ErrorHandlers.h"
+
 
 namespace
 {
@@ -15,15 +17,15 @@ namespace
     {
         Microsoft::WRL::ComPtr<ID3D12Device4> device4;
         HRESULT hr = device->QueryInterface<ID3D12Device4>(&device4);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get ID3D12Device4 interface");
+        yaget::error_handlers::ThrowOnError(hr, "Could not get ID3D12Device4 interface");
 
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList1> commandList;
         hr = device4->CreateCommandList1(0, type, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&commandList));
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Command List");
+        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Command List");
 
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> commandList4;
         hr = commandList.As(&commandList4);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get ID3D12GraphicsCommandList4 interface");
+        yaget::error_handlers::ThrowOnError(hr, "Could not get ID3D12GraphicsCommandList4 interface");
 
         YAGET_RENDER_SET_DEBUG_NAME(commandList4.Get(), "Yaget Command List");
 
@@ -74,8 +76,8 @@ yaget::render::platform::CommandListPool::Handle yaget::render::platform::Comman
     auto command = mFreeCommandsList[type].front();
     mFreeCommandsList[type].pop();
 
-    HRESULT hr = command->Reset(commandAllocator, nullptr);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not reset Command List");
+    const HRESULT hr = command->Reset(commandAllocator, nullptr);
+    error_handlers::ThrowOnError(hr, "Could not reset Command List");
 
     return Handle(*this, command.Get(), type, renderTarget, descriptorHeap, frameIndex);
 }
@@ -97,7 +99,7 @@ yaget::render::platform::CommandListPool::Handle::Handle(CommandListPool& comman
     , mDescriptorHeap(descriptorHeap)
     , mFrameIndex(frameIndex)
 {
-    YAGET_UTIL_THROW_ASSERT("DEVI", mCommandList, "commandList parameter is NULL.");
+    error_handlers::ThrowOnCheck(mCommandList, "commandList parameter is NULL.");
 }
 
 
@@ -132,8 +134,8 @@ void yaget::render::platform::CommandListPool::Handle::TransitionToRenderTarget(
     mCommandList->RSSetScissorRects(1, &rect);
 
     ComPtr<ID3D12Device4> device;
-    HRESULT hr = mRenderTarget->GetDevice(IID_PPV_ARGS(&device));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get device from render target");
+    const HRESULT hr = mRenderTarget->GetDevice(IID_PPV_ARGS(&device));
+    error_handlers::ThrowOnError(hr, "Could not get device from render target");
 
     const auto descriptorHandleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
@@ -152,8 +154,8 @@ void yaget::render::platform::CommandListPool::Handle::TransitionToPresent(bool 
 
     if (closeCommand)
     {
-        HRESULT hr = mCommandList->Close();
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not close command list");
+        const HRESULT hr = mCommandList->Close();
+        error_handlers::ThrowOnError(hr, "Could not close command list");
     }
 }
 
@@ -167,8 +169,8 @@ void yaget::render::platform::CommandListPool::Handle::ClearRenderTarget(const c
     const float clearColor[] = { color.R(), color.B(), color.G(), color.A() };
 
     ComPtr<ID3D12Device4> device;
-    HRESULT hr = mRenderTarget->GetDevice(IID_PPV_ARGS(&device));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get device from render target");
+    const HRESULT hr = mRenderTarget->GetDevice(IID_PPV_ARGS(&device));
+    error_handlers::ThrowOnError(hr, "Could not get device from render target");
 
     const auto descriptorHandleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 

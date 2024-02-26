@@ -1,8 +1,10 @@
 #include "Resources/RenderTargetResource.h"
-#include "VTS/RenderResolvedAssets.h"
-#include "Resources/ResourceView.h"
+#include "Core/ErrorHandlers.h"
 #include "Device.h"
 #include "RenderHelpers.h"
+#include "Resources/ResourceView.h"
+#include "VTS/RenderResolvedAssets.h"
+
 
 
 yaget::render::RenderTargetResource::RenderTargetResource(Device& device, std::shared_ptr<io::render::RenderTargetAsset> asset)
@@ -39,7 +41,7 @@ yaget::render::RenderTargetResource::RenderTargetResource(Device& device, std::s
     // Create the texture
 
     HRESULT hr = d3dDevice->CreateTexture2D(&textureDesc, nullptr, &mTextureMap);
-    YAGET_UTIL_THROW_ON_RROR(hr, "CreateTexture2D for render target failed");
+    error_handlers::ThrowOnError(hr, "CreateTexture2D for render target failed");
 
     /////////////////////// Map's Render Target
     // Setup the description of the render target view.
@@ -50,7 +52,7 @@ yaget::render::RenderTargetResource::RenderTargetResource(Device& device, std::s
 
     // Create the render target view.
     hr = d3dDevice->CreateRenderTargetView(mTextureMap.Get(), &renderTargetViewDesc, &mViewMap);
-    YAGET_UTIL_THROW_ON_RROR(hr, "CreateRenderTargetView for render target failed");
+    error_handlers::ThrowOnError(hr, "CreateRenderTargetView for render target failed");
     YAGET_SET_DEBUG_NAME(mViewMap.Get(), mName);
 
     /////////////////////// Map's Shader Resource View
@@ -63,7 +65,7 @@ yaget::render::RenderTargetResource::RenderTargetResource(Device& device, std::s
 
     //// Create the shader resource view, used only if this target will be using as an input to shader (AsSampler)
     //hr = d3dDevice->CreateShaderResourceView(mTextureMap.Get(), &shaderResourceViewDesc, &mShaderViewMap);
-    //YAGET_UTIL_THROW_ON_RROR(hr, "CreateShaderResourceView for render target failed");
+    //error_handlers::ThrowOnError(hr, "CreateShaderResourceView for render target failed");
     //YAGET_SET_DEBUG_NAME(mShaderViewMap.Get(), mName);
 
     //// Describe the Sample State
@@ -78,7 +80,7 @@ yaget::render::RenderTargetResource::RenderTargetResource(Device& device, std::s
 
     ////Create the Sample State, used only if this target will be using as an input to shader (AsSampler)
     //hr = d3dDevice->CreateSamplerState(&sampDesc, &mSamplerSate);
-    //YAGET_UTIL_THROW_ON_RROR(hr, "CreateSamplerState for render target failed");
+    //error_handlers::ThrowOnError(hr, "CreateSamplerState for render target failed");
     //YAGET_SET_DEBUG_NAME(mSamplerSate.Get(), mName);
     //yaget::render::TextureMetaResource::TextureMetaResource(Device & device, std::shared_ptr<io::render::ImageMetaAsset> asset)
 
@@ -97,11 +99,11 @@ yaget::render::RenderTargetResource::RenderTargetResource(Device& device, std::s
     depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
     hr = d3dDevice->CreateTexture2D(&depthStencilBufferDesc, nullptr, &mDepthStencilBuffer);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not initialize Depth & Stencil Buffers");
+    error_handlers::ThrowOnError(hr, "Could not initialize Depth & Stencil Buffers");
     YAGET_SET_DEBUG_NAME(mDepthStencilBuffer.Get(), mName);
 
     hr = d3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), nullptr, &mDepthStencilView);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Depth & Stencil view");
+    error_handlers::ThrowOnError(hr, "Could not create Depth & Stencil view");
     YAGET_SET_DEBUG_NAME(mDepthStencilView.Get(), mName);
 
     D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc = {};
@@ -112,7 +114,7 @@ yaget::render::RenderTargetResource::RenderTargetResource(Device& device, std::s
     depthStencilStateDesc.StencilEnable = FALSE;
 
     hr = d3dDevice->CreateDepthStencilState(&depthStencilStateDesc, &mDepthStencilState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Depth & Stencil state");
+    error_handlers::ThrowOnError(hr, "Could not create Depth & Stencil state");
     YAGET_SET_DEBUG_NAME(mDepthStencilState.Get(), mName);
 
     SetPlatformResource(mTextureMap.Get());

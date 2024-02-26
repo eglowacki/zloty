@@ -7,6 +7,8 @@
 
 #include <filesystem>
 
+#include "Core/ErrorHandlers.h"
+
 namespace fs = std::filesystem;
 
 #define YAGET_DIRECTOR_VERSION 5
@@ -53,7 +55,7 @@ namespace
             if (result == static_cast<std::uintmax_t>(-1))
             {
                 const std::string message = fmt::format("DIRE", "Delete database file '{}' from disk failed with error: '{}: {}'.", fileName, ec.value(), ec.message());
-                YAGET_UTIL_THROW("DIRE", message);
+                yaget::error_handlers::Throw("DIRE", message);
             }
         }
 
@@ -86,11 +88,11 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
     , mIdGameCache([this]() { return GetNextBatch(); })
 {
     const auto tablesVersion = GetCell<int64_t>(mDatabase.DB(), "SELECT Id FROM VersionTables;");
-    YAGET_UTIL_THROW_ASSERT("DIRE", (expectedVersion == Database::NonVersioned || (expectedVersion != Database::NonVersioned && tablesVersion == expectedVersion)),
-        fmt::format("Director Database '{}' has mismatched version. Expected: '{}', result: '{}'.", 
-            yaget::util::ExpendEnv(name, nullptr).c_str(),
-            expectedVersion, 
-            tablesVersion));
+    error_handlers::ThrowOnCheck((expectedVersion == Database::NonVersioned || (expectedVersion != Database::NonVersioned && tablesVersion == expectedVersion)),
+                                 fmt::format("Director Database '{}' has mismatched version. Expected: '{}', result: '{}'.", 
+                                             yaget::util::ExpendEnv(name, nullptr).c_str(),
+                                             expectedVersion, 
+                                             tablesVersion));
 
     YLOG_INFO("DIRE", "Items Director initialized '%s'.", util::ExpendEnv(name, nullptr).c_str());
 
@@ -108,7 +110,7 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
                 continue;
             }
 
-            YAGET_UTIL_THROW_ASSERT("DIRE", itemId != comp::INVALID_ID, fmt::format("ItemId in this scope is invalid. Is '{}' token as a first line in loadout file missing?", comp::db::NewItem_Token));
+            error_handlers::ThrowOnCheck(itemId != comp::INVALID_ID, fmt::format("ItemId in this scope is invalid. Is '{}' token as a first line in loadout file missing?", comp::db::NewItem_Token));
 
             conv::hash_combine(loadoutVersion, command);
             sqlLoadout.emplace_back(fmt::vformat(command, fmt::make_format_args(itemId)));
@@ -129,7 +131,7 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
                 if (!database.ExecuteStatement(command, nullptr))
                 {
                     transaction.Rollback();
-                    YAGET_UTIL_THROW("DIRE", fmt::format("Could not execute sql query '{}'. {}.", command, ParseErrors(database)));
+                    error_handlers::Throw("DIRE", fmt::format("Could not execute sql query '{}'. {}.", command, ParseErrors(database)));
                 }
             }
 
@@ -137,7 +139,7 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
             if (!database.ExecuteStatement(sqCommand, nullptr))
             {
                 transaction.Rollback();
-                YAGET_UTIL_THROW("DIRE", fmt::format("Could not update {} '{}' sql query '{}'.", hashesTable, sqCommand, ParseErrors(database)));
+                error_handlers::Throw("DIRE", fmt::format("Could not update {} '{}' sql query '{}'.", hashesTable, sqCommand, ParseErrors(database)));
             }
 
             YLOG_INFO("DIRE", "Items Director's loadout is done, added: '%d' items.", sqlLoadout.size());
@@ -148,7 +150,7 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
         }
         else
         {
-            YAGET_UTIL_THROW("DIRE", fmt::format("Incomming loadout version: '{}' does not match one in db: '{}'.", loadoutVersion, version));
+            error_handlers::Throw("DIRE", fmt::format("Incomming loadout version: '{}' does not match one in db: '{}'.", loadoutVersion, version));
         }
     }
 }
@@ -176,18 +178,18 @@ yaget::items::IdBatch yaget::items::Director::GetNextBatch()
         if (!result)
         {
             transaction.Rollback();
-            YAGET_UTIL_THROW("DIRE", fmt::format("Did not get next Batch from db. %s.", ParseErrors(database)));
+            error_handlers::Throw("DIRE", fmt::format("Did not get next Batch from db. %s.", ParseErrors(database)));
         }
 
         if (!database.ExecuteStatement(updateBatchCommand, nullptr))
         {
             transaction.Rollback();
-            YAGET_UTIL_THROW("DIRE", fmt::format("Did not update next Batch into db. %s.", ParseErrors(database)));
+            error_handlers::Throw("DIRE", fmt::format("Did not update next Batch into db. %s.", ParseErrors(database)));
         }
 
         return items::IdBatch{ std::get<0>(nextBatch), std::get<1>(nextBatch) };
     }
 
-    YAGET_UTIL_THROW("DIRE", "Did not get locked db handle for Director's database");
+    error_handlers::Throw("DIRE", "Did not get locked db handle for Director's database");
     return{ 0, 0 };
 }

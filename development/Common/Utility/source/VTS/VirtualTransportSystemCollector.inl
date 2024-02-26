@@ -2,6 +2,8 @@
 
 #include "HashUtilities.h"
 
+#include "Core/ErrorHandlers.h"
+
 namespace
 {
 	const char* DatabasePathName = "$(DatabaseFolder)/$(AppName)/vts.sqlite";
@@ -91,7 +93,7 @@ namespace
 				{
 					transaction.Rollback();
 					std::string message = fmt::format("Did not delete table 'Logs'. DB Error: ", ParseErrors(mDatabase.DB()));
-					YAGET_UTIL_THROW("VTS", message);
+					error_handlers::Throw("VTS", message);
 				}
 
 				mDatabase.Log("SESSION_START", "VTS Started");
@@ -100,7 +102,7 @@ namespace
 				{
 					transaction.Rollback();
 					std::string message = fmt::format("There are '{}' blobs left in DirtyTags table.", numDirtyBlobs);
-					YAGET_UTIL_THROW("VTS", message);
+					error_handlers::Throw("VTS", message);
 				}
 
 				auto listSize = configList.size();
@@ -114,7 +116,7 @@ namespace
 					std::set_difference(originalConfigList.begin(), originalConfigList.end(), configList.begin(), configList.end(), std::inserter(invalidConfigList, invalidConfigList.begin()));
 
 					std::string message = fmt::format("VTS Sections '{}' are not valid. Fix VTS section in configuration file.", conv::Combine(invalidConfigList, ", "));
-					YAGET_UTIL_THROW("VTS", message);
+					error_handlers::Throw("VTS", message);
 				}
 
 				//VTS::VTSConfigList
@@ -141,7 +143,7 @@ namespace
 					{
 						transaction.Rollback();
 						std::string message = fmt::format("SectionInsert: '{}' for vts failed. {}.", it.Name, ParseErrors(mDatabase.DB()));
-						YAGET_UTIL_THROW("VTS", message.c_str());
+						error_handlers::Throw("VTS", message.c_str());
 					}
 				}
 
@@ -152,7 +154,7 @@ namespace
 					{
 						transaction.Rollback();
 						std::string message = fmt::format("Did not delete tags with section: '{}'. {}.", it.Name, ParseErrors(mDatabase.DB()));
-						YAGET_UTIL_THROW("VTS", message.c_str());
+						error_handlers::Throw("VTS", message.c_str());
 					}
 
 					command = fmt::format("DELETE FROM Sections WHERE Name = '{}';", it.Name);
@@ -160,7 +162,7 @@ namespace
 					{
 						transaction.Rollback();
 						std::string message = fmt::format("Did not delete section: '{}'. {}.", it.Name, ParseErrors(mDatabase.DB()));
-						YAGET_UTIL_THROW("VTS", message.c_str());
+						error_handlers::Throw("VTS", message.c_str());
 					}
 				}
 
@@ -175,7 +177,7 @@ namespace
 						{
 							transaction.Rollback();
 							std::string message = fmt::format("SectionInsert: '{}' for vts failed. {}.", it.Name, ParseErrors(mDatabase.DB()));
-							YAGET_UTIL_THROW("VTS", message.c_str());
+							error_handlers::Throw("VTS", message.c_str());
 						}
 					}
 				}
@@ -370,7 +372,7 @@ namespace
 							{
 								transaction.Rollback();
 								std::string message = fmt::format("Did not deleted: '{}' from Deleted table. {}", vtsName, ParseErrors(mDatabase.DB()));
-								YAGET_UTIL_THROW("VTS", message.c_str());
+								error_handlers::Throw("VTS", message.c_str());
 							}
 						}
 						else
@@ -385,7 +387,7 @@ namespace
 						{
 							transaction.Rollback();
 							std::string message = fmt::format("TagInsert: '{}' for vts section: {} failed. {}.", vtsName, nameSection, ParseErrors(mDatabase.DB()));
-							YAGET_UTIL_THROW("VTS", message.c_str());
+							error_handlers::Throw("VTS", message.c_str());
 						}
 
 						numNewTags++;
@@ -402,7 +404,7 @@ namespace
 						{
 							transaction.Rollback();
 							std::string message = fmt::format("VTS: '{}' does not exist in Tags table. {}.", it, ParseErrors(mDatabase.DB()));
-							YAGET_UTIL_THROW("VTS", message.c_str());
+							error_handlers::Throw("VTS", message.c_str());
 						}
 
 						command = fmt::format("DELETE FROM Tags WHERE Guid = '{}';", std::get<0>(existingTag).str());
@@ -410,14 +412,14 @@ namespace
 						{
 							transaction.Rollback();
 							std::string message = fmt::format("Did not delete tag: '{}' with section: {}. {}.", it, nameSection, ParseErrors(mDatabase.DB()));
-							YAGET_UTIL_THROW("VTS", message.c_str());
+							error_handlers::Throw("VTS", message.c_str());
 						}
 
 						if (!mDatabase.DB().ExecuteStatementTuple("DeletedInsert", "Deleted", existingTag, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Update))
 						{
 							transaction.Rollback();
 							std::string message = fmt::format("DeletedInsert: '{}' for vts 'Deleted' failed with section: {}. {}.", it, nameSection, ParseErrors(mDatabase.DB()));
-							YAGET_UTIL_THROW("VTS", message.c_str());
+							error_handlers::Throw("VTS", message.c_str());
 						}
 
 						numDeletedTags++;
@@ -466,7 +468,7 @@ namespace
 			if (result == static_cast<std::uintmax_t>(-1) || result == 0)
 			{
 				const std::string message = fmt::format("Delete database file '{}' from disk failed with error: '{}: {}'.", fileName, ec.value(), ec.message());
-				YAGET_UTIL_THROW("VTS", message);
+				yaget::error_handlers::Throw("VTS", message);
 			}
 		}
 

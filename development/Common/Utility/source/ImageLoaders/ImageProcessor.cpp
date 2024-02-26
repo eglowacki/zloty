@@ -2,6 +2,8 @@
 #include "VTS/ResolvedAssets.h"
 #include "Debugging/Assert.h"
 #include "lodepng.h"
+
+#include "Core/ErrorHandlers.h"
 //#include <DirectXTex.h>
 
 namespace
@@ -52,7 +54,7 @@ namespace
 //--------------------------------------------------------------------------------------------------
 yaget::image::Header yaget::image::GetHeader(const io::Buffer& /*buffer*/)
 {
-    YAGET_UTIL_THROW("REND", "DX11 DDS disabeld for now...");
+    error_handlers::Throw("REND", "DX11 DDS disabeld for now...");
     image::Header header;
 
 #if 0 // disable this code for now to move it to renderer
@@ -61,7 +63,7 @@ yaget::image::Header yaget::image::GetHeader(const io::Buffer& /*buffer*/)
     {
         DirectX::TexMetadata metadata;
         HRESULT hr = DirectX::GetMetadataFromDDSMemory(buffer.first.get(), buffer.second, 0, metadata);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not load DDS header/metadata.");
+        error_handlers::ThrowOnError(hr, "Could not load DDS header/metadata.");
 
         header.mDataType = Header::DataType::DDS;
         header.mSize = std::make_pair(static_cast<uint32_t>(metadata.width), static_cast<uint32_t>(metadata.height));
@@ -85,7 +87,7 @@ yaget::image::Header yaget::image::GetHeader(const io::Buffer& /*buffer*/)
             break;
 
         default:
-            YAGET_UTIL_THROW_ASSERT("REND", false, fmt::format("Image Colortype: '{}' does not supported format: '{}'.", static_cast<int>(header.mColorType), static_cast<int>(metadata.format)));
+            error_handlers::ThrowOnCheck(false, fmt::format("Image Colortype: '{}' does not supported format: '{}'.", static_cast<int>(header.mColorType), static_cast<int>(metadata.format)));
         }
     }
     else if (IsPNG(buffer))
