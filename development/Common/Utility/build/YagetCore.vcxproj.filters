@@ -629,6 +629,9 @@
     <ClInclude Include="..\include\Core\ErrorHandlers.h">
       <Filter>Core Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Components\CoordinatorSet2.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\source\Win32\CommandLineArgs.inl">

@@ -2,6 +2,7 @@
 
 #include "YagetCore.h"
 #include "Components/CoordinatorSet.h"
+#include "Components/CoordinatorSet2.h"
 #include "Components/GameSystem.h"
 #include "Components/SystemsCoordinator.h"
 #include "GameSystem/Messaging.h"
@@ -32,6 +33,8 @@ namespace TestObjects
     struct Bcomponent { static constexpr int Capacity = 512; };
     struct Ccomponent { static constexpr int Capacity = 512; };
     struct Dcomponent { static constexpr int Capacity = 512; };
+    struct Ecomponent { static constexpr int Capacity = 512; };
+    struct Fcomponent { static constexpr int Capacity = 512; };
 
     struct AglobalCcomponent { };
     struct BglobalCcomponent { };
@@ -136,8 +139,45 @@ namespace TestObjects
     const int kMaxItems = 10000;
     std::array<TestObjects::Acomponent, kMaxItems> memory{};
 
+    //---------------------------------------------------------------------------------------------------
+    // data used in fixing CoordinatorSet from just one and remove hana
+
+    // full item can be composed from A, B, C, D, E and F. Since A, B, C and D are base item, we keep them in one coordinator,
+    // where E and F represent buffed status, a much smaller set if items will have that status.
+    using BaseEntityAlias = yaget::comp::RowPolicy<Acomponent*, Bcomponent*, Ccomponent*, Dcomponent*>;
+    struct BaseEntity : BaseEntityAlias { using AutoCleanup = bool; };
+
+    using BaseEntityCoordinator = yaget::comp::Coordinator<BaseEntity>;
+
+    using BuffedEntityAlias = yaget::comp::RowPolicy<Ecomponent*, Fcomponent*>;
+    struct BuffedEntity : BuffedEntityAlias { using AutoCleanup = bool; };
+
+    using BuffedEntityCoordinator = yaget::comp::Coordinator<BuffedEntity>;
+
+    using KnightEntityCoordinatorSet = yaget::comp::CoordinatorSet2<BaseEntityCoordinator, BuffedEntityCoordinator>;
+
+
 
 } // namespace TestObjects
+
+
+#include <tuple>
+
+TEST_F(CoordinatorSet, CoordinatorSet2)
+{
+    using namespace yaget;
+
+    TestObjects::KnightEntityCoordinatorSet knightEntities{};
+
+    using RequestedRow = std::tuple<TestObjects::Bcomponent*, TestObjects::Ccomponent*, TestObjects::Dcomponent*, TestObjects::Ecomponent*>;
+
+    const auto numProcessed = knightEntities.ForEach<RequestedRow>([](comp::Id_t id, auto components)
+    {
+        return 0;
+    });
+
+
+}
 
 
 TEST_F(CoordinatorSet, ComponentAccess)
