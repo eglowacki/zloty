@@ -91,3 +91,7 @@ development/Tests/YagetCore-Test/packages/WinPixEventRuntime.1.0.161208001/
 development/Tools/YagetEditor/source/Editor.ygs.h
 
 development/Tools/ProjectValidator/bin/
+
+development/Tests/YagetCore-Test/test*.xml
+
+development/Tests/YagetCore-Test/textfile.txt
