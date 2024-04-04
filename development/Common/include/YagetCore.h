@@ -49,7 +49,7 @@ namespace yaget
         // otherwise prefer InitializeSetup variants  
         void Initialize(const args::Options& options, const char* configData, size_t configSize);
 
-    } // namespace yaget
+    } // namespace system
 
     constexpr uint32_t InvalidId = static_cast<uint32_t>(-1);
 
