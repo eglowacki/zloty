@@ -95,3 +95,5 @@ development/Tools/ProjectValidator/bin/
 development/Tests/YagetCore-Test/test*.xml
 
 development/Tests/YagetCore-Test/textfile.txt
+
+development/Tests/YagetCore-Test/demotest.xml
