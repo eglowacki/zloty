@@ -117,12 +117,12 @@ namespace yaget::comp
 
         // Iterate over each item in ids collection and call callback on each item
         template<typename R>
-        void ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
+        void ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback) const;
 
         // Iterate over all items that conform to pattern R
         // Return number of matched items, or 0 if none.
         template<typename R>
-        std::size_t ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
+        std::size_t ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback) const;
 
         template<typename T>
         memory::PoolAllocator<T>& GetAllocator() const;
@@ -406,7 +406,7 @@ yaget::memory::PoolAllocator<T>& yaget::comp::Coordinator<P>::GetAllocator() con
 
 template<typename P>
 template<typename R>
-void yaget::comp::Coordinator<P>::ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback)
+void yaget::comp::Coordinator<P>::ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback) const
 {
     metrics::Channel system("Coordinator.ForEach ", YAGET_METRICS_CHANNEL_FILE_LINE);
 
@@ -422,7 +422,7 @@ void yaget::comp::Coordinator<P>::ForEach(const comp::ItemIds& ids, std::functio
 
 template<typename P>
 template<typename R>
-std::size_t yaget::comp::Coordinator<P>::ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback)
+std::size_t yaget::comp::Coordinator<P>::ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback) const
 {
     // We only want to get results if R::Row element(s) exist in FullRow, otherwise just reutunr empty results
     //if constexpr (meta::tuple_is_element_v<typename R::Row, FullRow>)

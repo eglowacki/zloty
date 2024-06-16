@@ -5,6 +5,8 @@
 //
 //  Maintained by: Edgar
 //
+//      #include "Meta/CompilerAlgo.h"
+
 //  NOTES:
 //      //-------------------------------------------------------------------------------------------------
 //      * Example of concepts and requires.
@@ -127,9 +129,54 @@
 //              handler();
 //          }
 //      }
-//
-//
-//      #include "Meta/CompilerAlgo.h"
+
+    //A std::tuple<T...> can be used to pass multiple values around. For example, it could be used to store a sequence
+    //of parameters into some form of a queue. When processing such a tuple its elements need to be turned into function call arguments:
+
+    //#include <array>
+    //#include <iostream>
+    //#include <string>
+    //#include <tuple>
+    //#include <utility>
+
+    //// ----------------------------------------------------------------------------
+    //// Example functions to be called:
+    //void f(int i, std::string const& s) {
+    //    std::cout << "f(" << i << ", " << s << ")\n";
+    //}
+    //void f(int i, double d, std::string const& s) {
+    //    std::cout << "f(" << i << ", " << d << ", " << s << ")\n";
+    //}
+    //void f(char c, int i, double d, std::string const& s) {
+    //    std::cout << "f(" << c << ", " << i << ", " << d << ", " << s << ")\n";
+    //}
+    //void f(int i, int j, int k) {
+    //    std::cout << "f(" << i << ", " << j << ", " << k << ")\n";
+    //}
+
+    //// ----------------------------------------------------------------------------
+    //// The actual function expanding the tuple:
+    //template <typename Tuple, std::size_t... I>
+    //void process(Tuple const& tuple, std::index_sequence<I...>) {
+    //    f(std::get<I>(tuple)...);
+    //}
+
+    //// The interface to call. Sadly, it needs to dispatch to another function
+    //// to deduce the sequence of indices created from std::make_index_sequence<N>
+    //template <typename Tuple>
+    //void process(Tuple const& tuple) {
+    //    process(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());
+    //}
+
+    //// ----------------------------------------------------------------------------
+    //int main() {
+    //    process(std::make_tuple(1, 3.14, std::string("foo")));
+    //    process(std::make_tuple('a', 2, 2.71, std::string("bar")));
+    //    process(std::make_pair(3, std::string("pair")));
+    //    process(std::array<int, 3>{ 1, 2, 3 });
+    //}
+    //As long as a class supports std::get<I>(object) and std::tuple_size<T>::value it can be expanded
+    //with the above process() function. The function itself is entirely independent of the number of arguments.
 //
 //////////////////////////////////////////////////////////////////////
 //! \file
@@ -170,7 +217,14 @@ namespace yaget::meta
         {
             return { identity_func<T, Indices>(value)... };
         }
+
+        template <typename T>
+        struct is_tuple: std::false_type {};
+
+        template <typename... Args>
+        struct is_tuple<std::tuple<Args...>>: std::true_type {};
     }
+
 
     //-------------------------------------------------------------------------------------------------
     /// [1]
@@ -274,6 +328,11 @@ namespace yaget::meta
             }
         }
     }
+
+
+    // check if T is of type std::tuple<...>, return True for match, otherwise false
+    template <typename T>
+    constexpr bool is_tuple_v = internal::is_tuple<T>::value;
 
     //-------------------------------------------------------------------------------------------------
     // Makes unique instance from elements and copies
@@ -409,6 +468,27 @@ namespace yaget::meta
     using bits_t = std::size_t;
     namespace internal
     {
+        template <typename... T>
+        constexpr auto convert_as_tuple()
+        {
+            if constexpr (sizeof...(T) == 1)
+            {
+                if constexpr (meta::is_tuple_v<T...>)
+                {
+                    using ElementType = std::tuple_element_t<0, std::tuple<T...>>;
+                    return ElementType{};
+                }
+                else
+                {
+                    return std::tuple<T...>{};
+                }
+            }
+            else
+            {
+                return std::tuple<T...>{};
+            }
+        }
+
         template<typename T, typename U, int N = std::tuple_size_v<std::remove_reference_t<U>>>
         constexpr bits_t tuple_bits()
         {
@@ -468,6 +548,9 @@ namespace yaget::meta
         }
 
     }
+
+    template <typename... IS>
+    using convert_as_tuple_t = decltype(internal::convert_as_tuple<IS...>());
 
     // return bit pattern representing where types from T are located in U
     // Like give me components that represent location of any entity (Tree)

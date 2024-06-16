@@ -1,12 +1,16 @@
 #include "pch.h"
 
 #include "YagetCore.h"
-#include "Components/CoordinatorSet.h"
+//#include "Components/CoordinatorSet.h"
 #include "Components/CoordinatorSet2.h"
 #include "Components/GameSystem.h"
 #include "Components/SystemsCoordinator.h"
 #include "GameSystem/Messaging.h"
+
+#include <gtest/gtest.h>
+
 #include "TestHelpers/TestHelpers.h"
+#include "Meta/CompilerAlgo.h"
 #include "Metrics/Concurrency.h"
 
 #include "LoggerCpp/Manager.h"
@@ -29,15 +33,17 @@ namespace TestObjects
     using Messaging = yaget::comp::gs::Messaging<std::shared_ptr<char>>;
 
     // components for testing
-    struct Acomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText; };
-    struct Bcomponent { static constexpr int Capacity = 512; };
-    struct Ccomponent { static constexpr int Capacity = 512; };
-    struct Dcomponent { static constexpr int Capacity = 512; };
-    struct Ecomponent { static constexpr int Capacity = 512; };
-    struct Fcomponent { static constexpr int Capacity = 512; };
+    struct Acomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Acomponent"; };
+    struct Bcomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Bcomponent"; };
+    struct Ccomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Ccomponent"; };
+    struct Dcomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Dcomponent"; };
+    struct Ecomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Ecomponent"; };
+    struct Fcomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Fcomponent"; };
 
-    struct AglobalCcomponent { };
-    struct BglobalCcomponent { };
+    struct Gcomponent { static constexpr int Capacity = 1;  size_t mDummy = 0; std::string mText = "Gcomponent"; };
+
+    struct AglobalCcomponent { static constexpr int Capacity = 1;  size_t mDummy = 0; std::string mText = "AglobalCcomponent";};
+    struct BglobalCcomponent { static constexpr int Capacity = 1;  size_t mDummy = 0; std::string mText = "BglobalCcomponent";};
 
     // coordinator setup
     using EntityAlias = yaget::comp::RowPolicy<Acomponent*, Bcomponent*, Ccomponent*, Dcomponent*>;
@@ -140,23 +146,25 @@ namespace TestObjects
     std::array<TestObjects::Acomponent, kMaxItems> memory{};
 
     //---------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------
     // data used in fixing CoordinatorSet from just one and remove hana
 
-    // full item can be composed from A, B, C, D, E and F. Since A, B, C and D are base item, we keep them in one coordinator,
-    // where E and F represent buffed status, a much smaller set if items will have that status.
-    using BaseEntityAlias = yaget::comp::RowPolicy<Acomponent*, Bcomponent*, Ccomponent*, Dcomponent*>;
-    struct BaseEntity : BaseEntityAlias { using AutoCleanup = bool; };
-
+    // full item can be composed from A, B, C, D, E, F... these components are grouped into Coordinators,
+    // each Coordinator can be RowPolicy and/or GlobalRowPolicy, where only one Coordinator be of type GlobalRowPolicy
+    using BaseEntity = yaget::comp::RowPolicy<Acomponent*, Bcomponent*, Ccomponent*, Dcomponent*>;
     using BaseEntityCoordinator = yaget::comp::Coordinator<BaseEntity>;
 
-    using BuffedEntityAlias = yaget::comp::RowPolicy<Ecomponent*, Fcomponent*>;
-    struct BuffedEntity : BuffedEntityAlias { using AutoCleanup = bool; };
-
+    using BuffedEntity = yaget::comp::RowPolicy<Ecomponent*, Fcomponent*>;
     using BuffedEntityCoordinator = yaget::comp::Coordinator<BuffedEntity>;
 
-    using KnightEntityCoordinatorSet = yaget::comp::CoordinatorSet2<BaseEntityCoordinator, BuffedEntityCoordinator>;
+    using GlobalEntity = yaget::comp::GlobalRowPolicy<Gcomponent*>;
+    using GlobalEntityCoordinator = yaget::comp::Coordinator<GlobalEntity>;
 
+    using KnightEntityCoordinatorSet = yaget::comp::CoordinatorSet2<BaseEntityCoordinator, BuffedEntityCoordinator, GlobalEntityCoordinator>;
 
+    namespace internalc
+    {
+    }
 
 } // namespace TestObjects
 
@@ -167,13 +175,39 @@ TEST_F(CoordinatorSet, CoordinatorSet2)
 {
     using namespace yaget;
 
+	IdGameCache idGameCache(nullptr);
     TestObjects::KnightEntityCoordinatorSet knightEntities{};
+    auto itemId = idspace::get_burnable(idGameCache);
 
-    using RequestedRow = std::tuple<TestObjects::Bcomponent*, TestObjects::Ccomponent*, TestObjects::Dcomponent*, TestObjects::Ecomponent*>;
+    auto& coordinatorABCD = knightEntities.GetCoordinator<TestObjects::BaseEntity>();
+    auto& coordinatorEF = knightEntities.GetCoordinator<TestObjects::BuffedEntity>();
+    auto& coordinatorG = knightEntities.GetCoordinator<TestObjects::GlobalEntity>();
+
+    coordinatorG.AddComponent<TestObjects::Gcomponent>(itemId);
+
+    coordinatorABCD.AddComponent<TestObjects::Acomponent>(itemId);
+    coordinatorABCD.AddComponent<TestObjects::Bcomponent>(itemId);
+    coordinatorABCD.AddComponent<TestObjects::Ccomponent>(itemId);
+    coordinatorABCD.AddComponent<TestObjects::Dcomponent>(itemId);
+
+    coordinatorEF.AddComponent<TestObjects::Ecomponent>(itemId);
+    coordinatorEF.AddComponent<TestObjects::Fcomponent>(itemId);
+
+    itemId = idspace::get_burnable(idGameCache);
+    coordinatorABCD.AddComponent<TestObjects::Acomponent>(itemId);
+    coordinatorABCD.AddComponent<TestObjects::Bcomponent>(itemId);
+    coordinatorABCD.AddComponent<TestObjects::Ccomponent>(itemId);
+    coordinatorABCD.AddComponent<TestObjects::Dcomponent>(itemId);
+
+    coordinatorEF.AddComponent<TestObjects::Ecomponent>(itemId);
+    coordinatorEF.AddComponent<TestObjects::Fcomponent>(itemId);
+
+    //using RequestedRow = std::tuple<TestObjects::Bcomponent*, TestObjects::Ccomponent*, TestObjects::Dcomponent*, TestObjects::Ecomponent*, TestObjects::Gcomponent*>;
+    using RequestedRow = std::tuple<TestObjects::Acomponent*, TestObjects::Gcomponent*>;
 
     const auto numProcessed = knightEntities.ForEach<RequestedRow>([](comp::Id_t id, auto components)
     {
-        return 0;
+        return true;
     });
 
 

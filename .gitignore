@@ -97,3 +97,7 @@ development/Tests/YagetCore-Test/test*.xml
 development/Tests/YagetCore-Test/textfile.txt
 
 development/Tests/YagetCore-Test/demotest.xml
+
+development/Tests/YagetCore-Test/Database/Director.sqlite
+
+development/Tests/YagetCore-Test/Database/vts.sqlite

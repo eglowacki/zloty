@@ -98,7 +98,7 @@ namespace yaget::comp
                 using CoordinatorRow = decltype(hana::to_tuple(typename CoordType::FullRow{}));
 
                 // filter user request row by which coordinator posses that component. There is a guaranty of no duplicate types between coordinators
-                constexpr auto transformedRow = hana::filter(hana::to_tuple(RequestRow{}), []<typename RR>(const RR&)
+                constexpr auto transformedRow = hana::filter(hana::to_tuple(RequestRow{}), [&]<typename RR>(const RR&)
                 {
                     constexpr auto hasComponent = hana::contains(CoordinatorRow{}, RR{}) == 1;
                     if constexpr (hasComponent)

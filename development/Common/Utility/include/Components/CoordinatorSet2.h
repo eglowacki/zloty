@@ -33,9 +33,6 @@ namespace yaget::comp
 {
     namespace internalc
     {
-        template<typename T>
-        concept is_global = requires { typename T::Policy::Global; };
-
         template <std::size_t TupleIndex, std::size_t MaxTupleSize, typename... Tuple>
         constexpr auto coordinator_row_combine()
         {
@@ -75,23 +72,25 @@ namespace yaget::comp
         template<typename TupleA, typename TupleB, std::size_t TupleIndex, std::size_t MaxTupleSize>
         constexpr auto tuple_get_union()
         {
-            using CurrentResult = std::tuple_element_t<TupleIndex, TupleA>;
+            if constexpr (TupleIndex < MaxTupleSize)
+            {
+                using CurrentResult = std::tuple_element_t<TupleIndex, TupleA>;
 
-            if constexpr (TupleIndex + 1 < MaxTupleSize && meta::tuple_is_element_v<CurrentResult, TupleB>)
-            {
-                constexpr auto nextResult = tuple_get_union<TupleA, TupleB, TupleIndex + 1, MaxTupleSize>();
-                return std::tuple_cat(std::tuple<CurrentResult>{}, nextResult);
-            }
-            else
-            {
-                if constexpr (meta::tuple_is_element_v<CurrentResult, TupleB>)
+                if constexpr (yaget::meta::tuple_is_element_v<CurrentResult, TupleB>)
                 {
-                    return std::tuple<CurrentResult>{};
+                    constexpr auto result = std::tuple<CurrentResult>{};
+                    constexpr auto nextResult = tuple_get_union<TupleA, TupleB, TupleIndex + 1, MaxTupleSize>();
+                    return std::tuple_cat(result, nextResult);
                 }
                 else
                 {
-                    return std::tuple<>{};
+                    constexpr auto nextResult = tuple_get_union<TupleA, TupleB, TupleIndex + 1, MaxTupleSize>();
+                    return nextResult;
                 }
+            }
+            else
+            {
+                return std::tuple<>{};
             }
         }
 
@@ -99,14 +98,36 @@ namespace yaget::comp
         template<typename S, typename T, int N = std::tuple_size_v<std::remove_reference_t<S>>>
         constexpr void tuple_copy(const S& source, T& target)
         {
+            tuple_copy_if(source, target, [](auto...){ return true; });
+        }
+
+        // Copy tuple from Source to Target overwriting any values in Target
+        // if callback returns true, otherwise skip it
+        template<typename S, typename T, typename C, int N = std::tuple_size_v<std::remove_reference_t<S>>>
+        constexpr void tuple_copy_if(const S& source, T& target, C callback)
+        {
             using ET = std::tuple_element_t<N - 1, S>;
 
-            std::get<ET>(target) = std::get<ET>(source);
+            const auto& sourceElement = std::get<ET>(source);
+            const auto& targetElement = std::get<ET>(target);
+            if (callback(sourceElement, targetElement))
+            {
+                std::get<ET>(target) = std::get<ET>(source);
+            }
 
             if constexpr (N - 1 > 0)
             {
-                tuple_copy<S, T, N - 1>(source, target);
+                tuple_copy_if<S, T, C, N - 1>(source, target, callback);
             }
+        }
+
+        template<typename S, typename T>
+        constexpr void tuple_copy_if_source(const S& source, T& target)
+        {
+            tuple_copy_if(source, target, [](const auto& sourceElement, const auto& targetElement)
+            {
+                return sourceElement != nullptr;
+            });
         }
 
         // for_loop<std::tuple<...>>([]<std::size_t T0>()
@@ -120,6 +141,59 @@ namespace yaget::comp
             }
         }
 
+        template<typename T>
+        concept requires_global_coordinator = requires { typename T::Global; };
+
+        template <typename Coordinators, size_t Num = std::tuple_size_v<Coordinators>>
+        constexpr bool has_global_coordinator()
+        {
+            if constexpr (Num > 0)
+            {
+                using CoordinatorRow = typename std::tuple_element_t<Num - 1, Coordinators>::Policy;
+                CoordinatorRow coordinatorRow{};
+                if constexpr (requires_global_coordinator<CoordinatorRow>)
+                {
+                    return true;
+                }
+
+                return has_global_coordinator<Coordinators, Num - 1>();
+            }
+
+            return false;
+        }
+    } // namespace internalc
+
+
+    template<typename TupleA, typename TupleB>
+    using tuple_get_union_t = decltype(internalc::tuple_get_union<TupleA, TupleB, 0, std::tuple_size_v<TupleA>>());
+
+
+    namespace internalc
+    {
+        template <typename Coordinators, typename QueryRow, size_t Num = std::tuple_size_v<Coordinators>>
+        constexpr bool uses_global_coordinator()
+        {
+            if constexpr (Num - 1 > 0)
+            {
+                constexpr std::size_t coordinatorIndex = Num - 1;
+
+                using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
+
+                if constexpr (internalc::requires_global_coordinator<CoordinatorPolicy>)
+                {
+                    using RequestedRow = comp::tuple_get_union_t<QueryRow, typename CoordinatorPolicy::Row>;
+                    
+                    if constexpr (std::tuple_size_v<RequestedRow> > 0)
+                    {
+                        return true;
+                    }
+                }
+
+                return uses_global_coordinator<Coordinators, QueryRow, Num - 1>();
+            }
+
+            return false;
+        }
 
     } // namespace internalc
 
@@ -131,9 +205,6 @@ namespace yaget::comp
 
     template<typename... Tuple>
     using coordinator_row_combine2_t = typename coordinator_row_combine2<Tuple...>::type;
-
-    template<typename TupleA, typename TupleB>
-    using tuple_get_union_t = decltype(internalc::tuple_get_union<TupleA, TupleB, 0, std::tuple_size_v<TupleA>>());
 
     //template<char ...C>
     //requires (sizeof...(C)%2 == 0)
@@ -151,62 +222,123 @@ namespace yaget::comp
         const Strings mComponentNames = comp::db::GetPolicyRowNames<FullRow>();
 
         // find all rows which contain QueryRow, and call callback for each one
+        // return True to keep iterating, otherwise return False to stop
         template <typename QueryRow>
         using RowCallback = std::function<bool(Id_t, QueryRow)>;
 
         template <typename QueryRow>
-        std::size_t ForEach(RowCallback<QueryRow> callback)
+        std::size_t ForEach(RowCallback<QueryRow> callback) const
         {
+            constexpr bool usesGlobal = internalc::uses_global_coordinator<Coordinators, QueryRow>();
+
             // we want to compare QueryRow against each Coordinator::FullRow,
             // and collect same elements into one tuple type and return that.
             // with this type we can enumerate over all rows using returned tuple.
 
             using Items = std::map<comp::Id_t, QueryRow>;
             Items collectedItems;
+            Items collectedGlobalItem;
 
-            std::size_t numItemsResult = 0;
-
-            // we need to iterate over each coordinator and collect results
             //---------------------------------------------------------------------------------------------
+            // collect global row if coordinator exists
+            if constexpr (usesGlobal)
+            {
+                internalc::for_loop<NumCoordinators>([this, &collectedGlobalItem]<std::size_t T0>()
+                {
+                    constexpr std::size_t coordinatorIndex = T0;
 
+                    using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
+
+                    if constexpr (internalc::requires_global_coordinator<CoordinatorPolicy>)
+                    {
+                        using RequestedRow = tuple_get_union_t<QueryRow, typename CoordinatorPolicy::Row>;
+                        using RequestedRowPolicy = comp::GlobalRowPolicy<RequestedRow>;
+                        
+                        if constexpr (std::tuple_size_v<RequestedRow> > 0)
+                        {
+                            auto& coordinator = GetCoordinator<coordinatorIndex>();
+                            const std::size_t numItems = coordinator.template ForEach<RequestedRowPolicy>([&collectedGlobalItem](comp::Id_t id, const auto& row)
+                            {
+                                internalc::tuple_copy(row, collectedGlobalItem[id]);
+                                return true;
+                            });
+                        }
+                    }
+                });
+            }
+
+            //---------------------------------------------------------------------------------------------
+            // we need to iterate over each coordinator and collect results
             internalc::for_loop<NumCoordinators>([this, &collectedItems]<std::size_t T0>()
             {
                 constexpr std::size_t coordinatorIndex = T0;
 
-                using CoordinatorRow = typename std::tuple_element_t<coordinatorIndex, Coordinators>::FullRow;
-                using RequestedRow = tuple_get_union_t<QueryRow, CoordinatorRow>;
-
-                QueryRow queryRow{};
-                CoordinatorRow coordinatorRow{};
-                RequestedRow requestedRow{};
-
-                struct RequestedRowPolicy { using Row = RequestedRow; };
-
-                if constexpr (std::tuple_size_v<RequestedRow> > 0)
+                using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
+                if constexpr (!internalc::requires_global_coordinator<CoordinatorPolicy>)
                 {
-                    auto& coordinator = GetCoordinator<coordinatorIndex>();
-                    const std::size_t numItems = coordinator.template ForEach<RequestedRowPolicy>([&collectedItems](comp::Id_t id, const auto& row)
+                    using RequestedRow = tuple_get_union_t<QueryRow, typename CoordinatorPolicy::Row>;
+
+                    if constexpr (std::tuple_size_v<RequestedRow> > 0)
                     {
-                        internalc::tuple_copy(row, collectedItems[id]);
-                        return true;
-                    });
+                        using RequestedRowPolicy = comp::RowPolicy<RequestedRow>;
+
+                        auto& coordinator = GetCoordinator<coordinatorIndex>();
+                        const std::size_t numItems = coordinator.template ForEach<RequestedRowPolicy>([&collectedItems](comp::Id_t id, const auto& row)
+                        {
+                            internalc::tuple_copy(row, collectedItems[id]);
+                            return true;
+                        });
+                    }
                 }
             });
 
-            return numItemsResult;
+            //---------------------------------------------------------------------------------------------
+            // iterate over collected rows and trigger callback
+            std::size_t numProcessedElements = 0;
+
+            if constexpr (usesGlobal)
+            {
+                // only if there is no regular items (collectedItems) and we have ONE global item (collectedGlobalItem)
+                if (collectedItems.empty() && !collectedGlobalItem.empty() && collectedGlobalItem.size() == 1)
+                {
+                    collectedItems = collectedGlobalItem;
+                }
+            }
+
+            for (auto& [id, element] : collectedItems)
+            {
+                auto elementRow = element;
+                if constexpr (usesGlobal)
+                {
+                    const auto& globalElement = collectedGlobalItem.begin();
+                    // if we do have global elements copy them into parameter before triggering callback
+                    internalc::tuple_copy_if_source(globalElement->second, elementRow);
+                }
+
+                if (callback(id, elementRow))
+                {
+                    ++numProcessedElements;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return numProcessedElements;
         }
 
-        //template <typename C>                 ^
-        //comp::Coordinator<C>& GetCoordinator()
-        //{
-        //    return std::get<comp::Coordinator<C>>(mCoordinators);
-        //}
+        template <typename C>
+        comp::Coordinator<C>& GetCoordinator()
+        {
+            return std::get<comp::Coordinator<C>>(mCoordinators);
+        }
 
-        //template <typename C>
-        //const comp::Coordinator<C>& GetCoordinator() const
-        //{
-        //    return std::get<comp::Coordinator<C>>(mCoordinators);
-        //}
+        template <typename C>
+        const comp::Coordinator<C>& GetCoordinator() const
+        {
+            return std::get<comp::Coordinator<C>>(mCoordinators);
+        }
 
         template <std::size_t Index>
         auto& GetCoordinator()
@@ -219,12 +351,6 @@ namespace yaget::comp
         {
             return std::get<Index>(mCoordinators);
         }
-
-        //template <typename TCoordinator>
-        //constexpr std::size_t GetCoordinatorIndex() const
-        //{
-        //    return meta::Index<TCoordinator, Coordinators>::value;
-        //}
 
     private:
         Coordinators mCoordinators;

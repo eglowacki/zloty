@@ -34,14 +34,14 @@ namespace yaget::comp::gs
     // helper functions for bookkeeping of which items/components belong to which Coordinators
     namespace internalgs
     {
-        template <
-            typename TTuple,
-            size_t Index = 0,
-            size_t Size = std::tuple_size_v<std::remove_reference_t<TTuple>>,
-            typename TElement,
-            typename TCollection
-        >
-        constexpr void add_to_collection(TElement&& id, TCollection& collection);
+        //template <
+        //    typename TTuple,
+        //    size_t Index = 0,
+        //    size_t Size = std::tuple_size_v<std::remove_reference_t<TTuple>>,
+        //    typename TElement,
+        //    typename TCollection
+        //>
+        //constexpr void add_to_collection(TElement&& id, TCollection& collection);
 
         template <
             typename TTuple,
@@ -53,10 +53,10 @@ namespace yaget::comp::gs
         constexpr void remove_all_from_collection(TCoordinatorSet&& coordinatorSet, TCollection& collection);
 
         template <typename TElement, typename TCollection>
-        constexpr void add_item_to_collection(size_t Index, TElement&& id, TCollection& collection);
+        constexpr void add_item_to_collection(size_t index, TElement&& id, TCollection& collection);
 
         template <typename TElement, typename TCollection>
-        constexpr void remove_item_from_collection(size_t Index, TElement&& id, TCollection& collection);
+        constexpr void remove_item_from_collection(size_t index, TElement&& id, TCollection& collection);
 
     } // namespace internalgs
 

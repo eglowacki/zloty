@@ -60,6 +60,15 @@ namespace yaget
             return PERSISTENT_ID_BIT | id;
         }
 
+        namespace internal
+        {
+
+            // A row must be at least 1 in size and all elements need to be unique.
+            template <typename... IS>
+            concept RowDataType = std::tuple_size_v<meta::convert_as_tuple_t<IS...>> > 0 && meta::tuple_is_unique_v<meta::convert_as_tuple_t<IS...>>;
+            
+        } // namespace internal
+
         // provides layout and types of entity components (Item)
         // IS... var args represent list of classes (aka components) that one item represents at it's fullest
         // Not all items will have all components fill in
@@ -73,14 +82,11 @@ namespace yaget
         //    using Global = bool;      // used as a global entity
         //};
         //
-        template <typename... IS>
+        template <internal::RowDataType... IS>
         struct RowPolicy
         {
-            using Row = std::tuple<IS...>;
+            using Row = yaget::meta::convert_as_tuple_t<IS...>;
             static constexpr size_t NumComponents = std::tuple_size_v<std::remove_reference_t<Row>>;
-
-            static_assert(NumComponents > 0, "Policy must have at least one Element.");
-            static_assert(meta::tuple_is_unique_v<Row>, "Duplicate element types in Policy");
 
 #ifndef YAGET_RELEASE
             // NOTE: EG: Not sure if I like this be a compile define
