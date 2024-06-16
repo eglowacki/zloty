@@ -112,7 +112,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
     {
         ComPtr<IDXGIAdapter1> adapter{};
         HRESULT hr = factory->EnumWarpAdapter(IID_PPV_ARGS(&adapter));
-        YAGET_UTIL_THRerror_handlers::ThrowOnErrorOW_ON_RROR(hr, "Could not enumerate warp adapter");
+        error_handlers::ThrowOnError(hr, "Could not enumerate warp adapter");
 
         foundAdapters.emplace_back(adapter);
     }
@@ -123,7 +123,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
         {
             DXGI_ADAPTER_DESC1 desc;
             HRESULT hr = adapter->GetDesc1(&desc);
-            error_handlers::ThrowOnError(hr, "Could not get DX12 adapter descritpion");
+            error_handlers::ThrowOnError(hr, "Could not get DX12 adapter description");
 
             if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
             {

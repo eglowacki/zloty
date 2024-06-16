@@ -185,25 +185,25 @@ namespace yaget::comp::gs
     namespace internalgs
     {
         //---------------------------------------------------------------------------------------------------------
-        template <
-            typename TTuple,
-            size_t Index,
-            size_t Size,
-            typename TElement,
-            typename TCollection
-        >
-        constexpr void add_to_collection(TElement&& id, TCollection& collection)
-        {
-            if constexpr (Index < Size)
-            {
-                collection[Index].insert(id);
+        //template <
+        //    typename TTuple,
+        //    size_t Index,
+        //    size_t Size,
+        //    typename TElement,
+        //    typename TCollection
+        //>
+        //constexpr void add_to_collection(TElement&& id, TCollection& collection)
+        //{
+        //    if constexpr (Index < Size)
+        //    {
+        //        collection[Index].insert(id);
 
-                if constexpr (Index + 1 < Size)
-                {
-                    add_to_collection<TTuple, Index + 1>(id, collection);
-                }
-            }
-        }
+        //        if constexpr (Index + 1 < Size)
+        //        {
+        //            add_to_collection<TTuple, Index + 1>(id, collection);
+        //        }
+        //    }
+        //}
 
 
         //---------------------------------------------------------------------------------------------------------
@@ -223,7 +223,7 @@ namespace yaget::comp::gs
 
                 if constexpr (Index + 1 < Size)
                 {
-                    remove_from_collection<TTuple, Index + 1>(coordinatorSet, collection);
+                    remove_all_from_collection<TTuple, Index + 1>(coordinatorSet, collection);
                 }
             }
         }
@@ -231,17 +231,17 @@ namespace yaget::comp::gs
 
         //---------------------------------------------------------------------------------------------------------
         template <typename TElement, typename TCollection>
-        constexpr void add_item_to_collection(size_t Index, TElement&& id, TCollection& collection)
+        constexpr void add_item_to_collection(size_t index, TElement&& id, TCollection& collection)
         {
-            collection[Index].insert(id);
+            collection[index].insert(id);
         }
 
 
         //---------------------------------------------------------------------------------------------------------
         template <typename TElement, typename TCollection>
-        constexpr void remove_item_from_collection(size_t Index, TElement&& id, TCollection& collection)
+        constexpr void remove_item_from_collection(size_t index, TElement&& id, TCollection& collection)
         {
-            collection[Index].erase(id);
+            collection[index].erase(id);
         }
 
     } // namespace internalgs
