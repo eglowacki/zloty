@@ -362,21 +362,17 @@ typename yaget::comp::ItemIds yaget::comp::Coordinator<P>::GetItemIds() const
 
     std::set<yaget::comp::Id_t> results;
 
-    // We only want to get results if R::Row element(s) exist in FullRow, otherwise just reutunr empty results
-    //if constexpr (meta::tuple_is_element_v<typename R::Row, FullRow>)
-    //{
-        PatternSet requestBits = meta::tuple_bit_pattern_v<FullRow, typename R::Row>;
-        if (requestBits.any())
+    PatternSet requestBits = meta::tuple_bit_pattern_v<FullRow, typename R::Row>;
+    if (requestBits.any())
+    {
+        for (const auto& it : mPatterns)
         {
-            for (const auto& it : mPatterns)
+            if ((it.first & requestBits) == requestBits)
             {
-                if ((it.first & requestBits) == requestBits)
-                {
-                    results.insert(it.second.begin(), it.second.end());
-                }
+                results.insert(it.second.begin(), it.second.end());
             }
         }
-    //}
+    }
 
     return results;
 }
@@ -424,16 +420,8 @@ template<typename P>
 template<typename R>
 std::size_t yaget::comp::Coordinator<P>::ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback) const
 {
-    // We only want to get results if R::Row element(s) exist in FullRow, otherwise just reutunr empty results
-    //if constexpr (meta::tuple_is_element_v<typename R::Row, FullRow>)
-    //{
-        const auto ids = GetItemIds<R>();
-        ForEach<R>(ids, callback);
+    const auto ids = GetItemIds<R>();
+    ForEach<R>(ids, callback);
 
-        return ids.size();
-    //}
-    //else
-    //{
-    //    return 0;
-    //}
+    return ids.size();
 }
