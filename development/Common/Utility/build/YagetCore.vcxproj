@@ -181,7 +181,6 @@
     <ClInclude Include="..\include\Components\ComponentTypes.h" />
     <ClInclude Include="..\include\Components\Coordinator.h" />
     <ClInclude Include="..\include\Components\CoordinatorSet.h" />
-    <ClInclude Include="..\include\Components\CoordinatorSet2.h" />
     <ClInclude Include="..\include\Components\GameCoordinatorGenerator.h" />
     <ClInclude Include="..\include\Components\GameSystem.h" />
     <ClInclude Include="..\include\Components\GameSystemInline.h" />

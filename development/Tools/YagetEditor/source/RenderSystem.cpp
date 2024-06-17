@@ -1,8 +1,8 @@
 ﻿#include "RenderSystem.h"
 #include "Render/DesktopApplication.h"
 
-yaget::editor::RenderSystem::RenderSystem(Messaging& messaging, render::DesktopApplication& app)
-    : GameSystem("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); })
+yaget::editor::RenderSystem::RenderSystem(Messaging& messaging, render::DesktopApplication& app, RenderCoordinatorSet& coordinatorSet)
+    : GameSystem("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
     , mDevice(app.GetDevice())
 {
 }

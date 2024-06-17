@@ -42,15 +42,8 @@ namespace TestObjects
 
     struct Gcomponent { static constexpr int Capacity = 1;  size_t mDummy = 0; std::string mText = "Gcomponent"; };
 
-    struct AglobalCcomponent { static constexpr int Capacity = 1;  size_t mDummy = 0; std::string mText = "AglobalCcomponent";};
-    struct BglobalCcomponent { static constexpr int Capacity = 1;  size_t mDummy = 0; std::string mText = "BglobalCcomponent";};
-
     // coordinator setup
-    using EntityAlias = yaget::comp::RowPolicy<Acomponent*, Bcomponent*, Ccomponent*, Dcomponent*>;
-    struct Entity : EntityAlias
-    {
-        using AutoCleanup = bool;
-    };
+    using Entity = yaget::comp::RowPolicy<Acomponent*, Bcomponent*, Ccomponent*, Dcomponent*>;
 
     using EntityCoordinator = yaget::comp::Coordinator<Entity>;
 
@@ -160,7 +153,7 @@ namespace TestObjects
     using GlobalEntity = yaget::comp::GlobalRowPolicy<Gcomponent*>;
     using GlobalEntityCoordinator = yaget::comp::Coordinator<GlobalEntity>;
 
-    using KnightEntityCoordinatorSet = yaget::comp::CoordinatorSet2<BaseEntityCoordinator, BuffedEntityCoordinator, GlobalEntityCoordinator>;
+    using KnightEntityCoordinatorSet = yaget::comp::CoordinatorSet<BaseEntityCoordinator, BuffedEntityCoordinator, GlobalEntityCoordinator>;
 
     namespace internalc
     {

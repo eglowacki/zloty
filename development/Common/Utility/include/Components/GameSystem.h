@@ -81,8 +81,6 @@ namespace yaget::comp::gs
     class GameSystem : public Noncopyable<GameSystem<CS, E, M, Comps...>>
     {
     public:
-        static_assert(CS::NumCoordinators < 2, "There are bugs with having more then one coordinator when using CoordinatorSet");
-
         using EndMarker = E;
         using Messaging = M;
         using RowPolicy = comp::RowPolicy<Comps...>;

@@ -1,8 +1,8 @@
 ﻿#include "EditorSystem.h"
 
 
-yaget::editor::EditorSystem::EditorSystem(Messaging& messaging, Application& app)
-    : GameSystem("EditorSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); })
+yaget::editor::EditorSystem::EditorSystem(Messaging& messaging, Application& app, EditorGameCoordinatorSet& coordinatorSet)
+    : GameSystem("EditorSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
 {
 }
 
