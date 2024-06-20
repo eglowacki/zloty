@@ -17,6 +17,5 @@ component Script
 coordinator Global<EditorWindow>
 coordinator Entity<Location, Script>
 
-
 system Editor<EditorWindow>
 system GameWindow<Location, Script>
