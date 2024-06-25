@@ -41,22 +41,23 @@ namespace
     const int numTriangles = 1;
 
     const float aspectRatio = 1.0f;
-    struct Vertex
-    {
-        math3d::Vector3 position;
-        math3d::Vector4 color;
-    };
+    using Vertex = DirectX::VertexPositionColor;
+    //struct Vertex
+    //{
+    //    math3d::Vector3 position;
+    //    math3d::Vector4 color;
+    //};
 
     const Vertex vertices[] = {
-        { { 0.0f, 1.0f * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 0.99f } },
-        { { 1.0f, -1.0f * aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.f } },
-        { { -1.0f, -1.0f * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 0.f } }
+        { DirectX::XMFLOAT3{ 0.0f, 1.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.99f } },
+        { DirectX::XMFLOAT3{ 1.0f, -1.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.f } },
+        { DirectX::XMFLOAT3{ -1.0f, -1.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.f } }
     };
 
     const Vertex vertices2[] = {
-        { { 0.0f, 1.0f * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 0.99f } },
-        { { 1.0f, 0.0f * aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 0.f } },
-        { { -1.0f, 0.0f * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 0.f } }
+        { DirectX::XMFLOAT3{ 0.0f, 1.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.99f } },
+        { DirectX::XMFLOAT3{ 1.0f, 0.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.f } },
+        { DirectX::XMFLOAT3{ -1.0f, 0.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.f } }
     };
 
     yaget::render::ComPtr<ID3D12RootSignature> CreateRootSignature(ID3D12Device* device)
@@ -150,16 +151,28 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
     for (auto i = 0; i < numTriangles; ++i)
     {
         auto selectedVertex0 = useTwo ? vertices2[0] : vertices[0];
-        selectedVertex0.position *= scale;
-        selectedVertex0.position += offset;
+        selectedVertex0.position.x *= scale;
+        selectedVertex0.position.y *= scale;
+        selectedVertex0.position.z *= scale;
+        selectedVertex0.position.x += offset.x;
+        selectedVertex0.position.y += offset.y;
+        selectedVertex0.position.z += offset.z;
 
         auto selectedVertex1 = useTwo ? vertices2[1] : vertices[1];
-        selectedVertex1.position *= scale;
-        selectedVertex1.position += offset;
+        selectedVertex1.position.x *= scale;
+        selectedVertex1.position.y *= scale;
+        selectedVertex1.position.z *= scale;
+        selectedVertex1.position.x += offset.x;
+        selectedVertex1.position.y += offset.y;
+        selectedVertex1.position.z += offset.z;
 
         auto selectedVertex2 = useTwo ? vertices2[2] : vertices[2];
-        selectedVertex2.position *= scale;
-        selectedVertex2.position += offset;
+        selectedVertex2.position.x *= scale;
+        selectedVertex2.position.y *= scale;
+        selectedVertex2.position.z *= scale;
+        selectedVertex2.position.x += offset.x;
+        selectedVertex2.position.y += offset.y;
+        selectedVertex2.position.z += offset.z;
 
         scaledTriangle.push_back(selectedVertex0);
         scaledTriangle.push_back(selectedVertex1);
@@ -210,7 +223,7 @@ ID3D12GraphicsCommandList* yaget::render::Polygon::Render(ID3D12GraphicsCommandL
 }
 
 
-// sample from example of renderig triangle
+// sample from example of rendering triangle
 #if 0
 
 //*********************************************************

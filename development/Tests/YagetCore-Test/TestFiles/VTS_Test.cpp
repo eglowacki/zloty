@@ -471,9 +471,9 @@ TEST_F(VTS, TransportSystem)
         io::BLobLoader<TestAsset> settingsLoader(vts, settingsFiles);
         EXPECT_EQ(settingsLoader.Assets().size(), 2);
         auto asset0 = settingsLoader.Assets()[0];
-        EXPECT_EQ(asset0->mMessage, "Sound Options");
+        EXPECT_EQ(asset0->mMessage, "Exit App");
         auto asset1 = settingsLoader.Assets()[1];
-        EXPECT_EQ(asset1->mMessage, "Exit App");
+        EXPECT_EQ(asset1->mMessage, "Sound Options");
 
         {
             std::vector<io::Tag> tags = vts.GetTags(settingsFile);

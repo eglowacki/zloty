@@ -451,6 +451,7 @@ std::vector<yaget::io::Tag> yaget::io::VirtualTransportSystem::GetTags(const Sec
         }
     }
 
+    std::ranges::reverse(results);
     return results;
 }
 
