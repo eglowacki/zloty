@@ -81,7 +81,7 @@ namespace yaget::render::info
 
         const Resolution& GetSelectedResolution() const
         {
-            YAGET_ASSERT(IsValid(), "Adpater is not valid");
+            YAGET_ASSERT(IsValid(), "Adapter is not valid");
 
             return *mOutputs.begin()->mResolutions.begin();
         }
@@ -91,10 +91,10 @@ namespace yaget::render::info
 
     // used to filter which display info to collect.
     // When filter returns true, keep that, otherwise skip.
-    // If filter is not set for, it treats as true.
+    // If filter is not set for, it is treated as true.
     struct Filters
     {
-        // convinience functions
+        // convenience functions
         bool IsFeatureLevel(D3D_FEATURE_LEVEL_Y featureLevel) const { return mFeatureLevel ? mFeatureLevel(featureLevel) : true; }
         bool IsAdapter(const std::string& name) const { return mAdapter ? mAdapter(name) : true; }
         bool IsOutput(const std::string& name) const { return mOutput ? mOutput(name) : true; }
@@ -111,7 +111,7 @@ namespace yaget::render::info
     // Construct filters that provides DX12+ version, 32 bit RGBA and refresh rate of 60+
     Filters GetDefaultFilters();
 
-    // get all valid adpaters, it outputs and all resolutions for each output
+    // get all valid adapters, it outputs and all resolutions for each output
     Adapters EnumerateAdapters(Filters filters, bool referenceRasterizer);
     // return one specific Adapter to be used for CreateDevice
     Adapter SelectAdapter(const Adapters& adapters, Filters filters);
@@ -119,7 +119,7 @@ namespace yaget::render::info
     // This get's returned by CreateDevice(...) function. It provides all three DX12 objects
     // representing device, adapter and factory.
     using HardwareDevice = std::tuple<ComPtr<ID3D12Device>, ComPtr<IDXGIAdapter>, ComPtr<IDXGIFactory>>;
-    // Create actuall device and intialize (debug is on in non-shipping configurations)
+    // Create actual device and initialize (debug is on in non-shipping configurations)
     HardwareDevice CreateDevice(const Adapter& adapter);
 
 } // namespace yaget::render::info
