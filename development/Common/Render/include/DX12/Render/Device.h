@@ -116,4 +116,16 @@ namespace yaget::render
         FrameFenceValues mFrameFenceValues;
     };
 
+    // add class of type DeviceB but stub out all calls as a no-op
+    class NullDevice : public Noncopyable<NullDevice>
+    {
+    public:
+        NullDevice(app::WindowFrame /*windowFrame*/, const yaget::render::info::Adapter& /*adapterInfo*/) {}
+
+        void Resize() {}
+        void SurfaceStateChange() {}
+        int64_t OnHandleRawInput(app::DisplaySurface::PlatformWindowHandle /*hWnd*/, uint32_t /*message*/, uint64_t /*wParam*/, int64_t /*lParam*/) { return 0; }
+
+        void RenderFrame(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/) {}
+    };
 }

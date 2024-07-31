@@ -35,7 +35,6 @@ namespace yaget::render
                 Input().RegisterSimpleActionCallback("Quit App", [this]() { RequestQuit(); });
             }
         }
-        //DeviceB& GetDevice() { return mDevice; }
 
     private:
         void OnResize() override { mDevice.Resize(); }

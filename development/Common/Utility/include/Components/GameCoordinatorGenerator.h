@@ -25,7 +25,6 @@
 
 #include "HashUtilities.h"
 #include "Core/ErrorHandlers.h"
-#include "StringHelpers.h"
 #include "sqlite/SQLite.h"
 #include "Components/Component.h"
 #include "VTS/ResolvedAssets.h"
@@ -141,6 +140,9 @@ namespace yaget::comp::db
             using ParameterNames = typename comp::db::RowDescription_t<BaseType>::Row;
             using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
             static_assert(std::tuple_size_v<ParameterNames> == std::tuple_size_v<ParameterPack>, "Names and types of Component properties must match in size");
+
+            //ParameterNames parameterNames{};
+            //ParameterPack parameterPack{};
 
             const auto& tableName = internal::ResolveName<BaseType>();
             const auto& columnNames = comp::db::GetPolicyRowNames<ParameterNames>();
@@ -267,7 +269,8 @@ namespace yaget::comp::db
                                 const auto& tableName = internal::ResolveName<BaseType>();
                                 if (tableName == componentName)
                                 {
-                                    const auto componentParams = json::GetValue<ParameterPack>(componentBlock, "Params", {});
+                                    YLOG_ERROR("GSYS", "ParameterPack expension is not implemented corectly!");
+                                    const auto componentParams = ParameterPack{};//json::GetValue<ParameterPack>(componentBlock, "Params", {});
                                     std::string message = print_tuple(componentParams);
 
                                     std::string sqCommand = fmt::format("INSERT INTO '{}' VALUES({{}}{}{});", tableName, message.empty() ? "" : ", ", message);
@@ -312,7 +315,8 @@ namespace yaget::comp::db
                                     const auto& tableName = internal::ResolveName<BaseType>();
                                     if (tableName == componentName)
                                     {
-                                        const auto componentParams = json::GetValue<ParameterPack>(item, "Params", {});
+                                        YLOG_ERROR("GSYS", "ParameterPack expension is not implemented corectly!");
+                                        const auto componentParams = ParameterPack{};//json::GetValue<ParameterPack>(item, "Params", {});
                                         std::string message = print_tuple(componentParams);
 
                                         std::string sqCommand = fmt::format("INSERT INTO '{}' VALUES({{}}{}{});", tableName, message.empty() ? "" : ", ", message);

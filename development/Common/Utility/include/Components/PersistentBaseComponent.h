@@ -48,7 +48,15 @@ namespace yaget::comp::db
     //    : PersistentBaseComponent(id, std::tie(param1, param2))
     //{}
     //
+    //auto side = myComponent.GetValue<pc::Side>();                 // return as a int
+    //auto sideControl = myComponent.GetValue<pc::SideControl>();   // return as a PieceType
+    //
+
+    template <typename PT, typename PS>
+    concept DataType = std::tuple_size_v<PT> == std::tuple_size_v<PS>;
+
     template <typename PT, typename PS, int Cap = comp::DefaultPoolSize>
+    requires DataType<PT, PS>
     class PersistentBaseComponent : public BaseComponent<Cap>
     {
     public:
@@ -73,14 +81,53 @@ namespace yaget::comp::db
     private:
         Types mDataStorage;
     };
-}
 
+    namespace internal_dbc
+    {
+        template<typename VT>
+        struct extract_types
+        {
+            using Types = typename VT::Types;
+            //static constexpr bool value = tuple_element_index_helper<T, Tuple>::value<std::tuple_size_v<Tuple>;
+        };
+        
+    }
+
+    //-------------------------------------------------------------------------------------------------------
+    template <typename VT, int Cap = comp::DefaultPoolSize>
+    class PersistentBaseComponent2 : public BaseComponent<Cap>
+    {
+    public:
+        // Row represent a way to create name for each type
+        using Row = VT;
+        // Types are decltype(values) stored
+        using Types = VT;
+
+        template <typename T>
+        constexpr const auto& GetValue() const;
+
+    protected:
+        PersistentBaseComponent2(Id_t id)
+            : PersistentBaseComponent2(id, Types{})
+        {}
+
+        PersistentBaseComponent2(Id_t id, Types params)
+            : BaseComponent<Cap>(id)
+            , mDataStorage(std::move(params))
+        {}
+
+    private:
+        Types mDataStorage;
+    };
+    //-------------------------------------------------------------------------------------------------------
+}
 
 //  #include "Components/PersistentComponentImplementation.h"
 namespace yaget::comp::db
 {
 
     template <typename PT, typename PS, int Cap>
+    requires DataType<PT, PS>
     template <typename T>
     constexpr const auto& PersistentBaseComponent<PT, PS, Cap>::GetValue() const
     {
@@ -89,4 +136,17 @@ namespace yaget::comp::db
         constexpr std::size_t index = meta::Index<T, Row>::value;
         return std::get<index>(mDataStorage);
     }
+
+
+    //-------------------------------------------------------------------------------------------------------
+    template <typename VT, int Cap>
+    template <typename T>
+    constexpr const auto& PersistentBaseComponent2<VT, Cap>::GetValue() const
+    {
+        // it's used to pass nice name of property, get the index
+        // and then use that index into Storage tuple to get actual value.
+        constexpr std::size_t index = meta::Index<T, Row>::value;
+        return std::get<index>(mDataStorage);
+    }
+    //-------------------------------------------------------------------------------------------------------
 }

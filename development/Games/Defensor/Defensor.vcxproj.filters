@@ -13,5 +13,61 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Data Files">
+      <UniqueIdentifier>{c5bcc4d2-4b25-4397-9bb6-e25f7c65b3fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components Files">
+      <UniqueIdentifier>{88ff5337-5944-445e-b494-5fcb6bf69153}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Squadron Files">
+      <UniqueIdentifier>{9e4cd778-a890-4d3b-b396-2f1a659bf60b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MainGame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Squadron\SquadronSystem.cpp">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DefensorGameCoordinator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Defensor.deployment">
+      <Filter>Data Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="data\Configuration.json">
+      <Filter>Data Files</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\KeyBindings.json">
+      <Filter>Data Files</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\MainGame.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DefensorGameTypes.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DefensorRenderTypes.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\LocationComponent.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Squadron\SquadronSystem.h">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DefensorGameCoordinator.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
