@@ -661,7 +661,7 @@ namespace yaget
         template<class TupType, size_t... I>
         void print_tuple(const TupType& _tup, std::index_sequence<I...>, std::string& message)
         {
-            (..., (message += (I == 0 ? "" : ", ") + typename conv::Convertor<std::tuple_element_t<I, TupType>>::ToString(std::get<I>(_tup))));
+            (..., (message += (I == 0 ? "" : ", ") + conv::Convertor<std::tuple_element_t<I, TupType>>::ToString(std::get<I>(_tup))));
         }
 
     }

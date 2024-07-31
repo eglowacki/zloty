@@ -49,11 +49,9 @@ namespace yaget
             comp::Id_t mId{ comp::INVALID_ID };
         };
 
-        class Component;
-
         constexpr int DefaultPoolSize = 64;
         constexpr int GlobalPoolSize = 1;
-        constexpr int SmallPoolSize = 4;
+        constexpr int SmallPoolSize = 8;
 
         namespace db
         {
@@ -62,8 +60,8 @@ namespace yaget
                 template<typename T>
                 concept HasCompRow = requires (T)
                 {
-                    T::Row;
-                    T::Types;
+                    typename T::Row;
+                    typename T::Types;
                 };
 
                 template <typename T>
@@ -88,7 +86,6 @@ namespace yaget
                         };
 
                         return ComponentProperties{};
-                        //static_assert(false, "[yaget diagnostic] Type T missing Row alias, as in internal::HasCompRow concept");
                     }
                 }
 

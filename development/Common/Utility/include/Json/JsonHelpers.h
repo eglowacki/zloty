@@ -42,7 +42,7 @@ namespace yaget::json
         const auto it = jasonBlock.find(sectionA);
         if (!sectionB.empty())
         {
-            const auto itB = (*it).find(sectionB);
+            const auto itB = it->find(sectionB);
             return std::cref(*itB);
         }
 
@@ -56,7 +56,7 @@ namespace yaget::json
     {
         if (const auto it = block.find(key); it != block.end())
         {
-            return (*it).get<T>();
+            return it->get<T>();
         }
 
         return defaultValue;
@@ -70,7 +70,7 @@ namespace yaget::json
     {
         if (const auto it = block.find(key); it != block.end())
         {
-            return combiner((*it).get<T>(), defaultValue);
+            return combiner(it->get<T>(), defaultValue);
         }
 
         return defaultValue;

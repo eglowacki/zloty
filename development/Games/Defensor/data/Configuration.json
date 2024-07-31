@@ -1,0 +1,67 @@
+{
+	"Configuration" : {
+		"Debug": {
+			"Logging": {
+				"Filters": [ "INPT", "WIND", "MULT", "POOL" ],
+				"Level": "DBUG",
+				"Outputs": {
+					"ylog::OutputDebug": {
+						"split_lines": "true"
+					},
+					"ylog::OutputFile": {
+						"max_startup_size": "0",
+						"filename": "$(LogFolder)/$(AppName).log"
+					}
+				},
+				"PrintThreadName": true
+			},
+			"Metrics": {
+				"AllowFallbackToFile": false,
+				"AllowSocketConnection": false,
+				"SocketConnectionTimeout": 100,
+				"TraceFileName": "$(Temp)/$(AppName)_trace.json",
+				"TraceOn": true
+			}
+		},
+		"Graphics": {
+			"Device": "",
+			"MemoryReport": false,
+			"GPUTraceback": false
+		},
+		"Init": {
+			"Aliases": {
+				"$(AssetsFolder)": {
+					"Path": "$(UserDataFolder)/Assets",
+					"ReadOnly": true
+				},
+				"$(DatabaseFolder)": {
+					"Path": "$(UserDataFolder)/Database",
+					"ReadOnly": true
+				}
+			},
+			"VTS": [
+				{
+					"Settings": {
+						"Converters": "JSON",
+						"Filters": [ "*.json" ],
+						"Path": [ "$(DataFolder)/Data", "$(AppFolder)" ],
+						"ReadOnly": true,
+						"Recursive": false
+					}
+				},
+				{
+					"UserOptions": {
+						"Path": [ "$(UserDataFolder)/UserOptions" ],
+						"ReadOnly": false,
+						"Recursive": false,
+						"Filters": [ "*.json" ],
+						"Converters": "JSON"
+					}
+				}
+			],
+			"WindowOptions": "UserOptions@WindowConfiguration",
+			"VSync": false
+
+		}
+	}
+}

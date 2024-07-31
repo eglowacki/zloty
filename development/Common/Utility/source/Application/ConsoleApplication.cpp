@@ -50,13 +50,14 @@ ConsoleApplication::ConsoleApplication(const std::string& title, items::Director
     ::SetConsoleTitle(title.c_str());
 
     gConsoleApplication = this;
-    ::SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+    ::SetConsoleCtrlHandler(HandlerRoutine, TRUE /*Add*/);
     mOutputHandle = ::GetStdHandle(STD_OUTPUT_HANDLE);
     mInputHandle = ::GetStdHandle(STD_INPUT_HANDLE);
 }
 
 ConsoleApplication::~ConsoleApplication()
 {
+    ::SetConsoleCtrlHandler(HandlerRoutine, FALSE /*Add*/);
     gConsoleApplication = nullptr;
 }
 

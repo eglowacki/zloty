@@ -80,7 +80,7 @@ namespace yaget::util
     // pattern: folder/fileName-????.extension
     // maxFiles will cap number of renamed files. It will leave hightest numbered files and delete the smaller numbered files
     bool FileCycler(const std::string& folder, const std::string& fileName, const std::string& extension, int maxFiles = 10);
-    // helper function that splits filePath into separate components (folder, file, ext), it just calls function above
+    // helper function that splits filePath parameter into separate components (folder, file, ext) or sets default values, and then it just calls function above
     bool FileCycler(const std::string& filePath, int maxFiles = 10);
 
     std::string SelectSaveFileName(const char* filter, const char* dialogTitle);

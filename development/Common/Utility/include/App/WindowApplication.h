@@ -56,7 +56,7 @@ namespace yaget
         bool onMessagePump(const time::GameClock& gameClock) override;
         void Cleanup() override;
 
-        uint32_t mLastKeyFlags = 0;
+        uint32_t mLastKeyFlags{};
         ManagedPointer<app::ProcHandler> mWindowHandler{};
         app::SurfaceState mActiveSurfaceState = app::SurfaceState::Shared;
 
