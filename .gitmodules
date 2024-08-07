@@ -12,3 +12,6 @@
 	url = https://github.com/nlohmann/json.git
 	
 	
+[submodule "development/Dependencies/FTXUI"]
+	path = development/Dependencies/FTXUI
+	url = https://github.com/ArthurSonzogni/FTXUI.git
