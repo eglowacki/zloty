@@ -40,7 +40,7 @@ yaget::io::Watcher::~Watcher()
         // there may be outstanding requests to remove watched file (engine shutdown may bunch up closing all threads closely together)
         //
         auto message = fmt::format("Cleaning '{}' left over file watches", GetWatchedFiles().size());
-        metrics::TimeScoper<time::kMilisecondUnit> cleanupTimer(message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> cleanupTimer(message.c_str());
         auto endTime = platform::GetRealTime(time::kMilisecondUnit) + DefaultCleanupWait;
         platform::Sleep([this, endTime]()
         {
