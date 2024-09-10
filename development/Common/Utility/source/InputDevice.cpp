@@ -530,7 +530,7 @@ void input::InputDevice::RegisterActionCallback(const std::string& actionName, i
     std::map<std::string, ActionMap>::iterator it = mActionMap.find(actionName);
     if (it != mActionMap.end())
     {
-        (*it).second.mCallbacks.push_back(actionCallback);
+        it->second.mCallbacks.push_back(actionCallback);
     }
     else
     {

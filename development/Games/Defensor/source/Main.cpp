@@ -20,7 +20,7 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
 }
 
 YAGET_BRAND_NAME_F("Beyond Limits")
-YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::defensor,defensor::,::db_location,db_location::")
+YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::defensor,defensor::,::db_location,db_location::,::db_input,db_input::,::db_squadron,db_squadron::,::db_unit,db_unit::,::db_menu,db_menu::,::db_script,db_script::,::db_stage,db_stage::")
 
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
@@ -30,7 +30,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
     memory::InitializeAllocations();
 
-    args::Options options("Yaget.Defensor", "Yaget Defensor.");
+    args::Options options("Yaget.Defensor");
 
     const int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug>(lpCmdLine, options, nullptr, 0, [&options]()
     {

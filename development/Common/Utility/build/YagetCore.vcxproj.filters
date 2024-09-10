@@ -311,6 +311,12 @@
     <ClCompile Include="..\source\Core\ErrorHandlers.cpp">
       <Filter>Core Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Items\StagerSystem.cpp">
+      <Filter>Items Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Items\StageComponent.cpp">
+      <Filter>Items Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -628,6 +634,12 @@
     </ClInclude>
     <ClInclude Include="..\include\Core\ErrorHandlers.h">
       <Filter>Core Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Items\StagerSystem.h">
+      <Filter>Items Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Items\StageComponent.h">
+      <Filter>Items Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

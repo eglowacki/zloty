@@ -17,12 +17,15 @@
 
 //#include "YagetCore.h"
 #include "Squadron/SquadronSystem.h"
+#include "Squadron/PlayerSystem.h"
+#include "Squadron/MenuSystem.h"
 #include <Components/SystemsCoordinator.h>
+#include "Items/StagerSystem.h"
 
 
 namespace defensor::game
 {
-    class DefensorSystemsCoordinator : public yaget::comp::gs::SystemsCoordinator<GameCoordinatorSet, Messaging, Application, SquadronSystem>
+    class DefensorSystemsCoordinator : public yaget::comp::gs::SystemsCoordinator<GameCoordinatorSet, Messaging, Application, MenuSystem, PlayerSystem, SquadronSystem, DefensorStagerSystem>
     {
     public:
         DefensorSystemsCoordinator(Messaging& m, Application& app);

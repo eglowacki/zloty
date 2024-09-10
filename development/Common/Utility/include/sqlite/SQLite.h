@@ -92,7 +92,7 @@ namespace yaget
 
         bool ExecuteStatement(const std::string& command, QueryCallback *callback);
 
-        // Update if record already exist, otherwise insert, inset will not update existing record
+        // Update if record already exist, otherwise insert, insert will not update existing record
         enum class Behaviour { Update, Insert };
         enum class TimeStamp { Yes, No };
         typedef std::string StatementId_t;
@@ -247,7 +247,7 @@ namespace yaget
     {
         YAGET_ASSERT(mDatabase, "SQLite::ExecuteStatement<RT>: '%s' called for table: '%s', but sqlite db is not created yet.", statementId.c_str(), tableName.c_str());
 
-        if (const auto it = mStatements.find(statementId); it == mStatements.end())
+        if (!IsStatementCached(statementId))
         {
             PreCacheStatementTuple<T>(statementId, tableName, columnNames, behaviour, automaticTime);
         }

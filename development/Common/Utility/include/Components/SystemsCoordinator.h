@@ -51,6 +51,9 @@ namespace yaget::comp::gs
         template <typename SY>
         const SY& GetSystem() const;
 
+        template <typename CT, typename... Args>
+        CT* AddComponent(comp::Id_t id, Args&&... args);
+
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
@@ -160,6 +163,24 @@ template <typename SY>
 const SY& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetSystem() const
 {
     return *std::get< std::shared_ptr<SY>>(mSystems).get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename CT, typename... Args>
+CT* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::AddComponent(comp::Id_t id, Args&&... args)
+{
+    CT* component{};
+    meta::for_each(mSystems, [&]<typename T0>(T0& system)
+    {
+        if (!component)
+        {
+            component = system->template AddComponent<CT>(id, std::forward<Args>(args)...);
+        }
+    });
+
+    return component;
 }
 
 

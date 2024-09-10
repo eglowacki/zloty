@@ -34,6 +34,8 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
 
     while (!mQuit)
     {
+        FrameCounter::Collector fpsCollector(mRenderFrameCounter);
+
         metrics::Channel rChannel("RenderTick", YAGET_METRICS_CHANNEL_FILE_LINE);
 
         if (IsSuspended())
@@ -90,6 +92,8 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
 
         while (tickAccumulator >= kFixedDeltaTime)
         {
+            FrameCounter::Collector fpsCollector(mLogicFrameCounter);
+
             metrics::Channel gameChannel("GameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
 
             const time::Microsecond_t startProcessTime = platform::GetRealTime(time::kMicrosecondUnit);
@@ -103,7 +107,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
                 metrics::Channel channel("Callback", YAGET_METRICS_CHANNEL_FILE_LINE);
 
                 logicCallback(mApplicationClock, channel);
-            }
+            }                                                                                                                                      
 
             mApplicationClock.Tick(kFixedDeltaTime);
 
@@ -115,6 +119,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
                 {
                     // since we are under debugger, we just adjust the main timer to account for that loss time (maybe due to break point)
                     platform::AdjustDrift(actualProcessTime - kFixedDeltaTime, time::kMicrosecondUnit);
+                    mApplicationClock.Resync();
                     YLOG_NOTICE("PROF", "Adjusted Main Real Time by: '%d' (mc).", actualProcessTime - kFixedDeltaTime);
                 }
             }
@@ -165,6 +170,9 @@ int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRe
 
     mGeneralPoolThread->UnpauseAll();
     YLOG_DEBUG("APP", "Application.Run pump started.");
+
+    constexpr time::Microsecond_t oneSecond = time::FromTo<time::Microsecond_t>(1.0f, time::kSecondUnit, time::kMicrosecondUnit);
+    time::Microsecond_t printInterval = platform::GetRealTime(yaget::time::kMicrosecondUnit) + oneSecond;
     while (!mRequestQuit)
     {
         onMessagePump(mApplicationClock);
@@ -173,20 +181,36 @@ int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRe
             tickIdle();
         }
 
+        const auto nowTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+        if (printInterval < nowTime)
+        {
+            printInterval = nowTime + oneSecond;
+
+            const auto avgLogicDelta = time::FromTo<float>(mLogicFrameCounter.GetAvgDelta(), time::kMicrosecondUnit, time::kMilisecondUnit);
+            const auto loopLogicDelta = time::FromTo<float>(mLogicFrameCounter.GetLoopDelta(), time::kMicrosecondUnit, time::kMilisecondUnit);
+
+            const auto avgRenderDelta = time::FromTo<float>(mRenderFrameCounter.GetAvgDelta(), time::kMicrosecondUnit, time::kMilisecondUnit);
+            const auto loopRenderDelta = time::FromTo<float>(mRenderFrameCounter.GetLoopDelta(), time::kMicrosecondUnit, time::kMilisecondUnit);
+
+            const auto logicFPS = static_cast<int>(loopLogicDelta ? 1000/loopLogicDelta : 0);
+            const auto renderFPS = static_cast<int>(loopRenderDelta ? 1000/loopRenderDelta : 0);
+            YLOG_DEBUG("APP", "Logic Frame: %.3f ms., Logic Loop: %.3f ms. (%d), Render Frame: %.3f ms., Render Loop: %.3f ms. (%d)", avgLogicDelta, loopLogicDelta, logicFPS, avgRenderDelta, loopRenderDelta, renderFPS);
+        }
+
         std::this_thread::yield();
     }
     YLOG_DEBUG("APP", "Application.Run pump ended.");
-
-    // cleanup all threads here, wait for all completion before proceeding
-    mQuit = true;
 
     if (quitCallback)
     {
         quitCallback();
     }
 
+    // cleanup all threads here, wait for all completion before proceeding
+    mQuit = true;
     mGeneralPoolThread.reset();
     YLOG_DEBUG("APP", "Application.Run mGeneralPoolThread stopped and cleared.");
+
     Cleanup();
     while (onMessagePump(mApplicationClock))
         ;

@@ -155,9 +155,30 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
     }
 }
 
+
 yaget::items::Director::~Director()
 {
     YLOG_INFO("DIRE", "Items Director closed.");
+}
+
+
+yaget::comp::ItemIds yaget::items::Director::GetStageItems(const std::string& stageName) const
+{
+    yaget::comp::ItemIds result;
+
+    if (DatabaseHandle databaseHandle = LockDatabaseAccess())
+    {
+        const SQLite& database = databaseHandle->DB();
+
+        const auto stageId = GetCell<int64_t>(database, fmt::format("SELECT Id FROM Stages WHERE Name = '{}';", stageName));
+
+        if (stageId)
+        {
+            
+        }
+    }
+
+    return result;
 }
 
 

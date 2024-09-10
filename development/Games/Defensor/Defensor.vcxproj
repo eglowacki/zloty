@@ -141,9 +141,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\Components\InputComponent.cpp" />
+    <ClCompile Include="source\Components\LocationComponent.cpp" />
+    <ClCompile Include="source\Components\MenuComponent.cpp" />
+    <ClCompile Include="source\Components\ScriptComponent.cpp" />
+    <ClCompile Include="source\Components\UnitComponent.cpp" />
     <ClCompile Include="source\DefensorGameCoordinator.cpp" />
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\MainGame.cpp" />
+    <ClCompile Include="source\Squadron\MenuSystem.cpp" />
+    <ClCompile Include="source\Squadron\PlayerSystem.cpp" />
     <ClCompile Include="source\Squadron\SquadronSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -160,11 +167,17 @@
     <None Include="Defensor.deployment" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\Components\InputComponent.h" />
     <ClInclude Include="source\Components\LocationComponent.h" />
+    <ClInclude Include="source\Components\MenuComponent.h" />
+    <ClInclude Include="source\Components\ScriptComponent.h" />
+    <ClInclude Include="source\Components\UnitComponent.h" />
     <ClInclude Include="source\DefensorGameCoordinator.h" />
     <ClInclude Include="source\DefensorGameTypes.h" />
     <ClInclude Include="source\DefensorRenderTypes.h" />
     <ClInclude Include="source\MainGame.h" />
+    <ClInclude Include="source\Squadron\MenuSystem.h" />
+    <ClInclude Include="source\Squadron\PlayerSystem.h" />
     <ClInclude Include="source\Squadron\SquadronSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

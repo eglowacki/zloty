@@ -9,6 +9,8 @@
 
 #include <comdef.h>
 
+#include "App/Display.h"
+
 #include "Core/ErrorHandlers.h"
 
 //-------------------------------------------------------------------------------------------------
@@ -276,6 +278,54 @@ yaget::render::info::Adapter yaget::render::info::SelectAdapter(const Adapters& 
     }
 
     return {};
+}
+
+
+yaget::render::info::Adapter yaget::render::info::SelectDefaultAdapter(size_t configInitBlock_ResX, size_t configInitBlock_ResY)
+{
+    auto filters = GetDefaultFilters();
+    auto hardwareAdapters = EnumerateAdapters(filters, false /*referenceRasterizer*/);
+
+    const size_t resX = configInitBlock_ResX;
+    const size_t resY = configInitBlock_ResY;
+    //const bool fullScreen = configInitBlock.FullScreen;
+
+    Filters resolutionFilter{
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        [resX, resY](auto resolution)
+        {
+            return resolution.mRefreshRate == 60 && resolution.mWidth == resX && resolution.mHeight == resY;
+        }
+    };
+
+    auto selectedAdapter = SelectAdapter(hardwareAdapters, resolutionFilter);
+
+    if (!selectedAdapter.IsValid())
+    {
+        app::SysDisplays displays;
+        const auto& monitor = displays.FindPrimary();
+
+        resolutionFilter.mOutput = [monitor](auto name)
+        {
+            return monitor.DeviceName() == name;
+        };
+
+        const auto width = monitor.Width();
+        const auto height = monitor.Height();
+
+        resolutionFilter.mResolution = [width, height](auto resolution)
+        {
+            return resolution.mRefreshRate == 60 && resolution.mWidth == width && resolution.mHeight == height;
+        };
+
+        selectedAdapter = render::info::SelectAdapter(hardwareAdapters, resolutionFilter);
+        error_handlers::ThrowOnError(selectedAdapter.IsValid(), "Could not create default video adapter");
+    }
+
+    return selectedAdapter;
 }
 
 

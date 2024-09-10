@@ -153,7 +153,7 @@ namespace yaget::comp
         template <typename Coordinators, typename QueryRow, size_t Num = std::tuple_size_v<Coordinators>>
         constexpr bool uses_global_coordinator()
         {
-            if constexpr (Num - 1 > 0)
+            if constexpr (Num > 0)
             {
                 constexpr std::size_t coordinatorIndex = Num - 1;
 

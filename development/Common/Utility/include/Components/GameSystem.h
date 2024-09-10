@@ -85,6 +85,7 @@ namespace yaget::comp::gs
         using Messaging = M;
         using RowPolicy = comp::RowPolicy<Comps...>;
         using Row = typename RowPolicy::Row;
+        using CoordinatorSet = CS;
 
         using UpdateFunctor = std::function<void(yaget::comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, Comps&... args)>;
 
@@ -121,7 +122,7 @@ namespace yaget::comp::gs
 
         const char* mNiceName = nullptr;
         UpdateFunctor mUpdateFunctor;
-        CS& mCoordinatorSet;
+        CoordinatorSet& mCoordinatorSet;
 
         using Items = std::array<comp::ItemIds, std::tuple_size_v<typename CS::Coordinators>>;
         Items mItems;

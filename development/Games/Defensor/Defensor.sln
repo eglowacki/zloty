@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetRender12", "..\..\Comm
 		{07303B2D-746E-4E66-9F3E-E0C5D4A31D80} = {07303B2D-746E-4E66-9F3E-E0C5D4A31D80}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaScripting", "..\..\Common\Script\Lua-4.7\build\LuaScripting.vcxproj", "{89BC78D0-4FF1-4BEC-BFAB-AB89F083158D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -47,6 +49,14 @@ Global
 		{62C78A26-D56A-46C0-B205-8E1456749B02}.Release|x64.Build.0 = Release|x64
 		{62C78A26-D56A-46C0-B205-8E1456749B02}.Release|x86.ActiveCfg = Release|Win32
 		{62C78A26-D56A-46C0-B205-8E1456749B02}.Release|x86.Build.0 = Release|Win32
+		{89BC78D0-4FF1-4BEC-BFAB-AB89F083158D}.Debug|x64.ActiveCfg = Debug|x64
+		{89BC78D0-4FF1-4BEC-BFAB-AB89F083158D}.Debug|x64.Build.0 = Debug|x64
+		{89BC78D0-4FF1-4BEC-BFAB-AB89F083158D}.Debug|x86.ActiveCfg = Debug|Win32
+		{89BC78D0-4FF1-4BEC-BFAB-AB89F083158D}.Debug|x86.Build.0 = Debug|Win32
+		{89BC78D0-4FF1-4BEC-BFAB-AB89F083158D}.Release|x64.ActiveCfg = Release|x64
+		{89BC78D0-4FF1-4BEC-BFAB-AB89F083158D}.Release|x64.Build.0 = Release|x64
+		{89BC78D0-4FF1-4BEC-BFAB-AB89F083158D}.Release|x86.ActiveCfg = Release|Win32
+		{89BC78D0-4FF1-4BEC-BFAB-AB89F083158D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

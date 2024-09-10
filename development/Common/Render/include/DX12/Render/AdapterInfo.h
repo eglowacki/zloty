@@ -115,6 +115,8 @@ namespace yaget::render::info
     Adapters EnumerateAdapters(Filters filters, bool referenceRasterizer);
     // return one specific Adapter to be used for CreateDevice
     Adapter SelectAdapter(const Adapters& adapters, Filters filters);
+    // return adapter representing resolution or default adapter if no resolution supported
+    Adapter SelectDefaultAdapter(size_t configInitBlock_ResX, size_t configInitBlock_ResY);
 
     // This get's returned by CreateDevice(...) function. It provides all three DX12 objects
     // representing device, adapter and factory.

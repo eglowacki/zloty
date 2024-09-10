@@ -14,55 +14,9 @@
 #include "MathFacade.h"
 //#include <source_location>
 
-namespace yaget::render::info
+
+namespace yaget::testing
 {
-    Adapter SelectDefaultAdapter(size_t configInitBlock_ResX, size_t configInitBlock_ResY)
-    {
-        auto filters = render::info::GetDefaultFilters();
-        auto hardwareAdapters = render::info::EnumerateAdapters(filters, false /*referenceRasterizer*/);
-
-        const size_t resX = configInitBlock_ResX;
-        const size_t resY = configInitBlock_ResY;
-        //const bool fullScreen = configInitBlock.FullScreen;
-
-        yaget::render::info::Filters resolutionFilter{
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr,
-            [resX, resY](auto resolution)
-            {
-                return resolution.mRefreshRate == 60 && resolution.mWidth == resX && resolution.mHeight == resY;
-            }
-        };
-
-        auto selectedAdapter = render::info::SelectAdapter(hardwareAdapters, resolutionFilter);
-
-        if (!selectedAdapter.IsValid())
-        {
-            app::SysDisplays displays;
-            const auto& monitor = displays.FindPrimary();
-
-            resolutionFilter.mOutput = [monitor](auto name)
-            {
-                return monitor.DeviceName() == name;
-            };
-
-            const auto width = monitor.Width();
-            const auto height = monitor.Height();
-
-            resolutionFilter.mResolution = [width, height](auto resolution)
-            {
-                return resolution.mRefreshRate == 60 && resolution.mWidth == width && resolution.mHeight == height;
-            };
-
-            selectedAdapter = render::info::SelectAdapter(hardwareAdapters, resolutionFilter);
-            error_handlers::ThrowOnError(selectedAdapter.IsValid(), "Could not create default video adapter");
-        }
-
-        return selectedAdapter;
-    }
-    
 }
 
 
@@ -85,6 +39,18 @@ int defensor::Run(const yaget::args::Options& options)
     render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
 
     game::Messaging messaging{};
+
+    //using QueryRow = std::tuple<comp::MenuComponent*, comp::InputComponent*>;
+
+    //constexpr bool usesGlobal = comp::internalc::uses_global_coordinator<game::GameCoordinatorSet::Coordinators, QueryRow>();
+
+    //using Policy = std::tuple_element_t<1, game::GameCoordinatorSet::Coordinators>::Policy;
+
+    //bool isCoordinatorGlobal = comp::internalc::requires_global_coordinator<Policy>;
+    //using RequestedRow = comp::tuple_get_union_t<QueryRow, Policy::Row>;
+
+    //RequestedRow requestedRow{};
+    //requestedRow;
 
     return comp::gs::RunGame<game::DefensorSystemsCoordinator>(messaging, app);
 }

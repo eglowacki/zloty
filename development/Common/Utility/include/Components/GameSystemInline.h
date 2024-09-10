@@ -104,7 +104,7 @@ namespace yaget::comp::gs
         CT *component = nullptr;
 
         // testing new way of extracting C (Coordinator) from CT (ComponentType)
-        meta::for_each_type<CS::Coordinators>([&]<typename T0>(const T0*)
+        meta::for_each_type<typename CS::Coordinators>([&]<typename T0>(const T0*)
         {
             using Coordinator = meta::strip_qualifiers_t<T0>;
 
@@ -115,8 +115,8 @@ namespace yaget::comp::gs
                     auto& coordinator = GetCoordinator<typename Coordinator::Policy>();
                     component = coordinator.template AddComponent<CT>(id, std::forward<Args>(args)...);
 
-                    const std::size_t index = mCoordinatorSet.template GetCoordinatorIndex<meta::strip_qualifiers_t<decltype(coordinator)>>();
-                    internalgs::add_item_to_collection(index, id, mItems);
+                    //const std::size_t index = mCoordinatorSet.template GetCoordinatorIndex<meta::strip_qualifiers_t<decltype(coordinator)>>();
+                    //internalgs::add_item_to_collection(index, id, mItems);
                 }
             }
         });
@@ -135,8 +135,8 @@ namespace yaget::comp::gs
 
         if (!moreComponents)
         {
-            const std::size_t index = mCoordinatorSet.template GetCoordinatorIndex<meta::strip_qualifiers_t<decltype(coordinator)>>();
-            internalgs::remove_item_from_collection(index, id, mItems);
+            //const std::size_t index = mCoordinatorSet.template GetCoordinatorIndex<meta::strip_qualifiers_t<decltype(coordinator)>>();
+            //internalgs::remove_item_from_collection(index, id, mItems);
         }
     }
 
@@ -147,10 +147,10 @@ namespace yaget::comp::gs
     void GameSystem<CS, E, M, Comps...>::RemoveComponents(Id_t id)
     {
         auto& coordinator = GetCoordinator<C>();
-        coordinator.template RemoveComponents(id);
+        coordinator.RemoveComponents(id);
         
-        const std::size_t index = mCoordinatorSet.template GetCoordinatorIndex<meta::strip_qualifiers_t<decltype(coordinator)>>();
-        internalgs::remove_item_from_collection(index, id, mItems);
+        //const std::size_t index = mCoordinatorSet.template GetCoordinatorIndex<meta::strip_qualifiers_t<decltype(coordinator)>>();
+        //internalgs::remove_item_from_collection(index, id, mItems);
     }
 
 

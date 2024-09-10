@@ -10,7 +10,7 @@
 //      It does relay on input being fed to it by user.
 //
 //
-//  #include "Record/InputDevice.h"
+//  #include "Input/InputDevice.h"
 //
 //////////////////////////////////////////////////////////////////////
 //! \file

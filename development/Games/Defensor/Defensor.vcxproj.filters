@@ -36,6 +36,27 @@
     <ClCompile Include="source\DefensorGameCoordinator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\Components\InputComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Squadron\PlayerSystem.cpp">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\LocationComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\UnitComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Squadron\MenuSystem.cpp">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\MenuComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\ScriptComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Defensor.deployment">
@@ -68,6 +89,24 @@
     </ClInclude>
     <ClInclude Include="source\DefensorGameCoordinator.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\InputComponent.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Squadron\PlayerSystem.h">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\UnitComponent.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Squadron\MenuSystem.h">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\MenuComponent.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\ScriptComponent.h">
+      <Filter>Source Files\Components Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

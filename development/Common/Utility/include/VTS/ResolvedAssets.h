@@ -165,6 +165,18 @@ namespace yaget::io
     };
 
     //-------------------------------------------------------------------------------------------------------------------------------
+    class StringAsset : public Asset
+    {
+    public:
+        StringAsset(const io::Tag& tag, io::Buffer buffer, const io::VirtualTransportSystem& vts)
+            : Asset(tag, buffer, vts)
+            , mString(io::BufferPointer(buffer), io::BufferSize(buffer))
+        {}
+
+        std::string mString;
+    };
+
+    //-------------------------------------------------------------------------------------------------------------------------------
     template<typename T>
     inline std::shared_ptr<yaget::io::Asset> ResolveAsset(const io::Buffer& dataBuffer, const io::Tag& requestedTag, const io::VirtualTransportSystem& vts)
     {

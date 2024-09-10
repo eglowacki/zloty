@@ -6,7 +6,7 @@ defensor::game::SquadronSystem::SquadronSystem(Messaging& messaging, Application
 {
 }
 
-void defensor::game::SquadronSystem::OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, yaget::comp::LocationComponent3* locationComponent)
+void defensor::game::SquadronSystem::OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, yaget::comp::LocationComponent3* locationComponent, comp::UnitComponent* unitComponent)
 {
-    id; gameClock; channel; locationComponent;
+    id; gameClock; channel; locationComponent; unitComponent;
 }

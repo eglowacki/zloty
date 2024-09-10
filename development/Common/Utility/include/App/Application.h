@@ -23,6 +23,7 @@
 #include "Time/GameClock.h"
 
 #include <functional>
+#include <numeric>
 
 
 namespace yaget
@@ -106,5 +107,79 @@ namespace yaget
         using State_t = double;
         State_t mRenderState = 0.0;
         io::VirtualTransportSystem& mVTS;
+
+        // Setting up frame counters
+        struct FrameCounter
+        {
+            struct Collector
+            {
+                Collector(FrameCounter& frameCounter)
+                    : mFrameCounter(frameCounter)
+                    , mStartTime(platform::GetRealTime(yaget::time::kMicrosecondUnit))
+                {}
+
+                ~Collector()
+                {
+                    mFrameCounter.Collect(platform::GetRealTime(yaget::time::kMicrosecondUnit) - mStartTime);
+                }
+
+
+                FrameCounter& mFrameCounter;
+                time::Microsecond_t mStartTime = 0;
+            };
+
+            void Collect(time::Microsecond_t deltaTime)
+            {
+                if (mCurrentFrameIndex == SamplerSize)
+                {
+                    --mCurrentFrameIndex;
+                    std::shift_left(std::begin(mFrames), std::end(mFrames), 1);
+                }
+
+                mFrames[mCurrentFrameIndex++] = { platform::GetRealTime(yaget::time::kMicrosecondUnit), deltaTime};
+            }
+
+            time::Microsecond_t GetAvgDelta() const
+            {
+                time::Microsecond_t result = 0;
+                if (mCurrentFrameIndex == SamplerSize)
+                {
+                    for (const auto& [stamp, delta]  : mFrames)
+                    {
+                        result += delta;
+                    }
+
+                    result /= 60;
+                }
+
+                return result;
+            }
+
+            time::Microsecond_t GetLoopDelta() const
+            {
+                time::Microsecond_t result = 0;
+                if (mCurrentFrameIndex == SamplerSize)
+                {
+                    result = mFrames[SamplerSize-1].mStampTime - mFrames[0].mStampTime;
+                    result /= 60;
+                }
+
+                return result;
+            }
+
+            struct TimeData
+            {
+                time::Microsecond_t mStampTime = 0;
+                time::Microsecond_t mDeltaTime = 0;
+            };
+
+            constexpr static size_t SamplerSize = 60;
+            std::array<TimeData, SamplerSize> mFrames{};
+
+            size_t mCurrentFrameIndex = 0;
+        };
+
+        FrameCounter mLogicFrameCounter;
+        FrameCounter mRenderFrameCounter;
     };
 } // namespace yaget

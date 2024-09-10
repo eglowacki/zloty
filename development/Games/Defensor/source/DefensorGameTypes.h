@@ -15,10 +15,14 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
-#include "Components/SystemsCoordinator.h"
-#include "GameSystem/Messaging.h"
+#include "Components/InputComponent.h"
 #include "Components/LocationComponent.h"
+#include "Components/MenuComponent.h"
+#include "Components/ScriptComponent.h"
+#include "Components/SystemsCoordinator.h"
+#include "Components/UnitComponent.h"
+#include "GameSystem/Messaging.h"
+#include "Items/StageComponent.h"
 
 namespace defensor::game
 {
@@ -26,20 +30,11 @@ namespace defensor::game
 
     using Messaging = comp::gs::Messaging<std::shared_ptr<char>>;
 
-    //struct EditorComponent { static constexpr int Capacity = 64; };
-    //struct EmptyComponent { static constexpr int Capacity = 64; };
-    //struct BlankComponent { static constexpr int Capacity = 64; };
-    //struct RenderComponent { static constexpr int Capacity = 64; };
+    using GlobalEntity = comp::GlobalRowPolicy<comp::MenuComponent*, items::StageComponent*>;
+    using Entity = comp::RowPolicy<comp::LocationComponent3*, comp::InputComponent*, comp::UnitComponent*, comp::ScriptComponent*>;
 
-    //using RenderEntity = comp::GlobalRowPolicy<RenderComponent*>;
-
-    //using GlobalEntity = comp::GlobalRowPolicy<EditorComponent*>;
-    using Entity = comp::RowPolicy<comp::LocationComponent3*>;
-
-    //using GlobalCoordinator = comp::Coordinator<GlobalEntity>;
+    using GlobalCoordinator = comp::Coordinator<GlobalEntity>;
     using EntityCoordinator = comp::Coordinator<Entity>;
-    using GameCoordinatorSet = comp::CoordinatorSet<EntityCoordinator>;
+    using GameCoordinatorSet = comp::CoordinatorSet<GlobalCoordinator, EntityCoordinator>;
 
-    //using RenderCoordinator = comp::Coordinator<RenderEntity>;
-    //using RenderCoordinatorSet = comp::CoordinatorSet<RenderCoordinator>;
 }

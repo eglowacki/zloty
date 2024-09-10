@@ -52,6 +52,8 @@
     <ClCompile Include="..\source\ImageLoaders\lodepng.cpp" />
     <ClCompile Include="..\source\InputDevice.cpp" />
     <ClCompile Include="..\source\Items\ItemsDirector.cpp" />
+    <ClCompile Include="..\source\Items\StageComponent.cpp" />
+    <ClCompile Include="..\source\Items\StagerSystem.cpp" />
     <ClCompile Include="..\source\Json\JsonHelpers.cpp" />
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -203,6 +205,8 @@
     <ClInclude Include="..\include\Input\InputDevice.h" />
     <ClInclude Include="..\include\Input\InputManagerImpl.h" />
     <ClInclude Include="..\include\Items\ItemsDirector.h" />
+    <ClInclude Include="..\include\Items\StageComponent.h" />
+    <ClInclude Include="..\include\Items\StagerSystem.h" />
     <ClInclude Include="..\include\Json\JsonHelpers.h" />
     <ClInclude Include="..\include\LoggerCpp\Channel.h" />
     <ClInclude Include="..\include\LoggerCpp\Config.h" />
