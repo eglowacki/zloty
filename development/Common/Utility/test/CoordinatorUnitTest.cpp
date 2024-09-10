@@ -55,7 +55,7 @@ TEST(CoordinatorMulti)
     });
 
     using GameCoordinator = GameCoordinator<GamePolicy, PhysicsSystem*, LocationGather*>;
-    metrics::Channel channel("Test.Dummy", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("Test.Dummy");
     time::GameClock gameClock;
     GameCoordinator gameCoordinator(&physWorldGameSystem, &locationGameSystem);
 

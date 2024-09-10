@@ -34,7 +34,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
     const int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug>(lpCmdLine, options, nullptr, 0, [&options]()
     {
-        metrics::Channel channel("Main.Defensor", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel("Main.Defensor");
 
         if (options.find<bool>("vts_fix", false))
         {

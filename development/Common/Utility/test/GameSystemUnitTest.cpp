@@ -155,7 +155,7 @@ TEST(GameSystem)
         physWorld->Update(gameClock, channel);
     });
 
-    metrics::Channel channel("DummyChannel", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("DummyChannel");
 
     physWorldGameSystem.Update(gameClock, channel, coordinator);
     locationGameSystem.Update(gameClock, channel, coordinator);      // run over all entities with specified components (extract from coordinator). 

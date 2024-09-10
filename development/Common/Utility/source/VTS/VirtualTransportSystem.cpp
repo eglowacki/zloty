@@ -118,7 +118,7 @@ yaget::io::VirtualTransportSystem::AssetResolver yaget::io::VirtualTransportSyst
 
 void yaget::io::VirtualTransportSystem::onBlobLoaded(const io::Buffer& dataBuffer, const io::Tag& requestedTag, BlobAssetCallback assetLoaded, std::atomic_size_t* tagsCounter)
 {
-    metrics::Channel span(fmt::format("BlobLoaded {}", requestedTag.mVTSName).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel span(fmt::format("BlobLoaded {}", requestedTag.mVTSName).c_str());
 
     TagCounterKeeper tagCounterKeeper(tagsCounter, requestedTag);
 

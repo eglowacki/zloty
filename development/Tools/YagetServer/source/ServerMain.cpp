@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 
     const int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputConsole, ylog::OutputDebug>(argc, argv, options, nullptr, 0, [&options]()
     {
-        metrics::Channel channel("Main.Server", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel("Main.Server");
 
         if (options.find<bool>("vts_fix", false))
         {

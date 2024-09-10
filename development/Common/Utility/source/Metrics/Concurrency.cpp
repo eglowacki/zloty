@@ -22,17 +22,18 @@ namespace
 }
 
 
-yaget::metrics::internal::Metric::Metric(const std::string& message, const char* file, uint32_t line)
+yaget::metrics::internal::Metric::Metric(const std::string& message, const std::source_location& location)
     : mMessage(message)
-    , mFileName(file ? file : "Unknown")
-    , mLineNumber(line)
+    , mLocation(location)
+    //, mFileName(file ? file : "Unknown")
+    //, mLineNumber(line)
     , mStart(platform::GetRealTime(yaget::time::kMicrosecondUnit))
     , mTreadID(platform::CurrentThreadId())
 {}
 
 
-yaget::metrics::Channel::Channel(const std::string& message, const char* file, uint32_t line)
-    : internal::Metric(message, file, line)
+yaget::metrics::Channel::Channel(const std::string& message, const std::source_location& location)
+    : internal::Metric(message, location)
 {
     GetSaver().AddProfileStamp({ mMessage, mStart, mStart, mTreadID, TraceRecord::Event::Begin, 0, "Channel" });
 }
@@ -60,8 +61,8 @@ void yaget::metrics::Channel::AddMessage(const std::string& message, MessageScop
 }
 
 
-yaget::metrics::TimeSpan::TimeSpan(std::size_t id, const std::string& message, const char* file, uint32_t line)
-    : internal::Metric(message, file, line)
+yaget::metrics::TimeSpan::TimeSpan(std::size_t id, const std::string& message, const std::source_location& location)
+    : internal::Metric(message, location)
     , mId(id)
 {
     if (mId)
@@ -93,16 +94,16 @@ void yaget::metrics::TimeSpan::AddMessage(const std::string& message) const
 }
 
 
-yaget::metrics::Lock::Lock(const std::string& message, const char* file, uint32_t line)
-    : internal::Metric(message, file, line)
-    , mChannel(message, file, line)
+yaget::metrics::Lock::Lock(const std::string& message, const std::source_location& location)
+    : internal::Metric(message, location)
+    , mChannel(message, location)
 {
     GetSaver().AddProfileStamp({ "Acquiring." + mMessage, mStart, mStart, mTreadID, TraceRecord::Event::Begin, 0, "Channel" });
 }
 
 
-yaget::metrics::UniqueLock::UniqueLock(std::mutex& mutex, const std::string& message, const char* file, uint32_t line)
-    : Lock("Mutex:" + message, file, line)
+yaget::metrics::UniqueLock::UniqueLock(std::mutex& mutex, const std::string& message, const std::source_location& location)
+    : Lock("Mutex:" + message, location)
     , mlocker(mutex)
 {
     const auto currentTime = platform::GetRealTime(time::kMicrosecondUnit);

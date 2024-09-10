@@ -74,7 +74,7 @@ void yaget::io::BlobLoader::onDataPayload(const io::Buffer& dataBuffer, const st
     // Since actual processing of the buffer data might take a while, we farm that to another thread, which in turn will call convertor from that thread
     mJobPool.AddTask([this, dataBuffer, fileName, convertor]()
     {
-        metrics::Channel channel(fs::path(fileName).filename().generic_string(), YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel(fs::path(fileName).filename().generic_string());
 
         try
         {

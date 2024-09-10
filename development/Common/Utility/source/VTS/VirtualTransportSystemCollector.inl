@@ -70,7 +70,7 @@ namespace
 		using DoneCallback = yaget::io::VirtualTransportSystem::DoneCallback;
 
 		SectionEntriesCollector(yaget::dev::Configuration::Init::VTSConfigList configList, yaget::Database& database, DoneCallback doneCallback)
-			: mTimeSpan(yaget::meta::pointer_cast(this), "VTS Entries Collector", YAGET_METRICS_CHANNEL_FILE_LINE)
+			: mTimeSpan(yaget::meta::pointer_cast(this), "VTS Entries Collector")
 			, mDatabase(database)
 			, mDoneCallback(std::move(doneCallback))
 			, mRequestPool("INDX", yaget::dev::CurrentConfiguration().mDebug.mThreads.VTSSections)
@@ -79,8 +79,8 @@ namespace
 			using VTS = dev::Configuration::Init;
 			using SectionRecord = std::tuple<std::string /*Name*/, Strings /*Path*/, Strings /*Filters*/, std::string /*Converters*/, bool /*ReadOnly*/, bool /*Recursive*/>;
 
-			//metrics::MarkStartTimeSpan(reinterpret_cast<std::uintptr_t>(this), "Indexing VTS", YAGET_METRICS_CHANNEL_FILE_LINE);
-			metrics::Channel channel("Entries Collector", YAGET_METRICS_CHANNEL_FILE_LINE);
+			//metrics::MarkStartTimeSpan(reinterpret_cast<std::uintptr_t>(this), "Indexing VTS");
+			metrics::Channel channel("Entries Collector");
 
 			size_t numChanged = 0;
 			// now update db to account for deletion, addition and changes
@@ -211,18 +211,18 @@ namespace
 					{
 						for (auto&& p : vtsEntry.Path)
 						{
-							metrics::Channel channel(fmt::format("Indexing Section: {}", vtsEntry.Name).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
+							metrics::Channel channel(fmt::format("Indexing Section: {}", vtsEntry.Name).c_str());
 							fs::path proposedPath = util::ExpendEnv(p, nullptr);
 
 							YAGET_ASSERT(fs::is_directory(proposedPath) || fs::is_regular_file(proposedPath), "Proposed path: '%s' expended from '%s' used in Section: '%s' is not a directory or a file.", proposedPath.generic_string().c_str(), p.c_str(), vtsEntry.Name.c_str());
 
 							Strings newFileSet;
 							{
-								metrics::Channel channel("Processing found files", YAGET_METRICS_CHANNEL_FILE_LINE);
+								metrics::Channel channel("Processing found files");
 
 								size_t envSize = proposedPath.string().size();
 								{
-									metrics::Channel channel("Getting Files from disk.", YAGET_METRICS_CHANNEL_FILE_LINE);
+									metrics::Channel channel("Getting Files from disk.");
 
 									newFileSet = io::file::GetFileNames(proposedPath.string(), vtsEntry.Recursive, [&vtsEntry](const std::string& fileName)
 										{
@@ -231,7 +231,7 @@ namespace
 								}
 
 								{
-									metrics::Channel channel("Transforming found file names.", YAGET_METRICS_CHANNEL_FILE_LINE);
+									metrics::Channel channel("Transforming found file names.");
 
 									std::transform(newFileSet.begin(), newFileSet.end(), newFileSet.begin(), [p, envSize](const std::string& fileName)
 										{
@@ -267,7 +267,7 @@ namespace
 
 		~SectionEntriesCollector()
 		{
-			//yaget::metrics::MarkEndTimeSpan(reinterpret_cast<std::uintptr_t>(this), YAGET_METRICS_CHANNEL_FILE_LINE);
+			//yaget::metrics::MarkEndTimeSpan(reinterpret_cast<std::uintptr_t>(this));
 		}
 
 	private:
@@ -276,7 +276,7 @@ namespace
 			using namespace yaget;
 
 			{
-				metrics::Channel channel(fmt::format("Updated Section with {} files.", entryList.size()).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
+				metrics::Channel channel(fmt::format("Updated Section with {} files.", entryList.size()).c_str());
 
 				std::unique_lock<std::mutex> locker(mSectionMutex);
 				SectionKey key = std::make_pair(sectionName, proposedPath);
@@ -300,7 +300,7 @@ namespace
 		{
 			using namespace yaget;
 
-			metrics::Channel channel("UpdateDatabase", YAGET_METRICS_CHANNEL_FILE_LINE);
+			metrics::Channel channel("UpdateDatabase");
 
 			size_t numNewTags = 0, numDeletedTags = 0;
 
@@ -327,7 +327,7 @@ namespace
 				// we also want to preserve deleted files to re-use the same guid if that file come back later
 				if (!newTags.empty() || !deletedTags.empty())
 				{
-					metrics::Channel channel("New and Deleted", YAGET_METRICS_CHANNEL_FILE_LINE);
+					metrics::Channel channel("New and Deleted");
 
 					int deletedRowCount = GetCell<int>(mDatabase.DB(), "SELECT COUNT(*) FROM 'Deleted';");
 					const bool checkDeleted = deletedRowCount > 0;

@@ -25,7 +25,7 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
     dev::CurrentThreadIds().RefreshRender(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Render, "RENDER");
 
-    metrics::Channel channel("RenderThread", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("RenderThread");
 
     YLOG_INFO("APP", "Started Render Task...");
 
@@ -36,11 +36,11 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
     {
         FrameCounter::Collector fpsCollector(mRenderFrameCounter);
 
-        metrics::Channel rChannel("RenderTick", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel rChannel("RenderTick");
 
         if (IsSuspended())
         {
-            metrics::Channel sChannel("Suspended", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel sChannel("Suspended");
             platform::Sleep([this] { return IsSuspended(); });
         }
 
@@ -67,7 +67,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
     dev::CurrentThreadIds().RefreshLogic(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Logic, "LOGIC");
 
-    metrics::Channel channel("GameThread", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("GameThread");
 
     YLOG_INFO("APP", "Started Logic Task...");
 
@@ -94,7 +94,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
         {
             FrameCounter::Collector fpsCollector(mLogicFrameCounter);
 
-            metrics::Channel gameChannel("GameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel gameChannel("GameTick");
 
             const time::Microsecond_t startProcessTime = platform::GetRealTime(time::kMicrosecondUnit);
 
@@ -104,7 +104,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
 
             if (logicCallback)
             {
-                metrics::Channel channel("Callback", YAGET_METRICS_CHANNEL_FILE_LINE);
+                metrics::Channel channel("Callback");
 
                 logicCallback(mApplicationClock, channel);
             }                                                                                                                                      

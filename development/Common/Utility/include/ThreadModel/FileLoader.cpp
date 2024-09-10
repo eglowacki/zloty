@@ -64,7 +64,7 @@ yaget::io::FileData::FileData(const std::string& name, HANDLE port, FileLoader::
     , mPort(port)
     , mKey(++mCounter)
     , mDoneCallback(std::move(doneCallback))
-    , mTimeSpan(yaget::meta::pointer_cast(this), fs::path(name).filename().generic_string(), YAGET_METRICS_CHANNEL_FILE_LINE)
+    , mTimeSpan(yaget::meta::pointer_cast(this), fs::path(name).filename().generic_string())
 {
     mDataBuffer = io::CreateBuffer(fs::file_size(mName));
     mHandle = ::CreateFile(mName.c_str(), FILE_READ_DATA, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
@@ -81,7 +81,7 @@ yaget::io::FileData::FileData(const std::string& name, HANDLE port, FileLoader::
 //-------------------------------------------------------------------------------------------------
 yaget::io::FileData::FileData(uint32_t key)
     : mKey(key)
-    , mTimeSpan(0, "", nullptr, 0)
+    , mTimeSpan(0, "")
 {
 }
 
@@ -155,7 +155,7 @@ void yaget::io::FileLoader::StopLoader()
     mQuit = true;
     [[maybe_unused]] bool bResult = ::PostQueuedCompletionStatus(mIOPort, 0, io::FileData::kStopKey, nullptr) != 0;
     mLoaderThread.reset();
-    metrics::UniqueLock locker(mListMutex, "Stop Loader", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::UniqueLock locker(mListMutex, "Stop Loader");
     mFilesToProcess.clear();
 }
 
@@ -171,7 +171,7 @@ yaget::io::FileLoader::~FileLoader()
 //-------------------------------------------------------------------------------------------------
 void yaget::io::FileLoader::StartLoader()
 {
-    metrics::Channel channel("io.file", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("io.file");
 
     [[maybe_unused]] constexpr bool tryNewOverlap = true;
     while (true)
@@ -183,7 +183,7 @@ void yaget::io::FileLoader::StartLoader()
             OVERLAPPED_ENTRY overlappedEntries[entriesSize] = {};
             ULONG numEntriesRemoved = 0;
 
-            metrics::Channel channelStatus("L.Waiting...", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel channelStatus("L.Waiting...");
             const bool bResult = ::GetQueuedCompletionStatusEx(mIOPort, &overlappedEntries[0], entriesSize, &numEntriesRemoved, INFINITE, false) != 0;
             if (mQuit)
             {
@@ -222,7 +222,7 @@ void yaget::io::FileLoader::StartLoader()
 
             const io::FileData *nextFile = nullptr;
             {
-                metrics::UniqueLock locker(mListMutex, "Files To Process", YAGET_METRICS_CHANNEL_FILE_LINE);
+                metrics::UniqueLock locker(mListMutex, "Files To Process");
                 FilesToProcess::iterator it = mFilesToProcess.find(fileDataQuery);
                 if (it != mFilesToProcess.end())
                 {
@@ -232,14 +232,14 @@ void yaget::io::FileLoader::StartLoader()
 
             if (nextFile)
             {
-                metrics::Channel span(fmt::format("Processing {} b", conv::ToThousandsSep(key.second)), YAGET_METRICS_CHANNEL_FILE_LINE);
+                metrics::Channel span(fmt::format("Processing {} b", conv::ToThousandsSep(key.second)));
 
                 // if Process returns false, no need for more processing, otherwise, do not remove it from mFilesToProcess
                 if (!nextFile->Process(key.second))
                 {
                     nextFile = nullptr;
 
-                    metrics::UniqueLock locker(mListMutex, "Erase File", YAGET_METRICS_CHANNEL_FILE_LINE);
+                    metrics::UniqueLock locker(mListMutex, "Erase File");
                     mFilesToProcess.erase(fileDataQuery);
                 }
             }
@@ -260,7 +260,7 @@ void yaget::io::FileLoader::Load(const Strings& filePathList, const std::vector<
 
     if (!doneCallbacks.empty())
     {
-        metrics::Channel channel(fmt::format("FileLoader got '{}' files", filePathList.size()), YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel(fmt::format("FileLoader got '{}' files", filePathList.size()));
 
         auto callback = doneCallbacks.begin();
         const bool isOneCallback = doneCallbacks.size() == filePathList.size() ? false : true;
@@ -268,7 +268,7 @@ void yaget::io::FileLoader::Load(const Strings& filePathList, const std::vector<
         {
             YAGET_ASSERT(io::file::IsFileExists(it), "File: '%s' does not exist.", it.c_str());
 
-            metrics::UniqueLock locker(mListMutex, "Adding File", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::UniqueLock locker(mListMutex, "Adding File");
             FileDataPtr fileData = std::make_unique<io::FileData>(it, mIOPort, *callback);
             mFilesToProcess.insert(std::move(fileData));
 

@@ -358,7 +358,7 @@ template<typename P>
 template<typename R>
 typename yaget::comp::ItemIds yaget::comp::Coordinator<P>::GetItemIds() const
 {
-    metrics::Channel system("Coordinator.GetItemIds ", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel system("Coordinator.GetItemIds ");
 
     std::set<yaget::comp::Id_t> results;
 
@@ -404,7 +404,7 @@ template<typename P>
 template<typename R>
 void yaget::comp::Coordinator<P>::ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback) const
 {
-    metrics::Channel system("Coordinator.ForEach ", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel system("Coordinator.ForEach ");
 
     for (const auto& id : ids)
     {

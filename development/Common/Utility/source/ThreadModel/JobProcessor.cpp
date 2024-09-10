@@ -88,7 +88,7 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
 { 
     mPauseCondition.Wait();
 
-    metrics::Channel channel("T." + mThreadName, YAGET_METRICS_CHANNEL_FILE_LINE); 
+    metrics::Channel channel("T." + mThreadName); 
 
     struct Releaser
     {
@@ -117,7 +117,7 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
         { 
             try 
             { 
-                metrics::Channel lifetimeChannel("Task Lifetime", YAGET_METRICS_CHANNEL_FILE_LINE); 
+                metrics::Channel lifetimeChannel("Task Lifetime"); 
  
                 mTaskInProgress = true; 
                 nextTask(); 

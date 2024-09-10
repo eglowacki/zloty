@@ -29,6 +29,7 @@
 #include "YagetCore.h"
 #include "Time/GameClock.h"
 #include <functional>
+#include <source_location>
 
 #if !defined(YAGET_CONC_METRICS_ENABLED)
     #if !defined(NDEBUG) // if we are in debug mode
@@ -50,11 +51,12 @@ namespace yaget::metrics
             virtual ~Metric() = default;
 
         protected:
-            Metric(const std::string& message, const char* file, uint32_t line);
+            Metric(const std::string& message, const std::source_location& location = std::source_location::current());
 
             std::string mMessage;
-            const char* mFileName = nullptr;
-            uint32_t mLineNumber = 0;
+            const std::source_location& mLocation;
+            //const char* mFileName = nullptr;
+            //uint32_t mLineNumber = 0;
             time::TimeUnits_t mStart = 0;
             const std::size_t mTreadID = 0;
         };
@@ -65,7 +67,7 @@ namespace yaget::metrics
     {
     public:
 
-        Channel(const std::string& message, const char* file, uint32_t line);
+        Channel(const std::string& message, const std::source_location& location = std::source_location::current());
         ~Channel() override;
 
         void AddMessage(const std::string& message, MessageScope scope) const;
@@ -76,7 +78,7 @@ namespace yaget::metrics
     class TimeSpan : public internal::Metric
     {
     public:
-        TimeSpan(std::size_t id, const std::string& message, const char* file, uint32_t line);
+        TimeSpan(std::size_t id, const std::string& message, const std::source_location& location = std::source_location::current());
         ~TimeSpan() override;
 
         void AddMessage(const std::string& message) const;
@@ -88,7 +90,7 @@ namespace yaget::metrics
     class Lock : public internal::Metric
     {
     protected:
-        Lock(const std::string& message, const char* file, uint32_t line);
+        Lock(const std::string& message, const std::source_location& location = std::source_location::current());
         ~Lock() override = default;
 
     private:
@@ -99,7 +101,7 @@ namespace yaget::metrics
     class UniqueLock : public Lock
     {
     public:
-        UniqueLock(std::mutex& mutex, const std::string& message, const char* file, uint32_t line);
+        UniqueLock(std::mutex& mutex, const std::string& message, const std::source_location& location = std::source_location::current());
         ~UniqueLock() override = default;
 
     private:
@@ -132,7 +134,7 @@ namespace yaget::metrics
     class Channel
     {
     public:
-        Channel(const std::string&, const char*, uint32_t) {}
+        Channel(const std::string&, const std::source_location& location = std::source_location::current()) {}
         void AddMessage(const std::string&, MessageScope) const {}
     };
 
@@ -141,7 +143,7 @@ namespace yaget::metrics
     class TimeSpan
     {
     public:
-        TimeSpan(std::size_t, const std::string&, const char*, uint32_t) {}
+        TimeSpan(std::size_t, const std::string&, const std::source_location& location = std::source_location::current()) {}
         void AddMessage(const std::string&) const {}
     };
 
@@ -149,7 +151,7 @@ namespace yaget::metrics
     class UniqueLock
     {
     public:
-        UniqueLock(std::mutex& mutex, const std::string&, const char*, uint32_t)
+        UniqueLock(std::mutex& mutex, const std::string&, const std::source_location& location = std::source_location::current())
             : mlocker(mutex)
         {}
 
@@ -184,4 +186,4 @@ namespace yaget::metrics
 } // namespace yaget::metrics
 
 
-#define YAGET_METRICS_CHANNEL_FILE_LINE __FILE__, __LINE__
+//#define YAGET_METRICS_CHANNEL_FILE_LINE __FILE__, __LINE__

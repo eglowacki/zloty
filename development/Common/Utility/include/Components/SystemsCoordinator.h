@@ -123,7 +123,7 @@ void yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::Tick(const time::GameCl
     meta::for_each(mSystems, [this, &gameClock, &channel](auto& gameSystem)
     {
         const auto& message = fmt::format("System Tick {}", gameSystem->NiceName());
-        metrics::Channel systemChannel(message, YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel systemChannel(message);
 
         gameSystem->Tick(gameClock, channel);
     });
