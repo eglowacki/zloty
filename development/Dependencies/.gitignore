@@ -1,3 +1,7 @@
 # Ignore patterns for yaget dependencies
+development/Dependencies/**/build/
 development/Dependencies/**/builds/
 boost-1.84.0/
+NoesisGUI-NativeSDK-win-3.2.4/
+LuaBridge
+sol2
