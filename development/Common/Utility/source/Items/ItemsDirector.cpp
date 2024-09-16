@@ -195,7 +195,7 @@ yaget::items::IdBatch yaget::items::Director::GetNextBatch()
         db::Transaction transaction(database);
 
         bool result = true;
-        auto nextBatch = database.GetRowTuple<Batch>(nextBatchCommand, &result);
+        const auto nextBatch = database.GetRowTuple<Batch>(nextBatchCommand, &result);
         if (!result)
         {
             transaction.Rollback();
