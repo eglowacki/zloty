@@ -335,7 +335,7 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
 
     ComPtr<IDXGIAdapter4> hardwareAdapter;
     HRESULT hr = factory->EnumAdapterByLuid(adapter.mId, IID_PPV_ARGS(&hardwareAdapter));
-    error_handlers::ThrowOnError(hr, "Could not get requested Hardware Adpater");
+    error_handlers::ThrowOnError(hr, "Could not get requested Hardware Adapter");
 
     ComPtr<ID3D12Device2> device;
     hr = D3D12CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&device));

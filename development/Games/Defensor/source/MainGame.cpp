@@ -1,19 +1,14 @@
 ﻿#include "MainGame.h"
 
-//#include "StringHelpers.h"
 #include <Debugging/DevConfiguration.h>
 #include "DefensorGameTypes.h"
 #include "DefensorGameCoordinator.h"
 #include "Items/ItemsDirector.h"
 #include "Render/DesktopApplication.h"
-//#include "RenderGameCoordinator.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 #include "Render/AdapterInfo.h"
-#include "App/Display.h"
-#include "MathFacade.h"
-//#include <source_location>
 
 
 namespace yaget::app

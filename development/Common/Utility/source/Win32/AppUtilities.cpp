@@ -696,7 +696,7 @@ std::vector<std::string> yaget::util::ui::SelectOpenFileNames(const char* filter
     {
         ::SetCurrentDirectory(currentPath.string().c_str());
 
-        // check to see if user selected multi files or just singe one
+        // check to see if user selected multi files or just single one
         // by checking the first bit if it's only a folder or points to a file
         if (fs::is_directory(fs::path(szFileName)))
         {
