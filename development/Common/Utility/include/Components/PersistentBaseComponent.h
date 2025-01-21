@@ -106,7 +106,6 @@ namespace yaget::comp::db
             , mDataStorage(std::move(params))
         {}
 
-    //private:
     public:
         Types mDataStorage;
     };

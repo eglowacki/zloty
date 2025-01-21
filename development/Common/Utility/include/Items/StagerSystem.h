@@ -48,7 +48,7 @@ namespace yaget::items
             {
                 for (const auto& id : mItemIds)
                 {
-                    mStagerSystem.mApp.Director().LoadItemState<StagerSystem::Row>(id);
+                    //mStagerSystem.mApp.Director().LoadItemState<StagerSystem::Row>(id);
                 }
             }
 
