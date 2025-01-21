@@ -103,3 +103,4 @@ development/Tests/YagetCore-Test/Database/Director.sqlite
 development/Tests/YagetCore-Test/Database/vts.sqlite
 
 development/Common/Script/Lua-5.4.7/
+development/Common/Utility/include/sqlite/sqlite-amalgamation-3470200/
