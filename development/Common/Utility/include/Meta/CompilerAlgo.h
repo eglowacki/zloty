@@ -177,6 +177,13 @@
     //}
     //As long as a class supports std::get<I>(object) and std::tuple_size<T>::value it can be expanded
     //with the above process() function. The function itself is entirely independent of the number of arguments.
+    //
+    //auto component = std::apply([this, id](auto &&... args)
+    //{
+    //    return AddComponent<C>(id, args...);
+
+    //}, parameters);
+
 //
 //////////////////////////////////////////////////////////////////////
 //! \file

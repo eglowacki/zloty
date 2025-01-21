@@ -245,7 +245,7 @@ namespace yaget
     template<typename T>
     bool SQLite::ExecuteStatementTuple(const StatementId_t& statementId, const std::string& tableName, const T& dataRow, const Strings& columnNames, Behaviour behaviour, TimeStamp automaticTime /*= TimeStamp::No*/)
     {
-        YAGET_ASSERT(mDatabase, "SQLite::ExecuteStatement<RT>: '%s' called for table: '%s', but sqlite db is not created yet.", statementId.c_str(), tableName.c_str());
+        YAGET_ASSERT(mDatabase, "SQLite::ExecuteStatement<T>: '%s' called for table: '%s', but sqlite db is not created yet.", statementId.c_str(), tableName.c_str());
 
         if (!IsStatementCached(statementId))
         {

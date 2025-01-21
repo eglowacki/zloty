@@ -236,7 +236,7 @@ bool yaget::SQLite::ExecuteStatement(Statement* statement)
         return true;
     }
 
-    mErrorMessage = fmt::format("Execute prepared statement error: {}", sqlite3_errmsg(mDatabase));
+    mErrorMessage = fmt::format("Execute prepared statement error: {} - {}. Statement: {}.", result, sqlite3_errmsg(mDatabase), sqlite3_expanded_sql(statement->mStm));
     return false;
 }
 
