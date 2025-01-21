@@ -42,14 +42,14 @@ namespace yaget::items
 
         IdGameCache& IdCache() { return mIdGameCache; }
 
+        // save T::mDataStorage to DB
         template <typename T>
         bool SaveComponentState(const T* component);
 
+        // load T::Types from DB. If load not valid, result value will be set to false
+        // and it will return default T::Types{}.
         template <typename T>
-        T* LoadComponentState(comp::Id_t id) const;
-
-        template <typename Row>
-        Row LoadItemState(comp::Id_t id);
+        typename T::Types LoadComponentState(comp::Id_t id, bool* result) const;
 
         comp::ItemIds GetStageItems(const std::string& stageName) const;
 
@@ -125,7 +125,7 @@ namespace yaget::items
         auto& database = dbLock->DB();
         db::Transaction transaction(database);
 
-        auto result = database.ExecuteStatementTuple(statementId, tableName, inputParam, columnNames, SQLite::Behaviour::Insert);
+        auto result = database.ExecuteStatementTuple(statementId, tableName, inputParam, columnNames, SQLite::Behaviour::Update);
         if (!result)
         {
             transaction.Rollback();
@@ -138,27 +138,30 @@ namespace yaget::items
     }
 
     template <typename T>
-    T* Director::LoadComponentState(comp::Id_t id) const
+    typename T::Types Director::LoadComponentState(comp::Id_t id, bool* result) const
     {
-        id;
-        T* component = nullptr;
+        using Parameters = typename T::Types;
+        using ParameterNames = typename comp::db::RowDescription_t<T>::Row;
 
-        return component;
-    }
+        const auto parameterNames = comp::db::GetPolicyRowNames<ParameterNames>();
+        const auto tableName = comp::db::internal::ResolveName<T>();
+        Parameters parameters{};
 
-    template <typename Row>
-    Row Director::LoadItemState(comp::Id_t id)
-    {
-        Row row;
-        meta::for_each(row, [this, id]<typename T0>(T0& component)
+        const std::string command = fmt::format("SELECT {} FROM {} WHERE Id = '{}'", conv::Combine(parameterNames, ", "), tableName, static_cast<int64_t>(id));
+
+        const auto dbLock = LockDatabaseAccess();
+        const auto& database = dbLock->DB();
+
+        bool getResult = true;
+        const auto componentParameters = database.GetRowTuple<Parameters>(command, &getResult);
+        if (result)
         {
-            using BaseType = meta::strip_qualifiers_t<T0>;
+            *result = getResult;
+        }
 
-            component = LoadComponentState<BaseType>(id);
-        });
-
-        return row;
+        return componentParameters;
     }
+
 } // namespace yaget::items
 
 

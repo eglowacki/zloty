@@ -34,16 +34,14 @@ namespace yaget::comp
     public:
         using Asset = std::shared_ptr<io::StringAsset>;
 
-        ScriptComponent(Id_t id, const db_script::Script::Types& scriptType, const db_script::Section::Types& section, const Asset& script)
+        ScriptComponent(Id_t id, const db_script::Script::Types& scriptType, const db_script::Section::Types& section)
             : PersistentBaseComponent(id, std::tie(scriptType, section))
-            , mScript(script)
         {
         }
 
         void Execute();
 
     private:
-        Asset mScript;
     };
 
 } // namespace yaget::comp

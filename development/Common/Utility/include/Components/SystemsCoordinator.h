@@ -54,10 +54,23 @@ namespace yaget::comp::gs
         template <typename CT, typename... Args>
         CT* AddComponent(comp::Id_t id, Args&&... args);
 
+        template <typename C>
+        C* LoadComponent(comp::Id_t id);
+
+        template <typename C>
+        bool SaveComponent(const C* component);
+
+        template <typename C>
+        C* FindComponent(comp::Id_t id) const;
+
+        template <typename C>
+        bool RemoveComponent(comp::Id_t id);
+
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
         Messaging& mMessaging;
+        A& mApp;
         CoordinatorSet mCoordinatorSet;
         ManagedSystems mSystems;
     };
@@ -105,6 +118,7 @@ namespace yaget::comp::gs
 template <typename T, typename M, typename A, typename... S>
 yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messaging, A& app)
     : mMessaging(messaging)
+    , mApp(app)
 {
     meta::for_each(mSystems, [this, &app]<typename T0>(T0& system)
     {
@@ -181,6 +195,57 @@ CT* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::AddComponent(comp::Id_t 
     });
 
     return component;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename C>
+C* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadComponent(comp::Id_t id)
+{
+    C* resultComponent{};
+    bool result = true;
+    auto parameters = mApp.Director().template LoadComponentState<C>(id, &result);
+    if (result)
+    {
+        resultComponent = std::apply([this, id](auto &&... args)
+        {
+            return AddComponent<C>(id, args...);
+
+        }, parameters);
+    }
+
+    return resultComponent;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename C>
+bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SaveComponent(const C* component)
+{
+    const auto result = mApp.Director().SaveComponentState(component);
+    return result;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename C>
+C* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::FindComponent(comp::Id_t id) const
+{
+    C* component = mCoordinatorSet.template FindComponent<C>(id);
+    return component;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename C>
+bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::RemoveComponent(comp::Id_t id)
+{
+    const bool result = mCoordinatorSet.template RemoveComponent<C>(id);
+    return result;
 }
 
 

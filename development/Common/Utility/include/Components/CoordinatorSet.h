@@ -332,6 +332,60 @@ namespace yaget::comp
             return std::get<Index>(mCoordinators);
         }
 
+        template <typename C>
+        C* FindComponent(comp::Id_t id) const
+        {
+            C* component = nullptr;
+            bool componentFound = false;
+
+            internalc::for_loop<NumCoordinators>([&]<std::size_t T0>()
+            {
+                if (!componentFound)
+                {
+                    constexpr std::size_t coordinatorIndex = T0;
+
+                    using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
+                    using RequestedRow = tuple_get_union_t<std::tuple<C*>, typename CoordinatorPolicy::Row>;
+
+                    if constexpr (std::tuple_size_v<RequestedRow> > 0)
+                    {
+                        auto& coordinator = GetCoordinator<coordinatorIndex>();
+                        component = coordinator.template FindComponent<C>(id);
+                        componentFound = true;
+                    }
+                }
+            });
+
+            return component;
+        }
+
+        template <typename C>
+        bool RemoveComponent(comp::Id_t id)
+        {
+            bool removeResult = false;
+            bool componentRemoved = false;
+
+            internalc::for_loop<NumCoordinators>([&]<std::size_t T0>()
+            {
+                if (!componentRemoved)
+                {
+                    constexpr std::size_t coordinatorIndex = T0;
+
+                    using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
+                    using RequestedRow = tuple_get_union_t<std::tuple<C*>, typename CoordinatorPolicy::Row>;
+
+                    if constexpr (std::tuple_size_v<RequestedRow> > 0)
+                    {
+                        auto& coordinator = GetCoordinator<coordinatorIndex>();
+                        removeResult = coordinator.template RemoveComponent<C>(id);
+                        componentRemoved = true;
+                    }
+                }
+            });
+
+            return removeResult;
+        }
+
     private:
         Coordinators mCoordinators;
     };
