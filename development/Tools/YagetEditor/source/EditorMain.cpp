@@ -24,7 +24,6 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
 }
 
 YAGET_BRAND_NAME_F("Beyond Limits")
-YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::editor,editor::")
 
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {

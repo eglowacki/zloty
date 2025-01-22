@@ -35,21 +35,13 @@ namespace yaget::comp::db
 {
     namespace internal
     {
-        const Strings stripKeywords{
-            "::yaget", "yaget::",
-            "::comp", "comp::",
-            "::db", "db::",
-            "::io", "io::",
-            "class",
-            "struct"
-        };
-
-        Strings ResolveUserStripKeywords(const Strings& defaultSet);
-
-        inline const Strings& ResolveStripKeywords()
+        inline void ClearKeyword(std::string& text, const char* keyword)
         {
-            static Strings keywords = ResolveUserStripKeywords(stripKeywords);
-            return keywords;
+            if (text.starts_with(keyword))
+            {
+                text.erase(0, strlen(keyword));
+            }
+            
         }
 
         template <typename T>
@@ -58,13 +50,16 @@ namespace yaget::comp::db
             using BaseType = meta::strip_qualifiers_t<T>;
             std::string typeName = meta::type_name_v<BaseType>();
 
-            std::for_each(std::begin(internal::ResolveStripKeywords()), std::end(internal::ResolveStripKeywords()), [&typeName](const auto& element)
+            const auto result = typeName.find_last_of("::");
+            if (result != std::string::npos)
             {
-                conv::ReplaceAll(typeName, element, "");
-            });
+                typeName.erase(0, result+1);
+            }
+
+            ClearKeyword(typeName, "struct ");
+            ClearKeyword(typeName, "class ");
 
             conv::Trim(typeName, ": ");
-
             return typeName;
         }
 
@@ -148,7 +143,7 @@ namespace yaget::comp::db
             const auto& columnNames = comp::db::GetPolicyRowNames<ParameterNames>();
             const auto& typeNames = comp::db::GetPolicyRowTypes<ParameterPack>();
 
-            std::string sqlCommand = fmt::format("CREATE TABLE '{}' ('Id' {} CHECK(Id > 0) UNIQUE", tableName, internal::ResolveDatabaseType<comp::Id_t>());
+            std::string sqlCommand = fmt::format("CREATE TABLE '{}' ('Id' {} CHECK(Id != 0) UNIQUE", tableName, internal::ResolveDatabaseType<comp::Id_t>());
             if (!columnNames.empty())
             {
                 auto cn_it = columnNames.begin();

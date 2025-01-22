@@ -48,6 +48,16 @@ namespace yaget::comp::db
                 return currentResult;
             }
         }
+
+        template <typename T, typename Row>
+        constexpr auto& GetValue(auto& dataStorage)
+        {
+            // it's used to pass nice name of property, get the index
+            // and then use that index into Storage tuple to get actual value.
+            constexpr std::size_t index = meta::Index<T, Row>::value;
+            return std::get<index>(dataStorage);
+        }
+
     } // namespace internal
 
     template <typename Tuple>
@@ -96,6 +106,9 @@ namespace yaget::comp::db
         template <typename T>
         constexpr const auto& GetValue() const;
 
+        template <typename T>
+        constexpr auto& GetValue();
+
     protected:
         PersistentBaseComponent(Id_t id)
             : PersistentBaseComponent(id, Types{})
@@ -106,24 +119,27 @@ namespace yaget::comp::db
             , mDataStorage(std::move(params))
         {}
 
+    //protected:
     public:
         Types mDataStorage;
     };
 
 }
 
-//  #include "Components/PersistentComponentImplementation.h"
 namespace yaget::comp::db
 {
-
     template <typename VT, int Cap>
     template <typename T>
     constexpr const auto& PersistentBaseComponent<VT, Cap>::GetValue() const
     {
-        // it's used to pass nice name of property, get the index
-        // and then use that index into Storage tuple to get actual value.
-        constexpr std::size_t index = meta::Index<T, Row>::value;
-        return std::get<index>(mDataStorage);
+        return internal::GetValue<T, Row>(mDataStorage);
+    }
+
+    template <typename VT, int Cap>
+    template <typename T>
+    constexpr auto& PersistentBaseComponent<VT, Cap>::GetValue()
+    {
+        return internal::GetValue<T, Row>(mDataStorage);
     }
 
 }

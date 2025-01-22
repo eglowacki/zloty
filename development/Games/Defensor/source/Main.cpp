@@ -20,8 +20,7 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
 }
 
 YAGET_BRAND_NAME_F("Beyond Limits")
-YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::defensor,defensor::,::db_location,db_location::,::db_input,db_input::,::db_squadron,db_squadron::,::db_unit,db_unit::, \
-                                 ::db_menu,db_menu::,::db_script,db_script::,::db_stage,db_stage::,::items,items::")
+
 
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {

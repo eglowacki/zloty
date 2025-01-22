@@ -154,48 +154,6 @@ typedef const char* (*YagetFuncBrandName) ();
 // It exposes GetBrandName function in application and return user specified brand/company name, which is used in $(Brand) environment alias
 #define YAGET_BRAND_NAME_F(name)  extern "C" __declspec(dllexport) const char* YAGET_GET_BRAND_FUNCTION_NAME() { return name; }
 
-
-// Used in generating schema for GameDirector to provide customization of which c++ keywords need to be filtered out
-#define YAGET_USER_STRIP_KEYWORDS_FUNCTION_NAME UserStripKeywords
-#define YAGET_USER_STRIP_KEYWORDS_FUNCTION_STRING YAGET_STRINGIZE(YAGET_USER_STRIP_KEYWORDS_FUNCTION_NAME)
-typedef const char* (*YagetFuncUserStripKeywords) (const char*);
-
-#define YAGET_USER_STRIP_KEYWORDS_F(name) extern "C" __declspec(dllexport) const char* YAGET_USER_STRIP_KEYWORDS_FUNCTION_NAME(const char* name)
-
-// Helper define to simplify adding user strip keywords
-// YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::ttt,ttt::")
-#define YAGET_CUSTOMIZE_STRIP_KEYWORDS(set)     \
-    YAGET_USER_STRIP_KEYWORDS_F(defaultSet)     \
-    {                                           \
-        using namespace yaget;                  \
-                                                \
-        static Initer initer(defaultSet, set);  \
-        return initer.mKeywords.c_str();        \
-    }
-
-namespace yaget
-{
-    //! This is used in definition of YAGET_USER_STRIP_KEYWORDS_F to simplify adding of new keywords
-    //YAGET_USER_STRIP_KEYWORDS_F(defaultSet)
-    //{
-    //  static yaget::Initer initer(defaultSet, ",::ttt,ttt::");
-    //  return initer.mKeywords.c_str();
-    //}
-    //
-    // or use alternate macro
-    // YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::ttt,ttt::")
-
-    struct Initer
-    {
-        Initer(const char* defaults, const char* customKeywords)
-            : mKeywords(defaults ? std::string(defaults) + customKeywords : customKeywords)
-        {}
-
-        std::string mKeywords;
-    };
-
-}
-
 // get size of struct at compile time
 // define YAGET_GET_STRUCT_SIZE before calling ANY headers (do that in your cpp at the top of the file)
 // and then call yaget::meta::print_size_at_compile and compile will error out with error message,

@@ -198,7 +198,7 @@ yaget::comp::Coordinator<P>::~Coordinator()
 {
     if constexpr (internal::has_auto_cleanup<Policy>)
     {
-        YLOG_CWARNING("GSYS", mItems.empty(), "Coordinator [%s] still has outstanding '%d' component(s): [%s], cleaning up...",
+        YLOG_CWARNING("GSYS", mItems.empty(), "Coordinator [%s] still has '%d' outstanding component(s): [%s], cleaning up...",
             conv::Combine(mComponentNames, ", ").c_str(),
             mItems.size(), 
             conv::Combine(mItems, "], [").c_str());
@@ -213,7 +213,7 @@ yaget::comp::Coordinator<P>::~Coordinator()
     }
     else
     {
-        YAGET_ASSERT(mItems.empty(), "Coordinator [%s] still has outstanding '%d' component(s): [%s]", conv::Combine(mComponentNames, ", ").c_str(), mItems.size(), conv::Combine(mItems, "], [").c_str());
+        YAGET_ASSERT(mItems.empty(), "Coordinator [%s] still has '%d' outstanding component(s): [%s]", conv::Combine(mComponentNames, ", ").c_str(), mItems.size(), conv::Combine(mItems, "], [").c_str());
     }
 }
 
