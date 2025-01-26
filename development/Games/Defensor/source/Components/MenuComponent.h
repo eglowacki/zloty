@@ -30,8 +30,8 @@ namespace yaget::comp
     class MenuComponent : public db::PersistentBaseComponent<db_menu::ValueTypes>
     {
     public:
-        MenuComponent(Id_t id)
-            : PersistentBaseComponent(id)
+        MenuComponent(Id_t id, const db_menu::Event::Types& event)
+            : PersistentBaseComponent(id, std::tie(event))
         {
         }
 

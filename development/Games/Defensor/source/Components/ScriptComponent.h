@@ -22,7 +22,7 @@ namespace yaget::comp
     namespace db_script
     {
         struct Script { using Types = std::string; };
-        struct Section { using Types = std::string;/*io::VirtualTransportSystem::Section;*/ };
+        struct Section { using Types = io::VirtualTransportSystem::Section; };
 
         using ValueTypes = std::tuple<Script, Section>;
 

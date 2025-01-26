@@ -168,9 +168,6 @@ void yaget::SQLite::StatementBinder<int64_t>::Bind(sqlite3* database, sqlite3_st
 void yaget::SQLite::StatementBinder<uint64_t>::Bind(sqlite3* database, sqlite3_stmt* statement, uint64_t value, int index)
 {
     StatementBinder<int64_t>::Bind(database, statement, static_cast<int64_t>(value), index);
-    //int result = sqlite3_bind_int64(statement, index, value);
-    //const char* errorMessage = sqlite3_errmsg(database);;
-    //YAGET_ASSERT(result == SQLITE_OK, "Bind int statement failed: %s.", errorMessage ? errorMessage : "");
 }
 
 void yaget::SQLite::StatementBinder<bool>::Bind(sqlite3* database, sqlite3_stmt* statement, bool value, int index)
@@ -185,26 +182,6 @@ void yaget::SQLite::StatementBinder<float>::Bind(sqlite3* database, sqlite3_stmt
     int result = sqlite3_bind_double(statement, index, value);
     const char* errorMessage = sqlite3_errmsg(database); 
     YAGET_ASSERT(result == SQLITE_OK, "Bind float statement failed: %s.", errorMessage ? errorMessage : "");
-}
-
-void yaget::SQLite::StatementBinder<yaget::Guid>::Bind(sqlite3* database, sqlite3_stmt* statement, yaget::Guid value, int index)
-{
-    StatementBinder<std::string>::Bind(database, statement, value.str(), index);
-}
-
-void yaget::SQLite::StatementBinder<std::vector<std::string>>::Bind(sqlite3* database, sqlite3_stmt* statement, const std::vector<std::string>& value, int index)
-{
-    StatementBinder<std::string>::Bind(database, statement, conv::Convertor<std::vector<std::string>>::ToString(value), index);
-}
-
-void yaget::SQLite::StatementBinder<math3d::Vector3>::Bind(sqlite3* database, sqlite3_stmt* statement, const math3d::Vector3& value, int index)
-{
-    StatementBinder<std::string>::Bind(database, statement, conv::Convertor<math3d::Vector3>::ToString(value), index);
-}
-
-void yaget::SQLite::StatementBinder<math3d::Quaternion>::Bind(sqlite3* database, sqlite3_stmt* statement, const math3d::Quaternion& value, int index)
-{
-    StatementBinder<std::string>::Bind(database, statement, conv::Convertor<math3d::Quaternion>::ToString(value), index);
 }
 
 template<typename Fake>

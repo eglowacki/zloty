@@ -32,17 +32,13 @@ namespace yaget::comp
     class InputComponent : public db::PersistentBaseComponent<db_input::ValueTypes>
     {
     public:
-        InputComponent(Id_t id, input::InputDevice& inputDevice)
-            : PersistentBaseComponent(id)
-            , mInputDevice(&inputDevice)
+        InputComponent(Id_t id, const db_input::Event::Types& event = {})
+            : PersistentBaseComponent(id, std::tie(event))
         {
         }
 
-        void AddInputEvent(const std::string& eventName, input::ActionNonParamCallback_t callback) const;
-        void AddInputEvent(const std::string& eventName, input::ActionCallback_t callback) const;
-
-    private:
-        input::InputDevice* mInputDevice{};
+        void AddInputEvent(const std::string& eventName, input::ActionNonParamCallback_t callback) const {}
+        void AddInputEvent(const std::string& eventName, input::ActionCallback_t callback) const {}
     };
 
 } // namespace yaget::comp

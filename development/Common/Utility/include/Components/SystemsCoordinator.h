@@ -66,6 +66,13 @@ namespace yaget::comp::gs
         template <typename C>
         bool RemoveComponent(comp::Id_t id);
 
+        template <typename TT>
+        TT LoadItem(comp::Id_t id);
+
+        // Load all components associated with id,
+        // Returns entire row tuple with filled in components only that got updated/added from DB
+        auto LoadItem(comp::Id_t id) -> typename yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::CoordinatorSet::FullRow;
+
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
@@ -208,11 +215,18 @@ C* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadComponent(comp::Id_t 
     auto parameters = mApp.Director().template LoadComponentState<C>(id, &result);
     if (result)
     {
-        resultComponent = std::apply([this, id](auto &&... args)
+        if (resultComponent = FindComponent<C>(id); resultComponent)
         {
-            return AddComponent<C>(id, args...);
+            resultComponent->mDataStorage = parameters;
+        }
+        else
+        {
+            resultComponent = std::apply([this, id](auto &&... args)
+            {
+                return AddComponent<C>(id, args...);
 
-        }, parameters);
+            }, parameters);
+        }
     }
 
     return resultComponent;
@@ -245,6 +259,42 @@ template <typename C>
 bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::RemoveComponent(comp::Id_t id)
 {
     const bool result = mCoordinatorSet.template RemoveComponent<C>(id);
+    return result;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename TT>
+TT yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadItem(comp::Id_t id)
+{
+    TT result{};
+
+    meta::for_each_type<TT>([this, id, &result]<typename T0>(const T0&)
+    {
+        using BaseType = meta::strip_qualifiers_t<T0>;
+        std::get<T0>(result) = LoadComponent<BaseType>(id);
+    });
+
+    return result;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+auto yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadItem(comp::Id_t id) -> typename yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::CoordinatorSet::FullRow
+{
+    typename CoordinatorSet::FullRow result{};
+    meta::for_each_type<CoordinatorSet::FullRow>([this, id, &result]<typename T0>(const T0&)
+    {
+        using BaseType = meta::strip_qualifiers_t<T0>;
+        auto* component = LoadComponent<BaseType>(id);
+        if (component)
+        {
+            std::get<BaseType*>(result) = component;
+        }
+    });
+
     return result;
 }
 

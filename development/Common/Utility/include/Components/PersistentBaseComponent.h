@@ -109,6 +109,9 @@ namespace yaget::comp::db
         template <typename T>
         constexpr auto& GetValue();
 
+        Types& Storage() { return mDataStorage; }
+        const Types& Storage() const { return mDataStorage; }
+
     protected:
         PersistentBaseComponent(Id_t id)
             : PersistentBaseComponent(id, Types{})
