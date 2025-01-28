@@ -61,7 +61,6 @@ namespace yaget::items
         void RemoveStageItem(const std::string& stageName, comp::Id_t id) { RemoveStageItems(stageName, {id}); }
 
         int AddStage(const std::string& stageName);
-        int GetStageId(const std::string& stageName) const;
 
     private:
         IdBatch GetNextBatch();
@@ -94,6 +93,7 @@ namespace yaget::items
         virtual DatabaseHandle LockDatabaseAccess() const { return std::make_unique<Locker>(mDatabaseMutex, const_cast<SQLite&>(mDatabase.DB())); }
 
         void CacheStageNames();
+        int GetStageId(const std::string& stageName) const;
 
         Database mDatabase;
         mutable std::mutex mDatabaseMutex;
