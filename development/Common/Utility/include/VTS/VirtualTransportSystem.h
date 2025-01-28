@@ -91,7 +91,7 @@ namespace yaget
                 bool operator==(const Section& other) const;
 
                 //! Initializes with string in a format Name@Filter. Filter is optional.
-                //! We do not enforce explicit here due to allow easy of usage with strings
+                //! We do not enforce explicit here to allow easy of usage with strings
                 Section(const std::string& pathName);
 
                 Section& operator=(Section&&) = default;
@@ -514,6 +514,11 @@ namespace yaget
                 {
                     return "NULL";
                 }
+            }
+            static io::VirtualTransportSystem::Section FromString(const char* value)
+            {
+                const io::VirtualTransportSystem::Section result = {value ? value : ""};
+                return result;
             }
         };
     }
