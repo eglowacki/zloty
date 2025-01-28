@@ -103,7 +103,6 @@ namespace yaget::comp::gs
     {
         CT *component = nullptr;
 
-        // testing new way of extracting C (Coordinator) from CT (ComponentType)
         meta::for_each_type<typename CS::Coordinators>([&]<typename T0>(const T0*)
         {
             using Coordinator = meta::strip_qualifiers_t<T0>;
@@ -114,9 +113,6 @@ namespace yaget::comp::gs
                 {
                     auto& coordinator = GetCoordinator<typename Coordinator::Policy>();
                     component = coordinator.template AddComponent<CT>(id, std::forward<Args>(args)...);
-
-                    //const std::size_t index = mCoordinatorSet.template GetCoordinatorIndex<meta::strip_qualifiers_t<decltype(coordinator)>>();
-                    //internalgs::add_item_to_collection(index, id, mItems);
                 }
             }
         });
@@ -132,12 +128,6 @@ namespace yaget::comp::gs
     {
         auto& coordinator = GetCoordinator<C>();
         const auto moreComponents = coordinator.template RemoveComponent<CT>(id);
-
-        if (!moreComponents)
-        {
-            //const std::size_t index = mCoordinatorSet.template GetCoordinatorIndex<meta::strip_qualifiers_t<decltype(coordinator)>>();
-            //internalgs::remove_item_from_collection(index, id, mItems);
-        }
     }
 
 
@@ -148,9 +138,6 @@ namespace yaget::comp::gs
     {
         auto& coordinator = GetCoordinator<C>();
         coordinator.RemoveComponents(id);
-        
-        //const std::size_t index = mCoordinatorSet.template GetCoordinatorIndex<meta::strip_qualifiers_t<decltype(coordinator)>>();
-        //internalgs::remove_item_from_collection(index, id, mItems);
     }
 
 
@@ -158,7 +145,6 @@ namespace yaget::comp::gs
     template <typename CS, typename E, typename M, typename... Comps>
     GameSystem<CS, E, M, Comps...>::~GameSystem()
     {
-        internalgs::remove_all_from_collection<typename CS::Coordinators>(mCoordinatorSet, mItems);
     }
 
 
@@ -180,70 +166,5 @@ namespace yaget::comp::gs
         auto newRow = std::tuple_cat(std::tie(id, gameClock, channel), row);
         std::apply(mUpdateFunctor, newRow);
     }
-
-
-    namespace internalgs
-    {
-        //---------------------------------------------------------------------------------------------------------
-        //template <
-        //    typename TTuple,
-        //    size_t Index,
-        //    size_t Size,
-        //    typename TElement,
-        //    typename TCollection
-        //>
-        //constexpr void add_to_collection(TElement&& id, TCollection& collection)
-        //{
-        //    if constexpr (Index < Size)
-        //    {
-        //        collection[Index].insert(id);
-
-        //        if constexpr (Index + 1 < Size)
-        //        {
-        //            add_to_collection<TTuple, Index + 1>(id, collection);
-        //        }
-        //    }
-        //}
-
-
-        //---------------------------------------------------------------------------------------------------------
-        template <
-            typename TTuple,
-            size_t Index,
-            size_t Size,
-            typename TCoordinatorSet,
-            typename TCollection
-        >
-        constexpr void remove_all_from_collection(TCoordinatorSet&& coordinatorSet, TCollection& collection)
-        {
-            if constexpr (Index < Size)
-            {
-                auto& coordinator = coordinatorSet.template GetCoordinator<Index>();
-                coordinator.RemoveItems(collection[Index]);
-
-                if constexpr (Index + 1 < Size)
-                {
-                    remove_all_from_collection<TTuple, Index + 1>(coordinatorSet, collection);
-                }
-            }
-        }
-
-
-        //---------------------------------------------------------------------------------------------------------
-        template <typename TElement, typename TCollection>
-        constexpr void add_item_to_collection(size_t index, TElement&& id, TCollection& collection)
-        {
-            collection[index].insert(id);
-        }
-
-
-        //---------------------------------------------------------------------------------------------------------
-        template <typename TElement, typename TCollection>
-        constexpr void remove_item_from_collection(size_t index, TElement&& id, TCollection& collection)
-        {
-            collection[index].erase(id);
-        }
-
-    } // namespace internalgs
 
 } // namespace yaget::comp::gs

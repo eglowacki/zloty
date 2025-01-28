@@ -31,7 +31,7 @@ namespace
         #include "Items/ItemsSchema.sqlite"
         "CREATE TABLE 'VersionTables' ('Id' INTEGER NOT NULL DEFAULT 1, PRIMARY KEY('Id')) WITHOUT ROWID;",
         "CREATE TABLE 'Stages' ('Id' INTEGER NOT NULL UNIQUE, 'Name' TEXT NOT NULL UNIQUE, PRIMARY KEY('Id' AUTOINCREMENT));",
-        "CREATE TABLE 'StageItems' ('ItemId' INTEGER NOT NULL, 'StageId' INTEGER NOT NULL, FOREIGN KEY('StageId') REFERENCES 'Stages'('Id'));"
+        "CREATE TABLE 'StageItems' ('ItemId' INTEGER NOT NULL, 'StageId' INTEGER NOT NULL, FOREIGN KEY('StageId') REFERENCES 'Stages'('Id'), UNIQUE(ItemId, StageId) ON CONFLICT REPLACE);"
     };
 
 
@@ -96,6 +96,8 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
 
     YLOG_INFO("DIRE", "Items Director initialized '%s'.", util::ExpendEnv(name, nullptr).c_str());
 
+    CacheStageNames();
+
     if (!loadout.empty())
     {
         int64_t loadoutVersion = 0;
@@ -150,7 +152,7 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
         }
         else
         {
-            error_handlers::Throw("DIRE", fmt::format("Incomming loadout version: '{}' does not match one in db: '{}'.", loadoutVersion, version));
+            error_handlers::Throw("DIRE", fmt::format("Incoming loadout version: '{}' does not match one in db: '{}'.", loadoutVersion, version));
         }
     }
 }
@@ -170,15 +172,65 @@ yaget::comp::ItemIds yaget::items::Director::GetStageItems(const std::string& st
     {
         const SQLite& database = databaseHandle->DB();
 
-        const auto stageId = GetCell<int64_t>(database, fmt::format("SELECT Id FROM Stages WHERE Name = '{}';", stageName));
-
-        if (stageId)
+        if (auto stageId = GetStageId(stageName); stageId != Director::InvalidStageId)
         {
-            
+            using itemId = std::tuple<comp::Id_t>;
+            auto stageItemIds = database.GetRowsTuple<itemId>(fmt::format("SELECT ItemId FROM StageItems WHERE StageId = {};", stageId));
+
+            int z = 0;
+            z;
         }
     }
 
     return result;
+}
+
+
+void yaget::items::Director::AddStageItems(const std::string& stageName, const comp::ItemIds& ids)
+{
+    if (auto stageId =  GetStageId(stageName); stageId != Director::InvalidStageId)
+    {
+        if (DatabaseHandle databaseHandle = LockDatabaseAccess())
+        {
+            SQLite& database = databaseHandle->DB();
+
+            for (const auto& id :ids)
+            {
+                const auto& command = fmt::format("INSERT INTO StageItems (ItemId, StageId) VALUES ({}, {});", id, stageId);
+
+                if (!database.ExecuteStatement(command, nullptr))
+                {
+                    //transaction.Rollback();
+                    const auto& message = fmt::format("Did not update Stage '{}' with add item '{}'. {}.", stageName, id, ParseErrors(database));
+                    YLOG_ERROR("DIRE", message.c_str());
+                }
+            }
+        }
+    }
+}
+
+
+void yaget::items::Director::RemoveStageItems(const std::string& stageName, const comp::ItemIds& ids)
+{
+    if (auto stageId =  GetStageId(stageName); stageId != Director::InvalidStageId)
+    {
+        if (DatabaseHandle databaseHandle = LockDatabaseAccess())
+        {
+            SQLite& database = databaseHandle->DB();
+
+            for (const auto& id :ids)
+            {
+                const auto& command = fmt::format("DELETE FROM StageItems WHERE ItemId = {} AND StageId = {};", id, stageId);
+
+                if (!database.ExecuteStatement(command, nullptr))
+                {
+                    //transaction.Rollback();
+                    const auto& message = fmt::format("Did not update Stage '{}' with remove item '{}'. {}.", stageName, id, ParseErrors(database));
+                    YLOG_ERROR("DIRE", message.c_str());
+                }
+            }
+        }
+    }
 }
 
 
@@ -214,3 +266,61 @@ yaget::items::IdBatch yaget::items::Director::GetNextBatch()
     error_handlers::Throw("DIRE", "Did not get locked db handle for Director's database");
     return{ 0, 0 };
 }
+
+
+void yaget::items::Director::CacheStageNames()
+{
+    if (DatabaseHandle databaseHandle = LockDatabaseAccess())
+    {
+        SQLite& database = databaseHandle->DB();
+        db::Transaction transaction(database);
+
+        mStageNames = database.GetRowsTuple<StageName>(fmt::format("SELECT Name, Id FROM Stages;"));
+    }
+}
+
+
+int yaget::items::Director::AddStage(const std::string& stageName)
+{
+    auto stageId = Director::InvalidStageId;
+    if (stageId = GetStageId(stageName); stageId == Director::InvalidStageId)
+    {
+        const auto command = fmt::format("INSERT INTO Stages (Name) VALUES ('{}');", stageName);
+
+        if (DatabaseHandle databaseHandle = LockDatabaseAccess())
+        {
+            SQLite& database = databaseHandle->DB();
+            db::Transaction transaction(database);
+
+            if (!database.ExecuteStatement(command, nullptr))
+            {
+                transaction.Rollback();
+                error_handlers::Throw("DIRE", fmt::format("Did not add Stage '{}' into db. %s.", stageName, ParseErrors(database)));
+            }
+
+            stageId = GetCell<int>(database, fmt::format("SELECT Id FROM Stages WHERE Name = '{}';", stageName));
+            mStageNames.push_back({stageName, stageId});
+        }
+    }
+
+    return stageId;
+}
+
+
+int yaget::items::Director::GetStageId(const std::string& stageName) const
+{
+    const auto it = std::ranges::find_if(mStageNames, [&stageName](auto elem)
+    {
+        return std::get<0>(elem) == stageName;
+    });
+
+    if (it != mStageNames.end())
+    {
+        const auto stageId = std::get<1>(*it);
+        return stageId;
+    }
+
+    return 0;
+}
+
+

@@ -29,6 +29,7 @@ namespace yaget::items
     {
     public:
         constexpr static int BatchIdMarker = 1;
+        constexpr static int InvalidStageId = 0;
 
         //! Default    - default values
         //! Optimum    - optimized, used in runtime game (NOT USED)
@@ -51,7 +52,16 @@ namespace yaget::items
         template <typename T>
         typename T::Types LoadComponentState(comp::Id_t id, bool* result) const;
 
+        // Return list of item id's that are marked for stageName. This does not load/create items.
         comp::ItemIds GetStageItems(const std::string& stageName) const;
+        void AddStageItems(const std::string& stageName, const comp::ItemIds& ids);
+        void AddStageItem(const std::string& stageName, comp::Id_t id) { AddStageItems(stageName, {id}); }
+
+        void RemoveStageItems(const std::string& stageName, const comp::ItemIds& ids);
+        void RemoveStageItem(const std::string& stageName, comp::Id_t id) { RemoveStageItems(stageName, {id}); }
+
+        int AddStage(const std::string& stageName);
+        int GetStageId(const std::string& stageName) const;
 
     private:
         IdBatch GetNextBatch();
@@ -83,9 +93,16 @@ namespace yaget::items
         virtual DatabaseHandle LockDatabaseAccess() { return std::make_unique<Locker>(mDatabaseMutex, mDatabase.DB()); }
         virtual DatabaseHandle LockDatabaseAccess() const { return std::make_unique<Locker>(mDatabaseMutex, const_cast<SQLite&>(mDatabase.DB())); }
 
+        void CacheStageNames();
+
         Database mDatabase;
         mutable std::mutex mDatabaseMutex;
         IdGameCache mIdGameCache;
+
+        using StageName = std::tuple<std::string, int>;
+        using StageNames = std::vector<StageName>;
+
+        StageNames mStageNames;
     };
 
     // Provides unified naming convention for storing db location, taking CoordinatorSet type to generate initial schema.
