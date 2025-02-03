@@ -165,11 +165,6 @@ void yaget::SQLite::StatementBinder<int64_t>::Bind(sqlite3* database, sqlite3_st
     YAGET_ASSERT(result == SQLITE_OK, "Bind int statement failed: %s.", errorMessage ? errorMessage : "");
 }
 
-void yaget::SQLite::StatementBinder<uint64_t>::Bind(sqlite3* database, sqlite3_stmt* statement, uint64_t value, int index)
-{
-    StatementBinder<int64_t>::Bind(database, statement, static_cast<int64_t>(value), index);
-}
-
 void yaget::SQLite::StatementBinder<bool>::Bind(sqlite3* database, sqlite3_stmt* statement, bool value, int index)
 {
     int result = sqlite3_bind_int(statement, index, value);

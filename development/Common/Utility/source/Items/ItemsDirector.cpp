@@ -166,19 +166,19 @@ yaget::items::Director::~Director()
 
 yaget::comp::ItemIds yaget::items::Director::GetStageItems(const std::string& stageName) const
 {
-    yaget::comp::ItemIds result;
+    comp::ItemIds result;
 
-    if (DatabaseHandle databaseHandle = LockDatabaseAccess())
+    if (auto stageId = GetStageId(stageName); stageId != Director::InvalidStageId)
     {
-        const SQLite& database = databaseHandle->DB();
-
-        if (auto stageId = GetStageId(stageName); stageId != Director::InvalidStageId)
+        if (DatabaseHandle databaseHandle = LockDatabaseAccess())
         {
-            using itemId = std::tuple<comp::Id_t>;
-            auto stageItemIds = database.GetRowsTuple<itemId>(fmt::format("SELECT ItemId FROM StageItems WHERE StageId = {};", stageId));
+            const SQLite& database = databaseHandle->DB();
 
-            int z = 0;
-            z;
+            using ItemId = std::tuple<comp::Id_t>;
+            result = database.GetRowsTuple<comp::Id_t, ItemId, comp::ItemIds>(fmt::format("SELECT ItemId FROM StageItems WHERE StageId = {};", stageId), [](const auto& element)
+            {
+                return std::get<0>(element);
+            });
         }
     }
 
@@ -200,7 +200,6 @@ void yaget::items::Director::AddStageItems(const std::string& stageName, const c
 
                 if (!database.ExecuteStatement(command, nullptr))
                 {
-                    //transaction.Rollback();
                     const auto& message = fmt::format("Did not update Stage '{}' with add item '{}'. {}.", stageName, id, ParseErrors(database));
                     YLOG_ERROR("DIRE", message.c_str());
                 }
@@ -224,7 +223,6 @@ void yaget::items::Director::RemoveStageItems(const std::string& stageName, cons
 
                 if (!database.ExecuteStatement(command, nullptr))
                 {
-                    //transaction.Rollback();
                     const auto& message = fmt::format("Did not update Stage '{}' with remove item '{}'. {}.", stageName, id, ParseErrors(database));
                     YLOG_ERROR("DIRE", message.c_str());
                 }
@@ -238,7 +236,7 @@ yaget::items::IdBatch yaget::items::Director::GetNextBatch()
 {
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
-        using Batch = std::tuple<comp::Id_t, uint64_t>;
+        using Batch = std::tuple<comp::Id_t, int64_t>;
 
         const std::string& nextBatchCommand = fmt::format("SELECT NextId, BatchSIze FROM IdCache WHERE Marker = {};", BatchIdMarker);
         const std::string& updateBatchCommand = fmt::format("UPDATE IdCache SET NextId = NextId + BatchSize WHERE Marker = {};", BatchIdMarker);
@@ -272,8 +270,7 @@ void yaget::items::Director::CacheStageNames()
 {
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
-        SQLite& database = databaseHandle->DB();
-        db::Transaction transaction(database);
+        const SQLite& database = databaseHandle->DB();
 
         mStageNames = database.GetRowsTuple<StageName>(fmt::format("SELECT Name, Id FROM Stages;"));
     }
@@ -290,11 +287,9 @@ int yaget::items::Director::AddStage(const std::string& stageName)
         if (DatabaseHandle databaseHandle = LockDatabaseAccess())
         {
             SQLite& database = databaseHandle->DB();
-            db::Transaction transaction(database);
 
             if (!database.ExecuteStatement(command, nullptr))
             {
-                transaction.Rollback();
                 error_handlers::Throw("DIRE", fmt::format("Did not add Stage '{}' into db. %s.", stageName, ParseErrors(database)));
             }
 

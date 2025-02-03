@@ -71,7 +71,10 @@ namespace yaget::comp::gs
 
         // Load all components associated with id,
         // Returns entire row tuple with filled in components only that got updated/added from DB
-        auto LoadItem(comp::Id_t id) -> typename yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::CoordinatorSet::FullRow;
+        auto LoadItem(comp::Id_t id) -> typename CoordinatorSet::FullRow;
+
+        items::Director& Director() { return mApp.Director(); }
+        const items::Director& Director() const { return mApp.Director(); }
 
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
@@ -200,6 +203,8 @@ CT* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::AddComponent(comp::Id_t 
             component = system->template AddComponent<CT>(id, std::forward<Args>(args)...);
         }
     });
+                                                                                            
+    YLOG_CINFO("SYSC", !component, fmt::format("Added Component Id/Type: '{}/{}'", comp::ItemId(id).ToString(), comp::db::internal::ResolveName<CT>()).c_str());
 
     return component;
 }

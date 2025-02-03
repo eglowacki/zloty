@@ -125,6 +125,7 @@ namespace yaget
         // this templates execute binding call to sqlite per specific type
         // NOTE: usage of fake is based on http://www.cplusplus.com/forum/general/193680/
         template<typename T, typename Fake = void>
+        requires (!std::is_same_v<T, size_t>)
         struct StatementBinder
         {
             static void Bind(sqlite3* database, sqlite3_stmt* statement, T value, int index)
@@ -138,7 +139,6 @@ namespace yaget
         template<typename Fake> struct StatementBinder<bool, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, bool value, int index); };
         template<typename Fake> struct StatementBinder<int, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, int value, int index);};
         template<typename Fake> struct StatementBinder<int64_t, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, int64_t value, int index);};
-        template<typename Fake> struct StatementBinder<uint64_t, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, uint64_t value, int index);};
         template<typename Fake> struct StatementBinder<float, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, float value, int index);};
         template<typename Fake> struct StatementBinder<std::string, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, const std::string& value, int index);};
 
