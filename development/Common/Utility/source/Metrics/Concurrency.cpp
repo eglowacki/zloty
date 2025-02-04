@@ -3,9 +3,6 @@
 #include "Metrics/PerformanceTracer.h"
 #include "Platform/Support.h"
 
-#include <filesystem>
-namespace fs = std::filesystem;
-
 #if YAGET_CONC_METRICS_ENABLED == 1
 #include <atlbase.h>
 
@@ -25,8 +22,6 @@ namespace
 yaget::metrics::internal::Metric::Metric(const std::string& message, const std::source_location& location)
     : mMessage(message)
     , mLocation(location)
-    //, mFileName(file ? file : "Unknown")
-    //, mLineNumber(line)
     , mStart(platform::GetRealTime(yaget::time::kMicrosecondUnit))
     , mTreadID(platform::CurrentThreadId())
 {}
@@ -123,6 +118,11 @@ void yaget::metrics::MarkStartThread(uint32_t threadId, const char* threadName)
     platform::SetThreadName(threadName, threadId);
 }
 
+void yaget::metrics::MarkEndThread(std::thread& /*thread*/)
+{
+    // NOTE EG: for now we do nothing when thread ends.
+}
+
 
 void yaget::metrics::MarkStartThread(std::thread& t, const char* threadName)
 {
@@ -156,6 +156,11 @@ void yaget::metrics::MarkStartThread(uint32_t threadId, const char* threadName)
 void yaget::metrics::MarkStartThread(std::thread& t, const char* threadName)
 {
     MarkStartThread(platform::GetThreadId(t), threadName);
+}
+
+void yaget::metrics::MarkEndThread(std::thread& /*thread*/)
+{
+    // do nothing
 }
 
 std::string yaget::metrics::MarkGetThreadName(std::thread& thread)

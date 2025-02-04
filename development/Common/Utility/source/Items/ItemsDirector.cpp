@@ -35,15 +35,6 @@ namespace
     };
 
 
-#if 0
-    INSERT INTO 'Stages' ('Name') VALUES('Level 1');
-    INSERT INTO 'Stages' ('Name') VALUES('Main Menu');
-
-    INSERT INTO 'StageItems' ('StageId', 'ItemId') VALUES(1, 417);
-
-    SELECT * FROM 'Stages';
-#endif
-
     std::string ResolveDatabaseName(const std::string& userFileName, bool reset)
     {
         std::string fileName = yaget::util::ExpendEnv(userFileName, nullptr);

@@ -115,19 +115,10 @@ namespace yaget::metrics
 
     void MarkStartThread(std::thread& thread, const char* name);
     void MarkStartThread(uint32_t threadId, const char* name);
+    void MarkEndThread(std::thread& thread); 
 
     std::string MarkGetThreadName(std::thread& thread);
     std::string MarkGetThreadName(uint32_t threadId);
-
-
-    // not converted yet
-    inline void MarkEndThread(std::thread&) {}
-    //inline void MarkEndThread(uint32_t) {}
-
-    //inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
-    //inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
-
-    //inline void Tick() {}
 
 #else // YAGET_CONC_METRICS_ENABLED
 
@@ -167,19 +158,10 @@ namespace yaget::metrics
     // putting back intel concurrency functionality
     void MarkStartThread(std::thread& thread, const char* name);
     void MarkStartThread(uint32_t threadId, const char* name);
+    void MarkEndThread(std::thread& thread); 
 
     std::string MarkGetThreadName(std::thread& thread);
     std::string MarkGetThreadName(uint32_t threadId);
-
-
-    // not converted yet
-    inline void MarkEndThread(std::thread&) {}
-    inline void MarkEndThread(uint32_t) {}
-
-    inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
-    inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
-
-    inline void Tick() {}
 
 #endif // YAGET_CONC_METRICS_ENABLED
 
