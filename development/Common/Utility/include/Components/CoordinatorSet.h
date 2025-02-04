@@ -175,6 +175,16 @@ namespace yaget::comp
             return false;
         }
 
+
+        template <typename T, typename CS, std::size_t Index>
+        constexpr bool IsCoordinatorHasPolicy()
+        {
+            using CoordinatorPolicy = typename std::tuple_element_t<Index, CS>::Policy;
+            using RequestedRow = tuple_get_union_t<std::tuple<T*>, typename CoordinatorPolicy::Row>;
+
+            return std::tuple_size_v<RequestedRow> > 0;
+        }
+
     } // namespace internalc
 
     template <typename... Tuple>
@@ -344,10 +354,7 @@ namespace yaget::comp
                 {
                     constexpr std::size_t coordinatorIndex = T0;
 
-                    using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
-                    using RequestedRow = tuple_get_union_t<std::tuple<C*>, typename CoordinatorPolicy::Row>;
-
-                    if constexpr (std::tuple_size_v<RequestedRow> > 0)
+                    if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
                     {
                         auto& coordinator = GetCoordinator<coordinatorIndex>();
                         component = coordinator.template FindComponent<C>(id);
@@ -371,10 +378,7 @@ namespace yaget::comp
                 {
                     constexpr std::size_t coordinatorIndex = T0;
 
-                    using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
-                    using RequestedRow = tuple_get_union_t<std::tuple<C*>, typename CoordinatorPolicy::Row>;
-
-                    if constexpr (std::tuple_size_v<RequestedRow> > 0)
+                    if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
                     {
                         auto& coordinator = GetCoordinator<coordinatorIndex>();
                         removeResult = coordinator.template RemoveComponent<C>(id);

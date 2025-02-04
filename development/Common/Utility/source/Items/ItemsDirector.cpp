@@ -161,7 +161,7 @@ yaget::comp::ItemIds yaget::items::Director::GetStageItems(const std::string& st
 
     if (auto stageId = GetStageId(stageName); stageId != Director::InvalidStageId)
     {
-        if (DatabaseHandle databaseHandle = LockDatabaseAccess())
+        if (const DatabaseHandle databaseHandle = LockDatabaseAccess())
         {
             const SQLite& database = databaseHandle->DB();
 
@@ -259,7 +259,7 @@ yaget::items::IdBatch yaget::items::Director::GetNextBatch()
 
 void yaget::items::Director::CacheStageNames()
 {
-    if (DatabaseHandle databaseHandle = LockDatabaseAccess())
+    if (const DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
         const SQLite& database = databaseHandle->DB();
 

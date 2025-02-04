@@ -47,7 +47,7 @@ namespace yaget::items
         template <typename T>
         bool SaveComponentState(const T* component);
 
-        // load T::Types from DB. If load not valid, result value will be set to false
+        // load T::Types from DB. If load not valid, result [out] value will be set to false
         // and it will return default T::Types{}.
         template <typename T>
         typename T::Types LoadComponentState(comp::Id_t id, bool* result) const;
