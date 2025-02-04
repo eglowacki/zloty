@@ -60,7 +60,7 @@ int defensor::Run(const yaget::args::Options& options)
 
     // we want to preserve Director DB content between runs, with option to re-initialize db to default values.
     const items::Director::RuntimeMode directorMode = options.find<bool>("director_fix", false) ? items::Director::RuntimeMode::Reset : items::Director::RuntimeMode::Default;
-    items::DefaultDirector<game::DefensorSystemsCoordinator> director(vts, "Director", directorMode);
+    items::DefaultDirector<game::DefensorSystemsCoordinator> director("Director", directorMode);
 
     const auto selectedAdapter = render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
     render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);

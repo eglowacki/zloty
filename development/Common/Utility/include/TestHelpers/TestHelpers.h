@@ -52,7 +52,7 @@ namespace yaget::test
             : mIdGameCache({})
             , mMessaging()
             , mVts({}, {})
-            , mDirector(mVts)
+            , mDirector{}
             , mOptions("TestOptions")
             , mApplication("Test Window", mDirector, mVts, mOptions)
             , mSystemCoordinator(mMessaging, mApplication)

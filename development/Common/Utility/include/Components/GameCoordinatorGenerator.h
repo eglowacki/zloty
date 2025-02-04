@@ -139,9 +139,6 @@ namespace yaget::comp::db
             using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
             static_assert(std::tuple_size_v<ParameterNames> == std::tuple_size_v<ParameterPack>, "Names and types of Component properties must match in size");
 
-            //ParameterNames parameterNames{};
-            //ParameterPack parameterPack{};
-
             const auto& tableName = ResolveName<BaseType>();
             const auto& columnNames = db::GetPolicyRowNames<ParameterNames>();
             const auto& typeNames = db::GetPolicyRowTypes<ParameterPack>();
@@ -199,14 +196,6 @@ namespace yaget::comp::db
         return schemaVersion;
     }
 
-    template <typename T>
-    Strings GenerateSystemsCoordinatorSchemaVersion(int64_t& schemaVersion)
-    {
-        Strings results = GenerateSystemsCoordinatorSchema<T>();
-        schemaVersion = GenerateSystemsCoordinatorVersion<T>();
-        return results;
-    }
-
     struct EmptySchema {};
 
     template <>
@@ -219,123 +208,6 @@ namespace yaget::comp::db
     inline int64_t GenerateSystemsCoordinatorVersion<EmptySchema>()
     {
         return 0;
-    }
-
-    struct PolicyName
-    {
-        constexpr static bool AutoComponent = true;
-    };
-
-    static constexpr const char* NewItem_Token = "NEW_ITEM";
-
-    template <typename T, typename PolicyName = PolicyName>
-    Strings GenerateDirectorLoadout(io::VirtualTransportSystem& vts, const std::string& name)
-    {
-        using namespace yaget;
-        using Section = io::VirtualTransportSystem::Section;
-
-        using SystemsCoordinator = T;
-        using FullRow = typename SystemsCoordinator::CoordinatorSet::FullRow;
-
-        Strings results;
-
-        const Section directorSection(name);
-        io::SingleBLobLoader<io::JsonAsset> directorBlobLoader(vts, directorSection);
-        if (auto asset = directorBlobLoader.GetAsset())
-        {
-            if (json::IsSectionValid(asset->root, "Description", "Items"))
-            {
-                const auto& itemsBlock = json::GetSection(asset->root, "Description", "Items");
-                for (const auto& itemBlock : itemsBlock)
-                {
-                    results.emplace_back(NewItem_Token);
-                    for (const auto& componentBlock : itemBlock)
-                    {
-                        auto componentName = json::GetValue<std::string>(componentBlock, "Type", {});
-                        // TODO: Check against FullRow if that particular componentName exists/is_valid
-                        yaget::error_handlers::ThrowOnCheck(!componentName.empty(), "Component Type can not be empty and must have one of game components names.");
-
-                        if (!componentName.ends_with("Component") && PolicyName::AutoComponent)
-                        {
-                            componentName += "Component";
-
-                            meta::for_each_type<FullRow>([&componentName, &componentBlock, &results]<typename T0>(const T0&)
-                            {
-                                using BaseType = meta::strip_qualifiers_t<T0>;
-                                using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
-
-                                const auto& tableName = ResolveName<BaseType>();
-                                if (tableName == componentName)
-                                {
-                                    YLOG_ERROR("GSYS", "ParameterPack expension is not implemented corectly!");
-                                    const auto componentParams = ParameterPack{};//json::GetValue<ParameterPack>(componentBlock, "Params", {});
-                                    std::string message = print_tuple(componentParams);
-
-                                    std::string sqCommand = fmt::format("INSERT INTO '{}' VALUES({{}}{}{});", tableName, message.empty() ? "" : ", ", message);
-                                    YLOG_NOTICE("GSYS", "[%s] ", sqCommand.c_str());
-                                    results.emplace_back(sqCommand);
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-
-            if (json::IsSectionValid(asset->root, "Stages", ""))
-            {
-                Strings stageItems;
-                const auto sBlock = json::GetValue<std::map<std::string, nlohmann::json>>(asset->root, "Stages", {});
-
-                const auto& stagesBlock = json::GetSection(asset->root, "Stages", "");
-
-                auto stages = stagesBlock.get<std::map<std::string, std::vector<std::vector<nlohmann::json>>>>();
-                for (const auto& [key, value] : stages)
-                {
-                    std::string command = fmt::format("INSERT INTO 'Stages' ('Name') VALUES('{}');", key);
-                    stageItems.emplace_back(command);
-
-                    for (const auto& block : value)
-                    {
-                        for (const auto& item : block)
-                        {
-                            auto componentName = json::GetValue(item, "Type", std::string{});
-                            error_handlers::ThrowOnCheck(!componentName.empty(), "Component Type can not be empty and must have one of game components names.");
-
-                            if (!componentName.ends_with("Component") && PolicyName::AutoComponent)
-                            {
-                                componentName += "Component";
-
-                                meta::for_each_type<FullRow>([&componentName, &item, &stageItems]<typename T0>(const T0&)
-                                {
-                                    using BaseType = meta::strip_qualifiers_t<T0>;
-                                    using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
-
-                                    const auto& tableName = ResolveName<BaseType>();
-                                    if (tableName == componentName)
-                                    {
-                                        YLOG_ERROR("GSYS", "ParameterPack expension is not implemented corectly!");
-                                        const auto componentParams = ParameterPack{};//json::GetValue<ParameterPack>(item, "Params", {});
-                                        std::string message = print_tuple(componentParams);
-
-                                        std::string sqCommand = fmt::format("INSERT INTO '{}' VALUES({{}}{}{});", tableName, message.empty() ? "" : ", ", message);
-                                        YLOG_NOTICE("GSYS", "[%s] ", sqCommand.c_str());
-                                        stageItems.emplace_back(sqCommand);
-                                    }
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return results;
-    }
-
-    template <>
-    inline Strings GenerateDirectorLoadout<EmptySchema, PolicyName>(io::VirtualTransportSystem&, const std::string&)
-    {
-        return {};
     }
 
 }

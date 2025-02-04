@@ -110,10 +110,6 @@ namespace yaget::items
     class DefaultDirector : public Director
     {
     public:
-        DefaultDirector(io::VirtualTransportSystem& vts, const std::string& name = "Director", RuntimeMode runTimeMode = RuntimeMode::Default)
-            : Director("$(DatabaseFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinatorSchema<T>(), comp::db::GenerateDirectorLoadout<T>(vts, "Settings@" + name), comp::db::GenerateSystemsCoordinatorVersion<T>(), runTimeMode)
-        {}
-
         DefaultDirector(const std::string& name = "Director", RuntimeMode runTimeMode = RuntimeMode::Default)
             : Director("$(DatabaseFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinatorSchema<T>(), {}, comp::db::GenerateSystemsCoordinatorVersion<T>(), runTimeMode)
         {}
