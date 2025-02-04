@@ -72,12 +72,9 @@ namespace yaget::comp::db
 
         template<>
         inline std::string ResolveDatabaseType<unsigned int>() { return "INTEGER"; }
-        template<>
 
+        template<>
         inline std::string ResolveDatabaseType<int64_t>() { return "INTEGER"; }
-        template<>
-
-        inline std::string ResolveDatabaseType<uint64_t>() { return "INTEGER"; }
 
         template<>
         inline std::string ResolveDatabaseType<float>() { return "REAL"; }
@@ -88,6 +85,12 @@ namespace yaget::comp::db
     }
 
     template <typename T>
+    std::string ResolveName()
+    {
+        return internal::ResolveName<T>();
+    }
+
+    template <typename T>
     Strings GetPolicyRowNames()
     {
         using RowType = T;
@@ -95,7 +98,7 @@ namespace yaget::comp::db
 
         meta::for_each_type<RowType>([&results]<typename T0>(const T0&)
         {
-            auto typeName = internal::ResolveName<T0>();
+            auto typeName = ResolveName<T0>();
             results.emplace_back(typeName);
         });
 
@@ -139,9 +142,9 @@ namespace yaget::comp::db
             //ParameterNames parameterNames{};
             //ParameterPack parameterPack{};
 
-            const auto& tableName = internal::ResolveName<BaseType>();
-            const auto& columnNames = comp::db::GetPolicyRowNames<ParameterNames>();
-            const auto& typeNames = comp::db::GetPolicyRowTypes<ParameterPack>();
+            const auto& tableName = ResolveName<BaseType>();
+            const auto& columnNames = db::GetPolicyRowNames<ParameterNames>();
+            const auto& typeNames = db::GetPolicyRowTypes<ParameterPack>();
 
             std::string sqlCommand = fmt::format("CREATE TABLE '{}' ('Id' {} CHECK(Id != 0) UNIQUE", tableName, internal::ResolveDatabaseType<comp::Id_t>());
             if (!columnNames.empty())
@@ -173,13 +176,13 @@ namespace yaget::comp::db
         meta::for_each_type<FullRow>([&schemaVersion]<typename T0>(const T0&)
         {
             using BaseType = meta::strip_qualifiers_t<T0>;
-            using ParameterNames = typename comp::db::RowDescription_t<BaseType>::Row;
-            using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
+            using ParameterNames = typename RowDescription_t<BaseType>::Row;
+            using ParameterPack = typename RowDescription_t<BaseType>::Types;
             static_assert(std::tuple_size_v<ParameterNames> == std::tuple_size_v<ParameterPack>, "Names and types of Component properties must match in size");
 
-            const auto& tableName = internal::ResolveName<BaseType>();
-            const auto& columnNames = comp::db::GetPolicyRowNames<ParameterNames>();
-            const auto& typeNames = comp::db::GetPolicyRowTypes<ParameterPack>();
+            const auto& tableName = ResolveName<BaseType>();
+            const auto& columnNames = db::GetPolicyRowNames<ParameterNames>();
+            const auto& typeNames = db::GetPolicyRowTypes<ParameterPack>();
 
             conv::hash_combine(schemaVersion, tableName);
             if (!columnNames.empty())
@@ -261,7 +264,7 @@ namespace yaget::comp::db
                                 using BaseType = meta::strip_qualifiers_t<T0>;
                                 using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
 
-                                const auto& tableName = internal::ResolveName<BaseType>();
+                                const auto& tableName = ResolveName<BaseType>();
                                 if (tableName == componentName)
                                 {
                                     YLOG_ERROR("GSYS", "ParameterPack expension is not implemented corectly!");
@@ -307,7 +310,7 @@ namespace yaget::comp::db
                                     using BaseType = meta::strip_qualifiers_t<T0>;
                                     using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
 
-                                    const auto& tableName = internal::ResolveName<BaseType>();
+                                    const auto& tableName = ResolveName<BaseType>();
                                     if (tableName == componentName)
                                     {
                                         YLOG_ERROR("GSYS", "ParameterPack expension is not implemented corectly!");

@@ -204,7 +204,7 @@ CT* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::AddComponent(comp::Id_t 
         }
     });
                                                                                             
-    YLOG_CINFO("SYSC", !component, fmt::format("Added Component Id/Type: '{}/{}'", comp::ItemId(id).ToString(), comp::db::internal::ResolveName<CT>()).c_str());
+    YLOG_CINFO("SYSC", !component, fmt::format("Added Component Id/Type: '{}/{}'", comp::ItemId(id).ToString(), comp::db::ResolveName<CT>()).c_str());
 
     return component;
 }

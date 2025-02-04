@@ -128,7 +128,7 @@ namespace yaget::items
         using ParameterNames = typename comp::db::RowDescription_t<T>::Row;
         using ParameterPack = typename comp::db::RowDescription_t<T>::Types;
 
-        const auto tableName = comp::db::internal::ResolveName<T>();
+        const auto tableName = comp::db::ResolveName<T>();
         Strings columnNames;
         columnNames.push_back("Id");
         columnNames.append_range(comp::db::GetPolicyRowNames<ParameterNames>());
@@ -161,7 +161,7 @@ namespace yaget::items
         using ParameterNames = typename comp::db::RowDescription_t<T>::Row;
 
         const auto parameterNames = comp::db::GetPolicyRowNames<ParameterNames>();
-        const auto tableName = comp::db::internal::ResolveName<T>();
+        const auto tableName = comp::db::ResolveName<T>();
         Parameters parameters{};
 
         const std::string command = fmt::format("SELECT {} FROM {} WHERE Id = '{}'", conv::Combine(parameterNames, ", "), tableName, static_cast<int64_t>(id));
