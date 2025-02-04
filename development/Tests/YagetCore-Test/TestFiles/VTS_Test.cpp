@@ -200,7 +200,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // create new buffer, attach it to vts, load it back up and then save it
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 1", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 1");
 
         // delete all test data,
         EXPECT_TRUE(vts.DeleteBlob({ sourceSection, targetSection }));
@@ -229,7 +229,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // Find attached blob with correct guid, copy to new section, flat and preserve hierarchy and save
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 2", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 2");
 
         EXPECT_EQ(vts.GetNumTags(blobFile), 1);
 
@@ -259,7 +259,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // delete attached blob
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 3", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 3");
 
         io::BLobLoader<TestAsset> flatLoader(vts, Section(targetSection.Name + "@" + flatCopy));
         EXPECT_TRUE(!flatLoader.Assets().empty() && (*flatLoader.Assets().begin())->mTag.mGuid == flatTag.mGuid);
@@ -274,7 +274,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // recover guid from deleted blob
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 4", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 4");
 
         io::Tag recoveredTag = vts.GenerateTag(blobFile);
         EXPECT_EQ(newTag.mGuid, recoveredTag.mGuid);
@@ -293,7 +293,7 @@ TEST_F(VTS, TransportSystem)
     const Section file2A(sourceSection.ToString() + "/Folder2/A/Moscow.txt");
     // create ab folder structure and files based on above Sections
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 5", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 5");
 
         io::Tag copyTag = vts.GenerateTag(file11);
         io::Buffer data = io::CreateBuffer("Folder1/File1.txt");
@@ -327,7 +327,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // copy above tree as is, preserving folder structure
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 6", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 6");
 
         io::BLobLoader<TestAsset> bLobLoader(vts, sourceSection);
         for (const auto& it : bLobLoader.Assets())
@@ -345,7 +345,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // copy above tree as flat, all in one folder under sourceSection, it should fail due to same file names in different folders
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 7", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 7");
 
         std::vector<std::shared_ptr<io::Asset>> assets;
         io::BLobLoader<TestAsset> bLobLoader(vts, sourceSection);
@@ -363,7 +363,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // copy above tree as flat, but remove duplicate first, this should succeed
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 8", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 8");
 
         EXPECT_TRUE(vts.DeleteBlob({ file11, file12 }));
 
@@ -383,7 +383,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // cleanup everything
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 9", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 9");
 
         EXPECT_TRUE(vts.DeleteBlob({ sourceSection, targetSection }));
         EXPECT_EQ(vts.GetNumTags({ sourceSection, targetSection }), 0);
@@ -396,7 +396,7 @@ TEST_F(VTS, TransportSystem)
     const Section file4(sourceSection.ToString() + "/Varoom.txt");
     // create files for search/find test
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 10", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 10");
         //io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
         io::Tag copyTag = vts.GenerateTag(file1);
@@ -419,7 +419,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // test finding partial match and exact match
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 11", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 11");
         //io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
         Section finder(sourceSection.ToString() + "/File");
@@ -436,7 +436,7 @@ TEST_F(VTS, TransportSystem)
     const Section settings("WriteTestSettings");
     // create files to test override
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 12", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 12");
         //io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
         EXPECT_TRUE(vts.DeleteBlob(settings));
@@ -456,7 +456,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // get override settings file
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 13", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 13");
         //io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
         const Section settingsFile(">TestSettings@Bindings");
@@ -494,7 +494,7 @@ TEST_F(VTS, TransportSystem)
     //--------------------------------------------------------------------------------------------------
     // cleanup settings folder
     {
-        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 14", YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 14");
         //io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
         EXPECT_TRUE(vts.DeleteBlob({ settings, sourceSection }));

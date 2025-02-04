@@ -315,7 +315,7 @@ TEST_F(Coordinator, Runtime)
 
         {
             std::string message = fmt::format("Allocate {} Components", kNumComponents);
-            metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+            metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str());
             for (int i = 0; i < kNumComponents; ++i)
             {
                 comp::LocationComponent* testClass = lcAllocator.Allocate(i);
@@ -325,7 +325,7 @@ TEST_F(Coordinator, Runtime)
 
         {
             std::string message = fmt::format("Free {} Components", kNumComponents);
-            metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+            metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str());
             std::for_each(pointerList.begin(), pointerList.end(), [&lcAllocator](comp::LocationComponent* element)
             {
                 lcAllocator.Free(element);
@@ -335,7 +335,7 @@ TEST_F(Coordinator, Runtime)
 
     {
         std::string message = fmt::format("Add {} Components", kNumComponents);
-        metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str());
         for (int i = 0; i < kNumComponents; ++i)
         {
             coordinator.AddComponent<comp::LocationComponent>(i + 1000, math3d::Vector3(1, 2, 3), math3d::Quaternion(1, 2, 3, 1));
@@ -357,7 +357,7 @@ TEST_F(Coordinator, Runtime)
 
     {
         std::string message = fmt::format("Remove {} Components", kNumComponents);
-        metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str());
         for (int i = 0; i < kNumComponents; ++i)
         {
             coordinator.RemoveComponent<comp::LocationComponent>(i + 1000);

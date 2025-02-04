@@ -40,7 +40,7 @@ namespace
         using namespace yaget;
 
         constexpr size_t fileSize = 1024 * 1024 * 10;
-        metrics::Channel channel(fmt::format("CleanupAndSetup '{}' files", maxNumFiles), YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel(fmt::format("CleanupAndSetup '{}' files", maxNumFiles));
 
         CleanTestFiles();
 
@@ -73,14 +73,14 @@ TEST_F(BlobLoader, LoadConvert)
 {
     using namespace yaget;
 
-    metrics::Channel channel("Main.BlobLoader", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("Main.BlobLoader");
 
     const int kMaxNumFiles = 90;
     const Strings filesToTest = CleanupAndSetup(kMaxNumFiles);
 
     std::atomic_int counter{0};
     {
-        metrics::Channel vChannel("Input Validation", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel vChannel("Input Validation");
 
         io::BlobLoader blobLoader(true, {});
 
@@ -97,7 +97,7 @@ TEST_F(BlobLoader, LoadConvert)
     }
 
     {
-        metrics::Channel vChannel("Process All Requests", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel vChannel("Process All Requests");
 
         io::BlobLoader blobLoader(true, {});
 
@@ -112,7 +112,7 @@ TEST_F(BlobLoader, LoadConvert)
 
     counter = 0;
     {
-        metrics::Channel aChannel("Cancel All Requests", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel aChannel("Cancel All Requests");
 
         io::BlobLoader blobLoader(false, {});
 

@@ -279,7 +279,7 @@ TEST_F(CoordinatorSet, ComponentAccess)
     entityCoordinator.AddComponent<TestObjects::Ccomponent>(itemId);
 
     time::GameClock gameClock;
-    metrics::Channel channel("Test", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("Test");
 
     entitySystemsCoordinator.Tick(gameClock, channel);
 
@@ -306,13 +306,13 @@ TEST_F(CoordinatorSet, ComponentCapacity)
 
     const auto ScoperUnit = time::kMicrosecondUnit;
     {
-        metrics::Channel channel("ComponentCapacity.Adding", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel("ComponentCapacity.Adding");
 
         auto& idGameCache = testerFramework.Ids();
         auto& entityCoordinator = entitySystemsCoordinator.GetCoordinator<TestObjects::Entity>();
 
         const auto& message = fmt::format("Creating '{}' entities", conv::ToThousandsSep(TestObjects::kMaxItems));
-        metrics::TimeScoper<ScoperUnit> intTimer("TEST", message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+        metrics::TimeScoper<ScoperUnit> intTimer("TEST", message.c_str());
 
         for (auto i = 0; i < TestObjects::kMaxItems; ++i)
         {
@@ -331,12 +331,12 @@ TEST_F(CoordinatorSet, ComponentCapacity)
         const time::Microsecond_t kFixedDeltaTime = time::kDeltaTime_60;
 
         time::GameClock gameClock;
-        metrics::Channel channel("ComponentCapacity.Tick", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel("ComponentCapacity.Tick");
 
         for (int i = 0; i < kNumTicks; ++i)
         {
             const auto& message = fmt::format("Tick {}: Ticking '{}' entities", i, conv::ToThousandsSep(TestObjects::kMaxItems));
-            metrics::TimeScoper<ScoperUnit> intTimer("TEST", message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+            metrics::TimeScoper<ScoperUnit> intTimer("TEST", message.c_str());
             intTimer.SetAccumulator(&accumulator);
 
             entitySystemsCoordinator.Tick(gameClock, channel);
@@ -353,11 +353,11 @@ TEST_F(CoordinatorSet, ComponentCapacity)
         auto& entityCoordinator = entitySystemsCoordinator.GetCoordinator<TestObjects::Entity>();
         auto& allocator = entityCoordinator.GetAllocator<TestObjects::Acomponent>();
 
-        metrics::Channel channel("ComponentCapacity.Iterator", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel("ComponentCapacity.Iterator");
 
         for (int i = 0; i < kNumTicks; ++i)
         {
-            metrics::Channel channel(fmt::format("Iterator pass '{}'", i), YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel channel(fmt::format("Iterator pass '{}'", i));
 
             for (const auto& it : allocator)
             {
@@ -377,11 +377,11 @@ TEST_F(CoordinatorSet, ComponentCapacity)
             TestObjects::memory[i] = { i, "" };
         }
 
-        metrics::Channel channel("ComponentCapacity.RawArray", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel("ComponentCapacity.RawArray");
 
         for (int t = 0; t < kNumTicks; ++t)
         {
-            metrics::Channel channelTick(fmt::format("For loop pass '{}'", t), YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel channelTick(fmt::format("For loop pass '{}'", t));
 
             for (size_t i = 0; i < TestObjects::kMaxItems; ++i)
             {

@@ -85,7 +85,7 @@ TEST_F(IdBatch, Persistent)
 
 	{
 		const auto& message = fmt::format("Getting '{}' Burnable id's.", conv::ToThousandsSep(MaxIterations));
-		metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+		metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", message.c_str());
 
 		for (int i = 0; i < MaxIterations; ++i)
 		{
@@ -98,7 +98,7 @@ TEST_F(IdBatch, Persistent)
 
 	{
 		const auto& message = fmt::format("Getting '{}' Persistent id's.", conv::ToThousandsSep(MaxIterations));
-		metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", message.c_str(), YAGET_LOG_FILE_LINE_FUNCTION);
+		metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", message.c_str());
 		
 		for (int i = 0; i < MaxIterations; ++i)
 		{
