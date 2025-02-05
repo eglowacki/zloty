@@ -35,10 +35,9 @@ namespace yaget
 
         // Any id's that are marked as persistent, will have high bit set
         constexpr Id_t PERSISTENT_ID_BIT = 0x4000000000000000;
-        constexpr Id_t PERSISTENT_MASK_BIT = 0x3FB0000000000000;
 
         constexpr Id_t INVALID_ID = 0;
-        constexpr Id_t GLOBAL_ID_MARKER = PERSISTENT_ID_BIT;
+        constexpr Id_t GLOBAL_ID_MARKER = PERSISTENT_ID_BIT - 1;
         constexpr Id_t END_ID_MARKER = GLOBAL_ID_MARKER - 1;
 
         constexpr Id_t StripQualifiers(Id_t id)
