@@ -78,7 +78,7 @@ namespace yaget::ylog
         /**
          * @brief Serialize the current Log::Level of Channel objects and return them as a Config instance
          */
-        static Config::Ptr getChannelConfig(void);
+        static Config::Ptr getChannelConfig();
 
         /**
          * @brief Set the Log::Level of Channel objects from the provided Config instance
@@ -93,6 +93,12 @@ namespace yaget::ylog
         static void AddOverrideFilter(uint32_t tag);
         static void RemoveFilter(uint32_t tag);
         static void AddOutput(Output::Ptr outputPtr);
+
+        static bool IsTruncateFunctionName();
+        static int MaxLenFunctionName();
+
+        static void TruncateFunctionName(bool truncate);
+        static void SetMaxLenFunctionName(int len);
 
         template<typename T, typename... Args>
         static void AddOutput(Args&&... args)

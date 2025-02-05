@@ -818,6 +818,8 @@ void yaget::util::DefaultOptions(args::Options& options)
         ("config_value", "Override individual configuration values --config_value = Debug.Metrics.TraceOn=false (no spaces around =)", args::value<std::vector<std::string>>())
         ("software_render", "Force software renderer")
         ("gpu_traceback", "Activate GPU crash dump")
+        ("log_truncate_function_name", "Truncate function signature name in logging to not exceed log_max_function_name_len")
+        ("log_max_function_name_len", "Maximum length of function signature name before truncating", args::value<int>())
         ;
 }
 

@@ -30,40 +30,44 @@ using namespace yaget;
 
 void ylog::Initialize(const args::Options& options)
 {
-    ylog::Config::Vector configList;
-    for (auto&& it : dev::CurrentConfiguration().mDebug.mLogging.Outputs)
+    Config::Vector configList;
+    const auto& logConfig = dev::CurrentConfiguration().mDebug.mLogging;
+
+    for (auto&& it : logConfig.Outputs)
     {
-        ylog::Config::addOutput(configList, it.first.c_str());
+        Config::addOutput(configList, it.first.c_str());
         for (auto&& o : it.second)
         {
-            ylog::Config::setOption(configList, o.first.c_str(), o.second.c_str());
+            Config::setOption(configList, o.first.c_str(), o.second.c_str());
         }
     }
 
-    ylog::Logger& logObject = ylog::Get();
+    Logger& logObject = ylog::Get();
 
     //DBUG, INFO, NOTE, WARN, EROR
-    Log::Level level = ylog::Log::toLevel(dev::CurrentConfiguration().mDebug.mLogging.Level.c_str());
-    logObject = ylog::Logger(logObject.getName().c_str());
+    Log::Level level = Log::toLevel(logConfig.Level.c_str());
+    logObject = Logger(logObject.getName().c_str());
     logObject.setLevel(level);
 
     // setup filters, which tags will be suppressed from log output
-    Strings filters = dev::CurrentConfiguration().mDebug.mLogging.Filters;
+    Strings filters = logConfig.Filters;
     for (auto&& it: filters)
     {
         if (*it.begin() == '!')
         {
             std::string tag(it.begin() + 1, it.end());
-            ylog::Manager::AddOverrideFilter(Tagger(tag.c_str()));
+            Manager::AddOverrideFilter(Tagger(tag.c_str()));
         }
         else
         {
-            ylog::Manager::AddFilter(Tagger(it.c_str()));
+            Manager::AddFilter(Tagger(it.c_str()));
         }
     }
 
     // Configure the Log Manager (create Output objects)
-    ylog::Manager::configure(configList);
+    Manager::configure(configList);
+    Manager::TruncateFunctionName(logConfig.TruncateFunctionName);
+    Manager::SetMaxLenFunctionName(logConfig.MaxFunctionNameLen);
 
     // dump file with all registered tags using name and hash values
     if (options.find<bool>("log_write_tags", false))

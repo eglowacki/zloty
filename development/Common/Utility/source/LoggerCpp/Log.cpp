@@ -129,7 +129,37 @@ void Log::Write(const char* file, unsigned line, const char* functionName, uint3
             mTime.Make();
             mFileName = file ? file : "unknown file";
             mFileLine = line;
-            mFunctionName = functionName ? functionName : "unknown function";
+
+            if (functionName)
+            {
+                if (Manager::IsTruncateFunctionName())
+                {
+                    // some function signatures are very long, making harder to read log lines
+                    // this gives us an option to shorten the function name but only if current
+                    // signature is larger then MaxLenFunctionName
+                    const std::string_view name(functionName);
+                    const auto startIndex = name.find_first_of('<');
+                    const auto endIndex = name.find_last_of('>');
+                    if (startIndex != std::string::npos && endIndex != std::string::npos && endIndex > startIndex && endIndex - startIndex > Manager::MaxLenFunctionName())
+                    {
+                        mFunctionName = name.substr(0, startIndex);
+                        mFunctionName += "<***>";
+                        mFunctionName += name.substr(endIndex+1);
+                    }
+                    else
+                    {
+                        mFunctionName = functionName;
+                    }
+                }
+                else
+                {
+                    mFunctionName = functionName;
+                }
+            }
+            else
+            {
+                mFunctionName = "unknown function";
+            }
 
             va_list vlist;
             va_start(vlist, format);

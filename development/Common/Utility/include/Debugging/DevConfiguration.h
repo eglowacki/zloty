@@ -58,6 +58,8 @@ namespace yaget
                     Sinks Outputs;
 
                     bool PrintThreadName = true;
+                    bool TruncateFunctionName = false;
+                    int MaxFunctionNameLen = 40;
                 };
                 Logging mLogging;
 

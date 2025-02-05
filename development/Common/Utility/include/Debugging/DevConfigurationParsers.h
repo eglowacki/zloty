@@ -237,6 +237,8 @@ namespace yaget::dev
         j["Filters"] = logging.Filters;
         j["Outputs"] = logging.Outputs;
         j["PrintThreadName"] = logging.PrintThreadName;
+        j["TruncateFunctionName"] = logging.TruncateFunctionName;
+        j["MaxFunctionNameLen"] = logging.MaxFunctionNameLen;
     }
 
     namespace parsers { Strings ParseLogFilterTags(const Strings& newFilterTags, const Strings& currentFilterTags); }
@@ -282,6 +284,8 @@ namespace yaget::dev
         });
 
         logging.PrintThreadName = yaget::json::GetValue(j, "PrintThreadName", logging.PrintThreadName);
+        logging.TruncateFunctionName = yaget::json::GetValue(j, "TruncateFunctionName", logging.TruncateFunctionName);
+        logging.MaxFunctionNameLen = yaget::json::GetValue(j, "MaxFunctionNameLen", logging.MaxFunctionNameLen);
     }
 
 

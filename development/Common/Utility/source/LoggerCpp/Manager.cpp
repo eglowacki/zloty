@@ -85,6 +85,9 @@ namespace
         using OutputTypes = std::map<std::string, yaget::ylog::Manager::OutputCreator>;
         OutputTypes mRegisteredOutputTypes;
 
+        bool mIsTruncateFunctionName = false;
+        int mMaxLenFunctionName = 40;
+
     private:
         TagFilters_t mTagFilters;
         TagFilters_t mOverriteTagFilters;
@@ -103,6 +106,30 @@ namespace
 {
     auto& d = md();
     d.mOutputList.push_back(outputPtr);
+}
+
+/*static*/ bool yaget::ylog::Manager::IsTruncateFunctionName()
+{
+    const auto& d = md();
+    return d.mIsTruncateFunctionName;
+}
+
+/*static*/ int yaget::ylog::Manager::MaxLenFunctionName()
+{
+    const auto& d = md();
+    return d.mMaxLenFunctionName;
+}
+
+/*static*/ void yaget::ylog::Manager::TruncateFunctionName(bool truncate)
+{
+    auto& d = md();
+    d.mIsTruncateFunctionName = truncate;
+}
+
+/*static*/ void yaget::ylog::Manager::SetMaxLenFunctionName(int len)
+{
+    auto& d = md();
+    d.mMaxLenFunctionName = len;
 }
 
 /*static*/ void yaget::ylog::Manager::RegisterOutputType(const char* name, Manager::OutputCreator outputCreator)
@@ -130,11 +157,11 @@ void yaget::ylog::Manager::configure(const Config::Vector& aConfigList)
     d.mOutputList.clear();
 
     const ManagerData::OutputTypes& registeredOutputs = d.mRegisteredOutputTypes;
-    for (auto&& it : aConfigList)
+    for (const auto& it : aConfigList)
     {
         const std::string& configName = it->getName();
 
-        for (auto&& f : registeredOutputs)
+        for (const auto& f : registeredOutputs)
         {
             if (f.first.find(configName) != std::string::npos)
             {
@@ -178,7 +205,7 @@ void yaget::ylog::Manager::output(const ylog::Channel::Ptr& aChannelPtr, const y
 }
 
 // Serialize the current Log::Level of Channel objects and return them as a Config instance
-yaget::ylog::Config::Ptr yaget::ylog::Manager::getChannelConfig(void)
+yaget::ylog::Config::Ptr yaget::ylog::Manager::getChannelConfig()
 {
     auto& d = md();
     Config::Ptr ConfigPtr(new Config("ChannelConfig"));
@@ -211,7 +238,7 @@ void yaget::ylog::Manager::setDefaultLevel(Log::Level aLevel)
 bool yaget::ylog::Manager::IsValidTag(uint32_t tag)
 {
     const auto& d = md();
-    return d.mTags.find(tag) != std::end(d.mTags);
+    return d.mTags.contains(tag);
 }
 
 bool yaget::ylog::Manager::IsFilter(uint32_t tag)

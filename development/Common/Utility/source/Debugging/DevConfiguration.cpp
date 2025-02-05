@@ -272,6 +272,9 @@ std::string yaget::dev::Initialize(const args::Options& options, const char* con
     }
 #endif // YAGET_SHIPPING
 
+    configuration.mDebug.mLogging.TruncateFunctionName = options.find<bool>("log_truncate_function_name", configuration.mDebug.mLogging.TruncateFunctionName);
+    configuration.mDebug.mLogging.MaxFunctionNameLen = options.find<int>("log_max_function_name_len", configuration.mDebug.mLogging.MaxFunctionNameLen);
+
     configuration.mInit.VSync = !options.find<bool>("vsync_off", !configuration.mInit.VSync);
     configuration.mInit.FullScreen = options.find<bool>("full_screen", configuration.mInit.FullScreen);
     configuration.mInit.ResX = options.find<int>("res_x", configuration.mInit.ResX);

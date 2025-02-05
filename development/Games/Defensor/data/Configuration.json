@@ -13,7 +13,9 @@
 						"filename": "$(LogFolder)/$(AppName).log"
 					}
 				},
-				"PrintThreadName": true
+				"PrintThreadName": true,
+				"TruncateFunctionName": true,
+				"MaxFunctionNameLen": 40
 			},
 			"Metrics": {
 				"AllowFallbackToFile": false,
