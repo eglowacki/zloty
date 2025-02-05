@@ -87,10 +87,6 @@ yaget::Database::Database(const std::string& name, const std::vector<std::string
     InitializeDatabase(mDatabase, schema, name, excpectedVersion);
 }
 
-yaget::Database::~Database()
-{
-}
-
 void yaget::Database::Log(const std::string& type, const std::string& message)
 {
     mDatabase.Log(type, message);

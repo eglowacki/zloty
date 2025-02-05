@@ -498,29 +498,26 @@ namespace yaget
 
     } // namespace io
 
-    namespace conv
+    //-------------------------------------------------------------------------------------------------------------------------------
+    template <>
+    struct conv::Convertor<io::VirtualTransportSystem::Section>
     {
-        //-------------------------------------------------------------------------------------------------------------------------------
-        template <>
-        struct Convertor<io::VirtualTransportSystem::Section>
+        static std::string ToString(const io::VirtualTransportSystem::Section& value)
         {
-            static std::string ToString(const io::VirtualTransportSystem::Section& value)
+            if (std::string result = value.ToString(); !result.empty())
             {
-                if (std::string result = value.ToString(); !result.empty())
-                {
-                    return result;
-                }
-                else
-                {
-                    return "NULL";
-                }
-            }
-            static io::VirtualTransportSystem::Section FromString(const char* value)
-            {
-                const io::VirtualTransportSystem::Section result = {value ? value : ""};
                 return result;
             }
-        };
-    }
+            else
+            {
+                return "NULL";
+            }
+        }
+        static io::VirtualTransportSystem::Section FromString(const char* value)
+        {
+            const io::VirtualTransportSystem::Section result = {value ? value : ""};
+            return result;
+        }
+    };
 
 } // namespace yaget

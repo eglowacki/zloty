@@ -32,11 +32,6 @@ IdGameCache::IdGameCache(const GetNextBatch& getNextBatch)
 }
 
 
-IdGameCache::~IdGameCache()
-{
-}
-
-
 comp::Id_t IdGameCache::GetId(IdType idType)
 {
     comp::Id_t result = 0;

@@ -37,11 +37,11 @@ namespace yaget::comp::gs
     // TODO add timers support for entities
     // https://github.com/eglowacki/zloty/issues/44#issue-1174664933
     // Example:
-    //  class ScoreSystem : public yaget::comp::gs::GameSystem<NoEndMarker, Messaging, ScoreComponent*>
+    //  class ScoreSystem : public yaget::comp::gs::GameSystem<GameCoordinatorSet, NoEndMarker, Messaging, ScoreComponent*>
     //  {
     //  public:
-    //      ScoreSystem(Messaging& messaging)
-    //          : GameSystem("ScoreSystem", messaging, [this](auto&&... params) {OnUpdate(params...); })
+    //      ScoreSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
+    //          : GameSystem("ScoreSystem", messaging, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
     //      {}
     //
     //  private:
