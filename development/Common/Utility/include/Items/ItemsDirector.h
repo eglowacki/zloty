@@ -132,7 +132,7 @@ namespace yaget::items
         const SQLite::StatementId_t statementId = "statementId_" + tableName;
 
         auto componentId = static_cast<comp::Id_t>(component->Id());
-        auto inputParam = std::tuple_cat(std::tuple(componentId), component->mDataStorage);
+        auto inputParam = std::tuple_cat(std::tuple(componentId), component->Storage());
 
         const auto dbLock = LockDatabaseAccess();
         auto& database = dbLock->DB();

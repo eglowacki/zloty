@@ -222,7 +222,7 @@ C* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadComponent(comp::Id_t 
     {
         if (resultComponent = FindComponent<C>(id); resultComponent)
         {
-            resultComponent->mDataStorage = parameters;
+            resultComponent->Storage() = parameters;
         }
         else
         {
