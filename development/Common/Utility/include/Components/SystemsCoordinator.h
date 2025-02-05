@@ -287,20 +287,9 @@ TT yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadItem(comp::Id_t id)
 
 //-------------------------------------------------------------------------------------------------
 template <typename T, typename M, typename A, typename ... S>
-auto yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadItem(comp::Id_t id) -> typename yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::CoordinatorSet::FullRow
+auto yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadItem(comp::Id_t id) -> typename CoordinatorSet::FullRow
 {
-    typename CoordinatorSet::FullRow result{};
-    meta::for_each_type<CoordinatorSet::FullRow>([this, id, &result]<typename T0>(const T0&)
-    {
-        using BaseType = meta::strip_qualifiers_t<T0>;
-        auto* component = LoadComponent<BaseType>(id);
-        if (component)
-        {
-            std::get<BaseType*>(result) = component;
-        }
-    });
-
-    return result;
+    return LoadItem<typename CoordinatorSet::FullRow>(id);
 }
 
 
