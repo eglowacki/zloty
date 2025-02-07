@@ -229,7 +229,6 @@
     <ClInclude Include="..\include\MemoryManager\NewAllocator.h" />
     <ClInclude Include="..\include\MemoryManager\PoolAllocator.h" />
     <ClInclude Include="..\include\Meta\CompilerAlgo.h" />
-    <ClInclude Include="..\include\Meta\Hana.h" />
     <ClInclude Include="..\include\Metrics\Concurrency.h" />
     <ClInclude Include="..\include\Metrics\Gather.h" />
     <ClInclude Include="..\include\Metrics\Performance.h" />

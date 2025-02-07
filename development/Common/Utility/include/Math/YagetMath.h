@@ -15,14 +15,12 @@
 
 #include "YagetCore.h"
 
-YAGET_COMPILE_SUPPRESS_START(4201, "nonstandard extension used: nameless struct/union")
 #include "Mathter/Vector.hpp"
 #include "Mathter/Matrix.hpp"
 #include "Mathter/Quaternion.hpp"
 #include "Mathter/Utility.hpp"
 #include "Mathter/Geometry.hpp"
 #include "Mathter/IoStream.hpp"
-YAGET_COMPILE_SUPPRESS_END
 
 
 namespace yaget::math

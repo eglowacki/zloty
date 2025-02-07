@@ -602,9 +602,6 @@
     <ClInclude Include="..\include\Components\CoordinatorSet.h">
       <Filter>Component Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Meta\Hana.h">
-      <Filter>Meta Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Components\SystemsCoordinator.h">
       <Filter>Component Files</Filter>
     </ClInclude>
