@@ -18,19 +18,16 @@
 #include "YagetCore.h"
 
 
-namespace yaget
+namespace yaget::math
 {
-    namespace math
+    class Parser
     {
-        class Parser
-        {
-        public:
-            Parser();
-            ~Parser();
+    public:
+        Parser();
+        ~Parser();
 
-        private:
+    private:
 
-        };
+    };
 
-    } // namespace math
-} // namespace yaget
+} // namespace yaget::math

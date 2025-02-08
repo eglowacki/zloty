@@ -20,63 +20,60 @@
 #include <mutex>
 #include <chrono>
 
-namespace yaget
+namespace yaget::mt
 {
-    namespace mt
+    //! Condition class to handle condition variable
+    //! Usage:
+    //!     Waiting thread:     Condition.Wait();
+    //!     Triggering thread:  Condition.Trigger();
+    class Condition : public yaget::Noncopyable<Condition>
     {
-        //! Condition class to handle condition variable
-        //! Usage:
-        //!     Waiting thread:     Condition.Wait();
-        //!     Triggering thread:  Condition.Trigger();
-        class Condition : public yaget::Noncopyable<Condition>
+    public:
+        void Trigger()
         {
-        public:
-            void Trigger()
-            {
-                std::lock_guard<std::mutex> locker(mMutex);
-                mRelease = true;
-                mCondition.notify_one();
-            }
+            std::lock_guard<std::mutex> locker(mMutex);
+            mRelease = true;
+            mCondition.notify_one();
+        }
 
-            // will wait on Trigger() to be called (from other thread)
-            // numSleep allows us to just wait until that time pass before it get's triggered.
-            void Wait(time::TimeUnits_t numSleep = 0, time::TimeUnits_t unitType = time::kMilisecondUnit)
+        // will wait on Trigger() to be called (from other thread)
+        // numSleep allows us to just wait until that time pass before it get's triggered.
+        void Wait(time::TimeUnits_t numSleep = 0, time::TimeUnits_t unitType = time::kMilisecondUnit)
+        {
+            std::unique_lock<std::mutex> locker(mMutex);
+            if (numSleep)
             {
-                std::unique_lock<std::mutex> locker(mMutex);
-                if (numSleep)
+                using namespace std::chrono_literals;
+
+                if (unitType == time::kMicrosecondUnit)
                 {
-                    using namespace std::chrono_literals;
-
-                    if (unitType == time::kMicrosecondUnit)
-                    {
-                        mCondition.wait_for(locker, numSleep * 1us, [this] { return mRelease; });
-                    }
-                    else if (unitType == time::kMilisecondUnit)
-                    {
-                        mCondition.wait_for(locker, numSleep * 1ms, [this] { return mRelease; });
-                    }
+                    mCondition.wait_for(locker, numSleep * 1us, [this] { return mRelease; });
                 }
-                else
+                else if (unitType == time::kMilisecondUnit)
                 {
-                    mCondition.wait(locker, [this] { return mRelease; });
+                    mCondition.wait_for(locker, numSleep * 1ms, [this] { return mRelease; });
                 }
-
-                mRelease = false;
             }
-
-            void Reset()
+            else
             {
-                std::lock_guard<std::mutex> locker(mMutex);
-                mRelease = false;
+                mCondition.wait(locker, [this] { return mRelease; });
             }
 
-        private:
-            std::mutex mMutex;
-            std::condition_variable mCondition;
-            bool mRelease = false;
-        };
+            mRelease = false;
+        }
 
-    } // namespace mt
-} // namespace yaget
+        void Reset()
+        {
+            std::lock_guard<std::mutex> locker(mMutex);
+            mRelease = false;
+        }
+
+    private:
+        std::mutex mMutex;
+        std::condition_variable mCondition;
+        bool mRelease = false;
+    };
+
+} // namespace yaget::mt
 
 
