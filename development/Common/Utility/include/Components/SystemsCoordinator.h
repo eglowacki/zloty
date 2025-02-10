@@ -134,7 +134,7 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
     {
         using BaseType = T0;
         using SystemType = typename BaseType::element_type;
-        system = std::make_shared<SystemType>(mMessaging, app, mCoordinatorSet);
+        system = std::make_shared<SystemType>(mMessaging, app, mCoordinatorSet);    // <-- add this as a parameter into GameSystem ctor
     });
 }
 

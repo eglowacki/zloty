@@ -62,7 +62,8 @@
 				}
 			],
 			"WindowOptions": "UserOptions@WindowConfiguration",
-			"VSync": false
+			"VSync": false,
+			"StartingStage": "Boot"
 
 		}
 	}

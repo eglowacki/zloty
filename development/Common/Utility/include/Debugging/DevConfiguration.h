@@ -128,10 +128,8 @@ namespace yaget
                 VTSConfigList mVTSConfig;
 
                 //! setup aliases
-                // look in C:\Development\yaget\branch\version_0_2\Common\Utility\include\App\AppUtilities.h
+                // look in Common/Utility/include/App/AppUtilities.h
                 // for comments about predefined aliases
-                //struct EnvAlias { std::string Value; bool ReadOnly; };
-                //using EnvironmentList = std::map<std::string, EnvAlias>;
                 using EnvAlias = util::EnvAlias;
                 using EnvironmentList = util::EnvironmentList;
                 EnvironmentList mEnvironmentList;
@@ -140,6 +138,8 @@ namespace yaget
                 std::string mWindowOptions;
                 // which script to start running when GameDirector is initialized, aka boot script
                 std::string mGameDirectorScript;
+                // Which stage name to start with
+                std::string mStartingStage;
 
                 // This represents certain command line options, specially video/window options
                 struct CLO
