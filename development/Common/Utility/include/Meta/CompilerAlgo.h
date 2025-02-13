@@ -336,6 +336,28 @@ namespace yaget::meta
         }
     }
 
+    // for_loop<std::tuple<...>>([]<std::size_t T0>()
+    template<std::size_t N, std::size_t C, typename TCallable>
+    constexpr void for_loop(TCallable&& callable)
+    {
+        callable.template operator()<C>();
+        if constexpr (C + 1 < N)
+        {
+            for_loop<N, C + 1>(std::forward<TCallable>(callable));
+        }
+    }
+
+    template<std::size_t N, typename TCallable>
+    constexpr void for_loop(TCallable&& callable)
+    {
+        for_loop<N, 0>(callable);
+    }
+
+    template<typename T, typename TCallable>
+    constexpr void for_loop(TCallable&& callable)
+    {
+        for_loop<std::tuple_size_v<T>, 0>(callable);
+    }
 
     // check if T is of type std::tuple<...>, return True for match, otherwise false
     template <typename T>

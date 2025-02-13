@@ -15,7 +15,7 @@
 #pragma once
 
 
-#include "Items/StagerSystem.h"
+#include "Components/GameSystem.h"
 #include "DefensorGameTypes.h"
 
 namespace defensor::game
@@ -29,5 +29,4 @@ namespace defensor::game
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, comp::MenuComponent* menuComponent, comp::InputComponent* inputComponent, comp::ScriptComponent* scriptComponent);
     };
 
-    using DefensorStagerSystem = items::StagerSystem<GameCoordinatorSet, defensor::game::Messaging>;
 }

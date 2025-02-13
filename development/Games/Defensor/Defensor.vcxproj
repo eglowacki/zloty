@@ -152,6 +152,7 @@
     <ClCompile Include="source\Squadron\MenuSystem.cpp" />
     <ClCompile Include="source\Squadron\PlayerSystem.cpp" />
     <ClCompile Include="source\Squadron\SquadronSystem.cpp" />
+    <ClCompile Include="source\Stager\StagerSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="data\Configuration.json">
@@ -179,6 +180,7 @@
     <ClInclude Include="source\Squadron\MenuSystem.h" />
     <ClInclude Include="source\Squadron\PlayerSystem.h" />
     <ClInclude Include="source\Squadron\SquadronSystem.h" />
+    <ClInclude Include="source\Stager\StagerSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

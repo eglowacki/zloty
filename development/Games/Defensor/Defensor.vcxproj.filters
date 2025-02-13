@@ -22,6 +22,9 @@
     <Filter Include="Source Files\Squadron Files">
       <UniqueIdentifier>{9e4cd778-a890-4d3b-b396-2f1a659bf60b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Stager Files">
+      <UniqueIdentifier>{38fd0fef-4f0f-422c-a101-a67844edea31}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -56,6 +59,9 @@
     </ClCompile>
     <ClCompile Include="source\Components\ScriptComponent.cpp">
       <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Stager\StagerSystem.cpp">
+      <Filter>Source Files\Stager Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +113,9 @@
     </ClInclude>
     <ClInclude Include="source\Components\ScriptComponent.h">
       <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Stager\StagerSystem.h">
+      <Filter>Source Files\Stager Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

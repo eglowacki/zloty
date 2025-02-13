@@ -15,6 +15,7 @@
 //! \file
 #pragma once
 
+#include "Components/GameSystem.h"
 #include "Components/InputComponent.h"
 #include "Components/LocationComponent.h"
 #include "Components/MenuComponent.h"
@@ -23,6 +24,7 @@
 #include "Components/UnitComponent.h"
 #include "GameSystem/Messaging.h"
 #include "Items/StageComponent.h"
+
 
 namespace defensor::game
 {
@@ -36,5 +38,4 @@ namespace defensor::game
     using GlobalCoordinator = comp::Coordinator<GlobalEntity>;
     using EntityCoordinator = comp::Coordinator<Entity>;
     using GameCoordinatorSet = comp::CoordinatorSet<GlobalCoordinator, EntityCoordinator>;
-
 }
