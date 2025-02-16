@@ -170,4 +170,11 @@ namespace yaget::comp
 
     };
 
+    template <typename C>
+    C* get_component(const auto& item)
+    {
+        return std::get<C*>(item);
+    }
+
+
 } // namespace yaget::comp

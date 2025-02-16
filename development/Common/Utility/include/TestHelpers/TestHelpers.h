@@ -43,8 +43,9 @@ namespace yaget::test
     };
 
     // M is Messaging
+    // D is Director
     // SC is SystemsCoordinator
-    template <typename M, typename SC>
+    template <typename M, typename D, typename SC>
     class ApplicationFramework
     {
     public:
@@ -73,7 +74,7 @@ namespace yaget::test
         yaget::IdGameCache mIdGameCache;
         M mMessaging;
         yaget::io::tool::VirtualTransportSystemDefault mVts;
-        yaget::items::BlankDefaultDirector mDirector;
+        D mDirector;
         yaget::args::Options mOptions;
         yaget::app::BlankApplication mApplication;
         SC mSystemCoordinator;

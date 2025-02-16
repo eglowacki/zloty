@@ -67,6 +67,7 @@
     <ClCompile Include="TestFiles\JobPool_Test.cpp" />
     <ClCompile Include="TestFiles\Json_Test.cpp" />
     <ClCompile Include="TestFiles\Math_Test.cpp" />
+    <ClCompile Include="TestFiles\Persistence_Test.cpp" />
     <ClCompile Include="TestFiles\PoolAllocator_Test.cpp" />
     <ClCompile Include="TestFiles\StringConverters_Test.cpp" />
     <ClCompile Include="TestFiles\StringHelpers_Test.cpp" />

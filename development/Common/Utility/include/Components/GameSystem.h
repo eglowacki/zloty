@@ -66,22 +66,7 @@ namespace yaget::comp::gs
 
         const char* NiceName() const { return mNiceName; }
 
-        template <typename C>
-        comp::Coordinator<C>& GetCoordinator();
-
-        template <typename C>
-        const comp::Coordinator<C>& GetCoordinator() const;
-
-        template <typename CT, typename... Args>
-        CT* AddComponent(comp::Id_t id, Args&&... args);
-
-        template <typename C, typename CT>
-        void RemoveComponent(comp::Id_t id);
-
-        template <typename C>
-        void RemoveComponents(comp::Id_t id);
-
-        ~GameSystem();
+        ~GameSystem() = default;
 
     protected:
         GameSystem(const char* niceName, Messaging& messaging, Application& app, UpdateFunctor updateFunctor, CS& coordinatorSet);

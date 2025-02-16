@@ -25,6 +25,7 @@
 #pragma once
 
 #include "Components/Coordinator.h"
+#include "Items/ItemsDirector.h"
 #include <functional>
 
 
@@ -108,17 +109,6 @@ namespace yaget::comp
             {
                 return sourceElement != nullptr;
             });
-        }
-
-        // for_loop<std::tuple<...>>([]<std::size_t T0>()
-        template<std::size_t N, typename TCallable>
-        constexpr void for_loop(TCallable&& callable)
-        {
-            callable.template operator()<N - 1>();
-            if constexpr (N - 1 > 0)
-            {
-                for_loop<N - 1>(std::forward<TCallable>(callable));
-            }
         }
 
         template<typename T>
@@ -211,6 +201,10 @@ namespace yaget::comp
         //static_assert(meta::tuple_is_unique_v<FullRow>, "Duplicate element types in CoordinatorSet FullRow");
         const Strings mComponentNames = comp::db::GetPolicyRowNames<FullRow>();
 
+        CoordinatorSet(items::Director* director)
+            : mDirector(director)
+        {}
+
         // find all rows which contain QueryRow, and call callback for each one
         // return True to keep iterating, otherwise return False to stop
         template <typename QueryRow>
@@ -233,7 +227,7 @@ namespace yaget::comp
             // collect global row if coordinator exists
             if constexpr (usesGlobal)
             {
-                internalc::for_loop<NumCoordinators>([this, &collectedGlobalItem]<std::size_t T0>()
+                meta::for_loop<NumCoordinators>([this, &collectedGlobalItem]<std::size_t T0>()
                 {
                     constexpr std::size_t coordinatorIndex = T0;
 
@@ -259,7 +253,7 @@ namespace yaget::comp
 
             //---------------------------------------------------------------------------------------------
             // we need to iterate over each coordinator and collect results
-            internalc::for_loop<NumCoordinators>([this, &collectedItems]<std::size_t T0>()
+            meta::for_loop<NumCoordinators>([this, &collectedItems]<std::size_t T0>()
             {
                 constexpr std::size_t coordinatorIndex = T0;
 
@@ -342,55 +336,151 @@ namespace yaget::comp
             return std::get<Index>(mCoordinators);
         }
 
-        template <typename C>
-        C* FindComponent(comp::Id_t id) const
+
+        //-------------------------------------------------------------------------------------------------
+        // Public interface to manage items/components
+        //-------------------------------------------------------------------------------------------------
+        // Create and add new component with id and initialize with args... parameters.
+        template <typename C, typename... Args>
+        C* AddComponent(comp::Id_t id, Args&&... args)
         {
-            C* component = nullptr;
-            bool componentFound = false;
+            C* component{};
 
-            internalc::for_loop<NumCoordinators>([&]<std::size_t T0>()
+            bool coordinatorFound = false;
+            meta::for_loop<NumCoordinators>([&]<std::size_t T0>()
             {
-                if (!componentFound)
-                {
-                    constexpr std::size_t coordinatorIndex = T0;
+                constexpr std::size_t coordinatorIndex = T0;
 
+                if (!coordinatorFound)
+                {
                     if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
                     {
                         auto& coordinator = GetCoordinator<coordinatorIndex>();
-                        component = coordinator.template FindComponent<C>(id);
-                        componentFound = true;
+                        component = coordinator.template AddComponent<C>(id, std::forward<Args>(args)...);
+
+                        coordinatorFound = true;
                     }
                 }
+            });
+
+            //FindMatchCoordinator<C>([&](auto* coordinator)
+            //{
+            //    /*component =*/ coordinator->template AddComponent<C>(id, std::forward<Args>(args)...);
+            //    int z = 0;
+            //    z;
+            //});
+
+            return component;
+        }
+
+        //-------------------------------------------------------------------------------------------------
+        // Load id component data (args...) from DB, create new component with that id
+        // and initialize with args... parameters. If component already exist,
+        // then update the parameters of current one.
+        template <typename C>
+        C* LoadComponent(comp::Id_t id)
+        {
+            C* component{};
+            bool result = false;
+            auto parameters = mDirector->LoadComponentState<C>(id, &result);;
+
+            if (result)
+            {
+                FindMatchCoordinator<C>([&parameters, &component, id](auto* coordinator)
+                {
+                    if (component = coordinator->template FindComponent<C>(id); component)
+                    {
+                        component->Storage() = parameters;
+                    }
+                });
+
+                if (!component)
+                {
+                    component = std::apply([this, id](auto &&... args)
+                    {
+                        return AddComponent<C>(id, args...);
+                    }, parameters);
+                }
+            }
+
+            return component;
+        }
+
+        //-------------------------------------------------------------------------------------------------
+        template <typename C>
+        bool SaveComponent(const C* component)
+        {
+            const auto result = mDirector->SaveComponentState(component);
+            return result;
+        }
+
+        //-------------------------------------------------------------------------------------------------
+        template <typename C>
+        C* FindComponent(comp::Id_t id) const
+        {
+            C* component{};
+
+            FindMatchCoordinator<C>([&component, id](auto* coordinator)
+            {
+                component = coordinator->template FindComponent<C>(id);
             });
 
             return component;
         }
 
+        //-------------------------------------------------------------------------------------------------
         template <typename C>
         bool RemoveComponent(comp::Id_t id)
         {
-            bool removeResult = false;
-            bool componentRemoved = false;
-
-            internalc::for_loop<NumCoordinators>([&]<std::size_t T0>()
+            bool result = false;
+            FindMatchCoordinator<C>([&result, id](auto* coordinator)
             {
-                if (!componentRemoved)
-                {
-                    constexpr std::size_t coordinatorIndex = T0;
-
-                    if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
-                    {
-                        auto& coordinator = GetCoordinator<coordinatorIndex>();
-                        removeResult = coordinator.template RemoveComponent<C>(id);
-                        componentRemoved = true;
-                    }
-                }
+                result = coordinator->template RemoveComponent<C>(id);
             });
 
-            return removeResult;
+            return result;
+        }
+
+        //-------------------------------------------------------------------------------------------------
+        template <typename TT = FullRow>
+        TT LoadItem(comp::Id_t id)
+        {
+            TT item{};
+
+            meta::for_each_type<TT>([this, id, &item]<typename T0>(const T0&)
+            {
+                using BaseType = meta::strip_qualifiers_t<T0>;
+                std::get<T0>(item) = LoadComponent<BaseType>(id);
+            });
+
+            return item;
         }
 
     private:
+        //-------------------------------------------------------------------------------------------------
+        template <typename C>
+        constexpr void FindMatchCoordinator(auto callback) const
+        {
+            bool coordinatorFound = false;
+
+            meta::for_loop<NumCoordinators>([&]<std::size_t T0>()
+            {
+                constexpr std::size_t coordinatorIndex = T0;
+
+                if (!coordinatorFound)
+                {
+                    if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
+                    {
+                        auto& coordinator = GetCoordinator<coordinatorIndex>();
+                        callback(&coordinator);
+
+                        coordinatorFound = true;
+                    }
+                }
+            });
+        }
+        
         Coordinators mCoordinators;
+        items::Director* mDirector{};
     };
 }

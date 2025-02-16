@@ -115,8 +115,22 @@ namespace yaget::items
         {}
     };
 
-    // Just base support for id cache and version. 
-    using BlankDefaultDirector = DefaultDirector<comp::db::EmptySchema>;
+    template <typename T>
+    class SetupDirector : public DefaultDirector<T>
+    {
+    public:
+        SetupDirector(const std::string& name = "Director")
+            : DefaultDirector<T>(name, Director::RuntimeMode::Reset)
+        {}
+    };
+
+    // Just base support for id cache and version, using pre-existing
+    // database file if exists, thus preserving db data
+    using DefaultBlankDirector = DefaultDirector<comp::db::EmptySchema>;
+
+    // Just base support for id cache and version, using new
+    // database file, thus destroying previous data
+    using SetupBlankDirector = SetupDirector<comp::db::EmptySchema>;
 
     template <typename T>
     bool Director::SaveComponentState(const T* component)

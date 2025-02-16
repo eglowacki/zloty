@@ -33,26 +33,15 @@ namespace yaget::comp::gs
     public:
         using CoordinatorSet = T;
         using Messaging = M;
-        using Systems = std::tuple<S*...>;
+        //using Systems = std::tuple<S*...>;
+        //static constexpr size_t NumSystems = std::tuple_size_v<std::remove_reference_t<Systems>>;
 
         SystemsCoordinator(M& messaging, A& app);
 
         void Tick(const time::GameClock& gameClock, metrics::Channel& channel);
 
-        template <typename C>
-        comp::Coordinator<C>& GetCoordinator();
-
-        template <typename C>
-        const comp::Coordinator<C>& GetCoordinator() const;
-
-        template <typename SY>
-        SY& GetSystem();
-
-        template <typename SY>
-        const SY& GetSystem() const;
-
-        template <typename CT, typename... Args>
-        CT* AddComponent(comp::Id_t id, Args&&... args);
+        template <typename C, typename... Args>
+        C* AddComponent(comp::Id_t id, Args&&... args);
 
         template <typename C>
         C* LoadComponent(comp::Id_t id);
@@ -66,12 +55,8 @@ namespace yaget::comp::gs
         template <typename C>
         bool RemoveComponent(comp::Id_t id);
 
-        template <typename TT>
+        template <typename TT = typename CoordinatorSet::FullRow>
         TT LoadItem(comp::Id_t id);
-
-        // Load all components associated with id,
-        // Returns entire row tuple with filled in components only that got updated/added from DB
-        auto LoadItem(comp::Id_t id) -> typename CoordinatorSet::FullRow;
 
         items::Director& Director() { return mApp.Director(); }
         const items::Director& Director() const { return mApp.Director(); }
@@ -129,12 +114,28 @@ template <typename T, typename M, typename A, typename... S>
 yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messaging, A& app)
     : mMessaging(messaging)
     , mApp(app)
+    , mCoordinatorSet(&app.Director())
 {
-    meta::for_each(mSystems, [this, &app]<typename T0>(T0& system)
+    auto This = this;
+
+    meta::for_loop<ManagedSystems>([This, this]<std::size_t T0>()
     {
-        using BaseType = T0;
+        using BaseType = std::tuple_element_t<T0, ManagedSystems>;
         using SystemType = typename BaseType::element_type;
-        system = std::make_shared<SystemType>(mMessaging, app, mCoordinatorSet);    // <-- add this as a parameter into GameSystem ctor
+
+        auto& system = std::get<T0>(mSystems);
+        if constexpr (T0 == 0)
+        {
+            system = std::make_shared<SystemType>(mMessaging, mApp, mCoordinatorSet);    // <-- add this as a parameter into GameSystem ctor;
+            int z = 0;
+            z;
+        }
+        else
+        {
+            system = std::make_shared<SystemType>(mMessaging, mApp, mCoordinatorSet);    // <-- add this as a parameter into GameSystem ctor;
+            int z = 0;
+            z;
+        }
     });
 }
 
@@ -155,58 +156,11 @@ void yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::Tick(const time::GameCl
 
 
 //-------------------------------------------------------------------------------------------------
-template <typename T, typename M, typename A, typename... S>
-template <typename C>
-yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetCoordinator()
-{
-    return mCoordinatorSet.template GetCoordinator<C>();
-}
-
-
-//-------------------------------------------------------------------------------------------------
-template <typename T, typename M, typename A, typename... S>
-template <typename C>
-const yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetCoordinator() const
-{
-    return mCoordinatorSet.template GetCoordinator<C>();
-}
-
-
-//-------------------------------------------------------------------------------------------------
-template <typename T, typename M, typename A, typename... S>
-template <typename SY>
-SY& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetSystem()
-{
-    return *std::get< std::shared_ptr<SY>>(mSystems).get();
-}
-
-
-//-------------------------------------------------------------------------------------------------
-template <typename T, typename M, typename A, typename... S>
-template <typename SY>
-const SY& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetSystem() const
-{
-    return *std::get< std::shared_ptr<SY>>(mSystems).get();
-}
-
-
-//-------------------------------------------------------------------------------------------------
 template <typename T, typename M, typename A, typename ... S>
-template <typename CT, typename... Args>
-CT* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::AddComponent(comp::Id_t id, Args&&... args)
+template <typename C, typename... Args>
+C* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::AddComponent(comp::Id_t id, Args&&... args)
 {
-    CT* component{};
-    meta::for_each(mSystems, [&]<typename T0>(T0& system)
-    {
-        if (!component)
-        {
-            component = system->template AddComponent<CT>(id, std::forward<Args>(args)...);
-        }
-    });
-                                                                                            
-    YLOG_CINFO("SYSC", !component, fmt::format("Added Component Id/Type: '{}/{}'", comp::ItemId(id).ToString(), comp::db::ResolveName<CT>()).c_str());
-
-    return component;
+    return mCoordinatorSet.template AddComponent<C>(id, std::forward<Args>(args)...);
 }
 
 
@@ -215,26 +169,7 @@ template <typename T, typename M, typename A, typename ... S>
 template <typename C>
 C* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadComponent(comp::Id_t id)
 {
-    C* resultComponent{};
-    bool result = true;
-    auto parameters = mApp.Director().template LoadComponentState<C>(id, &result);
-    if (result)
-    {
-        if (resultComponent = FindComponent<C>(id); resultComponent)
-        {
-            resultComponent->Storage() = parameters;
-        }
-        else
-        {
-            resultComponent = std::apply([this, id](auto &&... args)
-            {
-                return AddComponent<C>(id, args...);
-
-            }, parameters);
-        }
-    }
-
-    return resultComponent;
+    return mCoordinatorSet.template LoadComponent<C>(id);
 }
 
 
@@ -243,8 +178,7 @@ template <typename T, typename M, typename A, typename ... S>
 template <typename C>
 bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SaveComponent(const C* component)
 {
-    const auto result = mApp.Director().SaveComponentState(component);
-    return result;
+    return mCoordinatorSet.template SaveComponent<C>(component);
 }
 
 
@@ -253,8 +187,7 @@ template <typename T, typename M, typename A, typename ... S>
 template <typename C>
 C* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::FindComponent(comp::Id_t id) const
 {
-    C* component = mCoordinatorSet.template FindComponent<C>(id);
-    return component;
+    return mCoordinatorSet.template FindComponent<C>(id);
 }
 
 
@@ -263,8 +196,7 @@ template <typename T, typename M, typename A, typename ... S>
 template <typename C>
 bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::RemoveComponent(comp::Id_t id)
 {
-    const bool result = mCoordinatorSet.template RemoveComponent<C>(id);
-    return result;
+    return mCoordinatorSet.template RemoveComponent<C>(id);
 }
 
 
@@ -273,23 +205,7 @@ template <typename T, typename M, typename A, typename ... S>
 template <typename TT>
 TT yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadItem(comp::Id_t id)
 {
-    TT result{};
-
-    meta::for_each_type<TT>([this, id, &result]<typename T0>(const T0&)
-    {
-        using BaseType = meta::strip_qualifiers_t<T0>;
-        std::get<T0>(result) = LoadComponent<BaseType>(id);
-    });
-
-    return result;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-template <typename T, typename M, typename A, typename ... S>
-auto yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadItem(comp::Id_t id) -> typename CoordinatorSet::FullRow
-{
-    return LoadItem<typename CoordinatorSet::FullRow>(id);
+    return mCoordinatorSet.template LoadItem<TT>(id);
 }
 
 

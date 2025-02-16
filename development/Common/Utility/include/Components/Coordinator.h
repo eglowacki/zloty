@@ -149,7 +149,7 @@ namespace yaget::comp
             {
                 if (compType)
                 {
-                    using CompType = typename meta::strip_qualifiers_t<T0>;
+                    using CompType = meta::strip_qualifiers_t<T0>;
 
                     bits = bits | MakeBit<CompType>();
                 }
@@ -224,7 +224,9 @@ T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
     FullRow row = FindItem(id);
     meta::bits_t currentBits = GetValidBits(row);
     const meta::bits_t newBit = MakeBit<T>();
-    YAGET_ASSERT((currentBits & newBit) != newBit, "Reqested new component of type: '%s' for Item: '%d' already exist in Coordinator.", typeid(T).name(), id);
+
+    error_handlers::ThrowOnCheck((currentBits & newBit) != newBit, fmt::format("Requested new component of type: '%s' for Item: '%d' already exist in Coordinator.", typeid(T).name(), id).c_str());
+    //YAGET_ASSERT((currentBits & newBit) != newBit, "Reqested new component of type: '%s' for Item: '%d' already exist in Coordinator.", typeid(T).name(), id);
 
     if (currentBits)
     {
@@ -356,7 +358,7 @@ typename R::Row yaget::comp::Coordinator<P>::FindItem(comp::Id_t id) const
 
 template<typename P>
 template<typename R>
-typename yaget::comp::ItemIds yaget::comp::Coordinator<P>::GetItemIds() const
+yaget::comp::ItemIds yaget::comp::Coordinator<P>::GetItemIds() const
 {
     metrics::Channel system("Coordinator.GetItemIds ");
 
