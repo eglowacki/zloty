@@ -17,12 +17,37 @@
 
 #include "Components/CoordinatorSet.h"
 #include "App/Application.h"
+#include "Meta/CompilerAlgo.h"
 
 
 namespace yaget::metrics { class Channel; }
 
 namespace yaget::comp::gs
 {
+    namespace internal
+    {
+
+        template <typename S, typename R>
+        constexpr bool SystemsMatchCoordinator()
+        {
+            bool result = true;
+            meta::for_loop<S>([&result]<std::size_t T0>()
+            {
+                using BaseSystemType = std::tuple_element_t<T0, S>;
+                using SystemRow = typename BaseSystemType::Row;
+
+                using RequestedRow = tuple_get_union_t<SystemRow, typename R::FullRow>;
+
+                if (result)
+                {
+                    result = std::tuple_size_v<RequestedRow> > 0;
+                }
+            });
+
+            return result;
+        }
+    }
+
     //-------------------------------------------------------------------------------------------------
     // Create coordinator for system and call each for update
     // T is GameCoordinatorSet and ...S are Systems (classes that follow yaget::comp::gs::GameSystem)
@@ -33,8 +58,11 @@ namespace yaget::comp::gs
     public:
         using CoordinatorSet = T;
         using Messaging = M;
-        //using Systems = std::tuple<S*...>;
-        //static constexpr size_t NumSystems = std::tuple_size_v<std::remove_reference_t<Systems>>;
+
+        using Systems = std::tuple<S...>;
+        static constexpr size_t NumSystems = std::tuple_size_v<std::remove_reference_t<Systems>>;
+        static_assert(NumSystems, "User must provide at least 1 GameSystem");
+        static_assert(internal::SystemsMatchCoordinator<Systems, CoordinatorSet>(), "CoordinatorSet does not support requested GameSystem component.");
 
         SystemsCoordinator(M& messaging, A& app);
 
