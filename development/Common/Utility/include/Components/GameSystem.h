@@ -58,7 +58,7 @@ namespace yaget::comp::gs
         using Row = typename RowPolicy::Row;
         using CoordinatorSet = CS;
 
-        using UpdateFunctor = std::function<void(yaget::comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, Comps&... args)>;
+        using UpdateFunctor = std::function<void(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, Comps&... args)>;
 
         // framework calls this on same cadence (every tick...)
         // In default case that is SystemsCoordinator class
@@ -76,7 +76,7 @@ namespace yaget::comp::gs
         Messaging& mMessaging;
 
     private:
-        void Update(yaget::comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const Row& row);
+        void Update(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const Row& row);
 
         const char* mNiceName = nullptr;
         UpdateFunctor mUpdateFunctor;
