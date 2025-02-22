@@ -70,6 +70,8 @@ namespace yaget::comp::gs
 
     protected:
         GameSystem(const char* niceName, Messaging& messaging, Application& app, UpdateFunctor updateFunctor, CS& coordinatorSet);
+        CoordinatorSet& GetCS() { return mCoordinatorSet; }
+        const CoordinatorSet& GetCS() const { return mCoordinatorSet; }
 
         Messaging& mMessaging;
 
