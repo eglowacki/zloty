@@ -29,7 +29,7 @@ namespace yaget::items
     } // namespace db_stage
 
 
-    class StageComponent : public comp::db::PersistentBaseComponent<db_stage::ValueTypes>
+    class StageComponent : public comp::db::PersistentBaseComponent<db_stage::ValueTypes, comp::GlobalPoolSize>
     {
     public:
         StageComponent(comp::Id_t id, const db_stage::StageName::Types& stageName)
