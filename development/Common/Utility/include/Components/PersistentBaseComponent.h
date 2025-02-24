@@ -69,8 +69,8 @@ namespace yaget::comp::db
     template<typename Tuple>
     using persistent_storage_tuple_t = typename persistent_storage_tuple<Tuple>::type;
 
-    // Handles boiler plate code to manage properties and it's storage. This layout
-    // get's replicated into DB schema (sqlite as a one example)
+    // Handles boilerplate code to manage properties and it's storage. This layout
+    // gets replicated into DB schema (sqlite as a one example)
     //namespace internal
     //{
     //    struct Position { using Types = math3d::Vector3; };

@@ -50,6 +50,22 @@ namespace yaget::comp
             }
         }
 
+        template<int N, typename To>
+        void RowCopy(To& to, const To& from)
+        {
+            to = from;
+        }
+
+        template<int N, typename To, typename From>
+        void RowCopy(To& to, const From& from)
+        {
+            auto element = std::get<std::tuple_element_t<N - 1, To>>(from);
+            std::get<N - 1>(to) = element;
+            if constexpr (N - 1 > 0)
+            {
+                RowCopy<N - 1, To, From>(to, from);
+            }
+        }
     }
 
     template <typename Tuple>
@@ -171,26 +187,6 @@ namespace yaget::comp
         const Strings mComponentNames = comp::db::GetPolicyRowNames<typename P::Row>();
     };
 
-    namespace internal
-    {
-        template<int N, typename To>
-        void RowCopy(To& to, const To& from)
-        {
-            to = from;
-        }
-
-        template<int N, typename To, typename From>
-        void RowCopy(To& to, const From& from)
-        {
-            auto element = std::get<std::tuple_element_t<N - 1, To>>(from);
-            std::get<N - 1>(to) = element;
-            if constexpr (N - 1 > 0)
-            {
-                RowCopy<N - 1, To, From>(to, from);
-            }
-        }
-
-    } // namespace internal
 } // namespace yaget
 
 template<typename P>

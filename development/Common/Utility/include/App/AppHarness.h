@@ -83,7 +83,6 @@ namespace yaget::app::helpers
 
         metrics::MarkAddMessage("Ended Game", metrics::MessageScope::Process, 0);
 
-        //render::Device::DebugReport();
         return returnResult;
     }
 
@@ -115,7 +114,7 @@ namespace yaget::app::helpers
             lineCommands += i == argc - 1 ? "" : " ";
         }
 
-        if (extraParameters.length())
+        if (!extraParameters.empty())
         {
             lineCommands += lineCommands.empty() ? extraParameters : " " + extraParameters;
         }

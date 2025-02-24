@@ -70,13 +70,13 @@ namespace yaget::util
     // That file can contain text consist of 'subfolder path'.
     // If combination of directory where markerFile resides and 'subfolder path'
     // is valid text and that folder exist at the location, return that full path.
-    // Otherwise return folder name where markerFile is located.
+    // Otherwise, return folder name where markerFile is located.
     // If no fileMarker exists, return empty string.
     std::string ResolveYagetMarker(const char* markerName);
 
     // Check for if folder/fileName.extension exist
     // rename to folder/fileName-0000.extension
-    // where 0000 will be replace with hightest number from all files fallowing
+    // where 0000 will be replaced with hightest number from all files fallowing
     // pattern: folder/fileName-????.extension
     // maxFiles will cap number of renamed files. It will leave hightest numbered files and delete the smaller numbered files
     bool FileCycler(const std::string& folder, const std::string& fileName, const std::string& extension, int maxFiles = 10);

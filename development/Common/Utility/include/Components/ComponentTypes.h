@@ -26,7 +26,7 @@ namespace yaget
     {
         // Represents unique id of entity (item) and every component
         // that entity is composed of.
-        // Main reason for int64 rather then uint64 is that SQLite DB that we are using
+        // Main reason for int64 rather than uint64 is that SQLite DB that we are using
         // does not support uint64
         using Id_t = int64_t;
 
