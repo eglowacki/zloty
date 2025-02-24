@@ -16,6 +16,8 @@
 #include <filesystem>
 #include <fstream>
 
+#include "Core/ErrorHandlers.h"
+
 namespace fs = std::filesystem;
 
 
@@ -109,7 +111,7 @@ namespace
         catch (const std::exception& e)
         {
             std::string textError = fmt::format("Did not finished init configuration bindings from:\n{}.\nError: {}", configPath.generic_string(), e.what());
-            YAGET_UTIL_THROW("INIT", textError);
+            error_handlers::Throw("INIT", textError);
         }
     }
 
@@ -270,12 +272,17 @@ std::string yaget::dev::Initialize(const args::Options& options, const char* con
     }
 #endif // YAGET_SHIPPING
 
+    configuration.mDebug.mLogging.TruncateFunctionName = options.find<bool>("log_truncate_function_name", configuration.mDebug.mLogging.TruncateFunctionName);
+    configuration.mDebug.mLogging.MaxFunctionNameLen = options.find<int>("log_max_function_name_len", configuration.mDebug.mLogging.MaxFunctionNameLen);
+
     configuration.mInit.VSync = !options.find<bool>("vsync_off", !configuration.mInit.VSync);
     configuration.mInit.FullScreen = options.find<bool>("full_screen", configuration.mInit.FullScreen);
     configuration.mInit.ResX = options.find<int>("res_x", configuration.mInit.ResX);
     configuration.mInit.ResY = options.find<int>("res_y", configuration.mInit.ResY);
-    configuration.mInit.SoftwareRender = options.find<bool>("render_software", configuration.mInit.SoftwareRender);
+    configuration.mInit.SoftwareRender = options.find<bool>("software_render", configuration.mInit.SoftwareRender);
     configuration.mInit.LogicTick = options.find<int>("logic_tick", configuration.mInit.LogicTick);
+
+    configuration.mGraphics.mGPUTraceback = options.find<bool>("gpu_traceback", configuration.mGraphics.mGPUTraceback);
 
     // process any configuration value overrides.
     // Debug.Metrics.TraceOn=false

@@ -7,6 +7,8 @@
 #include "Exception/Exception.h"
 #include <memory>
 
+#include "Core/ErrorHandlers.h"
+
 using namespace yaget;
 using namespace Microsoft::WRL;
 using namespace DirectX;
@@ -33,8 +35,8 @@ void render::GridComponent::OnReset()
     }
     catch (const std::exception& e)
     {
-        const auto& textError = fmt::format("Did not initialize GridComponent '{}'. Error: {}", Id(), e.what());
-        YAGET_UTIL_THROW("REND", textError);
+        const auto& textError = fmt::format("Did not initialize GridComponent '{}'. Error: {}", static_cast<comp::Id_t>(Id()), e.what());
+        error_handlers::Throw("REND", textError);
     }
 
     mEffect->SetVertexColorEnabled(true);
@@ -43,10 +45,10 @@ void render::GridComponent::OnReset()
 
     mEffect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
 
-    HRESULT hr = d3dDevice->CreateInputLayout(VertexPositionColor::InputElements, VertexPositionColor::InputElementCount,
+    const HRESULT hr = d3dDevice->CreateInputLayout(VertexPositionColor::InputElements, VertexPositionColor::InputElementCount,
         shaderByteCode, byteCodeLength,
         mInputLayout.ReleaseAndGetAddressOf());
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create input layout for grid component");
+    error_handlers::ThrowOnError(hr, "Could not create input layout for grid component");
 }
 
 render::GridComponent::~GridComponent()

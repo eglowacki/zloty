@@ -68,12 +68,16 @@
     <Import Project="..\..\..\BuildRules\yaget.Debug.props" />
     <Import Project="..\..\..\BuildRules\yaget.StaticLibrary.props" />
     <Import Project="..\..\..\BuildRules\yaget.DX12.Helper.props" />
+    <Import Project="..\..\..\BuildRules\yaget.PIX.props" />
+    <Import Project="..\..\..\BuildRules\yaget.GPUTraceback.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\..\BuildRules\yaget.Release.props" />
     <Import Project="..\..\..\BuildRules\yaget.StaticLibrary.props" />
     <Import Project="..\..\..\BuildRules\yaget.DX12.Helper.props" />
+    <Import Project="..\..\..\BuildRules\yaget.PIX.props" />
+    <Import Project="..\..\..\BuildRules\yaget.GPUTraceback.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -90,7 +94,6 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -147,6 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\DX12\Render\AdapterInfo.h" />
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
     <ClInclude Include="..\include\DX12\Render\Device.h" />
     <ClInclude Include="..\include\DX12\Render\RenderCore.h" />
@@ -159,11 +163,19 @@
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_rectpack.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_textedit.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_truetype.h" />
+    <ClInclude Include="..\source\DX12\Render\EnumConversion.h" />
+    <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\Adapter.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\CommandAllocators.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\Commander.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\CommandListPool.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\CommandQueue.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\DeviceDebugger.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\ResourceCompiler.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h" />
+    <ClInclude Include="..\source\DX12\Render\Polygons\Polygon.h" />
+    <ClInclude Include="..\source\DX12\Render\RenderStringHelpers.h" />
     <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h" />
     <ClInclude Include="..\source\DX12\Render\UI\Layer.h" />
   </ItemGroup>
@@ -175,16 +187,24 @@
     <ClCompile Include="..\source\DX12\imgui-docking\imgui_draw.cpp" />
     <ClCompile Include="..\source\DX12\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="..\source\DX12\imgui-docking\imgui_widgets.cpp" />
+    <ClCompile Include="..\source\DX12\Render\AdapterInfo.cpp" />
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Platform\CommandAllocators.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Platform\Commander.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Platform\CommandListPool.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\CommandQueue.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\D3D12MemAlloc.cpp">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level3</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Level3</WarningLevel>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Platform\DeviceDebugger.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Platform\ResourceCompiler.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\SwapChain.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Polygons\Polygon.cpp" />
+    <ClCompile Include="..\source\DX12\Render\RenderStringHelpers.cpp" />
     <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp" />
     <ClCompile Include="..\source\DX12\Render\UI\Layer.cpp" />
     <ClCompile Include="..\source\DX12\Render\Waiter.cpp" />

@@ -1,0 +1,10 @@
+{
+  "FileVersion": 2,
+  "Id": "d875c2b3-a38b-42b9-b198-1c03475183e9",
+  "Items": [
+    {
+      "Id": "4affa0a7-3593-4463-85bd-2fd436460e9f",
+      "Command": "--file=c:\\foo"
+    }
+  ]
+}

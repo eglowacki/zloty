@@ -27,12 +27,8 @@ IdGameCache::IdGameCache(const GetNextBatch& getNextBatch)
         mNextAvailablePersistentRange = mGetNextBatch();
 
         YLOG_INFO("IDS", "Batch of id's with '%s' entries allocated, starting id: '%s'.", conv::ToThousandsSep(mPersistentRange.mBatchSize).c_str(), conv::ToThousandsSep(mPersistentRange.mNextId).c_str());
+        YLOG_INFO("IDS", "Batch of Next Available id's with '%s' entries allocated, starting id: '%s'.", conv::ToThousandsSep(mNextAvailablePersistentRange.mBatchSize).c_str(), conv::ToThousandsSep(mNextAvailablePersistentRange.mNextId).c_str());
     }
-}
-
-
-IdGameCache::~IdGameCache()
-{
 }
 
 

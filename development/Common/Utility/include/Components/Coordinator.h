@@ -18,6 +18,7 @@
 
 #include "Components/ComponentTypes.h"
 #include "Components/GameCoordinatorGenerator.h"
+#include "Metrics/Concurrency.h"
 
 
 namespace yaget::comp
@@ -82,12 +83,16 @@ namespace yaget::comp
         T* AddComponent(comp::Id_t id, Args&&... args);
 
         // Remove and delete component. It will set component to nullptr
+        // Return true if there are still any other components left with id,
+        // otherwise return false
         template<typename T>
-        void RemoveComponent(comp::Id_t id, T*& component);
+        bool RemoveComponent(comp::Id_t id, T*& component);
 
         // Remove and delete component type from item id
+        // Return true if there are still any other components left with id,
+        // otherwise return false
         template<typename T>
-        void RemoveComponent(comp::Id_t id);
+        bool RemoveComponent(comp::Id_t id);
 
         // Remove all components with this id
         void RemoveComponents(comp::Id_t id);
@@ -112,12 +117,15 @@ namespace yaget::comp
 
         // Iterate over each item in ids collection and call callback on each item
         template<typename R>
-        void ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
+        void ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback) const;
 
         // Iterate over all items that conform to pattern R
         // Return number of matched items, or 0 if none.
         template<typename R>
-        std::size_t ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback);
+        std::size_t ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback) const;
+
+        template<typename T>
+        memory::PoolAllocator<T>& GetAllocator() const;
 
     private:
         // Helper method to find a specific component allocator
@@ -141,7 +149,7 @@ namespace yaget::comp
             {
                 if (compType)
                 {
-                    using CompType = typename meta::strip_qualifiers_t<T0>;
+                    using CompType = meta::strip_qualifiers_t<T0>;
 
                     bits = bits | MakeBit<CompType>();
                 }
@@ -153,7 +161,8 @@ namespace yaget::comp
         Allocators mAllocators{};
 
         // Actual item created from Allocators
-        std::map<comp::Id_t, FullRow> mItems{};
+        using ItemsCollection = std::unordered_map<comp::Id_t, FullRow>;
+        ItemsCollection mItems{};
 
         // map from unique bits to all id's which contain that specific set of components
         using Patterns = std::unordered_map<PatternSet, std::set<comp::Id_t>>;
@@ -189,7 +198,7 @@ yaget::comp::Coordinator<P>::~Coordinator()
 {
     if constexpr (internal::has_auto_cleanup<Policy>)
     {
-        YLOG_CWARNING("GSYS", mItems.empty(), "Coordinator [%s] still has outstanding '%d' component(s): [%s], cleaning up...",
+        YLOG_CWARNING("GSYS", mItems.empty(), "Coordinator [%s] still has '%d' outstanding component(s): [%s], cleaning up...",
             conv::Combine(mComponentNames, ", ").c_str(),
             mItems.size(), 
             conv::Combine(mItems, "], [").c_str());
@@ -204,7 +213,7 @@ yaget::comp::Coordinator<P>::~Coordinator()
     }
     else
     {
-        YAGET_ASSERT(mItems.empty(), "Coordinator still has outstanding '%d' component(s): [%s]", mItems.size(), conv::Combine(mItems, "], [").c_str());
+        YAGET_ASSERT(mItems.empty(), "Coordinator [%s] still has '%d' outstanding component(s): [%s]", conv::Combine(mComponentNames, ", ").c_str(), mItems.size(), conv::Combine(mItems, "], [").c_str());
     }
 }
 
@@ -215,7 +224,9 @@ T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
     FullRow row = FindItem(id);
     meta::bits_t currentBits = GetValidBits(row);
     const meta::bits_t newBit = MakeBit<T>();
-    YAGET_ASSERT((currentBits & newBit) != newBit, "Reqested new component of type: '%s' for Item: '%d' already exist in Coordinator.", typeid(T).name(), id);
+
+    error_handlers::ThrowOnCheck((currentBits & newBit) != newBit, fmt::format("Requested new component of type: '%s' for Item: '%d' already exist in Coordinator.", typeid(T).name(), id).c_str());
+    //YAGET_ASSERT((currentBits & newBit) != newBit, "Reqested new component of type: '%s' for Item: '%d' already exist in Coordinator.", typeid(T).name(), id);
 
     if (currentBits)
     {
@@ -241,7 +252,7 @@ T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
 
 template<typename P>
 template<typename T>
-void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
+bool yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
 {
     YAGET_ASSERT(component, "Component parameter of type: '%s' is nulptr.", typeid(T).name());
     YAGET_ASSERT(mItems.contains(id), "Item id: '%d' of type: '%s' does not exist in collection.", id, typeid(T).name());
@@ -267,17 +278,20 @@ void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
         if (newBits.any())
         {
             mPatterns[newBits].insert(id);
+            return true;
         }
     }
+
+    return false;
 }
 
 template<typename P>
 template<typename T>
-void yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id)
+bool yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id)
 {
     auto it = mItems.find(id);
     YAGET_ASSERT(it != mItems.end(), "Item id: '%d' of type: '%s' does not exist in collection.", id, typeid(T).name());
-    RemoveComponent(id, std::get<T*>(it->second));
+    return RemoveComponent(id, std::get<T*>(it->second));
 }
 
 template<typename P>
@@ -344,8 +358,10 @@ typename R::Row yaget::comp::Coordinator<P>::FindItem(comp::Id_t id) const
 
 template<typename P>
 template<typename R>
-typename yaget::comp::ItemIds yaget::comp::Coordinator<P>::GetItemIds() const
+yaget::comp::ItemIds yaget::comp::Coordinator<P>::GetItemIds() const
 {
+    metrics::Channel system("Coordinator.GetItemIds ");
+
     std::set<yaget::comp::Id_t> results;
 
     PatternSet requestBits = meta::tuple_bit_pattern_v<FullRow, typename R::Row>;
@@ -380,9 +396,18 @@ yaget::memory::PoolAllocator<T>& yaget::comp::Coordinator<P>::FindAllocator() co
 }
 
 template<typename P>
-template<typename R>
-void yaget::comp::Coordinator<P>::ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback)
+template<typename T>
+yaget::memory::PoolAllocator<T>& yaget::comp::Coordinator<P>::GetAllocator() const
 {
+    return FindAllocator<T>();
+}
+
+template<typename P>
+template<typename R>
+void yaget::comp::Coordinator<P>::ForEach(const comp::ItemIds& ids, std::function<bool(comp::Id_t id, const typename R::Row& row)> callback) const
+{
+    metrics::Channel system("Coordinator.ForEach ");
+
     for (const auto& id : ids)
     {
         const auto requestedRow = FindItem<R>(id);
@@ -395,7 +420,7 @@ void yaget::comp::Coordinator<P>::ForEach(const comp::ItemIds& ids, std::functio
 
 template<typename P>
 template<typename R>
-std::size_t yaget::comp::Coordinator<P>::ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback)
+std::size_t yaget::comp::Coordinator<P>::ForEach(std::function<bool(comp::Id_t id, const typename R::Row& row)> callback) const
 {
     const auto ids = GetItemIds<R>();
     ForEach<R>(ids, callback);

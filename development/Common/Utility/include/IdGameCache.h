@@ -37,7 +37,7 @@ namespace yaget
         enum class IdType {Burnable, Persistent};
 
         IdGameCache(const GetNextBatch& getNextBatch);
-        ~IdGameCache();
+        ~IdGameCache() = default;
 
         //! Return next available id which will be burnable or persistent based on IdType parameter
         comp::Id_t GetId(IdType idType);
@@ -47,9 +47,9 @@ namespace yaget
         //! first <= currentId < second
         items::IdBatch mBurnableRange;
         //! next valid burnable id
-        std::atomic_uint64_t mNextBurnableId;
+        std::atomic_int64_t mNextBurnableId;
         //! Next persistent id
-        std::atomic_uint64_t mNextPersistentId;
+        std::atomic_int64_t mNextPersistentId;
         // this keep track of current persistent range and get id's from it
         // when we run out of id's, we switch with Next and request new batch async
         items::IdBatch mPersistentRange;

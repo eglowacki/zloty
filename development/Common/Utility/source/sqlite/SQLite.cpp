@@ -69,7 +69,7 @@ bool yaget::SQLite::Open(const char* fileName, DatabaseType openDatabaseAsType, 
         Batcher batcher(*this);
         if (initializeSchemaCallback && initializeSchemaCallback(*this, mDatabase))
         {
-            YLOG_INFO("SQL", "SQLite Database '%s' created. Version: '%s'", fileName, SQLITE_VERSION);
+            YLOG_INFO("DB", "SQLite Database '%s' created. Version: '%s'", fileName, SQLITE_VERSION);
         }
         else
         {
@@ -165,14 +165,6 @@ void yaget::SQLite::StatementBinder<int64_t>::Bind(sqlite3* database, sqlite3_st
     YAGET_ASSERT(result == SQLITE_OK, "Bind int statement failed: %s.", errorMessage ? errorMessage : "");
 }
 
-void yaget::SQLite::StatementBinder<uint64_t>::Bind(sqlite3* database, sqlite3_stmt* statement, uint64_t value, int index)
-{
-    StatementBinder<int64_t>::Bind(database, statement, static_cast<int64_t>(value), index);
-    //int result = sqlite3_bind_int64(statement, index, value);
-    //const char* errorMessage = sqlite3_errmsg(database);;
-    //YAGET_ASSERT(result == SQLITE_OK, "Bind int statement failed: %s.", errorMessage ? errorMessage : "");
-}
-
 void yaget::SQLite::StatementBinder<bool>::Bind(sqlite3* database, sqlite3_stmt* statement, bool value, int index)
 {
     int result = sqlite3_bind_int(statement, index, value);
@@ -185,26 +177,6 @@ void yaget::SQLite::StatementBinder<float>::Bind(sqlite3* database, sqlite3_stmt
     int result = sqlite3_bind_double(statement, index, value);
     const char* errorMessage = sqlite3_errmsg(database); 
     YAGET_ASSERT(result == SQLITE_OK, "Bind float statement failed: %s.", errorMessage ? errorMessage : "");
-}
-
-void yaget::SQLite::StatementBinder<yaget::Guid>::Bind(sqlite3* database, sqlite3_stmt* statement, yaget::Guid value, int index)
-{
-    StatementBinder<std::string>::Bind(database, statement, value.str(), index);
-}
-
-void yaget::SQLite::StatementBinder<std::vector<std::string>>::Bind(sqlite3* database, sqlite3_stmt* statement, const std::vector<std::string>& value, int index)
-{
-    StatementBinder<std::string>::Bind(database, statement, conv::Convertor<std::vector<std::string>>::ToString(value), index);
-}
-
-void yaget::SQLite::StatementBinder<math3d::Vector3>::Bind(sqlite3* database, sqlite3_stmt* statement, const math3d::Vector3& value, int index)
-{
-    StatementBinder<std::string>::Bind(database, statement, conv::Convertor<math3d::Vector3>::ToString(value), index);
-}
-
-void yaget::SQLite::StatementBinder<math3d::Quaternion>::Bind(sqlite3* database, sqlite3_stmt* statement, const math3d::Quaternion& value, int index)
-{
-    StatementBinder<std::string>::Bind(database, statement, conv::Convertor<math3d::Quaternion>::ToString(value), index);
 }
 
 template<typename Fake>
@@ -236,7 +208,7 @@ bool yaget::SQLite::ExecuteStatement(Statement* statement)
         return true;
     }
 
-    mErrorMessage = fmt::format("Execute prepared statement error: {}", sqlite3_errmsg(mDatabase));
+    mErrorMessage = fmt::format("Execute prepared statement error: {} - {}. Statement: {}.", result, sqlite3_errmsg(mDatabase), sqlite3_expanded_sql(statement->mStm));
     return false;
 }
 

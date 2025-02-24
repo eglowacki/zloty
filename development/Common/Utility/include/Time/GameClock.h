@@ -37,7 +37,7 @@ namespace yaget::time
     // Framework calls Tick with some delta step time to advance clock, and then framework calls other systems to process game logic.
     // During calls to game logic systems GameClock will return the same time.
     // 
-    // Before first time usage, call GameClock.Resync() method, only if you created GameClock earlier and want to syncronise game time.
+    // Before first time usage, call GameClock.Resync() method, only if you created GameClock earlier and want to synchronize game time.
     // During game loop, call GameClock.Tick(your_delta_time)
     class GameClock
     {

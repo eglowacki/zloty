@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\Components\SystemsCoordinator.cpp" />
     <ClCompile Include="..\include\ThreadModel\FileLoader.cpp" />
     <ClCompile Include="..\source\Application\Display.cpp" />
     <ClCompile Include="..\source\Application\WindowFrame.cpp" />
@@ -40,6 +39,8 @@
     <ClCompile Include="..\source\Components\PayloadStager.cpp" />
     <ClCompile Include="..\source\Components\PhysicsComponent.cpp" />
     <ClCompile Include="..\source\Components\ScriptComponent.cpp" />
+    <ClCompile Include="..\source\Components\SystemsCoordinator.cpp" />
+    <ClCompile Include="..\source\Core\ErrorHandlers.cpp" />
     <ClCompile Include="..\source\Database\Database.cpp" />
     <ClCompile Include="..\source\Debugging\Assert.cpp" />
     <ClCompile Include="..\source\Debugging\DevConfiguration.cpp">
@@ -51,6 +52,8 @@
     <ClCompile Include="..\source\ImageLoaders\lodepng.cpp" />
     <ClCompile Include="..\source\InputDevice.cpp" />
     <ClCompile Include="..\source\Items\ItemsDirector.cpp" />
+    <ClCompile Include="..\source\Items\StageComponent.cpp" />
+    <ClCompile Include="..\source\Items\StagerSystem.cpp" />
     <ClCompile Include="..\source\Json\JsonHelpers.cpp" />
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -182,12 +185,14 @@
     <ClInclude Include="..\include\Components\CoordinatorSet.h" />
     <ClInclude Include="..\include\Components\GameCoordinatorGenerator.h" />
     <ClInclude Include="..\include\Components\GameSystem.h" />
+    <ClInclude Include="..\include\Components\GameSystemInline.h" />
     <ClInclude Include="..\include\Components\SystemsCoordinator.h" />
     <ClInclude Include="..\include\Components\LocationComponent.h" />
     <ClInclude Include="..\include\Components\PayloadStager.h" />
     <ClInclude Include="..\include\Components\PersistentBaseComponent.h" />
     <ClInclude Include="..\include\Components\PhysicsComponent.h" />
     <ClInclude Include="..\include\Components\ScriptComponent.h" />
+    <ClInclude Include="..\include\Core\ErrorHandlers.h" />
     <ClInclude Include="..\include\Database\Database.h" />
     <ClInclude Include="..\include\Debugging\Assert.h" />
     <ClInclude Include="..\include\Debugging\DevConfiguration.h" />
@@ -200,6 +205,8 @@
     <ClInclude Include="..\include\Input\InputDevice.h" />
     <ClInclude Include="..\include\Input\InputManagerImpl.h" />
     <ClInclude Include="..\include\Items\ItemsDirector.h" />
+    <ClInclude Include="..\include\Items\StageComponent.h" />
+    <ClInclude Include="..\include\Items\StagerSystem.h" />
     <ClInclude Include="..\include\Json\JsonHelpers.h" />
     <ClInclude Include="..\include\LoggerCpp\Channel.h" />
     <ClInclude Include="..\include\LoggerCpp\Config.h" />
@@ -215,13 +222,13 @@
     <ClInclude Include="..\include\LoggerCpp\OutputDebug.h" />
     <ClInclude Include="..\include\LoggerCpp\OutputFile.h" />
     <ClInclude Include="..\include\LoggerCpp\Utils.h" />
-    <ClInclude Include="..\include\Logger\LogTags.h" />
+    <ClInclude Include="..\include\Logger\CoreLogTags.h" />
     <ClInclude Include="..\include\Logger\YLog.h" />
     <ClInclude Include="..\include\Math\Interpolators.h" />
     <ClInclude Include="..\include\Math\YagetMath.h" />
+    <ClInclude Include="..\include\MemoryManager\NewAllocator.h" />
     <ClInclude Include="..\include\MemoryManager\PoolAllocator.h" />
     <ClInclude Include="..\include\Meta\CompilerAlgo.h" />
-    <ClInclude Include="..\include\Meta\Hana.h" />
     <ClInclude Include="..\include\Metrics\Concurrency.h" />
     <ClInclude Include="..\include\Metrics\Gather.h" />
     <ClInclude Include="..\include\Metrics\Performance.h" />
@@ -353,8 +360,6 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>c:\program files (x86)\microsoft visual studio\2019\community\common7\ide\extensions\jcn3iwfw.vp2\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -381,8 +386,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>c:\program files (x86)\microsoft visual studio\2019\community\common7\ide\extensions\jcn3iwfw.vp2\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\uu0x3jlp.h5m\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\ujmpz15q.ct3\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\jxsjzzto.uwa\SDK\Native\inc;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\1h4v4gqd.yeq\SDK\Native\inc;$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Utility\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

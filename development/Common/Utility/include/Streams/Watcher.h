@@ -22,63 +22,60 @@
 #include <filesystem>
 
 
-namespace yaget
+namespace yaget::io
 {
-    namespace io
-    {
 #if YAGET_WATCHER_ENABLED == 1
 
-        // Provides simple "polling" for file changes. 
-        // If file was modified, calls ChangedCallback
-        class Watcher : public Noncopyable<Watcher>
+    // Provides simple "polling" for file changes. 
+    // If file was modified, calls ChangedCallback
+    class Watcher : public Noncopyable<Watcher>
+    {
+    public:
+        using ChangedCallback = std::function<void()>;
+
+        Watcher();
+        ~Watcher();
+
+        void Add(uint64_t ownerId, const std::string& fileName, ChangedCallback changedCallback);
+        void Remove(uint64_t ownerId);
+
+        Strings GetWatchedFiles() const;
+
+    private:
+        void Observe();
+
+        using ModTime = std::filesystem::file_time_type;
+        struct Ticket
         {
-        public:
-            using ChangedCallback = std::function<void()>;
-
-            Watcher();
-            ~Watcher();
-
-            void Add(uint64_t ownerId, const std::string& fileName, ChangedCallback changedCallback);
-            void Remove(uint64_t ownerId);
-
-            Strings GetWatchedFiles() const;
-
-        private:
-            void Observe();
-
-            using ModTime = std::filesystem::file_time_type;
-            struct Ticket
-            {
-                std::string mFileName;
-                ChangedCallback mChangedCallback;
-                uint64_t mOwnerId;
-                ModTime mModTime{};
-            };
-
-            std::atomic_bool mQuit{ false };
-            std::atomic_bool mQuitRequested{ false };
-
-            using Tickets = std::vector<Ticket>;
-            mt::Variable<Tickets> mTickets;
-            mt::Variable<Strings> mWatchedFiles;    // used bu imgui to display which one are watched and provide user trigger
-            mt::JobPool mObserver;
+            std::string mFileName;
+            ChangedCallback mChangedCallback;
+            uint64_t mOwnerId;
+            ModTime mModTime{};
         };
+
+        std::atomic_bool mQuit{ false };
+        std::atomic_bool mQuitRequested{ false };
+
+        using Tickets = std::vector<Ticket>;
+        mt::Variable<Tickets> mTickets;
+        mt::Variable<Strings> mWatchedFiles;    // used bu imgui to display which one are watched and provide user trigger
+        mt::JobPool mObserver;
+    };
 
 #else
 
-        class Watcher : public Noncopyable<Watcher>
-        {
-        public:
-            using ChangedCallback = std::function<void()>;
+    class Watcher : public Noncopyable<Watcher>
+    {
+    public:
+        using ChangedCallback = std::function<void()>;
 
-            Watcher() {}
-            ~Watcher() {}
+        Watcher() {}
+        ~Watcher() {}
 
-            void Add(uint64_t /*ownerId*/, const std::string& /*fileName*/, ChangedCallback /*changedCallback*/) {}
-            void Remove(uint64_t /*ownerId*/) {}
-        };
+        void Add(uint64_t /*ownerId*/, const std::string& /*fileName*/, ChangedCallback /*changedCallback*/) {}
+        void Remove(uint64_t /*ownerId*/) {}
+    };
 
 #endif // YAGET_WATCHER_ENABLED
         
-    } // namespace io
-} // namespace yaget
+} // namespace yaget::io

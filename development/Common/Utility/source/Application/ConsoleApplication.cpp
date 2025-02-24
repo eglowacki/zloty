@@ -30,13 +30,18 @@ app::BlankApplication::BlankApplication(const std::string& title, items::Directo
 {
 }
 
+bool app::BlankApplication::onMessagePump(const time::GameClock& /*gameClock*/)
+{
+    return !mQuit;
+}
+
 void app::BlankApplication::Cleanup()
 {
 }
 
-bool app::BlankApplication::onMessagePump(const time::GameClock& /*gameClock*/)
+bool app::BlankApplication::IsSuspended() const
 {
-    return !mQuit;
+    return false;
 }
 
 ConsoleApplication::ConsoleApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
@@ -45,13 +50,14 @@ ConsoleApplication::ConsoleApplication(const std::string& title, items::Director
     ::SetConsoleTitle(title.c_str());
 
     gConsoleApplication = this;
-    ::SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+    ::SetConsoleCtrlHandler(HandlerRoutine, TRUE /*Add*/);
     mOutputHandle = ::GetStdHandle(STD_OUTPUT_HANDLE);
     mInputHandle = ::GetStdHandle(STD_INPUT_HANDLE);
 }
 
 ConsoleApplication::~ConsoleApplication()
 {
+    ::SetConsoleCtrlHandler(HandlerRoutine, FALSE /*Add*/);
     gConsoleApplication = nullptr;
 }
 
@@ -120,7 +126,6 @@ bool ConsoleApplication::onMessagePump(const time::GameClock& /*gameClock*/)
                 flags |= input::kButtonUp;
             }
 
-            YLOG_DEBUG("SPAM", "Pressed key is: '%d', with flags: '%d'", keyValue, flags);
             mInputDevice.KeyRecord(flags, keyValue);
         }
         break;

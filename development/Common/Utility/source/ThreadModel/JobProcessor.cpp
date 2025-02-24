@@ -2,6 +2,9 @@
 #include "Platform/Support.h" 
 #include "fmt/format.h" 
 #include "StringHelpers.h" 
+
+#include "Core/ErrorHandlers.h"
+
 #include "Debugging/Assert.h" 
 #include "Logger/YLog.h" 
 #include "Metrics/Concurrency.h"
@@ -71,7 +74,7 @@ yaget::mt::JobProcessor::~JobProcessor()
             ::TerminateThread(static_cast<HANDLE>(mThread.native_handle()), 1);
 
             const auto message = fmt::format("Job '{}' killed. Task in progress exceeded time out value: '{}{}'.", mThreadName, maxSleepSleep, metrics::UnitName(units));
-            YAGET_UTIL_THROW("MULT", message);
+            error_handlers::Throw("MULT", message);
         }
     } 
  
@@ -85,7 +88,7 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
 { 
     mPauseCondition.Wait();
 
-    metrics::Channel channel("T." + mThreadName, YAGET_METRICS_CHANNEL_FILE_LINE); 
+    metrics::Channel channel("T." + mThreadName); 
 
     struct Releaser
     {
@@ -114,7 +117,7 @@ void yaget::mt::JobProcessor::operator()(PopNextTask_t popNextTask)
         { 
             try 
             { 
-                metrics::Channel lifetimeChannel("Task Lifetime", YAGET_METRICS_CHANNEL_FILE_LINE); 
+                metrics::Channel lifetimeChannel("Task Lifetime"); 
  
                 mTaskInProgress = true; 
                 nextTask(); 

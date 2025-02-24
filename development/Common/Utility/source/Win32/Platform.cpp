@@ -198,6 +198,9 @@ namespace
         int argCount = argc;
         char** argValues = argv;
 
+        // example of converting argc/argv into vector of string views
+        //std::vector<std::string_view> args(argv, std::next(argv, static_cast<std::ptrdiff_t>(argc)));
+
         Releaser releaser;
 
         if (commandLine)
@@ -245,7 +248,7 @@ namespace
             // let's check for config_view option and dump some configuration values
             if (options.find<bool>("options_view", false))
             {
-                YLOG_NOTICE("MAIN", "\n%s", util::DisplayCurrentConfiguration(&options).c_str());
+                yaget::platform::DebuggerOutput(util::DisplayCurrentConfiguration(&options));
 
                 if (!options.find<bool>("generate_config", false))
                 {
@@ -258,7 +261,7 @@ namespace
                 // so generated json file will have it
                 dev::Configuration configuration;
 
-                configuration.mDebug.mLogging.Filters = { "MAIN", "TEST" };
+                configuration.mDebug.mLogging.Filters = { "CORE", "TEST" };
                 configuration.mDebug.mLogging.Outputs = {
                     { "Console", { { "Key1", "Value1" } } }
                 };
@@ -289,7 +292,9 @@ namespace
 
                 nlohmann::json jsonBlock;
                 to_json(jsonBlock, configuration);
-                YLOG_NOTICE("MAIN", "\n%s", json::PrettyPrint(jsonBlock).c_str());
+                const auto blockString = "\n" + json::PrettyPrint(jsonBlock);
+                YLOG_NOTICE("CORE", "%s", blockString.c_str());
+                platform::DebuggerOutput(blockString);
 
                 return system::InitializationResult::Helped;
             }
@@ -302,7 +307,7 @@ namespace
             std::string errorTitle = fmt::format("{} Startup Error", util::ExpendEnv("$(AppName)", nullptr));
 
             platform::DebuggerOutput(message);
-            YLOG_ERROR("MAIN", "%s .Terminating application. %s", message.c_str());
+            YLOG_ERROR("CORE", "%s .Terminating application. %s", message.c_str());
 
             if (platform::IsDebuggerAttached())
             {
@@ -394,9 +399,14 @@ namespace
             return "";
         }
 
+        const platform::ThreadNames& GetThreadNames() const
+        {
+            return mNames;
+        }
+
     private:
         mutable std::mutex mMutex;
-        std::map<uint32_t, std::string> mNames;
+        platform::ThreadNames mNames;
     };
     ThreadNames threadNames;
 
@@ -491,6 +501,11 @@ std::vector<std::string> getAllFilesInDir(const std::string &dirPath, const std:
 
 void platform::SetThreadName(const char* threadName, uint32_t t)
 {
+    // we should try to use this:
+    //HRESULT result = ::SetThreadDescription(::GetCurrentThread(), conv::utf8_to_wide(threadName).c_str());
+    //error_handlers::ThrowOnError(result, "Could not set thread name");
+    // and
+    //HRESULT ::GetThreadDescription(HANDLE hThread, PWSTR  *ppszThreadDescription);
     THREADNAME_INFO info;
     info.dwType = 0x1000;
     info.szName = threadName;
@@ -504,7 +519,6 @@ void platform::SetThreadName(const char* threadName, uint32_t t)
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {}
-
 }
 
 void platform::SetThreadName(const char* threadName, std::thread& t)
@@ -531,6 +545,11 @@ uint32_t platform::GetThreadId(std::thread& t)
 uint32_t platform::CurrentThreadId()
 {
     return ::GetCurrentThreadId();
+}
+
+const platform::ThreadNames& platform::GetThreadNames()
+{
+    return threadNames.GetThreadNames();
 }
 
 void platform::Sleep(SleepPredicate sleepPredicate)

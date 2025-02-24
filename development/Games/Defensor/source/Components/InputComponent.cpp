@@ -1,0 +1,3 @@
+#include "Components/InputComponent.h"
+
+DISREGARD_LINKER_4221(COMPILER_VERIFICATION_Components_InputComponent_h)

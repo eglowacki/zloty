@@ -27,10 +27,10 @@ namespace yaget::render
 
 namespace yaget::editor
 {
-    class RenderSystem : public yaget::comp::gs::GameSystem<comp::gs::GenerateEndMarker, Messaging, RenderComponent*>
+    class RenderSystem : public yaget::comp::gs::GameSystem<RenderCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, RenderComponent*>
     {
     public:
-        RenderSystem(Messaging& messaging, render::DesktopApplication& app);
+        RenderSystem(Messaging& messaging, render::DesktopApplication& app, RenderCoordinatorSet& coordinatorSet);
 
     private:
         void OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, RenderComponent* renderComponent);

@@ -1,8 +1,8 @@
 ﻿#include "RenderSystem.h"
 #include "Render/DesktopApplication.h"
 
-yaget::editor::RenderSystem::RenderSystem(Messaging& messaging, render::DesktopApplication& app)
-    : GameSystem("EditorSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); })
+yaget::editor::RenderSystem::RenderSystem(Messaging& messaging, render::DesktopApplication& app, RenderCoordinatorSet& coordinatorSet)
+    : GameSystem("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
     , mDevice(app.GetDevice())
 {
 }
@@ -11,6 +11,8 @@ void yaget::editor::RenderSystem::OnUpdate([[maybe_unused]] comp::Id_t id, const
 {
     if (id == comp::END_ID_MARKER)
     {
+        //gameClock;
+        //channel;
         mDevice.RenderFrame(gameClock, channel);
     }
 }

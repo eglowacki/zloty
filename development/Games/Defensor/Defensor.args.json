@@ -1,0 +1,14 @@
+{
+  "FileVersion": 2,
+  "Id": "e27887df-934f-4b8c-98bc-4fd30994af13",
+  "Items": [
+    {
+      "Id": "ebdcffd9-de81-47a2-ad32-780b283bdfd9",
+      "Command": "--log_truncate_function_name"
+    },
+    {
+      "Id": "d3bd7ced-f130-42d6-9058-87d81b758fd2",
+      "Command": "--log_max_function_name_len=55"
+    }
+  ]
+}

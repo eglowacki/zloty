@@ -22,7 +22,6 @@
 #include "GameHarness.h"
 #include "Ponger/PongerRenderer.h"
 #include "Ponger/GameWorldSystem.h"
-#include "PlatformDisplayModes.h"
 #include "VTS/DefaultResolvers.h"
 #include "Scripting/ResolvedAssets.h"
 #include "Components/GameCoordinatorGenerator.h"

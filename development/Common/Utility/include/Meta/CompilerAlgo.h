@@ -5,7 +5,11 @@
 //
 //  Maintained by: Edgar
 //
+//      #include "Meta/CompilerAlgo.h"
+
 //  NOTES:
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of concepts and requires.
 //      https://en.cppreference.com/w/cpp/language/constraints
 //      template<typename T>
 //      concept Hashable = requires(T a)
@@ -27,7 +31,9 @@
 //      template<typename T>
 //      void f(T) requires Hashable<T> {}
 //
-//
+// 
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of having namspaces for 'versioning'.
 //      https://youtu.be/rUESOjhvLw0?t=354
 //      namespace yaget
 //      {
@@ -42,10 +48,142 @@
 //      }
 //      // to access
 //      yaget::FooBar foobar;
+// 
+// 
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of lambda usage to have a function only to be called once.
+//      https://www.youtube.com/watch?v=iWKewYYKPHk
+//      struct X
+//      {
+//          X()
+//          {
+//              static auto _ = []{ return 0; }();
+//          }
+//      };
+//
+//      // to use, it will only be called once, no matter how many times X is created.
+//      X x;
+//
+// 
+//      * Example of folding expresion (print...).
+//      auto f = [](auto&&... args)
+//      {
+//           (std::cout << ... << args);
+//      };
+//      
+//      f(42, "Hello", 1.5);
+//      
+// 
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of lambdas in agregate
+//      tempplate <typename... Ts>
+//      struct overload : Ts...
+//      {
+//           using Ts::operator()...;
+//      };
+//      
+//      // uage:
+//      auto f = overload
+//      {
+//          [](int i) { std::cout >> "int stuff"; },
+//          [](float f) { std::cout >> "float stuff"; }
+//      };
+//      
+//      f(2);    // int stuff
+//      f(2.f);  // float stuff
 //
 //
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of using span, views & ranges
+//      for (const auto& arg : std::span<const char>(argv, argc) | std::ranges::views::drop(2))
+//      {
+//          std::cout <<arg << '\n';
+//      }
+// 
+//      //-------------------------------------------------------------------------------------------------
+//      * Example of using ship <=> operator
+//      const auto operator<=>(const S2&) const = default;
 //
-//  #include "Meta/CompilerAlgo.h"
+//
+//      void handler()
+//      {
+//          try
+//          {
+//              throw;
+//          }
+//          catch (const std::runtime_error& e)
+//          {
+//          }
+//          catch (const std::exception& e)
+//          {
+//          }
+//      }
+//      int main()
+//      {
+//          try
+//          {
+//              do_work(true); // throw some exception from inside
+//          }
+//          catch(...)
+//          {
+//              handler();
+//          }
+//      }
+
+    //A std::tuple<T...> can be used to pass multiple values around. For example, it could be used to store a sequence
+    //of parameters into some form of a queue. When processing such a tuple its elements need to be turned into function call arguments:
+
+    //#include <array>
+    //#include <iostream>
+    //#include <string>
+    //#include <tuple>
+    //#include <utility>
+
+    //// ----------------------------------------------------------------------------
+    //// Example functions to be called:
+    //void f(int i, std::string const& s) {
+    //    std::cout << "f(" << i << ", " << s << ")\n";
+    //}
+    //void f(int i, double d, std::string const& s) {
+    //    std::cout << "f(" << i << ", " << d << ", " << s << ")\n";
+    //}
+    //void f(char c, int i, double d, std::string const& s) {
+    //    std::cout << "f(" << c << ", " << i << ", " << d << ", " << s << ")\n";
+    //}
+    //void f(int i, int j, int k) {
+    //    std::cout << "f(" << i << ", " << j << ", " << k << ")\n";
+    //}
+
+    //// ----------------------------------------------------------------------------
+    //// The actual function expanding the tuple:
+    //template <typename Tuple, std::size_t... I>
+    //void process(Tuple const& tuple, std::index_sequence<I...>) {
+    //    f(std::get<I>(tuple)...);
+    //}
+
+    //// The interface to call. Sadly, it needs to dispatch to another function
+    //// to deduce the sequence of indices created from std::make_index_sequence<N>
+    //template <typename Tuple>
+    //void process(Tuple const& tuple) {
+    //    process(tuple, std::make_index_sequence<std::tuple_size<Tuple>::value>());
+    //}
+
+    //// ----------------------------------------------------------------------------
+    //int main() {
+    //    process(std::make_tuple(1, 3.14, std::string("foo")));
+    //    process(std::make_tuple('a', 2, 2.71, std::string("bar")));
+    //    process(std::make_pair(3, std::string("pair")));
+    //    process(std::array<int, 3>{ 1, 2, 3 });
+    //}
+    //As long as a class supports std::get<I>(object) and std::tuple_size<T>::value it can be expanded
+    //with the above process() function. The function itself is entirely independent of the number of arguments.
+    //
+    //auto component = std::apply([this, id](auto &&... args)
+    //{
+    //    return AddComponent<C>(id, args...);
+
+    //}, parameters);
+
 //
 //////////////////////////////////////////////////////////////////////
 //! \file
@@ -86,7 +224,14 @@ namespace yaget::meta
         {
             return { identity_func<T, Indices>(value)... };
         }
+
+        template <typename T>
+        struct is_tuple: std::false_type {};
+
+        template <typename... Args>
+        struct is_tuple<std::tuple<Args...>>: std::true_type {};
     }
+
 
     //-------------------------------------------------------------------------------------------------
     /// [1]
@@ -191,6 +336,33 @@ namespace yaget::meta
         }
     }
 
+    // for_loop<std::tuple<...>>([]<std::size_t T0>()
+    template<std::size_t N, std::size_t C, typename TCallable>
+    constexpr void for_loop(TCallable&& callable)
+    {
+        callable.template operator()<C>();
+        if constexpr (C + 1 < N)
+        {
+            for_loop<N, C + 1>(std::forward<TCallable>(callable));
+        }
+    }
+
+    template<std::size_t N, typename TCallable>
+    constexpr void for_loop(TCallable&& callable)
+    {
+        for_loop<N, 0>(callable);
+    }
+
+    template<typename T, typename TCallable>
+    constexpr void for_loop(TCallable&& callable)
+    {
+        for_loop<std::tuple_size_v<T>, 0>(callable);
+    }
+
+    // check if T is of type std::tuple<...>, return True for match, otherwise false
+    template <typename T>
+    constexpr bool is_tuple_v = internal::is_tuple<T>::value;
+
     //-------------------------------------------------------------------------------------------------
     // Makes unique instance from elements and copies
     // that tuple element into another. Both must match size
@@ -236,16 +408,16 @@ namespace yaget::meta
     // Index then can be used to get element from tuple at that position
     // constexpr std::size_t index = meta::Index<T, Row>::value;
     // return std::get<index>(mDataStorage);
-    template <class T, class Tuple>
+    template <typename T, typename Tuple>
     struct Index;
 
-    template <class T, class... Types>
+    template <typename T, typename... Types>
     struct Index<T, std::tuple<T, Types...>>
     {
         static constexpr std::size_t value = 0;
     };
 
-    template <class T, class U, class... Types>
+    template <typename T, typename U, typename... Types>
     struct Index<T, std::tuple<U, Types...>>
     {
         static constexpr std::size_t value = 1 + Index<T, std::tuple<Types...>>::value;
@@ -325,6 +497,27 @@ namespace yaget::meta
     using bits_t = std::size_t;
     namespace internal
     {
+        template <typename... T>
+        constexpr auto convert_as_tuple()
+        {
+            if constexpr (sizeof...(T) == 1)
+            {
+                if constexpr (meta::is_tuple_v<T...>)
+                {
+                    using ElementType = std::tuple_element_t<0, std::tuple<T...>>;
+                    return ElementType{};
+                }
+                else
+                {
+                    return std::tuple<T...>{};
+                }
+            }
+            else
+            {
+                return std::tuple<T...>{};
+            }
+        }
+
         template<typename T, typename U, int N = std::tuple_size_v<std::remove_reference_t<U>>>
         constexpr bits_t tuple_bits()
         {
@@ -384,6 +577,9 @@ namespace yaget::meta
         }
 
     }
+
+    template <typename... IS>
+    using convert_as_tuple_t = decltype(internal::convert_as_tuple<IS...>());
 
     // return bit pattern representing where types from T are located in U
     // Like give me components that represent location of any entity (Tree)
@@ -507,6 +703,43 @@ namespace yaget::meta
 #endif
         return 0;
     }
+
+    template <typename T, T beginVal, T endVal, bool iterateOverLast = true>
+    class EnumIterator 
+    {
+        typedef typename std::underlying_type<T>::type val_t;
+
+    public:
+        EnumIterator(const T& f) : mVal(static_cast<val_t>(f)) {}
+        EnumIterator() : mVal(static_cast<val_t>(beginVal)) {}
+
+        EnumIterator operator++() 
+        {
+            ++mVal;
+            return *this;
+        }
+
+        T operator*() 
+        {
+            return static_cast<T>(mVal); 
+        }
+
+        EnumIterator begin() 
+        {
+            return *this; 
+        }
+
+        EnumIterator end() 
+        {
+            static const EnumIterator endIter = ++EnumIterator(iterateOverLast ? endVal : static_cast<T>(static_cast<val_t>(endVal) - 1));
+            return endIter;
+        }
+
+        bool operator!=(const EnumIterator& i) { return mVal != i.mVal; }
+
+    private:
+        int mVal;
+    };
 
 } // namespace yaget::meta
 

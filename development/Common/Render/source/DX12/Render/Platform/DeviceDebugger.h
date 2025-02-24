@@ -6,7 +6,7 @@
 // NOTES:
 //      Deals with debug layer for platform device
 //
-// #include "DeviceDebugger.h"
+// #include "Render/Platform/DeviceDebugger.h"
 //
 /////////////////////////////////////////////////////////////////////////
 //! \file
@@ -19,23 +19,24 @@ struct ID3D12Object;
 
 #if YAGET_DEBUG_RENDER == 1
 
-struct ID3D12Device4;
+struct ID3D12Device;
 
 namespace yaget::render::platform
 {
+    //-------------------------------------------------------------------------------------------------
     class DeviceDebugger
     {
     public:
         DeviceDebugger();
         ~DeviceDebugger();
 
-        void ActivateMessageSeverity(const ComPtr<ID3D12Device4>& device);
+        void ActivateMessageSeverity(const ComPtr<ID3D12Device>& device);
     };
 
     void SetDebugName(ID3D12Object* object, const std::string& name, const char* file, unsigned line);
 }
 
-#else
+#else // YAGET_DEBUG_RENDER == 1
 
 namespace yaget::render::platform
 {

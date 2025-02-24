@@ -28,7 +28,6 @@
 #include <vector>
 
 
-
 namespace yaget
 {
     namespace conv
@@ -108,7 +107,7 @@ namespace yaget
                 if (!v.empty())
                 {
                     const auto res = std::from_chars(v.data(), v.data() + v.size(), result);
-                    YLOG_CWARNING("CONV", res.ec == std::errc(), "String conversion from: '%s' to type: '%s' failed with error code: '%d'.", std::string(v).c_str(), meta::type_name_v<T>().c_str(), res.ec);
+                    YLOG_CWARNING("CORE", res.ec == std::errc(), "String conversion from: '%s' to type: '%s' failed with error code: '%d'.", std::string(v).c_str(), meta::type_name_v<T>().c_str(), res.ec);
                 }
             }
 
@@ -330,6 +329,21 @@ namespace yaget
 
         //----------------------------------------------------------------------------------------------------------------------------------
         template <>
+        struct Convertor<unsigned short>
+        {
+            static unsigned short FromString(const char* value)
+            {
+                return yaget::conv::AtoN<unsigned short>(value);
+            }
+
+            static std::string ToString(unsigned short value)
+            {
+                return std::to_string(value);
+            }
+        };
+
+        //----------------------------------------------------------------------------------------------------------------------------------
+        template <>
         struct Convertor<int>
         {
             static int FromString(const char* value)
@@ -398,7 +412,7 @@ namespace yaget
 
             static std::string ToString(bool value)
             {
-                return value ? "1" : "0";
+                return value ? "True" : "False";
             }
         };
 
@@ -551,7 +565,7 @@ namespace yaget
 
                     if (tokens.size() > 1)
                     {
-                        v.second = Convertor<V1>::FromString(tokens[1].c_str());
+                        v.second = Convertor<V2>::FromString(tokens[1].c_str());
                     }
                 }
 
@@ -579,8 +593,6 @@ namespace yaget
             }
         };
 
-        //size_t CalcSize(const std::string& nameType);
-
         inline std::string safe(const char* value) { return value ? value : ""; }
 
         //----------------------------------------------------------------------------------------------------------------------------------
@@ -602,6 +614,18 @@ namespace yaget
 
         template<typename K, typename V>
         std::string Combine(const std::map<K, V>& values, const char* delimiter)
+        {
+            std::vector<K> indexes;
+            for (const auto& [key, value] : values)
+            {
+                indexes.push_back(key);
+            }
+
+            return Combine(indexes, delimiter);
+        }
+
+        template<typename K, typename V>
+        std::string Combine(const std::unordered_map<K, V>& values, const char* delimiter)
         {
             std::vector<K> indexes;
             for (const auto& [key, value] : values)
@@ -637,7 +661,7 @@ namespace yaget
         template<class TupType, size_t... I>
         void print_tuple(const TupType& _tup, std::index_sequence<I...>, std::string& message)
         {
-            (..., (message += (I == 0 ? "" : ", ") + typename conv::Convertor<std::tuple_element_t<I, TupType>>::ToString(std::get<I>(_tup))));
+            (..., (message += (I == 0 ? "" : ", ") + conv::Convertor<std::tuple_element_t<I, TupType>>::ToString(std::get<I>(_tup))));
         }
 
     }

@@ -80,16 +80,11 @@ namespace yaget::util
     // pattern: folder/fileName-????.extension
     // maxFiles will cap number of renamed files. It will leave hightest numbered files and delete the smaller numbered files
     bool FileCycler(const std::string& folder, const std::string& fileName, const std::string& extension, int maxFiles = 10);
-    // helper function that splits filePath into separate components (folder, file, ext), it just calls function above
+    // helper function that splits filePath parameter into separate components (folder, file, ext) or sets default values, and then it just calls function above
     bool FileCycler(const std::string& filePath, int maxFiles = 10);
 
     std::string SelectSaveFileName(const char* filter, const char* dialogTitle);
     void DisplayDialog(const char* title, const char* message);
-
-    void Throw(const char* tag, const std::string& message, const char* file = nullptr, unsigned line = 0, const char* functionName = nullptr);
-    void ThrowOnError(bool resultValid, const std::string& message, const char* file = nullptr, unsigned line = 0, const char* functionName = nullptr);
-    void ThrowOnError(long hr, const std::string& message, const char* file = nullptr, unsigned line = 0, const char* functionName = nullptr);
-    void ThrowOnResult(const char* tag, bool result, const std::string& message, const char* file = nullptr, unsigned line = 0, const char* functionName = nullptr);
 
     // fill in options with default engine options, should be called first, before system::Initialized 
     void DefaultOptions(args::Options& options);
@@ -117,7 +112,3 @@ namespace yaget::util
 
     } // namespace ui
 } // namespace yaget::util
-
-#define YAGET_UTIL_THROW_ON_RROR(resultValid, message) yaget::util::ThrowOnError(resultValid, message, __FILE__, __LINE__, __FUNCTION__)
-#define YAGET_UTIL_THROW_ASSERT(tag, result, message) yaget::util::ThrowOnResult(tag, result, message, __FILE__, __LINE__, __FUNCTION__)
-#define YAGET_UTIL_THROW(tag, message) yaget::util::Throw(tag, message, __FILE__, __LINE__, __FUNCTION__)

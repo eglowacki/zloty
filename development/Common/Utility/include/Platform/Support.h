@@ -33,6 +33,9 @@ namespace yaget
         uint32_t CurrentThreadId();
         std::string GetCurrentThreadName();
 
+        using ThreadNames = std::map<uint32_t, std::string>;
+        const ThreadNames& GetThreadNames();
+
         // Various Sleep functions
         // Keep sleeping while predicate returns true
         using SleepPredicate = std::function<bool()>;

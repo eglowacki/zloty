@@ -20,6 +20,12 @@
 
 namespace yaget
 {
+    // NOTE: EG: This should be unique_ptr but since compiler update, it error's out with unique
+    // using shared until I can revisit this and figure out how to properly fix this.
+    // https://github.com/eglowacki/zloty/issues/47#issue-1339365812
+    template <typename T>
+    using ManagedPointer = std::shared_ptr<T>;
+
     namespace app { class ProcHandler; }
     namespace io { class VirtualTransportSystem; }
 
@@ -27,7 +33,6 @@ namespace yaget
     {
     public:
         WindowApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
-        ~WindowApplication() override;
 
         app::DisplaySurface GetSurface() const override;
 
@@ -51,8 +56,8 @@ namespace yaget
         bool onMessagePump(const time::GameClock& gameClock) override;
         void Cleanup() override;
 
-        uint32_t mLastKeyFlags = 0;
-        std::unique_ptr<app::ProcHandler> mWindowHandler{};
+        uint32_t mLastKeyFlags{};
+        ManagedPointer<app::ProcHandler> mWindowHandler{};
         app::SurfaceState mActiveSurfaceState = app::SurfaceState::Shared;
 
         using RequestedEvents = std::queue<Event>;

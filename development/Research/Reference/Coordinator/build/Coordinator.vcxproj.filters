@@ -184,6 +184,7 @@
     <None Include="..\Data\Assets\Scripts\coordinator.py">
       <Filter>Data Files\Assets\Scripts</Filter>
     </None>
+    <None Include="..\..\..\..\..\..\..\DirectX-Graphics-Samples\Samples\Desktop\D3D12HelloWorld\src\HelloTriangle\D3D12HelloTriangle.vcxproj" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\source\Shaders\PositionVS.hlsl">

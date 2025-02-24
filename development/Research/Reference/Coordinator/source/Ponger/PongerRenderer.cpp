@@ -228,7 +228,7 @@ void ponger::PongerRenderer::ProcessPayload(typename const Stager::ConstPayload&
 
         if (mIds.find(it.mId) == mIds.end())
         {
-            metrics::Channel channel("ProcessPayload", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel channel("ProcessPayload");
 
             YAGET_ASSERT(!mRenderEntityCoordinator.FindComponent<render::GeometryComponent>(it.mId), "mIds list does not have id: '%d' but Render Entity Coordinator has component.");
 

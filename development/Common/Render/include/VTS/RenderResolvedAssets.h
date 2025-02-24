@@ -22,6 +22,9 @@
 #include "Meta/CompilerAlgo.h"
 #include "Json/JsonHelpers.h"
 
+inline auto format_as(DXGI_FORMAT f) { return fmt::underlying(f); }
+inline auto format_as(D3D11_USAGE f) { return fmt::underlying(f); }
+
 namespace yaget
 {
     namespace io

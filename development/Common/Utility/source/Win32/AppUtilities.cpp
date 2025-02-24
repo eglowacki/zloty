@@ -333,7 +333,7 @@ void yaget::util::AddToEnvironment(const yaget::util::EnvironmentList& envList)
             {
                 // We only want to generate warning if requested alias name is not the same as current
                 // otherwise we silently ignore the same value, since there is no change
-                YLOG_CWARNING("UTIL", 
+                YLOG_CWARNING("CORE", 
                     ExpendAll(it.second.Value) == alias->second.Value,
                     "Environment Alias: '%s' is marked as Read Only, can not be set from configuration. Current Value: '%s', Requested Value: '%s' [%s].", 
                     alias->first.c_str(), alias->second.Value.c_str(), ExpendAll(it.second.Value).c_str(), it.second.Value.c_str());
@@ -696,7 +696,7 @@ std::vector<std::string> yaget::util::ui::SelectOpenFileNames(const char* filter
     {
         ::SetCurrentDirectory(currentPath.string().c_str());
 
-        // check to see if user selected multi files or just singe one
+        // check to see if user selected multi files or just single one
         // by checking the first bit if it's only a folder or points to a file
         if (fs::is_directory(fs::path(szFileName)))
         {
@@ -787,61 +787,6 @@ void yaget::util::DisplayDialog(const char* title, const char* message)
     }
 }
 
-
-//---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::Throw(const char* tag, const std::string& message, const char* file /*= nullptr*/, unsigned line /*= 0*/, const char* functionName /*= nullptr*/)
-{
-    if (platform::IsDebuggerAttached())
-    {
-        YLOG_PERROR(tag, file, line, functionName, message.c_str());
-        platform::DebuggerBreak();
-    }
-
-    const auto& textError = fmt::format("{}\n{}({}) {}", message, (file ? file : "no_file"), line, functionName);
-    throw ex::bad_init(textError);
-}
-
-
-//---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::ThrowOnError(long hr, const std::string& message, const char* file /*= nullptr*/, unsigned line /*= 0*/, const char* functionName /*= nullptr*/)
-{
-    if (FAILED(hr))
-    {
-        _com_error cr(HRESULT_FROM_WIN32(hr));
-        const char* errorMessage = cr.ErrorMessage();
-        auto textError = fmt::format("HRESULT = {}, {}. Error: {}", hr, message, errorMessage);
-        if (platform::IsDebuggerAttached())
-        {
-            YLOG_PERROR("UTIL", file, line, functionName, textError.c_str());
-            platform::DebuggerBreak();
-        }
-
-        textError += fmt::format("\n{}({}) {}", (file ? file : "no_file"), line, functionName);
-        throw ex::bad_init(textError);
-    }
-}
-
-
-//---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::ThrowOnResult(const char* tag, bool result, const std::string& message, const char* file, unsigned line, const char* functionName /*= nullptr*/)
-{
-    if (!result)
-    {
-        Throw(tag, message, file, line, functionName);
-    }
-}
-
-
-//---------------------------------------------------------------------------------------------------------------------------------
-void yaget::util::ThrowOnError(bool resultValid, const std::string& message, const char* file, unsigned line, const char* functionName /*= nullptr*/)
-{
-    if (!resultValid)
-    {
-        const uint64_t hr = ::GetLastError();
-        util::ThrowOnError(static_cast<long>(hr), message, file, line, functionName);
-    }
-}
-
 #else
     #error  "Need to implement SelectOpenFileName, SelectSaveFileName, DisplayDialog, ThrowOnError for your platform."
 #endif // _WIN32
@@ -868,9 +813,13 @@ void yaget::util::DefaultOptions(args::Options& options)
         ("keybindings_file", "Relative or absolute path to Key Bindings file.", args::value<std::string>())
         ("logic_tick", "Game Logic thread tick update (hz) (default 60)", args::value<uint32_t>())
         ("vts_fix", "Fix VTS errors.")
+        ("director_fix", "Fix Director errors.")
         ("log_write_tags", "Write out file to $(LogFolder) of all active log tags.")
         ("config_value", "Override individual configuration values --config_value = Debug.Metrics.TraceOn=false (no spaces around =)", args::value<std::vector<std::string>>())
-        ("render_software", "Force software renderer")
+        ("software_render", "Force software renderer")
+        ("gpu_traceback", "Activate GPU crash dump")
+        ("log_truncate_function_name", "Truncate function signature name in logging to not exceed log_max_function_name_len")
+        ("log_max_function_name_len", "Maximum length of function signature name before truncating", args::value<int>())
         ;
 }
 

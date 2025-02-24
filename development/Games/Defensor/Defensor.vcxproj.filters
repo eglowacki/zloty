@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Data Files">
+      <UniqueIdentifier>{c5bcc4d2-4b25-4397-9bb6-e25f7c65b3fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components Files">
+      <UniqueIdentifier>{88ff5337-5944-445e-b494-5fcb6bf69153}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Squadron Files">
+      <UniqueIdentifier>{9e4cd778-a890-4d3b-b396-2f1a659bf60b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Stager Files">
+      <UniqueIdentifier>{38fd0fef-4f0f-422c-a101-a67844edea31}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MainGame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Squadron\SquadronSystem.cpp">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DefensorGameCoordinator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\InputComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Squadron\PlayerSystem.cpp">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\LocationComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\UnitComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Squadron\MenuSystem.cpp">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\MenuComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\ScriptComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Stager\StagerSystem.cpp">
+      <Filter>Source Files\Stager Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Defensor.deployment">
+      <Filter>Data Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="data\Configuration.json">
+      <Filter>Data Files</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\KeyBindings.json">
+      <Filter>Data Files</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\MainGame.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DefensorGameTypes.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DefensorRenderTypes.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\LocationComponent.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Squadron\SquadronSystem.h">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DefensorGameCoordinator.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\InputComponent.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Squadron\PlayerSystem.h">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\UnitComponent.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Squadron\MenuSystem.h">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\MenuComponent.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\ScriptComponent.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Stager\StagerSystem.h">
+      <Filter>Source Files\Stager Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -6,6 +6,8 @@
 #include <SpriteBatch.h>
 #include <utility>
 
+#include "Core/ErrorHandlers.h"
+
 
 //---------------------------------------------------------------------------------------------------------------------
 yaget::render::TextComponent::TextComponent(comp::Id_t id, Device& device, const io::Tags& fontTags)
@@ -30,7 +32,7 @@ void yaget::render::TextComponent::OnReset()
     catch (const std::exception& e)
     {
         const auto& textError = fmt::format("did not initialize spritebatch. error: {}", e.what());
-        YAGET_UTIL_THROW("REND", textError);
+        error_handlers::Throw("REND", textError);
     }
 }
 

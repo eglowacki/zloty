@@ -17,12 +17,37 @@
 
 #include "Components/CoordinatorSet.h"
 #include "App/Application.h"
+#include "Meta/CompilerAlgo.h"
 
 
 namespace yaget::metrics { class Channel; }
 
 namespace yaget::comp::gs
 {
+    namespace internal
+    {
+
+        template <typename S, typename R>
+        constexpr bool SystemsMatchCoordinator()
+        {
+            bool result = true;
+            meta::for_loop<S>([&result]<std::size_t T0>()
+            {
+                using BaseSystemType = std::tuple_element_t<T0, S>;
+                using SystemRow = typename BaseSystemType::Row;
+
+                using RequestedRow = tuple_get_union_t<SystemRow, typename R::FullRow>;
+
+                if (result)
+                {
+                    result = std::tuple_size_v<RequestedRow> > 0;
+                }
+            });
+
+            return result;
+        }
+    }
+
     //-------------------------------------------------------------------------------------------------
     // Create coordinator for system and call each for update
     // T is GameCoordinatorSet and ...S are Systems (classes that follow yaget::comp::gs::GameSystem)
@@ -33,22 +58,42 @@ namespace yaget::comp::gs
     public:
         using CoordinatorSet = T;
         using Messaging = M;
-        using Systems = std::tuple<S*...>;
+
+        using Systems = std::tuple<S...>;
+        static constexpr size_t NumSystems = std::tuple_size_v<std::remove_reference_t<Systems>>;
+        static_assert(NumSystems, "User must provide at least 1 GameSystem");
+        static_assert(internal::SystemsMatchCoordinator<Systems, CoordinatorSet>(), "CoordinatorSet does not support requested GameSystem component.");
 
         SystemsCoordinator(M& messaging, A& app);
 
         void Tick(const time::GameClock& gameClock, metrics::Channel& channel);
 
-        template <typename C>
-        comp::Coordinator<C>& GetCoordinator();
+        template <typename C, typename... Args>
+        C* AddComponent(comp::Id_t id, Args&&... args);
 
         template <typename C>
-        const comp::Coordinator<C>& GetCoordinator() const;
+        C* LoadComponent(comp::Id_t id);
+
+        template <typename C>
+        bool SaveComponent(const C* component);
+
+        template <typename C>
+        C* FindComponent(comp::Id_t id) const;
+
+        template <typename C>
+        bool RemoveComponent(comp::Id_t id);
+
+        template <typename TT = typename CoordinatorSet::FullRow>
+        TT LoadItem(comp::Id_t id);
+
+        items::Director& Director() { return mApp.Director(); }
+        const items::Director& Director() const { return mApp.Director(); }
 
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
         Messaging& mMessaging;
+        A& mApp;
         CoordinatorSet mCoordinatorSet;
         ManagedSystems mSystems;
     };
@@ -83,6 +128,12 @@ namespace yaget::comp::gs
         return app.Run(internal::Updater<TG, M, A>(messaging, app), internal::Updater<TR, M, A>(messaging, app));
     }
 
+    template <typename TG, typename M, typename A>
+    int RunGame(M& messaging, A& app)
+    {
+        return app.Run(internal::Updater<TG, M, A>(messaging, app));
+    }
+
 } // namespace yaget::comp::gs
 
 
@@ -90,12 +141,18 @@ namespace yaget::comp::gs
 template <typename T, typename M, typename A, typename... S>
 yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messaging, A& app)
     : mMessaging(messaging)
+    , mApp(app)
+    , mCoordinatorSet(&app.Director())
 {
-    meta::for_each(mSystems, [this, &app]<typename T0>(T0& system)
+    auto This = this;
+
+    meta::for_loop<ManagedSystems>([This, this]<std::size_t T0>()
     {
-        using BaseType = T0;
+        using BaseType = std::tuple_element_t<T0, ManagedSystems>;
         using SystemType = typename BaseType::element_type;
-        system = std::make_shared<SystemType>(mMessaging, app);
+
+        auto& system = std::get<T0>(mSystems);
+        system = std::make_shared<SystemType>(mMessaging, mApp, mCoordinatorSet);
     });
 }
 
@@ -107,26 +164,65 @@ void yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::Tick(const time::GameCl
     // possibly run each system on own thread, taking Policy (usage) into account
     meta::for_each(mSystems, [this, &gameClock, &channel](auto& gameSystem)
     {
-        gameSystem->Tick(mCoordinatorSet, gameClock, channel);
+        const auto& message = fmt::format("System Tick {}", gameSystem->NiceName());
+        metrics::Channel systemChannel(message);
+
+        gameSystem->Tick(gameClock, channel);
     });
 }
 
 
 //-------------------------------------------------------------------------------------------------
-template <typename T, typename M, typename A, typename... S>
-template <typename C>
-yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetCoordinator()
+template <typename T, typename M, typename A, typename ... S>
+template <typename C, typename... Args>
+C* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::AddComponent(comp::Id_t id, Args&&... args)
 {
-    return mCoordinatorSet.template GetCoordinator<C>();
+    return mCoordinatorSet.template AddComponent<C>(id, std::forward<Args>(args)...);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-template <typename T, typename M, typename A, typename... S>
+template <typename T, typename M, typename A, typename ... S>
 template <typename C>
-const yaget::comp::Coordinator<C>& yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::GetCoordinator() const
+C* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadComponent(comp::Id_t id)
 {
-    return mCoordinatorSet.template GetCoordinator<C>();
+    return mCoordinatorSet.template LoadComponent<C>(id);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename C>
+bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SaveComponent(const C* component)
+{
+    return mCoordinatorSet.template SaveComponent<C>(component);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename C>
+C* yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::FindComponent(comp::Id_t id) const
+{
+    return mCoordinatorSet.template FindComponent<C>(id);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename C>
+bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::RemoveComponent(comp::Id_t id)
+{
+    return mCoordinatorSet.template RemoveComponent<C>(id);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename TT>
+TT yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadItem(comp::Id_t id)
+{
+    return mCoordinatorSet.template LoadItem<TT>(id);
 }
 
 

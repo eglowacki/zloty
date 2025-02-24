@@ -11,6 +11,8 @@
 #include <assimp/cimport.h>
 #include <filesystem>
 
+#include "Core/ErrorHandlers.h"
+
 
 using namespace yaget;
 namespace fs = std::filesystem;
@@ -134,7 +136,7 @@ void render::GeometryConvertor::Parse(const char* textureFileName)
     else
     {
         std::string textError = mLoaderScene ? fmt::format("No geometry associated with asset data stream") : mImporter.GetErrorString();
-        YAGET_UTIL_THROW("GEOM", textError);
+        error_handlers::Throw("GEOM", textError);
     }
 }
 

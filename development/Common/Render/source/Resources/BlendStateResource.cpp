@@ -8,6 +8,8 @@
 #include "Gui/Support.h"
 #include <d3d11.h>
 
+#include "Core/ErrorHandlers.h"
+
 
 namespace
 {
@@ -19,7 +21,7 @@ namespace
 yaget::render::state::BlendStateResource::BlendStateResource(Device& device, std::shared_ptr<io::render::BlendStateAsset> asset)
     : ResourceView(device, asset->mTag, std::type_index(typeid(BlendStateResource)))
 {
-    YAGET_UTIL_THROW_ASSERT("REND", asset->mTargetBlends.size() < kMaxBendableTargets, fmt::format("BlendStateAsset has: '{}' blend targets, but only maximum of '{}' is supported.", asset->mTargetBlends.size(), kMaxBendableTargets));
+    error_handlers::ThrowOnCheck(asset->mTargetBlends.size() < kMaxBendableTargets, fmt::format("BlendStateAsset has: '{}' blend targets, but only maximum of '{}' is supported.", asset->mTargetBlends.size(), kMaxBendableTargets));
 
     Device::ID3D11Device_t* hardwareDevice = mDevice.GetDevice();
 
@@ -44,8 +46,8 @@ yaget::render::state::BlendStateResource::BlendStateResource(Device& device, std
         ++index;
     }
 
-    HRESULT hr = hardwareDevice->CreateBlendState(&blendDesc, &mState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create blender state");
+    const HRESULT hr = hardwareDevice->CreateBlendState(&blendDesc, &mState);
+    error_handlers::ThrowOnError(hr, "Could not create blender state");
     YAGET_SET_DEBUG_NAME(mState.Get(), asset->mTag.mName);
 
     std::size_t hashValue = conv::GenerateHash(blendDesc, mBlendFactor);

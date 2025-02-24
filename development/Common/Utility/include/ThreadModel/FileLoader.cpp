@@ -14,10 +14,13 @@
 
 #include <filesystem>
 #include <xutility>
+
+#include "Core/ErrorHandlers.h"
 namespace fs = std::filesystem;
 
 namespace yaget::io
 {
+    //-------------------------------------------------------------------------------------------------
     struct FileData
     {
         static const uint32_t kStopKey = static_cast<uint32_t>(-1);
@@ -45,38 +48,45 @@ namespace yaget::io
 
 } // yaget
 
+
 uint32_t yaget::io::FileData::mCounter = 0;
 
-
+//-------------------------------------------------------------------------------------------------
 bool yaget::io::FileLoader::FileDataSorter::operator()(const FileLoader::FileDataPtr& lhs, const FileLoader::FileDataPtr& rhs) const
 {
     return lhs->mKey < rhs->mKey;
 }
 
+
+//-------------------------------------------------------------------------------------------------
 yaget::io::FileData::FileData(const std::string& name, HANDLE port, FileLoader::DoneCallback_t doneCallback)
     : mName(name)
     , mPort(port)
     , mKey(++mCounter)
     , mDoneCallback(std::move(doneCallback))
-    , mTimeSpan(yaget::meta::pointer_cast(this), fs::path(name).filename().generic_string(), YAGET_METRICS_CHANNEL_FILE_LINE)
+    , mTimeSpan(yaget::meta::pointer_cast(this), fs::path(name).filename().generic_string())
 {
     mDataBuffer = io::CreateBuffer(fs::file_size(mName));
     mHandle = ::CreateFile(mName.c_str(), FILE_READ_DATA, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
-    YAGET_UTIL_THROW_ON_RROR(mHandle != INVALID_HANDLE_VALUE, fmt::format("Did not open file '{}'.", mName));
+    error_handlers::ThrowOnError(mHandle != INVALID_HANDLE_VALUE, fmt::format("Did not open file '{}'.", mName));
 
-    HANDLE ioPort = ::CreateIoCompletionPort(mHandle, mPort, mKey, 0);
-    YAGET_UTIL_THROW_ON_RROR(ioPort != nullptr, fmt::format("Did not create io port for file '{}'.", mName));
+    const HANDLE ioPort = ::CreateIoCompletionPort(mHandle, mPort, mKey, 0);
+    error_handlers::ThrowOnError(ioPort != nullptr, fmt::format("Did not create io port for file '{}'.", mName));
 
-    bool bResult = ::ReadFile(mHandle, mDataBuffer.first.get(), static_cast<DWORD>(mDataBuffer.second), nullptr, &mOverlapped) != 0;
-    YAGET_UTIL_THROW_ON_RROR(bResult, fmt::format("ReadFile for '{}' failed.", mName));
+    const bool bResult = ::ReadFile(mHandle, mDataBuffer.first.get(), static_cast<DWORD>(mDataBuffer.second), nullptr, &mOverlapped) != 0;
+    error_handlers::ThrowOnError(bResult, fmt::format("ReadFile for '{}' failed.", mName));
 }
 
+
+//-------------------------------------------------------------------------------------------------
 yaget::io::FileData::FileData(uint32_t key)
     : mKey(key)
-    , mTimeSpan(0, "", nullptr, 0)
+    , mTimeSpan(0, "")
 {
 }
 
+
+//-------------------------------------------------------------------------------------------------
 yaget::io::FileData::~FileData()
 {
     if (mHandle)
@@ -102,15 +112,17 @@ yaget::io::FileData::~FileData()
                 //ULONG_PTR completionKey = 0;
                 //OVERLAPPED* overlappedPointer = nullptr;
                 //const bool bResult = ::GetQueuedCompletionStatus(mPort, &bytesCopied, &completionKey, &overlappedPointer, INFINITE) != 0;
-                //YAGET_UTIL_THROW_ON_RROR(bResult, fmt::format("FileData CancelIoEx dtor failed."));
+                //error_handlers::ThrowOnError(bResult, fmt::format("FileData CancelIoEx dtor failed."));
             }
         }
 
-        bool bResult = ::CloseHandle(mHandle) != 0;
-        YAGET_UTIL_THROW_ON_RROR(bResult, fmt::format("FileData CloseHandle dtor failed."));
+        const bool bResult = ::CloseHandle(mHandle) != 0;
+        error_handlers::ThrowOnError(bResult, fmt::format("FileData CloseHandle dtor failed."));
     }
 }
 
+
+//-------------------------------------------------------------------------------------------------
 bool yaget::io::FileData::Process(uint32_t bytesCopied) const
 {
     mBytesCopied += bytesCopied;
@@ -127,31 +139,39 @@ bool yaget::io::FileData::Process(uint32_t bytesCopied) const
     return true;
 }
 
+
+//-------------------------------------------------------------------------------------------------
 yaget::io::FileLoader::FileLoader()
     : mIOPort(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0))    // note: last param represents how many threads to create for io (0 os is managing)
 {
-    YAGET_UTIL_THROW_ON_RROR(mIOPort != nullptr, "Did not create IO Completion Port for File Loader.");
-    mLoaderThread->AddTask([this]() { Start(); });
+    error_handlers::ThrowOnError(mIOPort != nullptr, "Did not create IO Completion Port for File Loader.");
+    mLoaderThread->AddTask([this]() { StartLoader(); });
 }
 
-void yaget::io::FileLoader::Stop()
+
+//-------------------------------------------------------------------------------------------------
+void yaget::io::FileLoader::StopLoader()
 {
     mQuit = true;
     [[maybe_unused]] bool bResult = ::PostQueuedCompletionStatus(mIOPort, 0, io::FileData::kStopKey, nullptr) != 0;
     mLoaderThread.reset();
-    std::unique_lock<std::mutex> locker(mListMutex);
+    metrics::UniqueLock locker(mListMutex, "Stop Loader");
     mFilesToProcess.clear();
 }
 
+
+//-------------------------------------------------------------------------------------------------
 yaget::io::FileLoader::~FileLoader()
 {
-    Stop();
+    StopLoader();
     [[maybe_unused]] bool bResult = ::CloseHandle(mIOPort) != 0;
 }
 
-void yaget::io::FileLoader::Start()
+
+//-------------------------------------------------------------------------------------------------
+void yaget::io::FileLoader::StartLoader()
 {
-    metrics::Channel channel("io.file", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("io.file");
 
     [[maybe_unused]] constexpr bool tryNewOverlap = true;
     while (true)
@@ -163,14 +183,14 @@ void yaget::io::FileLoader::Start()
             OVERLAPPED_ENTRY overlappedEntries[entriesSize] = {};
             ULONG numEntriesRemoved = 0;
 
-            metrics::Channel channelStatus("L.Waiting...", YAGET_METRICS_CHANNEL_FILE_LINE);
-            bool bResult = ::GetQueuedCompletionStatusEx(mIOPort, &overlappedEntries[0], entriesSize, &numEntriesRemoved, INFINITE, false) != 0;
+            metrics::Channel channelStatus("L.Waiting...");
+            const bool bResult = ::GetQueuedCompletionStatusEx(mIOPort, &overlappedEntries[0], entriesSize, &numEntriesRemoved, INFINITE, false) != 0;
             if (mQuit)
             {
                 return;
             }
 
-            YAGET_UTIL_THROW_ON_RROR(bResult, fmt::format("Did not get queued io port for file to load assets from."));
+            error_handlers::ThrowOnError(bResult, fmt::format("Did not get queued io port for file to load assets from."));
 
             if (numEntriesRemoved)
             {
@@ -202,7 +222,7 @@ void yaget::io::FileLoader::Start()
 
             const io::FileData *nextFile = nullptr;
             {
-                metrics::UniqueLock locker(mListMutex, "Files To Process", YAGET_METRICS_CHANNEL_FILE_LINE);
+                metrics::UniqueLock locker(mListMutex, "Files To Process");
                 FilesToProcess::iterator it = mFilesToProcess.find(fileDataQuery);
                 if (it != mFilesToProcess.end())
                 {
@@ -212,14 +232,14 @@ void yaget::io::FileLoader::Start()
 
             if (nextFile)
             {
-                metrics::Channel span(fmt::format("Processing {} b", conv::ToThousandsSep(key.second)).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
+                metrics::Channel span(fmt::format("Processing {} b", conv::ToThousandsSep(key.second)));
 
                 // if Process returns false, no need for more processing, otherwise, do not remove it from mFilesToProcess
                 if (!nextFile->Process(key.second))
                 {
                     nextFile = nullptr;
 
-                    metrics::UniqueLock locker(mListMutex, "Erase File", YAGET_METRICS_CHANNEL_FILE_LINE);
+                    metrics::UniqueLock locker(mListMutex, "Erase File");
                     mFilesToProcess.erase(fileDataQuery);
                 }
             }
@@ -231,6 +251,8 @@ void yaget::io::FileLoader::Start()
     }
 }
 
+
+//-------------------------------------------------------------------------------------------------
 void yaget::io::FileLoader::Load(const Strings& filePathList, const std::vector<DoneCallback_t>& doneCallbacks)
 {
     YAGET_ASSERT((filePathList.size() == doneCallbacks.size()) || (filePathList.size() > 1 && doneCallbacks.size() == 1),
@@ -238,7 +260,7 @@ void yaget::io::FileLoader::Load(const Strings& filePathList, const std::vector<
 
     if (!doneCallbacks.empty())
     {
-        metrics::Channel channel(fmt::format("FileLoader got '{}' files", filePathList.size()), YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel(fmt::format("FileLoader got '{}' files", filePathList.size()));
 
         auto callback = doneCallbacks.begin();
         const bool isOneCallback = doneCallbacks.size() == filePathList.size() ? false : true;
@@ -246,7 +268,7 @@ void yaget::io::FileLoader::Load(const Strings& filePathList, const std::vector<
         {
             YAGET_ASSERT(io::file::IsFileExists(it), "File: '%s' does not exist.", it.c_str());
 
-            metrics::UniqueLock locker(mListMutex, "Adding File", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::UniqueLock locker(mListMutex, "Adding File");
             FileDataPtr fileData = std::make_unique<io::FileData>(it, mIOPort, *callback);
             mFilesToProcess.insert(std::move(fileData));
 
@@ -257,10 +279,37 @@ void yaget::io::FileLoader::Load(const Strings& filePathList, const std::vector<
     mLoaderThread->UnpauseAll();
 }
 
+
+//-------------------------------------------------------------------------------------------------
 bool yaget::io::FileLoader::Save(const io::Buffer& dataBuffer, const std::string& fileName)
 {
     //::PostQueuedCompletionStatus(mIOPort, 0, io::FileData::kSaveFileKey, nullptr);
 
     const auto& [result, errorMessage] = io::file::SaveFile(fileName, dataBuffer);
     return result;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::io::NetworkLoader::NetworkLoader()
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::io::NetworkLoader::~NetworkLoader()
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::io::NetworkLoader::Load(const Strings& /*filePathList*/, const std::vector<DoneCallback_t>& /*doneCallbacks*/)
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+bool yaget::io::NetworkLoader::Save(const io::Buffer& /*dataBuffer*/, const std::string& /*fileName*/)
+{
+    return false;
 }

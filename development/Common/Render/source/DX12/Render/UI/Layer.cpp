@@ -1,6 +1,7 @@
 #include "Render/UI/Layer.h"
 #include "App/WindowFrame.h"
 #include "imgui-docking/backends/imgui_impl_win32.h"
+#include "imgui-docking/backends/imgui_impl_dx12.h"
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::ui::Layer::Resizer::Resizer(Layer& layer)

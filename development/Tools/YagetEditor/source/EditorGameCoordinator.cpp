@@ -1,5 +1,6 @@
 ﻿#include "EditorGameCoordinator.h"
 
+//-------------------------------------------------------------------------------------------------
 yaget::editor::EditorSystemsCoordinator::EditorSystemsCoordinator(Messaging& m, Application& app)
     : internal::SystemsCoordinatorE(m, app)
 {
@@ -11,6 +12,20 @@ yaget::editor::EditorSystemsCoordinator::EditorSystemsCoordinator(Messaging& m, 
 
     const auto id = idCache.GetId(IdType::Burnable);
     coordinator.AddComponent<EmptyComponent>(id);
+    coordinator.AddComponent<BlankComponent>(id);
+    mItems.insert(id);
+
     globalCoordinator.AddComponent<EditorComponent>(id);
+    mGlobalItems.insert(id);
 }
 
+
+//-------------------------------------------------------------------------------------------------
+yaget::editor::EditorSystemsCoordinator::~EditorSystemsCoordinator()
+{
+    auto& coordinator = GetCoordinator<Entity>();
+    coordinator.RemoveItems(mItems);
+
+    auto& globalCoordinator = GetCoordinator<GlobalEntity>();
+    globalCoordinator.RemoveItems(mGlobalItems);
+}

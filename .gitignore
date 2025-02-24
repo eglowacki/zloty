@@ -87,3 +87,20 @@ development/Common/Utility/builds/
 development/Research/Reference/
 
 development/Tests/YagetCore-Test/packages/WinPixEventRuntime.1.0.161208001/
+
+development/Tools/YagetEditor/source/Editor.ygs.h
+
+development/Tools/ProjectValidator/bin/
+
+development/Tests/YagetCore-Test/test*.xml
+
+development/Tests/YagetCore-Test/textfile.txt
+
+development/Tests/YagetCore-Test/demotest.xml
+
+development/Tests/YagetCore-Test/Database/Director.sqlite
+
+development/Tests/YagetCore-Test/Database/vts.sqlite
+
+development/Common/Script/Lua-5.4.7/
+development/Common/Utility/include/sqlite/sqlite-amalgamation-3470200/

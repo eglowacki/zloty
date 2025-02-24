@@ -47,17 +47,50 @@ namespace
 #endif // YAGET_SHIPPING
         }
 
+        // return true if tag is filtered (do not show)
+        bool IsFilter(uint32_t tag) const
+        {
+            const auto it = mTagFilters.find(tag);
+            return it != mTagFilters.end();
+        }
+
+        void AddFilter(uint32_t tag)
+        {
+            mTagFilters.insert(tag);
+        }
+
+        void RemoveFilter(uint32_t tag)
+        {
+            mTagFilters.erase(tag);
+        }
+
+        bool IsOverrideFilter(uint32_t tag) const
+        {
+            const auto it = mOverriteTagFilters.find(tag);
+            return it != mOverriteTagFilters.end();
+        }
+
+        void AddOverrideFilter(uint32_t tag)
+        {
+            mOverriteTagFilters.insert(tag);
+        }
+
         yaget::ylog::Channel::Map mChannelMap;                       ///< Map of shared pointer of Channel objects
         yaget::ylog::Output::Vector mOutputList;                     ///< List of Output objects
         yaget::ylog::Log::Level mDefaultLevel = yaget::ylog::Log::Log::Level::eDebug;    ///< Default Log::Level of any new Channel
         
         using TagFilters_t = std::set<uint32_t>;
-        TagFilters_t mTagFilters;
-        TagFilters_t mOverriteTagFilters;
         TagFilters_t mTags;
 
         using OutputTypes = std::map<std::string, yaget::ylog::Manager::OutputCreator>;
         OutputTypes mRegisteredOutputTypes;
+
+        bool mIsTruncateFunctionName = false;
+        int mMaxLenFunctionName = 40;
+
+    private:
+        TagFilters_t mTagFilters;
+        TagFilters_t mOverriteTagFilters;
     };
 
     ManagerData& md()
@@ -73,6 +106,30 @@ namespace
 {
     auto& d = md();
     d.mOutputList.push_back(outputPtr);
+}
+
+/*static*/ bool yaget::ylog::Manager::IsTruncateFunctionName()
+{
+    const auto& d = md();
+    return d.mIsTruncateFunctionName;
+}
+
+/*static*/ int yaget::ylog::Manager::MaxLenFunctionName()
+{
+    const auto& d = md();
+    return d.mMaxLenFunctionName;
+}
+
+/*static*/ void yaget::ylog::Manager::TruncateFunctionName(bool truncate)
+{
+    auto& d = md();
+    d.mIsTruncateFunctionName = truncate;
+}
+
+/*static*/ void yaget::ylog::Manager::SetMaxLenFunctionName(int len)
+{
+    auto& d = md();
+    d.mMaxLenFunctionName = len;
 }
 
 /*static*/ void yaget::ylog::Manager::RegisterOutputType(const char* name, Manager::OutputCreator outputCreator)
@@ -100,11 +157,11 @@ void yaget::ylog::Manager::configure(const Config::Vector& aConfigList)
     d.mOutputList.clear();
 
     const ManagerData::OutputTypes& registeredOutputs = d.mRegisteredOutputTypes;
-    for (auto&& it : aConfigList)
+    for (const auto& it : aConfigList)
     {
         const std::string& configName = it->getName();
 
-        for (auto&& f : registeredOutputs)
+        for (const auto& f : registeredOutputs)
         {
             if (f.first.find(configName) != std::string::npos)
             {
@@ -148,7 +205,7 @@ void yaget::ylog::Manager::output(const ylog::Channel::Ptr& aChannelPtr, const y
 }
 
 // Serialize the current Log::Level of Channel objects and return them as a Config instance
-yaget::ylog::Config::Ptr yaget::ylog::Manager::getChannelConfig(void)
+yaget::ylog::Config::Ptr yaget::ylog::Manager::getChannelConfig()
 {
     auto& d = md();
     Config::Ptr ConfigPtr(new Config("ChannelConfig"));
@@ -181,14 +238,13 @@ void yaget::ylog::Manager::setDefaultLevel(Log::Level aLevel)
 bool yaget::ylog::Manager::IsValidTag(uint32_t tag)
 {
     const auto& d = md();
-    return d.mTags.find(tag) != std::end(d.mTags);
+    return d.mTags.contains(tag);
 }
 
 bool yaget::ylog::Manager::IsFilter(uint32_t tag)
 {
-    auto& d = md();
-    const auto it = d.mTagFilters.find(tag);
-    return it != d.mTagFilters.end();
+    const auto& d = md();
+    return d.IsFilter(tag);
 }
 
 bool yaget::ylog::Manager::IsSeverityFilter(ylog::Log::Level severity, uint32_t /*tag*/)
@@ -199,24 +255,23 @@ bool yaget::ylog::Manager::IsSeverityFilter(ylog::Log::Level severity, uint32_t 
 void yaget::ylog::Manager::AddFilter(uint32_t tag)
 {
     auto& d = md();
-    d.mTagFilters.insert(tag);
+    d.AddFilter(tag);
 }
 
 bool yaget::ylog::Manager::IsOverrideFilter(uint32_t tag)
 {
-    auto& d = md();
-    const auto it = d.mOverriteTagFilters.find(tag);
-    return it != d.mOverriteTagFilters.end();
+    const auto& d = md();
+    return d.IsOverrideFilter(tag);
 }
 
 void yaget::ylog::Manager::AddOverrideFilter(uint32_t tag)
 {
     auto& d = md();
-    d.mOverriteTagFilters.insert(tag);
+    d.AddOverrideFilter(tag);
 }
 
 void yaget::ylog::Manager::RemoveFilter(uint32_t tag)
 {
     auto& d = md();
-    d.mTagFilters.erase(tag);
+    d.RemoveFilter(tag);
 }

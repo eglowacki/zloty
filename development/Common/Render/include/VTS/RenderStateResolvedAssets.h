@@ -18,6 +18,12 @@
 #include "YagetCore.h"
 #include "VTS/RenderResolvedAssets.h"
 
+inline auto format_as(D3D11_DEPTH_WRITE_MASK f) { return fmt::underlying(f); }
+inline auto format_as(D3D11_COMPARISON_FUNC f) { return fmt::underlying(f); }
+inline auto format_as(D3D11_FILL_MODE f) { return fmt::underlying(f); }
+inline auto format_as(D3D11_CULL_MODE f) { return fmt::underlying(f); }
+inline auto format_as(D3D11_BLEND f) { return fmt::underlying(f); }
+inline auto format_as(D3D11_BLEND_OP f) { return fmt::underlying(f); }
 
 namespace yaget
 {
@@ -260,8 +266,8 @@ namespace yaget::conv
             std::string results;
             for (const auto& it : value)
             {
-                std::string blendvalues = fmt::format("{ BlendEnable: '{}', SrcBlend: '{}', DestBlend: '{}', BlendOp: '{}', SrcBlendAlpha: '{}', DestBlendAlpha: '{}', BlendOpAlpha: '{}', mRenderTargetWriteMask: '{}' }",
-                    it.mBlendEnable, it.mSrcBlend, it.mDestBlend, it.mBlendOp, it.mSrcBlendAlpha, it.mDestBlendAlpha, it.mBlendOpAlpha, it.mRenderTargetWriteMask);
+                std::string blendvalues = fmt::vformat("{ BlendEnable: '{}', SrcBlend: '{}', DestBlend: '{}', BlendOp: '{}', SrcBlendAlpha: '{}', DestBlendAlpha: '{}', BlendOpAlpha: '{}', mRenderTargetWriteMask: '{}' }",
+                    fmt::make_format_args(it.mBlendEnable, it.mSrcBlend, it.mDestBlend, it.mBlendOp, it.mSrcBlendAlpha, it.mDestBlendAlpha, it.mBlendOpAlpha, it.mRenderTargetWriteMask));
 
                 results += blendvalues;
             }

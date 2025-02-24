@@ -7,6 +7,7 @@
 #include "LoggerCpp/OutputFile.h"
 
 #include "MemoryManager/PoolAllocator.h"
+#include "MemoryManager/NewAllocator.h"
 
 #include "Metrics/Concurrency.h"
 
@@ -14,30 +15,29 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
 {
     yaget::Strings tags =
     {
-        #include "Logger/LogTags.h"
+        #include "Logger/CoreLogTags.h"
         #include "Render/Logger/RenderLogTags.h"
-        "SPAM",
-        "EDIT"
+        "EDIT",
     };
 
     return tags;
 }
 
 YAGET_BRAND_NAME_F("Beyond Limits")
-YAGET_CUSTOMIZE_STRIP_KEYWORDS(",::editor,editor::")
 
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
     YAGET_CHECKVERSION;
 
     using namespace yaget;
-                                                                                                    
+
+    memory::InitializeAllocations();
 
     args::Options options("Yaget.Editor", "Yaget Editor.");
 
     const int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug>(lpCmdLine, options, nullptr, 0, [&options]()
     {
-        metrics::Channel channel("Main.Editor", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel channel("Main.Editor");
 
         if (options.find<bool>("vts_fix", false))
         {
@@ -46,6 +46,8 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
         return editor::Run(options);
     });
+
+    memory::ReportAllocations();
 
     return result;
 }

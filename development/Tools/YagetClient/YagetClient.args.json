@@ -1,0 +1,18 @@
+{
+  "FileVersion": 2,
+  "Id": "558ce505-b003-4128-8fdf-f59719a7bb21",
+  "Items": [
+    {
+      "Id": "41f9b44d-fa1c-41de-bdb3-4dd2e685a795",
+      "Command": "--log_write_tags"
+    },
+    {
+      "Id": "be917a5f-c203-4f1d-a52c-566da30f4758",
+      "Command": "--address=foo-gar.2"
+    },
+    {
+      "Id": "084b082d-318b-4bc0-b6f9-bb63fda33735",
+      "Command": "--ticket=5"
+    }
+  ]
+}

@@ -1,103 +1,24 @@
-#include "Adapter.h"
+#include "Render/Platform/Adapter.h"
 #include "App/AppUtilities.h"
 #include "D3D12MemAlloc.h"
-#include "Debugging/DevConfiguration.h"
-#include "StringHelpers.h"
-#include "SwapChain.h"
 
 #include <d3d12.h>
-#include <dxgi1_6.h>
 
+#include "Core/ErrorHandlers.h"
 
-namespace 
-{
-    std::string IsSoftware(uint32_t flags)
-    {
-        return flags & DXGI_ADAPTER_FLAG_SOFTWARE ? "Yes" : "No";
-    }
-}
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::Adapter::Adapter(app::WindowFrame /*windowFrame*/)
+yaget::render::platform::Adapter::Adapter([[maybe_unused]] app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo)
 {
-    using namespace Microsoft::WRL;
+    auto [device, adapter, factory] = info::CreateDevice(adapterInfo);
+    HRESULT hr = device.As(&mDevice);
+    error_handlers::ThrowOnError(hr, "Could not get Device from CreateDevice.");
 
-    UINT dxgiFactoryFlags = 0;
+    hr = adapter.As(&mAdapter);
+    error_handlers::ThrowOnError(hr, "Could not get Adapter from CreateDevice.");
 
-#if YAGET_DEBUG_RENDER == 1
-    dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-#endif // YAGET_DEBUG_RENDER == 1
-
-    HRESULT hr = CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&mFactory));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Factory2");
-
-    if (yaget::dev::CurrentConfiguration().mInit.SoftwareRender)
-    {
-        ComPtr<IDXGIAdapter1> adapter;
-        mFactory->EnumWarpAdapter(IID_PPV_ARGS(&adapter));
-        adapter.As(&mAdapter);
-
-        DXGI_ADAPTER_DESC1 desc;
-        hr = adapter->GetDesc1(&desc);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 warp adapter descritpion");
-
-        YLOG_NOTICE("DEVI", "Found Warp Adapter: Name: '%s', Software: '%s', VendorId: '%d', DeviceId: '%d', Video Memory: '%s' bytes, System Memory: '%s' bytes, Flags: '%d'.",
-            conv::wide_to_utf8(desc.Description).c_str(), IsSoftware(desc.Flags).c_str(), desc.VendorId, desc.DeviceId,
-            conv::ToThousandsSep(desc.DedicatedVideoMemory).c_str(), conv::ToThousandsSep(desc.SharedSystemMemory).c_str(), desc.Flags);
-    }
-    else
-    {
-        // collect all valid adapters
-        std::vector<ComPtr<IDXGIAdapter1>> foundAdapters;
-        ComPtr<IDXGIAdapter1> tempAdapter;
-        for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != mFactory->EnumAdapters1(adapterIndex, &tempAdapter); ++adapterIndex)
-        {
-            if (SUCCEEDED(D3D12CreateDevice(tempAdapter.Get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device2), nullptr)))
-            {
-                DXGI_ADAPTER_DESC1 desc;
-                hr = tempAdapter->GetDesc1(&desc);
-                YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 adapter descritpion");
-
-                YLOG_NOTICE("DEVI", "Found Adapter: Name: '%s', Software: '%s', VendorId: '%d', DeviceId: '%d', Video Memory: '%s' bytes, System Memory: '%s' bytes, Flags: '%d'.",
-                    conv::wide_to_utf8(desc.Description).c_str(), IsSoftware(desc.Flags).c_str(), desc.VendorId, desc.DeviceId,
-                    conv::ToThousandsSep(desc.DedicatedVideoMemory).c_str(), conv::ToThousandsSep(desc.SharedSystemMemory).c_str(), desc.Flags);
-
-                foundAdapters.push_back(tempAdapter);
-            }
-        }
-
-        // chose which one to select
-        for (const auto& adapter : foundAdapters)
-        {
-            DXGI_ADAPTER_DESC1 desc;
-            hr = adapter->GetDesc1(&desc);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 adapter descritpion");
-
-            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
-            {
-                // Don't select the Basic Render Driver adapter.
-                continue;
-            }
-
-            YLOG_NOTICE("DEVI", "Selected Adapter: Name: '%s', Software: '%s', VendorId: '%d', DeviceId: '%d', Video Memory: '%s' bytes, System Memory: '%s' bytes, Flags: '%d'.",
-                conv::wide_to_utf8(desc.Description).c_str(), IsSoftware(desc.Flags).c_str(), desc.VendorId, desc.DeviceId,
-                conv::ToThousandsSep(desc.DedicatedVideoMemory).c_str(), conv::ToThousandsSep(desc.SharedSystemMemory).c_str(), desc.Flags);
-
-            // use this adapter, unless later ones will have a better one
-            adapter.As(&mAdapter);
-        }
-    }
-
-    YAGET_UTIL_THROW_ON_RROR(mAdapter, "Could not get DX12 Adapter1 interface");
-
-    ComPtr<ID3D12Device2> device;
-    hr = D3D12CreateDevice(mAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&device));
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create DX12 Device");
-
-    hr = device->QueryInterface<ID3D12Device4>(&mDevice);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get DX12 Device4 interface");
-
-    YAGET_RENDER_SET_DEBUG_NAME(mDevice.Get(), "Yaget Device");
+    hr = factory.As(&mFactory);
+    error_handlers::ThrowOnError(hr, "Could not get Factory from CreateDevice.");
 
 #if YAGET_DEBUG_RENDER == 1
     mDeviceDebugger.ActivateMessageSeverity(mDevice);
@@ -109,7 +30,7 @@ yaget::render::platform::Adapter::Adapter(app::WindowFrame /*windowFrame*/)
 
     D3D12MA::Allocator* allocator = nullptr;
     hr = D3D12MA::CreateAllocator(&allocatorDesc, &allocator);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get D3D12MA Allocator");
+    error_handlers::ThrowOnError(hr, "Could not get D3D12MA Allocator");
     mAllocator.reset(allocator);
 }
 
@@ -119,24 +40,22 @@ yaget::render::platform::Adapter::~Adapter() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-const Microsoft::WRL::ComPtr<ID3D12Device4>& yaget::render::platform::Adapter::GetDevice() const
+ID3D12Device* yaget::render::platform::Adapter::GetDevice() const
 {
-    return mDevice;
+    return mDevice.Get();
 }
 
 
 //-------------------------------------------------------------------------------------------------
-const Microsoft::WRL::ComPtr<IDXGIFactory4>& yaget::render::platform::Adapter::GetFactory() const
+IDXGIFactory* yaget::render::platform::Adapter::GetFactory() const
 {
-    return mFactory;
+    return mFactory.Get();
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::Adapter::Deleter::operator()(D3D12MA::Allocator* allocator) const
+D3D12MA::Allocator* yaget::render::platform::Adapter::GetAllocator() const
 {
-    if (allocator)
-    {
-        allocator->Release();
-    }
+    return mAllocator.get();
 }
+

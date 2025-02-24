@@ -30,6 +30,8 @@ namespace yaget
             struct Orientation {};
             struct Scale {};
 
+            using Types = std::tuple<Position, Orientation, Scale>;
+            using Storage = std::tuple<math3d::Vector3, math3d::Quaternion, math3d::Vector3>;
         }
 
         class LocationComponent : public Component

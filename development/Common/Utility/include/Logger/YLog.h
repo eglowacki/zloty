@@ -85,8 +85,6 @@ namespace yaget
 
 #define LOG_TAG(x) yaget::ylog::Tagger(x)
 
-#define YAGET_LOG_FILE_LINE_FUNCTION __FILE__, __LINE__, __FUNCTION__
-
 #if YAGET_LOG_ENABLED == 1
 
     #define YLOG_DEBUG(tag, ...)                            yaget::ylog::Get().debug().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)

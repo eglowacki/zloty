@@ -92,7 +92,7 @@ namespace yaget
 
         bool ExecuteStatement(const std::string& command, QueryCallback *callback);
 
-        // Update if record already exist, otherwise insert, inset will not update existing record
+        // Update if record already exist, otherwise insert, insert will not update existing record
         enum class Behaviour { Update, Insert };
         enum class TimeStamp { Yes, No };
         typedef std::string StatementId_t;
@@ -124,20 +124,23 @@ namespace yaget
     private:
         // this templates execute binding call to sqlite per specific type
         // NOTE: usage of fake is based on http://www.cplusplus.com/forum/general/193680/
-        template<typename T, typename Fake = void> struct StatementBinder;
+        template<typename T, typename Fake = void>
+        requires (!std::is_same_v<T, size_t>)
+        struct StatementBinder
+        {
+            static void Bind(sqlite3* database, sqlite3_stmt* statement, T value, int index)
+            {
+                StatementBinder<std::string>::Bind(database, statement, conv::Convertor<T>::ToString(value), index);
+            }
+        };
 
         template<typename Fake> struct StatementBinder<conv::unused_marker_t, Fake> {static void Bind(sqlite3* /*database*/, sqlite3_stmt* /*statement*/, conv::unused_marker_t /*value*/, int /*index*/) {}};
         template<typename Fake> struct StatementBinder<null_marker_t, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, null_marker_t value, int index);};
         template<typename Fake> struct StatementBinder<bool, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, bool value, int index); };
         template<typename Fake> struct StatementBinder<int, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, int value, int index);};
         template<typename Fake> struct StatementBinder<int64_t, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, int64_t value, int index);};
-        template<typename Fake> struct StatementBinder<uint64_t, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, uint64_t value, int index);};
         template<typename Fake> struct StatementBinder<float, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, float value, int index);};
-        template<typename Fake> struct StatementBinder<yaget::Guid, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, yaget::Guid value, int index); };
         template<typename Fake> struct StatementBinder<std::string, Fake> {static void Bind(sqlite3* database, sqlite3_stmt* statement, const std::string& value, int index);};
-        template<typename Fake> struct StatementBinder<std::vector<std::string>, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, const std::vector<std::string>& value, int index); };
-        template<typename Fake> struct StatementBinder<math3d::Vector3, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, const math3d::Vector3& value, int index); };
-        template<typename Fake> struct StatementBinder<math3d::Quaternion, Fake> { static void Bind(sqlite3* database, sqlite3_stmt* statement, const math3d::Quaternion& value, int index); };
 
         // this will bind specific value type to sql statement
         template <
@@ -245,9 +248,9 @@ namespace yaget
     template<typename T>
     bool SQLite::ExecuteStatementTuple(const StatementId_t& statementId, const std::string& tableName, const T& dataRow, const Strings& columnNames, Behaviour behaviour, TimeStamp automaticTime /*= TimeStamp::No*/)
     {
-        YAGET_ASSERT(mDatabase, "SQLite::ExecuteStatement<RT>: '%s' called for table: '%s', but sqlite db is not created yet.", statementId.c_str(), tableName.c_str());
+        YAGET_ASSERT(mDatabase, "SQLite::ExecuteStatement<T>: '%s' called for table: '%s', but sqlite db is not created yet.", statementId.c_str(), tableName.c_str());
 
-        if (const auto it = mStatements.find(statementId); it == mStatements.end())
+        if (!IsStatementCached(statementId))
         {
             PreCacheStatementTuple<T>(statementId, tableName, columnNames, behaviour, automaticTime);
         }

@@ -2,6 +2,8 @@
 #include "VTS/ResolvedAssets.h"
 #include "Debugging/Assert.h"
 #include "lodepng.h"
+
+#include "Core/ErrorHandlers.h"
 //#include <DirectXTex.h>
 
 namespace
@@ -52,7 +54,7 @@ namespace
 //--------------------------------------------------------------------------------------------------
 yaget::image::Header yaget::image::GetHeader(const io::Buffer& /*buffer*/)
 {
-    YAGET_UTIL_THROW("REND", "DX11 DDS disabeld for now...");
+    error_handlers::Throw("REND", "DX11 DDS disabeld for now...");
     image::Header header;
 
 #if 0 // disable this code for now to move it to renderer
@@ -61,7 +63,7 @@ yaget::image::Header yaget::image::GetHeader(const io::Buffer& /*buffer*/)
     {
         DirectX::TexMetadata metadata;
         HRESULT hr = DirectX::GetMetadataFromDDSMemory(buffer.first.get(), buffer.second, 0, metadata);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not load DDS header/metadata.");
+        error_handlers::ThrowOnError(hr, "Could not load DDS header/metadata.");
 
         header.mDataType = Header::DataType::DDS;
         header.mSize = std::make_pair(static_cast<uint32_t>(metadata.width), static_cast<uint32_t>(metadata.height));
@@ -85,7 +87,7 @@ yaget::image::Header yaget::image::GetHeader(const io::Buffer& /*buffer*/)
             break;
 
         default:
-            YAGET_UTIL_THROW_ASSERT("REND", false, fmt::format("Image Colortype: '{}' does not supported format: '{}'.", static_cast<int>(header.mColorType), static_cast<int>(metadata.format)));
+            error_handlers::ThrowOnCheck(false, fmt::format("Image Colortype: '{}' does not supported format: '{}'.", static_cast<int>(header.mColorType), static_cast<int>(metadata.format)));
         }
     }
     else if (IsPNG(buffer))
@@ -163,4 +165,16 @@ yaget::io::Buffer yaget::image::Process(const io::Buffer& buffer, Header* header
     }
 
     return processedData;
+}
+
+bool yaget::image::EncodeSave(const std::string& filename, const std::vector<pixel_byte>& in, uint32_t w, uint32_t h, int colortype /*= 6 LodePNGColorType LCT_RGBA*/, uint32_t bitdepth /*= 8*/)
+{
+    if (filename.empty())
+    {
+        return false;
+    }
+
+    auto result = lodepng_encode_file(filename.c_str(), in.data(), w, h, static_cast<LodePNGColorType>(colortype), bitdepth);
+
+    return result == 0;
 }

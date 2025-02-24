@@ -1,6 +1,7 @@
 #include "App/Application.h"
 #include "Debugging/DevConfiguration.h"
 #include "Items/ItemsDirector.h"
+#include "MemoryManager/NewAllocator.h"
 
 
 //-------------------------------------------------------------------------------------------------
@@ -19,21 +20,27 @@ yaget::Application::Application(const std::string& title, items::Director& direc
 //-------------------------------------------------------------------------------------------------
 void yaget::Application::onRenderTask(const Application::TickLogic& renderCallback)
 {
+    memory::RecordAllocations recordAllocations;
+
     dev::CurrentThreadIds().RefreshRender(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Render, "RENDER");
 
-    metrics::Channel channel("RenderThread", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("RenderThread");
+
+    YLOG_INFO("APP", "Started Render Task...");
 
     mRenderClock.Resync();
     time::Microsecond_t lastRenderTime = mRenderClock.GetRealTime();
 
     while (!mQuit)
     {
-        metrics::Channel rChannel("RenderTick", YAGET_METRICS_CHANNEL_FILE_LINE);
+        FrameCounter::Collector fpsCollector(mRenderFrameCounter);
+
+        metrics::Channel rChannel("RenderTick");
 
         if (IsSuspended())
         {
-            metrics::Channel sChannel("Suspended", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel sChannel("Suspended");
             platform::Sleep([this] { return IsSuspended(); });
         }
 
@@ -47,6 +54,7 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
         mRenderClock.Tick(deltaTime);
     }
 
+    YLOG_INFO("APP", "Ended Render Task.");
     dev::CurrentThreadIds().RefreshRender(0);
 }
 
@@ -54,11 +62,14 @@ void yaget::Application::onRenderTask(const Application::TickLogic& renderCallba
 //-------------------------------------------------------------------------------------------------
 void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickLogic& shutdownLogicCallback)
 {
+    memory::RecordAllocations recordAllocations;
+
     dev::CurrentThreadIds().RefreshLogic(platform::CurrentThreadId());
     metrics::MarkStartThread(dev::CurrentThreadIds().Logic, "LOGIC");
 
+    metrics::Channel channel("GameThread");
 
-    metrics::Channel channel("GameThread", YAGET_METRICS_CHANNEL_FILE_LINE);
+    YLOG_INFO("APP", "Started Logic Task...");
 
     const time::Microsecond_t kFixedDeltaTime = time::GetDeltaTime(dev::CurrentConfiguration().mInit.LogicTick);
     const metrics::PerformancePolicy defaultPerformancePolicy;
@@ -81,7 +92,9 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
 
         while (tickAccumulator >= kFixedDeltaTime)
         {
-            metrics::Channel gameChannel("GameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
+            FrameCounter::Collector fpsCollector(mLogicFrameCounter);
+
+            metrics::Channel gameChannel("GameTick");
 
             const time::Microsecond_t startProcessTime = platform::GetRealTime(time::kMicrosecondUnit);
 
@@ -91,10 +104,10 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
 
             if (logicCallback)
             {
-                metrics::Channel channel("Callback", YAGET_METRICS_CHANNEL_FILE_LINE);
+                metrics::Channel channel("Callback");
 
                 logicCallback(mApplicationClock, channel);
-            }
+            }                                                                                                                                      
 
             mApplicationClock.Tick(kFixedDeltaTime);
 
@@ -106,6 +119,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
                 {
                     // since we are under debugger, we just adjust the main timer to account for that loss time (maybe due to break point)
                     platform::AdjustDrift(actualProcessTime - kFixedDeltaTime, time::kMicrosecondUnit);
+                    mApplicationClock.Resync();
                     YLOG_NOTICE("PROF", "Adjusted Main Real Time by: '%d' (mc).", actualProcessTime - kFixedDeltaTime);
                 }
             }
@@ -131,7 +145,14 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
         shutdownLogicCallback(mApplicationClock, channel);
     }
 
+    YLOG_INFO("APP", "Ended Logic Task.");
     dev::CurrentThreadIds().RefreshLogic(0);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::Application::~Application()
+{
 }
 
 
@@ -149,6 +170,9 @@ int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRe
 
     mGeneralPoolThread->UnpauseAll();
     YLOG_DEBUG("APP", "Application.Run pump started.");
+
+    constexpr time::Microsecond_t oneSecond = time::FromTo<time::Microsecond_t>(1.0f, time::kSecondUnit, time::kMicrosecondUnit);
+    time::Microsecond_t printInterval = platform::GetRealTime(yaget::time::kMicrosecondUnit) + oneSecond;
     while (!mRequestQuit)
     {
         onMessagePump(mApplicationClock);
@@ -157,20 +181,36 @@ int yaget::Application::Run(const TickLogic& tickLogic, const TickRender& tickRe
             tickIdle();
         }
 
+        const auto nowTime = platform::GetRealTime(yaget::time::kMicrosecondUnit);
+        if (printInterval < nowTime)
+        {
+            printInterval = nowTime + oneSecond;
+
+            const auto avgLogicDelta = time::FromTo<float>(mLogicFrameCounter.GetAvgDelta(), time::kMicrosecondUnit, time::kMilisecondUnit);
+            const auto loopLogicDelta = time::FromTo<float>(mLogicFrameCounter.GetLoopDelta(), time::kMicrosecondUnit, time::kMilisecondUnit);
+
+            const auto avgRenderDelta = time::FromTo<float>(mRenderFrameCounter.GetAvgDelta(), time::kMicrosecondUnit, time::kMilisecondUnit);
+            const auto loopRenderDelta = time::FromTo<float>(mRenderFrameCounter.GetLoopDelta(), time::kMicrosecondUnit, time::kMilisecondUnit);
+
+            const auto logicFPS = static_cast<int>(loopLogicDelta ? 1000/loopLogicDelta : 0);
+            const auto renderFPS = static_cast<int>(loopRenderDelta ? 1000/loopRenderDelta : 0);
+            YLOG_DEBUG("APP", "Logic Frame: %.3f ms., Logic Loop: %.3f ms. (%d), Render Frame: %.3f ms., Render Loop: %.3f ms. (%d)", avgLogicDelta, loopLogicDelta, logicFPS, avgRenderDelta, loopRenderDelta, renderFPS);
+        }
+
         std::this_thread::yield();
     }
     YLOG_DEBUG("APP", "Application.Run pump ended.");
-
-    // cleanup all threads here, wait for all completion before proceeding
-    mQuit = true;
 
     if (quitCallback)
     {
         quitCallback();
     }
 
+    // cleanup all threads here, wait for all completion before proceeding
+    mQuit = true;
     mGeneralPoolThread.reset();
     YLOG_DEBUG("APP", "Application.Run mGeneralPoolThread stopped and cleared.");
+
     Cleanup();
     while (onMessagePump(mApplicationClock))
         ;

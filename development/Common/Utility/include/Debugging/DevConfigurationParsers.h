@@ -139,7 +139,8 @@ namespace yaget::dev
         return lhs.mVTSConfig == rhs.mVTSConfig &&
             lhs.mEnvironmentList == rhs.mEnvironmentList &&
             lhs.mWindowOptions == rhs.mWindowOptions && 
-            lhs.mGameDirectorScript == rhs.mGameDirectorScript;
+            lhs.mGameDirectorScript == rhs.mGameDirectorScript &&
+            lhs.mStartingStage == rhs.mStartingStage;
     }
 
     inline bool operator==(const Configuration::Runtime& lhs, const Configuration::Runtime& rhs)
@@ -151,7 +152,8 @@ namespace yaget::dev
     inline bool operator==(const Configuration::Graphics& lhs, const Configuration::Graphics& rhs)
     {
         return lhs.mDevice == rhs.mDevice &&
-            lhs.mMemoryReport == rhs.mMemoryReport;
+               lhs.mMemoryReport == rhs.mMemoryReport && 
+               lhs.mGPUTraceback == rhs.mGPUTraceback;
     }
 
     inline bool operator==(const Configuration& lhs, const Configuration& rhs)
@@ -236,6 +238,8 @@ namespace yaget::dev
         j["Filters"] = logging.Filters;
         j["Outputs"] = logging.Outputs;
         j["PrintThreadName"] = logging.PrintThreadName;
+        j["TruncateFunctionName"] = logging.TruncateFunctionName;
+        j["MaxFunctionNameLen"] = logging.MaxFunctionNameLen;
     }
 
     namespace parsers { Strings ParseLogFilterTags(const Strings& newFilterTags, const Strings& currentFilterTags); }
@@ -281,6 +285,8 @@ namespace yaget::dev
         });
 
         logging.PrintThreadName = yaget::json::GetValue(j, "PrintThreadName", logging.PrintThreadName);
+        logging.TruncateFunctionName = yaget::json::GetValue(j, "TruncateFunctionName", logging.TruncateFunctionName);
+        logging.MaxFunctionNameLen = yaget::json::GetValue(j, "MaxFunctionNameLen", logging.MaxFunctionNameLen);
     }
 
 
@@ -364,10 +370,13 @@ namespace yaget::dev
         //j["ResY"] = init.ResY;
         //j["LogicTick"] = init.LogicTick;
 
+        j["VSync"] = init.VSync;
+
         j["VTS"] = init.mVTSConfig;
         j["Aliases"] = init.mEnvironmentList;
         j["WindowOptions"] = init.mWindowOptions;
         j["GameDirectorScript"] = init.mGameDirectorScript;
+        j["StartingStage"] = init.mStartingStage;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -378,6 +387,8 @@ namespace yaget::dev
         //init.ResX = json::GetValue(j, "ResX", init.ResX);
         //init.ResY = json::GetValue(j, "ResY", init.ResY);
         //init.LogicTick = json::GetValue(j, "LogicTick", init.LogicTick);
+
+        init.VSync = json::GetValue(j, "VSync", init.VSync);
 
         if (yaget::json::IsSectionValid(j, "VTS", ""))
         {
@@ -390,6 +401,7 @@ namespace yaget::dev
 
         init.mWindowOptions = json::GetValue(j, "WindowOptions", init.mWindowOptions);
         init.mGameDirectorScript = json::GetValue(j, "GameDirectorScript", init.mGameDirectorScript);
+        init.mStartingStage = json::GetValue(j, "StartingStage", init.mStartingStage);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -411,6 +423,7 @@ namespace yaget::dev
     {
         j["Device"] = graphics.mDevice;
         j["MemoryReport"] = graphics.mMemoryReport;
+        j["GPUTraceback"] = graphics.mGPUTraceback;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -418,6 +431,7 @@ namespace yaget::dev
     {
         graphics.mDevice = json::GetValue(j, "Device", graphics.mDevice);
         graphics.mMemoryReport = json::GetValue(j, "MemoryReport", graphics.mMemoryReport);
+        graphics.mGPUTraceback = json::GetValue(j, "GPUTraceback", graphics.mGPUTraceback);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------

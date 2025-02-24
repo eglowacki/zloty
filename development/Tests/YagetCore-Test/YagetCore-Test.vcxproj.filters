@@ -55,6 +55,12 @@
     <ClCompile Include="TestFiles\Math_Test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="TestFiles\CoordinatorSet_Test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestFiles\Persistence_Test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Test Files">

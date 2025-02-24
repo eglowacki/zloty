@@ -26,6 +26,12 @@
     <Filter Include="Source Files\Platform Files\MemAlloc Files">
       <UniqueIdentifier>{d867235c-ceca-4bec-9f48-68476b7e930b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Polygons Files">
+      <UniqueIdentifier>{9ce9ca10-6b21-4ceb-a596-3e81e3fc8316}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Metrics Files">
+      <UniqueIdentifier>{bbe02cd5-26d0-435a-876d-efdc6c28efcf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\Device.h">
@@ -85,6 +91,33 @@
     <ClInclude Include="..\include\DX12\Render\RenderCore.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Polygons\Polygon.h">
+      <Filter>Source Files\Polygons Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\RenderStringHelpers.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\AdapterInfo.h">
+      <Filter>Source Files\Application Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h">
+      <Filter>Source Files\Metrics Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Platform\Commander.h">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Platform\ResourceCompiler.h">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Platform\CommandListPool.h">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Platform\CommandAllocators.h">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\EnumConversion.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -137,6 +170,30 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp">
       <Filter>Source Files\Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Polygons\Polygon.cpp">
+      <Filter>Source Files\Polygons Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\RenderStringHelpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\AdapterInfo.cpp">
+      <Filter>Source Files\Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp">
+      <Filter>Source Files\Metrics Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Platform\Commander.cpp">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Platform\ResourceCompiler.cpp">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Platform\CommandListPool.cpp">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Platform\CommandAllocators.cpp">
+      <Filter>Source Files\Platform Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

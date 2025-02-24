@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include <stack>
 #include <map>
+#include <source_location>
 
 
 #define YAGET_METRIC_GATHER 0 //
@@ -154,36 +155,41 @@ namespace yaget
         class TimeScoper
         {
         public:
-            //YAGET_LOG_FILE_LINE_FUNCTION
-            TimeScoper(const char* message, const char* file, uint32_t line, const char* function)
-                : TimeScoper("PROF", message, file, line, function)
+            TimeScoper(const char* message, const std::source_location& sourceLocation = std::source_location::current())
+                : TimeScoper("PROF", message, sourceLocation)
             {}
 
-            TimeScoper(const char* tag, const char* message, const char* file, uint32_t line, const char* function)
+            TimeScoper(const char* tag, const char* message, const std::source_location& sourceLocation = std::source_location::current())
                 : mStartTime(platform::GetRealTime(time::kMicrosecondUnit))
                 , mMessage(message)
-                , mFile(file)
-                , mLine(line)
-                , mFunction(function)
+                , mSourceLocation(sourceLocation)
                 , mTag(tag)
             {}
+
+            void SetAccumulator(int* accumulator)
+            {
+                mAccumulator = accumulator;
+            }
 
             ~TimeScoper()
             {
                 const time::Microsecond_t endTime = platform::GetRealTime(time::kMicrosecondUnit);
                 const time::Microsecond_t runTime = endTime - mStartTime;
                 const int timeDiff = time::FromTo<int>(runTime, time::kMicrosecondUnit, TU);
+                if (mAccumulator)
+                {
+                    *mAccumulator += timeDiff;
+                }
 
-                YLOG_PNOTICE(mTag, mFile, mLine, mFunction, "%s: '%s' (%s).", mMessage, conv::ToThousandsSep(timeDiff).c_str(), UnitName(TU).c_str());
+                YLOG_PNOTICE(mTag, mSourceLocation.file_name(), mSourceLocation.line(), mSourceLocation.function_name(), "%s: '%s' (%s).", mMessage, conv::ToThousandsSep(timeDiff).c_str(), UnitName(TU).c_str());
             }
 
         private:
             time::Microsecond_t mStartTime = 0;
             const char* mMessage = nullptr;
-            const char* mFile = "";
-            uint32_t mLine = 0;
-            const char* mFunction = "";
+            const std::source_location& mSourceLocation;
             const char* mTag = "PROF";
+            int* mAccumulator = nullptr;
         };
 
 #if YAGET_METRIC_GATHER == 1

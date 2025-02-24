@@ -161,7 +161,7 @@ namespace yaget::ylog
         DateTime mTime;                 ///< Timestamp of the output
         std::ostringstream mpStream;    ///< The underlying string stream
         std::string mFileName;
-        int mFileLine = 0;
+        uint32_t mFileLine = 0;
         uint32_t mTag = 0;
         bool mIsFiltered = false;
         std::string mFunctionName;

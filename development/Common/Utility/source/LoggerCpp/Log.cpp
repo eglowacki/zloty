@@ -50,7 +50,7 @@ Log::~Log()
 {
     if (!mIsFiltered)
     {
-        mTime.Make();
+        //mTime.Make();
         FormatLineMessage();
         mLogger.output(*this);
     }
@@ -107,7 +107,7 @@ void Log::Write(const char* file, unsigned line, const char* functionName, uint3
 {
     // Did you forget to registered this tag?
     // To register your tag in core library add 'YOUR_TAG_NAME"
-    // to Logger/LogTags.h file. For external library, executable,
+    // to Logger/CoreLogTags.h file. For external library, executable,
     // add to you GetRegisteredTags() function
     assert(Manager::IsValidTag(tag));
 
@@ -126,9 +126,40 @@ void Log::Write(const char* file, unsigned line, const char* functionName, uint3
 
         if (!mIsFiltered)
         {
+            mTime.Make();
             mFileName = file ? file : "unknown file";
             mFileLine = line;
-            mFunctionName = functionName ? functionName : "unknown function";
+
+            if (functionName)
+            {
+                if (Manager::IsTruncateFunctionName())
+                {
+                    // some function signatures are very long, making harder to read log lines
+                    // this gives us an option to shorten the function name but only if current
+                    // signature is larger then MaxLenFunctionName
+                    const std::string_view name(functionName);
+                    const auto startIndex = name.find_first_of('<');
+                    const auto endIndex = name.find_last_of('>');
+                    if (startIndex != std::string::npos && endIndex != std::string::npos && endIndex > startIndex && endIndex - startIndex > Manager::MaxLenFunctionName())
+                    {
+                        mFunctionName = name.substr(0, startIndex);
+                        mFunctionName += "<***>";
+                        mFunctionName += name.substr(endIndex+1);
+                    }
+                    else
+                    {
+                        mFunctionName = functionName;
+                    }
+                }
+                else
+                {
+                    mFunctionName = functionName;
+                }
+            }
+            else
+            {
+                mFunctionName = "unknown function";
+            }
 
             va_list vlist;
             va_start(vlist, format);
@@ -174,12 +205,12 @@ void Log::FormatLineMessage()
         scratchBuffer[scratchBufferSize-2] = ']';
         scratchBuffer[scratchBufferSize-1] = '\0';
 
-        threadName = scratchBuffer;
-    }
-
-    for (int i = 0; i < 2; ++i)
-    {
-        char* buffer = mFormatedBuffers[i];                 // time channel sev:tag
+        threadName = scratchBuffer;                         //
+    }                                                       //                                 line  function
+                                                            //                              file
+    for (int i = 0; i < 2; ++i)                             //                            split
+    {                                                       //                          message
+        char* buffer = mFormatedBuffers[i];                 // time channel sev:tag  thread
         int result = _snprintf_s(buffer, BufferSize, _TRUNCATE, "%s  %-12s [%s%s%-4s]%s %s%s%s(%d) : %s\n",
             timeText.c_str(), channelName.c_str(),
             severityText, ":", tagger.c_str(),

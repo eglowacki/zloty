@@ -1,0 +1,17 @@
+[submodule "development/Dependencies/DirectXTK12-06.2023"]
+	path = development/Dependencies/DirectXTK12-06.2023
+	url = https://github.com/microsoft/DirectXTK12.git
+[submodule "development/Dependencies/fmt-10.1"]	
+	path = development/Dependencies/fmt-10.1
+	url = https://github.com/fmtlib/fmt.git
+[submodule "development/Dependencies/terminal-01.2024"]	
+	path = development/Dependencies/terminal-01.2024
+	url = https://github.com/jupyter-xeus/cpp-terminal.git
+[submodule "development/Dependencies/nlohmann-json-3.11"]	
+	path = development/Dependencies/nlohmann-json-3.11
+	url = https://github.com/nlohmann/json.git
+	
+	
+[submodule "development/Dependencies/FTXUI"]
+	path = development/Dependencies/FTXUI
+	url = https://github.com/ArthurSonzogni/FTXUI.git

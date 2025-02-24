@@ -164,7 +164,6 @@
     <ClInclude Include="..\include\Gui\VideoOptions.h" />
     <ClInclude Include="..\include\Loaders\GeometryConvertor.h" />
     <ClInclude Include="..\include\Logger\RenderLogTags.h" />
-    <ClInclude Include="..\include\PlatformDisplayModes.h" />
     <ClInclude Include="..\include\RenderHelpers.h" />
     <ClInclude Include="..\include\RenderMathFacade.h" />
     <ClInclude Include="..\include\RenderTarget.h" />
@@ -242,7 +241,6 @@
     </ClCompile>
     <ClCompile Include="..\source\LineComponent.cpp" />
     <ClCompile Include="..\source\ModelComponent.cpp" />
-    <ClCompile Include="..\source\PlatformDisplayModes.cpp" />
     <ClCompile Include="..\source\RenderComponent.cpp" />
     <ClCompile Include="..\source\RenderHelpers.cpp" />
     <ClCompile Include="..\source\RenderTarget.cpp" />

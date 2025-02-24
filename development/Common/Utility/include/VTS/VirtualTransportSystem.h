@@ -91,7 +91,7 @@ namespace yaget
                 bool operator==(const Section& other) const;
 
                 //! Initializes with string in a format Name@Filter. Filter is optional.
-                //! We do not enforce explicit here due to allow easy of usage with strings
+                //! We do not enforce explicit here to allow easy of usage with strings
                 Section(const std::string& pathName);
 
                 Section& operator=(Section&&) = default;
@@ -178,8 +178,8 @@ namespace yaget
             std::shared_ptr<Asset> AddAsset(const std::shared_ptr<Asset>& asset);
             void RemoveAsset(const io::Tag& tag);
             std::shared_ptr<Asset> FindAsset(const io::Tag& tag) const;
-            bool AttachTransientBlobNonMT(const std::vector<std::shared_ptr<io::Asset>>& assets, db::Transaction& transaction);
-            bool AttachTransientBlobNonMT(const std::shared_ptr<io::Asset>& asset, db::Transaction& transaction) { return AttachTransientBlobNonMT(std::vector<std::shared_ptr<io::Asset>>{ asset }, transaction); }
+            bool AttachTransientBlobNonMT(const std::vector<std::shared_ptr<io::Asset>>& assets, yaget::db::Transaction& transaction);
+            bool AttachTransientBlobNonMT(const std::shared_ptr<io::Asset>& asset, yaget::db::Transaction& transaction) { return AttachTransientBlobNonMT(std::vector<std::shared_ptr<io::Asset>>{ asset }, transaction); }
 
             AssetResolver FindAssetConverter(const std::string& converterType) const;
 
@@ -498,24 +498,26 @@ namespace yaget
 
     } // namespace io
 
-    namespace conv
+    //-------------------------------------------------------------------------------------------------------------------------------
+    template <>
+    struct conv::Convertor<io::VirtualTransportSystem::Section>
     {
-        //-------------------------------------------------------------------------------------------------------------------------------
-        template <>
-        struct Convertor<io::VirtualTransportSystem::Section>
+        static std::string ToString(const io::VirtualTransportSystem::Section& value)
         {
-            static std::string ToString(const io::VirtualTransportSystem::Section& value)
+            if (std::string result = value.ToString(); !result.empty())
             {
-                if (std::string result = value.ToString(); !result.empty())
-                {
-                    return result;
-                }
-                else
-                {
-                    return "NULL";
-                }
+                return result;
             }
-        };
-    }
+            else
+            {
+                return "NULL";
+            }
+        }
+        static io::VirtualTransportSystem::Section FromString(const char* value)
+        {
+            const io::VirtualTransportSystem::Section result = {value ? value : ""};
+            return result;
+        }
+    };
 
 } // namespace yaget

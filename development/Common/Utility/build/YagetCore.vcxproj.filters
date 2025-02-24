@@ -87,6 +87,12 @@
     <Filter Include="Metric Files">
       <UniqueIdentifier>{3b1d8fab-c945-4a26-b127-f8d1f87dd6a5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component Files\Inlines">
+      <UniqueIdentifier>{c96c02dc-c695-488b-ae53-c0e9e8eb0947}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core Files">
+      <UniqueIdentifier>{7ca36875-f777-438d-b6bd-64fcef077f09}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
@@ -281,9 +287,6 @@
     <ClCompile Include="..\source\Components\PersistentBaseComponent.cpp">
       <Filter>Component Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\Components\SystemsCoordinator.cpp">
-      <Filter>Logger Files\LoggerCpp Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\GameSystem\Messaging.cpp">
       <Filter>GameSystem Files</Filter>
     </ClCompile>
@@ -301,6 +304,18 @@
     </ClCompile>
     <ClCompile Include="..\source\Application\WindowFrame.cpp">
       <Filter>Application Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\SystemsCoordinator.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Core\ErrorHandlers.cpp">
+      <Filter>Core Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Items\StagerSystem.cpp">
+      <Filter>Items Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Items\StageComponent.cpp">
+      <Filter>Items Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -557,7 +572,7 @@
     <ClInclude Include="..\source\Logger\OutputMemory.cpp">
       <Filter>Logger Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Logger\LogTags.h">
+    <ClInclude Include="..\include\Logger\CoreLogTags.h">
       <Filter>Logger Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\TestHelpers\TestHelpers.h">
@@ -587,9 +602,6 @@
     <ClInclude Include="..\include\Components\CoordinatorSet.h">
       <Filter>Component Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Meta\Hana.h">
-      <Filter>Meta Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Components\SystemsCoordinator.h">
       <Filter>Component Files</Filter>
     </ClInclude>
@@ -610,6 +622,21 @@
     </ClInclude>
     <ClInclude Include="..\include\Math\Interpolators.h">
       <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\MemoryManager\NewAllocator.h">
+      <Filter>MemoryManager Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\GameSystemInline.h">
+      <Filter>Component Files\Inlines</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Core\ErrorHandlers.h">
+      <Filter>Core Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Items\StagerSystem.h">
+      <Filter>Items Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Items\StageComponent.h">
+      <Filter>Items Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

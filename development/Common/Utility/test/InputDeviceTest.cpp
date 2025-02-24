@@ -119,7 +119,7 @@ TEST(InputDevice)
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
     // check if input is triggered with empty context (*)
-    metrics::Channel channel("InputTest", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("InputTest");
 
     gameClock.Resync();
     time::Microsecond_t baseTime = gameClock.GetLogicTime();
@@ -305,7 +305,7 @@ TEST(InputDevice)
 
         while (tickAccumulator >= time::kDeltaTime_60)
         {
-            metrics::Channel span("FrameTick", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::Channel span("FrameTick");
 
             time::Microsecond_t startProccessTime = platform::GetRealTime(time::kMicrosecondUnit);
             const uint64_t tickCounter = gameClock.GetTickCounter();
@@ -364,7 +364,7 @@ TEST(InputDevice_Mouse)
     });
 
     metrics::PerformancePolicy defaultPerformancePolicy;
-    metrics::Channel channel("InputTest_Mouse", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("InputTest_Mouse");
 
     time::GameClock gameClock;
     time::Microsecond_t baseTime = gameClock.GetLogicTime();

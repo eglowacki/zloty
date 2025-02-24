@@ -5,11 +5,11 @@
     <Import Project="yaget.Math.props" />
     <Import Project="yaget.flatbuffers.props" />
     <Import Project="yaget.nlohmann_json.props" />
-    <Import Project="yaget.fmt.props" />
+    <Import Project="Props\yaget.fmt.props" />
     <Import Project="yaget.terminal.props" />
-    <Import Project="yaget.hana.props" />
-    <Import Project="yaget.Math.DXTK.props" />
+    <Import Project="Props\yaget.Math.DXTK.props" />
     <Import Project="yaget.Mather.props" />
+    <Import Project="Props\yaget.boost.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
     <YAGET_RUN_FOLDER>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\bin\$(ProjectName)\$(Platform).$(Configuration)\</YAGET_RUN_FOLDER>
@@ -23,11 +23,13 @@
       <PrecompiledHeaderFile>Precompiled.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);TIXML_USE_STL;_ENABLE_ATOMIC_ALIGNMENT_FIX;NOMINMAX;GUID_WINDOWS;_WIN64</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TIXML_USE_STL;_ENABLE_ATOMIC_ALIGNMENT_FIX;NOMINMAX;GUID_WINDOWS;_WIN64;_SILENCE_CXX20_CISO646_REMOVED_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <WarningVersion>18</WarningVersion>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <ImportLibrary>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\lib\$(PlatformName)\$(ProjectName)$(YAGET_DEBUG_SUFFIX).lib</ImportLibrary>

@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <wincodec.h>
 
+#include "Core/ErrorHandlers.h"
+
 namespace fs = std::filesystem;
 using namespace Microsoft::WRL;
 
@@ -139,8 +141,8 @@ void yaget::render::RenderTarget::SaveToFile() const
     ComPtr<ID3D11Texture2D> backBuffer;
     if (mSwapChain)
     {
-        HRESULT hr = mDevice.GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get Back Buffer from swap chain for screenshot");
+        const HRESULT hr = mDevice.GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer);
+        error_handlers::ThrowOnError(hr, "Could not get Back Buffer from swap chain for screenshot");
     }
     else
     {
@@ -161,8 +163,8 @@ void yaget::render::RenderTarget::SaveToFile() const
     YAGET_ASSERT(imageFormat, "imageFormat is not set, supported formats are 'png, jpg', file name: '%s'", imageFileName.c_str());
 
     std::wstring fileNameW = conv::utf8_to_wide(imageFullPath.string());
-    HRESULT hr = DirectX::SaveWICTextureToFile(d3dDeviceContext, backBuffer.Get(), *imageFormat, fileNameW.c_str());
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not save screenshot of render target to a file.");
+    const HRESULT hr = DirectX::SaveWICTextureToFile(d3dDeviceContext, backBuffer.Get(), *imageFormat, fileNameW.c_str());
+    error_handlers::ThrowOnError(hr, "Could not save screenshot of render target to a file.");
 
     const_cast<render::RenderTarget*>(this)->mTakeScreenshot = false;
 
@@ -195,10 +197,10 @@ void yaget::render::RenderTarget::CreateResources(uint32_t width, uint32_t heigh
     {
         ComPtr<ID3D11Texture2D> backBuffer;
         HRESULT hr = mDevice.GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not initialize DX11 Back Buffer");
+        error_handlers::ThrowOnError(hr, "Could not initialize DX11 Back Buffer");
 
         hr = d3dDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &mViewMap);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create render target view");
+        error_handlers::ThrowOnError(hr, "Could not create render target view");
         YAGET_SET_DEBUG_NAME(mViewMap.Get(), mName);
 
         D3D11_TEXTURE2D_DESC desc{};
@@ -229,7 +231,7 @@ void yaget::render::RenderTarget::CreateResources(uint32_t width, uint32_t heigh
         // Create the texture
 
         HRESULT hr = d3dDevice->CreateTexture2D(&textureDesc, nullptr, &mTextureMap);
-        YAGET_UTIL_THROW_ON_RROR(hr, "CreateTexture2D for render target failed");
+        error_handlers::ThrowOnError(hr, "CreateTexture2D for render target failed");
 
         /////////////////////// Map's Render Target
         // Setup the description of the render target view.
@@ -240,7 +242,7 @@ void yaget::render::RenderTarget::CreateResources(uint32_t width, uint32_t heigh
 
         // Create the render target view.
         hr = d3dDevice->CreateRenderTargetView(mTextureMap.Get(), &renderTargetViewDesc, &mViewMap);
-        YAGET_UTIL_THROW_ON_RROR(hr, "CreateRenderTargetView for render target failed");
+        error_handlers::ThrowOnError(hr, "CreateRenderTargetView for render target failed");
         YAGET_SET_DEBUG_NAME(mViewMap.Get(), mName);
 
         /////////////////////// Map's Shader Resource View
@@ -253,7 +255,7 @@ void yaget::render::RenderTarget::CreateResources(uint32_t width, uint32_t heigh
 
         // Create the shader resource view.
         hr = d3dDevice->CreateShaderResourceView(mTextureMap.Get(), &shaderResourceViewDesc, &mShaderViewMap);
-        YAGET_UTIL_THROW_ON_RROR(hr, "CreateShaderResourceView for render target failed");
+        error_handlers::ThrowOnError(hr, "CreateShaderResourceView for render target failed");
         YAGET_SET_DEBUG_NAME(mShaderViewMap.Get(), mName);
 
         // Describe the Sample State
@@ -268,7 +270,7 @@ void yaget::render::RenderTarget::CreateResources(uint32_t width, uint32_t heigh
 
         //Create the Sample State
         hr = d3dDevice->CreateSamplerState(&sampDesc, &mSamplerSate);
-        YAGET_UTIL_THROW_ON_RROR(hr, "CreateSamplerState for render target failed");
+        error_handlers::ThrowOnError(hr, "CreateSamplerState for render target failed");
         YAGET_SET_DEBUG_NAME(mSamplerSate.Get(), mName);
     }
 
@@ -286,11 +288,11 @@ void yaget::render::RenderTarget::CreateResources(uint32_t width, uint32_t heigh
     depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
     HRESULT hr = d3dDevice->CreateTexture2D(&depthStencilBufferDesc, nullptr, &mDepthStencilBuffer);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not initialize Depth & Stencil Buffers");
+    error_handlers::ThrowOnError(hr, "Could not initialize Depth & Stencil Buffers");
     YAGET_SET_DEBUG_NAME(mDepthStencilBuffer.Get(), mName);
 
     hr = d3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), nullptr, &mDepthStencilView);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Depth & Stencil view");
+    error_handlers::ThrowOnError(hr, "Could not create Depth & Stencil view");
     YAGET_SET_DEBUG_NAME(mDepthStencilView.Get(), mName);
 
     D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc = {};
@@ -301,7 +303,7 @@ void yaget::render::RenderTarget::CreateResources(uint32_t width, uint32_t heigh
     depthStencilStateDesc.StencilEnable = FALSE;
 
     hr = d3dDevice->CreateDepthStencilState(&depthStencilStateDesc, &mDepthStencilState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Depth & Stencil state");
+    error_handlers::ThrowOnError(hr, "Could not create Depth & Stencil state");
     YAGET_SET_DEBUG_NAME(mDepthStencilState.Get(), mName);
 
     D3D11_RASTERIZER_DESC rasterizerDesc = {};
@@ -319,12 +321,12 @@ void yaget::render::RenderTarget::CreateResources(uint32_t width, uint32_t heigh
 
     // Create the rasterizer wire state object.
     hr = d3dDevice->CreateRasterizerState(&rasterizerDesc, &mDefaultRasterizerState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create rasterizer state");
+    error_handlers::ThrowOnError(hr, "Could not create rasterizer state");
     YAGET_SET_DEBUG_NAME(mDefaultRasterizerState.Get(), mName);
 
     rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
     rasterizerDesc.CullMode = D3D11_CULL_NONE;
     hr = d3dDevice->CreateRasterizerState(&rasterizerDesc, &mWireRasterizerState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create wire rasterizer state");
+    error_handlers::ThrowOnError(hr, "Could not create wire rasterizer state");
     YAGET_SET_DEBUG_NAME(mWireRasterizerState.Get(), mName);
 }

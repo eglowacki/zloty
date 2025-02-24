@@ -64,6 +64,7 @@ namespace yaget
         private:
             bool onMessagePump(const time::GameClock& gameClock) override;
             void Cleanup() override;
+            bool IsSuspended() const override;
         };
 
     } // namespace app

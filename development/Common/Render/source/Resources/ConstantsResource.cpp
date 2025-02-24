@@ -1,6 +1,9 @@
 #include "Resources/ConstantsResource.h"
 #include "Device.h"
 #include <d3dcompiler.h>
+
+#include "Core/ErrorHandlers.h"
+
 #include <wrl/client.h>
 
 using namespace Microsoft::WRL;
@@ -33,12 +36,12 @@ yaget::render::ConstantsResource::ConstantsResource(Device& device, std::shared_
 
     ComPtr<ID3D11ShaderReflection> reflector;
     HRESULT hr = D3DReflect(buffer.first.get(), buffer.second, IID_ID3D11ShaderReflection, &reflector);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create Vertex Shader Reflection");
+    error_handlers::ThrowOnError(hr, "Could not create Vertex Shader Reflection");
 
     // Get shader info
     D3D11_SHADER_DESC shaderDesc = {};
     hr = reflector->GetDesc(&shaderDesc);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not get Vertex Shader Reflection description");
+    error_handlers::ThrowOnError(hr, "Could not get Vertex Shader Reflection description");
 
     for (uint32_t i = 0; i < shaderDesc.ConstantBuffers; ++i)
     {
@@ -47,11 +50,11 @@ yaget::render::ConstantsResource::ConstantsResource(Device& device, std::shared_
 
         D3D11_SHADER_BUFFER_DESC desc;
         hr = constantReflection->GetDesc(&desc);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get Constant Buffer Reflection description");
+        error_handlers::ThrowOnError(hr, "Could not get Constant Buffer Reflection description");
 
         D3D11_SHADER_INPUT_BIND_DESC bindDesc = {};
         hr = reflector->GetResourceBindingDescByName(desc.Name, &bindDesc);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not get Constant Buffer bind description");
+        error_handlers::ThrowOnError(hr, "Could not get Constant Buffer bind description");
 
         std::string bufferName = desc.Name;
         uint32_t bufferSize = desc.Size;
@@ -67,11 +70,11 @@ yaget::render::ConstantsResource::ConstantsResource(Device& device, std::shared_
 
             D3D11_SHADER_TYPE_DESC typeDesc = {};
             hr = reflectionType->GetDesc(&typeDesc);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not get variable type description");
+            error_handlers::ThrowOnError(hr, "Could not get variable type description");
 
             D3D11_SHADER_VARIABLE_DESC varDesc = {};
             hr = reflectionVariable->GetDesc(&varDesc);
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not get reflection variable description");
+            error_handlers::ThrowOnError(hr, "Could not get reflection variable description");
 
             std::string variableName = varDesc.Name;
             //uint32_t variableSize = varDesc.Size;
@@ -88,7 +91,7 @@ yaget::render::ConstantsResource::ConstantsResource(Device& device, std::shared_
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
         hr = hardwareDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer.mConstants);
-        YAGET_UTIL_THROW_ON_RROR(hr, "Could not create constants buffer");
+        error_handlers::ThrowOnError(hr, "Could not create constants buffer");
 
         YAGET_SET_DEBUG_NAME(constantBuffer.mConstants.Get(), asset->mTag.mName);
 

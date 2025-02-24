@@ -5,6 +5,7 @@
 //
 // NOTES:
 //      Collects chrome://tracing samples
+//      c:\Users\edgar\AppData\Local\Temp\Beyond Limits\YagetCore-Test
 //
 // #include "Metrics/PerformanceTracer.h"
 //
@@ -47,7 +48,6 @@ namespace yaget::metrics
         ~TraceCollector();
 
         void AddProfileStamp(TraceRecord&& result);
-        void SetThreadName(const char* threadName, std::size_t t);
 
     private:
         void DataSaver();

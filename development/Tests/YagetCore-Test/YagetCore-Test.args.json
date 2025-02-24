@@ -3,6 +3,10 @@
   "Id": "6c57825d-e4aa-43a5-89d7-52b97b0dca76",
   "Items": [
     {
+      "Id": "7b2cee49-435f-4ce7-8c32-76554adfa630",
+      "Command": "--list_content"
+    },
+    {
       "Id": "3ffd2741-dee1-48d1-9333-0b2cdd2484fe",
       "Command": "--log_filter=POOL"
     },
@@ -12,11 +16,11 @@
     },
     {
       "Id": "ee6f596d-443a-4cb5-bdd0-56434d22845f",
-      "Command": " --gtest_filter=BlobLoader.*"
+      "Command": "--gtest_filter=BlobLoader.*"
     },
     {
       "Id": "cbea5305-77d8-48b2-be52-10b7a4be3e95",
-      "Command": " --gtest_filter=Threading.Condition"
+      "Command": "--gtest_filter=PoolAllocators.Iterators"
     },
     {
       "Id": "5869dbec-0b19-4c61-90bd-08658a645c6d",

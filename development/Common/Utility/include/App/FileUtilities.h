@@ -66,6 +66,9 @@ namespace yaget::io::file
     //! Internally, it calls GenerateConfigSearchPath.
     std::string FindConfigFile(const std::string& name, bool addAppName, const args::Options* options);
 
+    // Returned by some file functions
+    // first - success (true) or failure (false)
+    // second - error text if failure (first = false).
     using FileOpResult = std::tuple<bool, std::string>;
     //! Remove/delete file from local storage. This is blocking request
     //! Return <true, ""> if no error and file removed successfully or file did not exist

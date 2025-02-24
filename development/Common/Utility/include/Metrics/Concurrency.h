@@ -18,6 +18,7 @@
 //      https://github.com/bombomby/optick
 //
 //      Currently we use chrome://tracing
+//      c:\Users\edgar\AppData\Local\Temp\Beyond Limits\YagetCore-Test
 //
 //  #include "Metrics/Concurrency.h"
 //
@@ -28,6 +29,7 @@
 #include "YagetCore.h"
 #include "Time/GameClock.h"
 #include <functional>
+#include <source_location>
 
 #if !defined(YAGET_CONC_METRICS_ENABLED)
     #if !defined(NDEBUG) // if we are in debug mode
@@ -49,11 +51,12 @@ namespace yaget::metrics
             virtual ~Metric() = default;
 
         protected:
-            Metric(const std::string& message, const char* file, uint32_t line);
+            Metric(const std::string& message, const std::source_location& location = std::source_location::current());
 
             std::string mMessage;
-            const char* mFileName = nullptr;
-            uint32_t mLineNumber = 0;
+            const std::source_location& mLocation;
+            //const char* mFileName = nullptr;
+            //uint32_t mLineNumber = 0;
             time::TimeUnits_t mStart = 0;
             const std::size_t mTreadID = 0;
         };
@@ -64,7 +67,7 @@ namespace yaget::metrics
     {
     public:
 
-        Channel(const std::string& message, const char* file, uint32_t line);
+        Channel(const std::string& message, const std::source_location& location = std::source_location::current());
         ~Channel() override;
 
         void AddMessage(const std::string& message, MessageScope scope) const;
@@ -75,7 +78,7 @@ namespace yaget::metrics
     class TimeSpan : public internal::Metric
     {
     public:
-        TimeSpan(std::size_t id, const std::string& message, const char* file, uint32_t line);
+        TimeSpan(std::size_t id, const std::string& message, const std::source_location& location = std::source_location::current());
         ~TimeSpan() override;
 
         void AddMessage(const std::string& message) const;
@@ -87,7 +90,7 @@ namespace yaget::metrics
     class Lock : public internal::Metric
     {
     protected:
-        Lock(const std::string& message, const char* file, uint32_t line);
+        Lock(const std::string& message, const std::source_location& location = std::source_location::current());
         ~Lock() override = default;
 
     private:
@@ -98,7 +101,7 @@ namespace yaget::metrics
     class UniqueLock : public Lock
     {
     public:
-        UniqueLock(std::mutex& mutex, const std::string& message, const char* file, uint32_t line);
+        UniqueLock(std::mutex& mutex, const std::string& message, const std::source_location& location = std::source_location::current());
         ~UniqueLock() override = default;
 
     private:
@@ -112,26 +115,17 @@ namespace yaget::metrics
 
     void MarkStartThread(std::thread& thread, const char* name);
     void MarkStartThread(uint32_t threadId, const char* name);
+    void MarkEndThread(std::thread& thread); 
 
     std::string MarkGetThreadName(std::thread& thread);
     std::string MarkGetThreadName(uint32_t threadId);
-
-
-    // not converted yet
-    inline void MarkEndThread(std::thread&) {}
-    //inline void MarkEndThread(uint32_t) {}
-
-    //inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
-    //inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
-
-    //inline void Tick() {}
 
 #else // YAGET_CONC_METRICS_ENABLED
 
     class Channel
     {
     public:
-        Channel(const std::string&, const char*, uint32_t) {}
+        Channel(const std::string&, const std::source_location& location = std::source_location::current()) {}
         void AddMessage(const std::string&, MessageScope) const {}
     };
 
@@ -140,7 +134,7 @@ namespace yaget::metrics
     class TimeSpan
     {
     public:
-        TimeSpan(std::size_t, const std::string&, const char*, uint32_t) {}
+        TimeSpan(std::size_t, const std::string&, const std::source_location& location = std::source_location::current()) {}
         void AddMessage(const std::string&) const {}
     };
 
@@ -148,7 +142,7 @@ namespace yaget::metrics
     class UniqueLock
     {
     public:
-        UniqueLock(std::mutex& mutex, const std::string&, const char*, uint32_t)
+        UniqueLock(std::mutex& mutex, const std::string&, const std::source_location& location = std::source_location::current())
             : mlocker(mutex)
         {}
 
@@ -164,23 +158,14 @@ namespace yaget::metrics
     // putting back intel concurrency functionality
     void MarkStartThread(std::thread& thread, const char* name);
     void MarkStartThread(uint32_t threadId, const char* name);
+    void MarkEndThread(std::thread& thread); 
 
     std::string MarkGetThreadName(std::thread& thread);
     std::string MarkGetThreadName(uint32_t threadId);
-
-
-    // not converted yet
-    inline void MarkEndThread(std::thread&) {}
-    inline void MarkEndThread(uint32_t) {}
-
-    inline void MarkStartTimeSpan(uint64_t, const char*, const char*, uint32_t) {}
-    inline void MarkEndTimeSpan(uint64_t, const char*, uint32_t) {}
-
-    inline void Tick() {}
 
 #endif // YAGET_CONC_METRICS_ENABLED
 
 } // namespace yaget::metrics
 
 
-#define YAGET_METRICS_CHANNEL_FILE_LINE __FILE__, __LINE__
+//#define YAGET_METRICS_CHANNEL_FILE_LINE __FILE__, __LINE__

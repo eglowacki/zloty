@@ -2,6 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="yaget.DX12.Helper.props" />
+    <Import Project="yaget.PIX.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -10,8 +11,8 @@
       <AdditionalIncludeDirectories>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\Common\Render\Include\DX12;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>YagetRender12$(YAGET_DEBUG_SUFFIX).lib;DirectX-Guids.lib;DXGI.lib;D3d12.lib;d3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(YAGET_DEPENDENCIES_PATH)\DirectX-Headers-12\builds\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>YagetRender12$(YAGET_DEBUG_SUFFIX).lib;DirectXTK12.lib;DirectX-Guids.lib;DXGI.lib;D3d12.lib;d3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(YAGET_DEPENDENCIES_PATH)\DirectX-Headers-12\builds\$(Configuration);$(YAGET_MODULE_PATH)\DirectXTK12-06.2023\builds\bin\CMake\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <FxCompile />
   </ItemDefinitionGroup>

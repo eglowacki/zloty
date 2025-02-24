@@ -393,7 +393,7 @@ void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::KeyRecord(uint32_t flags, int keyValue, yaget::time::Microsecond_t timeStamp /*= platform::GetRealTime(time::kMicroSecondUnit)*/)
 {
-    metrics::UniqueLock locker(mPendingInputsMutex, "KeyRecord", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::UniqueLock locker(mPendingInputsMutex, "KeyRecord");
 
     auto record = std::make_shared<Key>(timeStamp, flags, static_cast<unsigned char>(keyValue));
     YLOG_DEBUG("INPT", "Generated Key (%d) Record: '%s'.' at time (ms): '%d'.", keyValue, record->ToString().c_str(), time::FromTo<uint32_t>(timeStamp, time::kMicrosecondUnit, time::kMilisecondUnit));
@@ -404,7 +404,7 @@ void input::InputDevice::KeyRecord(uint32_t flags, int keyValue, yaget::time::Mi
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::MouseRecord(uint32_t flags, const InputDevice::Mouse::Buttons& buttons, int zDelta, const InputDevice::Mouse::Location& pos, yaget::time::Microsecond_t timeStamp /*= platform::GetRealTime(time::kMicroSecondUnit)*/)
 {
-    metrics::UniqueLock locker(mPendingInputsMutex, "MouseRecord", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::UniqueLock locker(mPendingInputsMutex, "MouseRecord");
 
     auto record = std::make_shared<Mouse>(timeStamp, flags, buttons, zDelta, pos);
     YLOG_DEBUG("INPT", "Generated Mouse Record: '%s' at time (ms): '%d'.", record->ToString().c_str(), time::FromTo<uint32_t>(timeStamp, time::kMicrosecondUnit, time::kMilisecondUnit));
@@ -415,7 +415,7 @@ void input::InputDevice::MouseRecord(uint32_t flags, const InputDevice::Mouse::B
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::ProcessRecord(const Record& record)
 {
-    metrics::UniqueLock locker(mActionMapMutex, "ProcessRecord", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::UniqueLock locker(mActionMapMutex, "ProcessRecord");
 
     const std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
 
@@ -436,7 +436,7 @@ void input::InputDevice::ProcessRecord(const Record& record)
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metrics::PerformancePolicy& performancePolicy, metrics::Channel& /*channel*/)
 {
-    metrics::Channel channel("Input.Tick", YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::Channel channel("Input.Tick");
 
     time::Microsecond_t begginingTime = platform::GetRealTime(time::kMicrosecondUnit);
     time::Microsecond_t maxBudgetTime = performancePolicy.mBudget == std::numeric_limits<time::Microsecond_t>::max() ? performancePolicy.mBudget : begginingTime + performancePolicy.mBudget;
@@ -445,7 +445,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
     // only process input up to this time
     time::Microsecond_t maxInputTime = gameClock.GetLogicTime();
     {
-        metrics::UniqueLock locker(mPendingInputsMutex, "Input.Pending", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::UniqueLock locker(mPendingInputsMutex, "Input.Pending");
 
         if (!mPendingInputs.empty())
         {
@@ -461,7 +461,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
     // we simply do not want to hit this marker for empty list
     if (!inputsToProcess.empty())
     {
-        metrics::Channel span("Input.Processing", YAGET_METRICS_CHANNEL_FILE_LINE);
+        metrics::Channel span("Input.Processing");
 
         while (!inputsToProcess.empty())
         {
@@ -480,7 +480,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
         if (deferMessages)
         {
             // we run out of time to process our messages and based on policy we defer remaining messages to next frame
-            metrics::UniqueLock locker(mPendingInputsMutex, "DeferInput", YAGET_METRICS_CHANNEL_FILE_LINE);
+            metrics::UniqueLock locker(mPendingInputsMutex, "DeferInput");
 
             while (!inputsToProcess.empty())
             {
@@ -498,7 +498,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
 void input::InputDevice::TriggerAction(const std::string& actionName, int32_t mouseX, int32_t mouseY, time::Microsecond_t timeStamp /*= platform::GetRealTime(time::kMicroSecondUnit)*/)
 {
     //std::unique_lock<std::mutex> locker(mActionMapMutex);
-    metrics::UniqueLock locker(mActionMapMutex, fmt::format("TriggerAction-{}", actionName).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
+    metrics::UniqueLock locker(mActionMapMutex, fmt::format("TriggerAction-{}", actionName).c_str());
 
     std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
 
@@ -517,23 +517,7 @@ void input::InputDevice::TriggerAction(const std::string& actionName, int32_t mo
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::RegisterSimpleActionCallback(const std::string& actionName, input::ActionNonParamCallback_t actionCallback)
 {
-    //struct CallbackWrapper
-    //{
-    //    void operator()(const std::string& /*actionName*/, uint64_t /*timeStamp*/, int32_t /*mouseX*/, int32_t /*mouseY*/, uint32_t /*flags*/) const
-    //    {
-    //        mActionCallback();
-    //    }
-
-    //    input::ActionNonParamCallback_t mActionCallback;
-    //};
-
-    auto wrapper = [actionCallback](auto&&... params)
-    {
-        actionCallback();
-    };
-
     RegisterActionCallback(actionName, [actionCallback](auto&&... /*params*/) { actionCallback(); });
-    //RegisterActionCallback(actionName, CallbackWrapper({ actionCallback }));
 }
 
 
@@ -546,7 +530,7 @@ void input::InputDevice::RegisterActionCallback(const std::string& actionName, i
     std::map<std::string, ActionMap>::iterator it = mActionMap.find(actionName);
     if (it != mActionMap.end())
     {
-        (*it).second.mCallbacks.push_back(actionCallback);
+        it->second.mCallbacks.push_back(actionCallback);
     }
     else
     {

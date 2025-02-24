@@ -1,0 +1,65 @@
+{
+    "Quit App": {
+        "Action": "Quit App",
+        "ContextName": "",
+        "DisplayName": "ESC",
+        "Flags": "ButtonDown",
+        "Value": "ESC"
+    },
+    "New Game": {
+        "Action": "New Game",
+        "ContextName": "Menu",
+        "DisplayName": "N",
+        "Flags": "ButtonDown",
+        "Value": "N"
+    },
+    "Load Game": {
+        "Action": "Load Game",
+        "ContextName": "Menu",
+        "DisplayName": "L",
+        "Flags": "ButtonDown",
+        "Value": "L"
+    },
+    "Save Game": {
+        "Action": "Save Game",
+        "ContextName": "Menu",
+        "DisplayName": "S",
+        "Flags": "ButtonDown",
+        "Value": "S"
+    },
+    "Options": {
+        "Action": "Options",
+        "ContextName": "Menu",
+        "DisplayName": "O",
+        "Flags": "ButtonDown",
+        "Value": "O"
+    },
+    "Foobar": {
+        "Action": "Foobar",
+        "ContextName": "Menu",
+        "DisplayName": "F",
+        "Flags": "ButtonDown",
+        "Value": "F"
+    },
+    "Credits": {
+        "Action": "Credits",
+        "ContextName": "Menu",
+        "DisplayName": "C",
+        "Flags": "ButtonDown",
+        "Value": "C"
+    },
+    "Quit": {
+        "Action": "Quit",
+        "ContextName": "Menu",
+        "DisplayName": "Q",
+        "Flags": "ButtonDown",
+        "Value": "Q"
+    },
+    "Konsole": {
+        "Action": "Konsole",
+        "ContextName": "",
+        "DisplayName": "~",
+        "Flags": "ButtonDown",
+        "Value": "`"
+    }
+}

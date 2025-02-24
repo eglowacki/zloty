@@ -2,6 +2,8 @@
 
 #include "HashUtilities.h"
 
+#include "Core/ErrorHandlers.h"
+
 namespace
 {
 	const char* DatabasePathName = "$(DatabaseFolder)/$(AppName)/vts.sqlite";
@@ -61,10 +63,6 @@ namespace
 	}
 
 
-
-	inline std::string to_string(const yaget::dev::Configuration::Init::VTSConfigList& /*value*/) { return "FOO"; }
-
-
 	// collect all files from all sections and make db to match. It calls doneCallback after all indexing is done.
 	class SectionEntriesCollector
 	{
@@ -72,7 +70,7 @@ namespace
 		using DoneCallback = yaget::io::VirtualTransportSystem::DoneCallback;
 
 		SectionEntriesCollector(yaget::dev::Configuration::Init::VTSConfigList configList, yaget::Database& database, DoneCallback doneCallback)
-			: mTimeSpan(yaget::meta::pointer_cast(this), "VTS Entries Collector", YAGET_METRICS_CHANNEL_FILE_LINE)
+			: mTimeSpan(yaget::meta::pointer_cast(this), "VTS Entries Collector")
 			, mDatabase(database)
 			, mDoneCallback(std::move(doneCallback))
 			, mRequestPool("INDX", yaget::dev::CurrentConfiguration().mDebug.mThreads.VTSSections)
@@ -81,8 +79,8 @@ namespace
 			using VTS = dev::Configuration::Init;
 			using SectionRecord = std::tuple<std::string /*Name*/, Strings /*Path*/, Strings /*Filters*/, std::string /*Converters*/, bool /*ReadOnly*/, bool /*Recursive*/>;
 
-			//metrics::MarkStartTimeSpan(reinterpret_cast<std::uintptr_t>(this), "Indexing VTS", YAGET_METRICS_CHANNEL_FILE_LINE);
-			metrics::Channel channel("Entries Collector", YAGET_METRICS_CHANNEL_FILE_LINE);
+			//metrics::MarkStartTimeSpan(reinterpret_cast<std::uintptr_t>(this), "Indexing VTS");
+			metrics::Channel channel("Entries Collector");
 
 			size_t numChanged = 0;
 			// now update db to account for deletion, addition and changes
@@ -95,7 +93,7 @@ namespace
 				{
 					transaction.Rollback();
 					std::string message = fmt::format("Did not delete table 'Logs'. DB Error: ", ParseErrors(mDatabase.DB()));
-					YAGET_UTIL_THROW("VTS", message);
+					error_handlers::Throw("VTS", message);
 				}
 
 				mDatabase.Log("SESSION_START", "VTS Started");
@@ -104,7 +102,7 @@ namespace
 				{
 					transaction.Rollback();
 					std::string message = fmt::format("There are '{}' blobs left in DirtyTags table.", numDirtyBlobs);
-					YAGET_UTIL_THROW("VTS", message);
+					error_handlers::Throw("VTS", message);
 				}
 
 				auto listSize = configList.size();
@@ -118,20 +116,20 @@ namespace
 					std::set_difference(originalConfigList.begin(), originalConfigList.end(), configList.begin(), configList.end(), std::inserter(invalidConfigList, invalidConfigList.begin()));
 
 					std::string message = fmt::format("VTS Sections '{}' are not valid. Fix VTS section in configuration file.", conv::Combine(invalidConfigList, ", "));
-					YAGET_UTIL_THROW("VTS", message);
+					error_handlers::Throw("VTS", message);
 				}
 
 				//VTS::VTSConfigList
 				mCounter = std::accumulate(configList.begin(), configList.end(), static_cast<size_t>(0), [](const auto& runningTotal, const auto& vtsConfig)
-					{
-						return runningTotal + vtsConfig.Path.size();
-					});
+				{
+					return runningTotal + vtsConfig.Path.size();
+				});
 
 				std::string command = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly, Recursive FROM Sections ORDER BY Name;");
 				VTS::VTSConfigList sectionRecords = mDatabase.DB().GetRowsTuple<VTS::VTS, SectionRecord, VTS::VTSConfigList>(command, [](const SectionRecord& record)
-					{
-						return VTS::VTS{ std::get<0>(record), std::get<1>(record), std::get<2>(record), std::get<3>(record), std::get<4>(record), std::get<5>(record) };
-					});
+				{
+					return VTS::VTS{ std::get<0>(record), std::get<1>(record), std::get<2>(record), std::get<3>(record), std::get<4>(record), std::get<5>(record) };
+				});
 
 				std::set_difference(configList.begin(), configList.end(), sectionRecords.begin(), sectionRecords.end(), std::inserter(newSection, newSection.end()));
 				std::set_difference(sectionRecords.begin(), sectionRecords.end(), configList.begin(), configList.end(), std::inserter(deletedSections, deletedSections.end()));
@@ -145,7 +143,7 @@ namespace
 					{
 						transaction.Rollback();
 						std::string message = fmt::format("SectionInsert: '{}' for vts failed. {}.", it.Name, ParseErrors(mDatabase.DB()));
-						YAGET_UTIL_THROW("VTS", message.c_str());
+						error_handlers::Throw("VTS", message.c_str());
 					}
 				}
 
@@ -156,7 +154,7 @@ namespace
 					{
 						transaction.Rollback();
 						std::string message = fmt::format("Did not delete tags with section: '{}'. {}.", it.Name, ParseErrors(mDatabase.DB()));
-						YAGET_UTIL_THROW("VTS", message.c_str());
+						error_handlers::Throw("VTS", message.c_str());
 					}
 
 					command = fmt::format("DELETE FROM Sections WHERE Name = '{}';", it.Name);
@@ -164,7 +162,7 @@ namespace
 					{
 						transaction.Rollback();
 						std::string message = fmt::format("Did not delete section: '{}'. {}.", it.Name, ParseErrors(mDatabase.DB()));
-						YAGET_UTIL_THROW("VTS", message.c_str());
+						error_handlers::Throw("VTS", message.c_str());
 					}
 				}
 
@@ -179,7 +177,7 @@ namespace
 						{
 							transaction.Rollback();
 							std::string message = fmt::format("SectionInsert: '{}' for vts failed. {}.", it.Name, ParseErrors(mDatabase.DB()));
-							YAGET_UTIL_THROW("VTS", message.c_str());
+							error_handlers::Throw("VTS", message.c_str());
 						}
 					}
 				}
@@ -192,9 +190,9 @@ namespace
 				// there is no files to be processed
 				//UpdateDatabase();
 				mRequestPool.AddTask([this]()
-					{
-						UpdateDatabase();
-					});
+				{
+					UpdateDatabase();
+				});
 			}
 			else
 			{
@@ -210,66 +208,66 @@ namespace
 
 					// trigger request for to call lambda for each vtsEntry, and then check each Path element for validity, and then calling updateSection with files in that Path[n]
 					mRequestPool.AddTask([this, vtsEntry, updateSection]()
+					{
+						for (auto&& p : vtsEntry.Path)
 						{
-							for (auto&& p : vtsEntry.Path)
+							metrics::Channel channel(fmt::format("Indexing Section: {}", vtsEntry.Name).c_str());
+							fs::path proposedPath = util::ExpendEnv(p, nullptr);
+
+							YAGET_ASSERT(fs::is_directory(proposedPath) || fs::is_regular_file(proposedPath), "Proposed path: '%s' expended from '%s' used in Section: '%s' is not a directory or a file.", proposedPath.generic_string().c_str(), p.c_str(), vtsEntry.Name.c_str());
+
+							Strings newFileSet;
 							{
-								metrics::Channel channel(fmt::format("Indexing Section: {}", vtsEntry.Name).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
-								fs::path proposedPath = util::ExpendEnv(p, nullptr);
+								metrics::Channel channel("Processing found files");
 
-								YAGET_ASSERT(fs::is_directory(proposedPath) || fs::is_regular_file(proposedPath), "Proposed path: '%s' expended from '%s' used in Section: '%s' is not a directory or a file.", proposedPath.generic_string().c_str(), p.c_str(), vtsEntry.Name.c_str());
-
-								Strings newFileSet;
+								size_t envSize = proposedPath.string().size();
 								{
-									metrics::Channel channel("Processing found files", YAGET_METRICS_CHANNEL_FILE_LINE);
+									metrics::Channel channel("Getting Files from disk.");
 
-									size_t envSize = proposedPath.string().size();
-									{
-										metrics::Channel channel("Getting Files from disk.", YAGET_METRICS_CHANNEL_FILE_LINE);
-
-										newFileSet = io::file::GetFileNames(proposedPath.string(), vtsEntry.Recursive, [&vtsEntry](const std::string& fileName)
-											{
-												return std::any_of(vtsEntry.Filters.begin(), vtsEntry.Filters.end(), [&fileName](const std::string& filter) {return WildCompare(filter, fileName); });
-											});
-									}
-
-									{
-										metrics::Channel channel("Transforming found file names.", YAGET_METRICS_CHANNEL_FILE_LINE);
-
-										std::transform(newFileSet.begin(), newFileSet.end(), newFileSet.begin(), [p, envSize](const std::string& fileName)
-											{
-												std::string newPath = p + std::string(fileName.begin() + envSize, fileName.end());
-												std::transform(newPath.begin(), newPath.end(), newPath.begin(), [](std::string::value_type c) { return c == '\\' ? '/' : c; });
-												return newPath;
-											});
-									}
-								}
-
-								if (false)//newFileSet.size() == 100000)
-								{
-									mCounter += 1;
-									Strings firstHalf(newFileSet.begin(), newFileSet.begin() + 50000);
-									Strings secondHalf(newFileSet.begin() + 50000, newFileSet.end());
-
-									updateSection(vtsEntry.Name, firstHalf, p);
-
-									mRequestPool.AddTask([vtsEntry, updateSection, secondHalf, p]()
+									newFileSet = io::file::GetFileNames(proposedPath.string(), vtsEntry.Recursive, [&vtsEntry](const std::string& fileName)
 										{
-											updateSection(vtsEntry.Name, secondHalf, p);
+											return std::any_of(vtsEntry.Filters.begin(), vtsEntry.Filters.end(), [&fileName](const std::string& filter) {return WildCompare(filter, fileName); });
 										});
 								}
-								else
+
 								{
-									updateSection(vtsEntry.Name, newFileSet, p);
+									metrics::Channel channel("Transforming found file names.");
+
+									std::transform(newFileSet.begin(), newFileSet.end(), newFileSet.begin(), [p, envSize](const std::string& fileName)
+										{
+											std::string newPath = p + std::string(fileName.begin() + envSize, fileName.end());
+											std::transform(newPath.begin(), newPath.end(), newPath.begin(), [](std::string::value_type c) { return c == '\\' ? '/' : c; });
+											return newPath;
+										});
 								}
 							}
-						});
+
+							if (false)//newFileSet.size() == 100000)
+							{
+								mCounter += 1;
+								Strings firstHalf(newFileSet.begin(), newFileSet.begin() + 50000);
+								Strings secondHalf(newFileSet.begin() + 50000, newFileSet.end());
+
+								updateSection(vtsEntry.Name, firstHalf, p);
+
+								mRequestPool.AddTask([vtsEntry, updateSection, secondHalf, p]()
+									{
+										updateSection(vtsEntry.Name, secondHalf, p);
+									});
+							}
+							else
+							{
+								updateSection(vtsEntry.Name, newFileSet, p);
+							}
+						}
+					});
 				}
 			}
 		}
 
 		~SectionEntriesCollector()
 		{
-			//yaget::metrics::MarkEndTimeSpan(reinterpret_cast<std::uintptr_t>(this), YAGET_METRICS_CHANNEL_FILE_LINE);
+			//yaget::metrics::MarkEndTimeSpan(reinterpret_cast<std::uintptr_t>(this));
 		}
 
 	private:
@@ -278,7 +276,7 @@ namespace
 			using namespace yaget;
 
 			{
-				metrics::Channel channel(fmt::format("Updated Section with {} files.", entryList.size()).c_str(), YAGET_METRICS_CHANNEL_FILE_LINE);
+				metrics::Channel channel(fmt::format("Updated Section with {} files.", entryList.size()).c_str());
 
 				std::unique_lock<std::mutex> locker(mSectionMutex);
 				SectionKey key = std::make_pair(sectionName, proposedPath);
@@ -302,7 +300,7 @@ namespace
 		{
 			using namespace yaget;
 
-			metrics::Channel channel("UpdateDatabase", YAGET_METRICS_CHANNEL_FILE_LINE);
+			metrics::Channel channel("UpdateDatabase");
 
 			size_t numNewTags = 0, numDeletedTags = 0;
 
@@ -329,7 +327,7 @@ namespace
 				// we also want to preserve deleted files to re-use the same guid if that file come back later
 				if (!newTags.empty() || !deletedTags.empty())
 				{
-					metrics::Channel channel("New and Deleted", YAGET_METRICS_CHANNEL_FILE_LINE);
+					metrics::Channel channel("New and Deleted");
 
 					int deletedRowCount = GetCell<int>(mDatabase.DB(), "SELECT COUNT(*) FROM 'Deleted';");
 					const bool checkDeleted = deletedRowCount > 0;
@@ -355,9 +353,9 @@ namespace
 							else
 							{
 								auto it = std::find_if(deletedBlobs.begin(), deletedBlobs.end(), [&vtsName](const auto& param)
-									{
-										return std::get<2>(param) == vtsName;
-									});
+								{
+									return std::get<2>(param) == vtsName;
+								});
 
 								if (it != deletedBlobs.end())
 								{
@@ -374,7 +372,7 @@ namespace
 							{
 								transaction.Rollback();
 								std::string message = fmt::format("Did not deleted: '{}' from Deleted table. {}", vtsName, ParseErrors(mDatabase.DB()));
-								YAGET_UTIL_THROW("VTS", message.c_str());
+								error_handlers::Throw("VTS", message.c_str());
 							}
 						}
 						else
@@ -389,7 +387,7 @@ namespace
 						{
 							transaction.Rollback();
 							std::string message = fmt::format("TagInsert: '{}' for vts section: {} failed. {}.", vtsName, nameSection, ParseErrors(mDatabase.DB()));
-							YAGET_UTIL_THROW("VTS", message.c_str());
+							error_handlers::Throw("VTS", message.c_str());
 						}
 
 						numNewTags++;
@@ -406,7 +404,7 @@ namespace
 						{
 							transaction.Rollback();
 							std::string message = fmt::format("VTS: '{}' does not exist in Tags table. {}.", it, ParseErrors(mDatabase.DB()));
-							YAGET_UTIL_THROW("VTS", message.c_str());
+							error_handlers::Throw("VTS", message.c_str());
 						}
 
 						command = fmt::format("DELETE FROM Tags WHERE Guid = '{}';", std::get<0>(existingTag).str());
@@ -414,14 +412,14 @@ namespace
 						{
 							transaction.Rollback();
 							std::string message = fmt::format("Did not delete tag: '{}' with section: {}. {}.", it, nameSection, ParseErrors(mDatabase.DB()));
-							YAGET_UTIL_THROW("VTS", message.c_str());
+							error_handlers::Throw("VTS", message.c_str());
 						}
 
 						if (!mDatabase.DB().ExecuteStatementTuple("DeletedInsert", "Deleted", existingTag, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Update))
 						{
 							transaction.Rollback();
 							std::string message = fmt::format("DeletedInsert: '{}' for vts 'Deleted' failed with section: {}. {}.", it, nameSection, ParseErrors(mDatabase.DB()));
-							YAGET_UTIL_THROW("VTS", message.c_str());
+							error_handlers::Throw("VTS", message.c_str());
 						}
 
 						numDeletedTags++;
@@ -433,11 +431,11 @@ namespace
 
 			// fire callback on separate thread from here, since recipient of this message will delete us
 			std::thread notifier = std::thread([](DoneCallback doneCallback)
-				{
-					metrics::MarkStartThread(platform::CurrentThreadId(), "INDXDONE");
+			{
+				metrics::MarkStartThread(platform::CurrentThreadId(), "INDXDONE");
 
-					doneCallback();
-				}, mDoneCallback);
+				doneCallback();
+			}, mDoneCallback);
 
 			notifier.detach();
 		}
@@ -470,7 +468,7 @@ namespace
 			if (result == static_cast<std::uintmax_t>(-1) || result == 0)
 			{
 				const std::string message = fmt::format("Delete database file '{}' from disk failed with error: '{}: {}'.", fileName, ec.value(), ec.message());
-				YAGET_UTIL_THROW("VTS", message);
+				yaget::error_handlers::Throw("VTS", message);
 			}
 		}
 

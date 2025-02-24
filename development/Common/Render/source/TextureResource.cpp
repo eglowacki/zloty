@@ -10,6 +10,8 @@
 
 #include <DDSTextureLoader.h>
 
+#include "Core/ErrorHandlers.h"
+
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
@@ -34,7 +36,7 @@ yaget::render::TextureImageResource::TextureImageResource(Device& device, std::s
 
         // Create the shader resource view.
         HRESULT hr = hardwareDevice->CreateShaderResourceView(textureMap, &shaderResourceViewDesc, &mTextureView);
-        YAGET_UTIL_THROW_ON_RROR(hr, "CreateShaderResourceView for render target failed");
+        error_handlers::ThrowOnError(hr, "CreateShaderResourceView for render target failed");
     }
     else
     {
@@ -71,16 +73,16 @@ yaget::render::TextureImageResource::TextureImageResource(Device& device, std::s
 
             Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
             HRESULT hr = hardwareDevice->CreateTexture2D(&desc, &data, texture.GetAddressOf());
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create 2D texture.");
+            error_handlers::ThrowOnError(hr, "Could not create 2D texture.");
 
             hr = hardwareDevice->CreateShaderResourceView(texture.Get(), nullptr, mTextureView.GetAddressOf());
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create texture view.");
+            error_handlers::ThrowOnError(hr, "Could not create texture view.");
         }
         else if (mImageHeader.mDataType == image::Header::DataType::DDS)
         {
             const io::Buffer& buffer = asset->mPixels;
             HRESULT hr = DirectX::CreateDDSTextureFromMemory(hardwareDevice, buffer.first.get(), buffer.second, nullptr, mTextureView.GetAddressOf());
-            YAGET_UTIL_THROW_ON_RROR(hr, "Could not create texture view");
+            error_handlers::ThrowOnError(hr, "Could not create texture view");
         }
         else
         {
@@ -143,12 +145,12 @@ yaget::render::TextureMetaResource::TextureMetaResource(Device& device, std::sha
     sd.MinLOD = std::clamp(asset->mMinLOD, 0.0f, D3D11_FLOAT32_MAX);
     sd.MaxLOD = std::clamp(asset->mMaxLOD, sd.MinLOD, D3D11_FLOAT32_MAX);
 
-    HRESULT hr = hardwareDevice->CreateSamplerState(&sd, &mSamplerState);
-    YAGET_UTIL_THROW_ON_RROR(hr, "Could not create sampler state for texture");
+    const HRESULT hr = hardwareDevice->CreateSamplerState(&sd, &mSamplerState);
+    error_handlers::ThrowOnError(hr, "Could not create sampler state for texture");
 
     YAGET_SET_DEBUG_NAME(mSamplerState.Get(), asset->mTag.mName);
 
-    std::size_t hashValue = asset->mTag.Hash();
+    const std::size_t hashValue = asset->mTag.Hash();
     SetHashValue(hashValue);
     SetPlatformResource(mSamplerState.Get());
 }
@@ -206,7 +208,7 @@ void yaget::render::TextureResource::UpdateGui(comp::Component::UpdateGuiType up
         mt::SmartVariable<render::TextureImageResource>::SmartType textureView = mTextureView;
         mt::SmartVariable<render::TextureMetaResource>::SmartType sampler = mSampler;
 
-        math3d::Color tagColor(dev::CurrentConfiguration().mGuiColors.at("SectionText"));
+        const math3d::Color tagColor(dev::CurrentConfiguration().mGuiColors.at("SectionText"));
         if (textureView)
         {
             gui::UpdateSectionText("TextureView, Tag:", tagColor, textureView.get(), updateGuiType);
