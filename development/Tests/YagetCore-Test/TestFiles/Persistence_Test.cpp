@@ -56,13 +56,13 @@ namespace
     class CComponent : public comp::db::PersistentBaseComponent<db_c::ValueTypes>
     {
     public:
-        CComponent(comp::Id_t id, const db_c::Param::Types& param)
+        CComponent(comp::Id_t id, const db_c::Param::Types& param = {})
             : PersistentBaseComponent(id, std::tie(param))
         {
         }
     };
     
-    using Entity = comp::RowPolicy<AComponent*, BComponent*, CComponent*>;
+    using Entity = comp::RowPolicy<AComponent*, BComponent*, CComponent*, items::StageComponent*>;
     using EntityCoordinator = comp::Coordinator<Entity>;
     using GameCoordinatorSet = comp::CoordinatorSet<EntityCoordinator>;
     using StagerSystem = items::StagerSystem<GameCoordinatorSet, Messaging>;
@@ -84,6 +84,8 @@ class Persistence : public testing::Test
 TEST_F(Persistence, SystemsCoordinator)
 {
     using namespace yaget;
+
+    bool result = comp::gs::internal::SystemsMatchCoordinator<std::tuple<StagerSystem>, GameCoordinatorSet>();
 
     comp::Id_t componentId = comp::INVALID_ID;
     constexpr db_a::Param::Types aParam1 = 100;
