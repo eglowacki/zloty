@@ -86,6 +86,9 @@ namespace yaget::comp::gs
         template <typename TT = typename CoordinatorSet::FullRow>
         TT LoadItem(comp::Id_t id);
 
+        template <typename TT = typename CoordinatorSet::FullRow>
+        bool RemoveItem(comp::Id_t id);
+
         items::Director& Director() { return mApp.Director(); }
         const items::Director& Director() const { return mApp.Director(); }
 
@@ -225,6 +228,13 @@ TT yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadItem(comp::Id_t id)
     return mCoordinatorSet.template LoadItem<TT>(id);
 }
 
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+template <typename TT>
+bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::RemoveItem(comp::Id_t id)
+{
+    return mCoordinatorSet.template RemoveItem<TT>(id);
+}
 
 //-------------------------------------------------------------------------------------------------
 // on the first call, we'll create system coordinator. This ensures it get's created on the same

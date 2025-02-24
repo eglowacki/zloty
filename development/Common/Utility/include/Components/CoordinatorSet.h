@@ -363,6 +363,8 @@ namespace yaget::comp
                 }
             });
 
+            // NOTE EG: 2/23/2025
+            // Could not get this code below working, so resorted to manual code above
             //FindMatchCoordinator<C>([&](auto* coordinator)
             //{
             //    /*component =*/ coordinator->template AddComponent<C>(id, std::forward<Args>(args)...);
@@ -436,10 +438,28 @@ namespace yaget::comp
         bool RemoveComponent(comp::Id_t id)
         {
             bool result = false;
-            FindMatchCoordinator<C>([&result, id](auto* coordinator)
+            bool coordinatorFound = false;
+
+            meta::for_loop<NumCoordinators>([&]<std::size_t T0>()
             {
-                result = coordinator->template RemoveComponent<C>(id);
+                constexpr std::size_t coordinatorIndex = T0;
+
+                if (!coordinatorFound)
+                {
+                    if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
+                    {
+                        auto& coordinator = GetCoordinator<coordinatorIndex>();
+                        result = coordinator.template RemoveComponent<C>(id);
+                        coordinatorFound = true;
+                    }
+                }
             });
+            // NOTE EG: 2/23/2025
+            // Could not get this code below working, so resorted to manual code above
+            //FindMatchCoordinator<C>([&result, id](auto* coordinator)
+            //{
+            //    result = coordinator->template RemoveComponent<C>(id);
+            //});
 
             return result;
         }
@@ -457,6 +477,24 @@ namespace yaget::comp
             });
 
             return item;
+        }
+
+        //-------------------------------------------------------------------------------------------------
+        template <typename TT = FullRow>
+        bool RemoveItem(comp::Id_t id)
+        {
+            bool result = true;
+            meta::for_each_type<TT>([this, &result, id]<typename T0>(const T0&)
+            {
+                using BaseType = meta::strip_qualifiers_t<T0>;
+
+                BaseType* baseType{};
+                int z = 0;
+                z;
+                RemoveComponent<BaseType*>(id);
+            });
+
+            return result;
         }
 
     private:
