@@ -89,6 +89,7 @@ namespace yaget
                 Section(const io::Tag& tag);
                 Section& operator=(const Section& source);
                 bool operator==(const Section& other) const;
+                bool operator!=(const Section& other) const { return !(Name == other.Name && Filter == other.Filter && Match == other.Match); }
 
                 //! Initializes with string in a format Name@Filter. Filter is optional.
                 //! We do not enforce explicit here to allow easy of usage with strings
