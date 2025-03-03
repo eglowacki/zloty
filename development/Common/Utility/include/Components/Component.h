@@ -20,7 +20,6 @@
 #include "MemoryManager/PoolAllocator.h"
 #include "Metrics/Performance.h"
 
-#include <typeindex>
 
 namespace yaget::comp
 {
