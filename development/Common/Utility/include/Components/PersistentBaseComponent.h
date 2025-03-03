@@ -27,6 +27,7 @@ namespace yaget::comp::db
 {
     namespace internal
     {
+        //------------------------------------------------------------------------------------------------------------------------------------------------------
         // returns std::tuple<...> where param types are extracted from each element
         // which is struct with Types alias
         template <std::size_t TupleIndex, std::size_t MaxTupleSize, typename Tuple>
@@ -49,6 +50,7 @@ namespace yaget::comp::db
             }
         }
 
+        //------------------------------------------------------------------------------------------------------------------------------------------------------
         template <typename T, typename Row>
         constexpr auto& GetValue(auto& dataStorage)
         {
@@ -60,12 +62,14 @@ namespace yaget::comp::db
 
     } // namespace internal
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
     template <typename Tuple>
     struct persistent_storage_tuple
     {
         using type = decltype(internal::make_persistent_storage_tuple<0, std::tuple_size_v<std::remove_reference_t<Tuple>>, Tuple>());
     };
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
     template<typename Tuple>
     using persistent_storage_tuple_t = typename persistent_storage_tuple<Tuple>::type;
 
@@ -94,7 +98,8 @@ namespace yaget::comp::db
     //auto scale = myComponent.GetValue<internal::Scale>();
     //
 
-    template <typename VT, int Cap = comp::DefaultPoolSize>
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
+    template <typename VT, int Cap = DefaultPoolSize>
     class PersistentBaseComponent : public BaseComponent<Cap>
     {
     public:
@@ -106,11 +111,13 @@ namespace yaget::comp::db
         template <typename T>
         constexpr const auto& GetValue() const;
 
+        // return true if newValue is different from current one,
+        // otherwise false.
         template <typename T>
-        constexpr auto& GetValue();
+        bool SetValue(const auto& newValue);
 
-        Types& Storage() { return mDataStorage; }
-        const Types& Storage() const { return mDataStorage; }
+        bool SetStorage(const auto& newStorage);
+        const Types& GetStorage() const { return mDataStorage; }
 
     protected:
         PersistentBaseComponent(Id_t id)
@@ -128,20 +135,50 @@ namespace yaget::comp::db
 
 }
 
-namespace yaget::comp::db
+
+// implementation of PersistentBaseComponent
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+template <typename VT, int Cap>
+bool yaget::comp::db::PersistentBaseComponent<VT, Cap>::SetStorage(const auto& newStorage)
 {
-    template <typename VT, int Cap>
-    template <typename T>
-    constexpr const auto& PersistentBaseComponent<VT, Cap>::GetValue() const
+    int result = 0;
+
+    meta::for_loop<Types>([&]<std::size_t T0>()
     {
-        return internal::GetValue<T, Row>(mDataStorage);
+        constexpr std::size_t index = T0;
+
+        const auto& newValue = std::get<index>(newStorage);
+        using ElementType = std::tuple_element_t<index, Row>;
+
+        result += SetValue<ElementType>(newValue);
+    });
+
+    return result > 0;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+template <typename VT, int Cap>
+template <typename T>
+constexpr const auto& yaget::comp::db::PersistentBaseComponent<VT, Cap>::GetValue() const
+{
+    return internal::GetValue<T, Row>(mDataStorage);
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+template <typename VT, int Cap>
+template <typename T>
+bool yaget::comp::db::PersistentBaseComponent<VT, Cap>::SetValue(const auto& newValue)
+{
+    bool result = false;
+
+    auto& currentValue = internal::GetValue<T, Row>(mDataStorage);
+    if ((result = (currentValue != newValue)))
+    {
+        const auto oldValue = currentValue;
+        currentValue = newValue;
     }
 
-    template <typename VT, int Cap>
-    template <typename T>
-    constexpr auto& PersistentBaseComponent<VT, Cap>::GetValue()
-    {
-        return internal::GetValue<T, Row>(mDataStorage);
-    }
-
+    return result;
 }

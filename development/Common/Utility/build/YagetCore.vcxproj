@@ -37,6 +37,7 @@
     <ClCompile Include="..\source\Components\GameSystem.cpp" />
     <ClCompile Include="..\source\Components\LocationComponent.cpp" />
     <ClCompile Include="..\source\Components\PayloadStager.cpp" />
+    <ClCompile Include="..\source\Components\PersistentObserverComponent.cpp" />
     <ClCompile Include="..\source\Components\PhysicsComponent.cpp" />
     <ClCompile Include="..\source\Components\ScriptComponent.cpp" />
     <ClCompile Include="..\source\Components\SystemsCoordinator.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="..\include\Components\GameCoordinatorGenerator.h" />
     <ClInclude Include="..\include\Components\GameSystem.h" />
     <ClInclude Include="..\include\Components\GameSystemInline.h" />
+    <ClInclude Include="..\include\Components\PersistentObserverComponent.h" />
     <ClInclude Include="..\include\Components\SystemsCoordinator.h" />
     <ClInclude Include="..\include\Components\LocationComponent.h" />
     <ClInclude Include="..\include\Components\PayloadStager.h" />

@@ -1,0 +1,3 @@
+﻿#include "Components/PersistentObserverComponent.h"
+
+DISREGARD_LINKER_4221(COMPILER_VERIFICATION_PersistentObserverComponent_h)

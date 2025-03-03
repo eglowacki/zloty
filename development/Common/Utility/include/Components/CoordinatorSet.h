@@ -394,7 +394,7 @@ namespace yaget::comp
                 {
                     if (component = coordinator->template FindComponent<C>(id); component)
                     {
-                        component->Storage() = parameters;
+                        component->SetStorage(parameters);
                     }
                 });
 
