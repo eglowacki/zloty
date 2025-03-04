@@ -32,7 +32,7 @@ namespace yaget::items
     public:
         StagerSystem(M& messaging, Application& app, CS& coordinatorSet)
             : comp::gs::GameSystem<CS, comp::gs::NoEndMarker, M, StageComponent*>("StagerSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
-            , mApp(app)
+            , mDirector(app.Director())
         {}
 
     private:
@@ -41,14 +41,16 @@ namespace yaget::items
         class Stager
         {
         public:
-            Stager(const db_stage::StageName::Types& stageName, StagerSystem& stagerSystem)
+            Stager(const db_stage::Name::Types& stageName, const db_stage::Blend::Types& blend, StagerSystem& stagerSystem)
                 : mCurrentStage(stageName)
+                , mBlend(blend)
                 , mStagerSystem(stagerSystem)
-                , mItemIds(mStagerSystem.mApp.Director().GetStageItems(mCurrentStage))
+                , mItemIds(mStagerSystem.mDirector.GetStageItems(mCurrentStage))
             {
+
                 for (const auto& id : mItemIds)
                 {
-                    //mStagerSystem.mApp.Director().LoadItemState<StagerSystem::Row>(id);
+                    mStagerSystem.GetCS().LoadItem(id);
                 }
             }
 
@@ -56,16 +58,17 @@ namespace yaget::items
             {
                 for (const auto& id : mItemIds)
                 {
-                    //mStagerSystem.RemoveComponents<StagerSystem::RowPolicy>(id);
+                    mStagerSystem.GetCS().RemoveItem(id);
                 }
             }
 
-            db_stage::StageName::Types mCurrentStage;
+            db_stage::Name::Types mCurrentStage;
+            db_stage::Blend::Types mBlend;
             StagerSystem& mStagerSystem;
             yaget::comp::ItemIds mItemIds;
         };
 
-        Application& mApp;
+        items::Director& mDirector;
 
         using StagersStack = std::stack<Stager>;
         StagersStack mStagersStack;
@@ -76,19 +79,24 @@ namespace yaget::items
     template <typename CS, typename M>
     void StagerSystem<CS, M>::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, StageComponent* stageComponent)
     {
-        const auto& requestedStageName = stageComponent->GetValue<db_stage::StageName>();
+        const auto& requestedStageName = stageComponent->GetValue<db_stage::Name>();
 
         const auto currentStage = mStagersStack.empty() ? "" : mStagersStack.top().mCurrentStage;
         if (!requestedStageName.empty() && requestedStageName != currentStage)
         {
-            // here we have choices on how to load requested stage
-            //  leave current items loaded
-            //  load requested ones
-            mStagersStack.push({requestedStageName, *this});
-
             // ok at this point we need to know if any current items will be removed or will they stay to be merged with incoming (new) ones.
             // we could go even further and try to support updating component of existing ones.
-            //const auto items = mApp.Director().GetStageItems(requestedStageName);
+            const auto items = mDirector.GetStageItems(requestedStageName);
+            if (!items.empty())
+            {
+                // here we have choices on how to load requested stage
+                //  leave current items loaded
+                //  load requested ones
+                mStagersStack.push({ requestedStageName, stageComponent->GetValue<db_stage::Blend>(), *this });
+            }
+
+            int z = 0;
+            z;
             //...
 
             //mCurrentStage = stageName;
