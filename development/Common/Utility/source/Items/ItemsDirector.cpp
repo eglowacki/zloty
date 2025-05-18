@@ -248,7 +248,7 @@ int yaget::items::Director::GetStageId(const std::string& stageName) const
         return stageId;
     }
 
-    return 0;
+    return Director::InvalidStageId;
 }
 
 
