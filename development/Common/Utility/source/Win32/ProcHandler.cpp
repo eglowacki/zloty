@@ -412,7 +412,7 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
         error_handlers::Throw("WIN", fmt::vformat("Window Apperance Type: '{}' is not supported.", fmt::make_format_args(windowAppearance.mAppearance)));
     }
 
-    YLOG_NOTICE("WIN", "Requested surface: '%s', Resolution: (%dx%d)", AppearanceNames[static_cast<int>(mActiveAppearance)], windowAppearance.mResX, windowAppearance.mResY);
+    YLOG_INFO("WIN", "Requested surface: '%s', Resolution: (%dx%d)", AppearanceNames[static_cast<int>(mActiveAppearance)], windowAppearance.mResX, windowAppearance.mResY);
 
     mProcessMessage = [this](auto&&... params){ return onMessage(params...); };
 }

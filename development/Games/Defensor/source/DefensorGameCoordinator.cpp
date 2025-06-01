@@ -93,7 +93,7 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     const auto directorStartup = app.Options.find<std::string>("director_startup", "load");
 
     const SetupDirector setupDirector = directorStartup == "init" ? SetupDirector::Init : (directorStartup == "add" ? SetupDirector::Add : SetupDirector::Load);
-    YLOG_NOTICE("DEF", "Director startup: '%d' { Init(0), Add(1), Load(2) }", setupDirector);
+    YLOG_INFO("DEF", "Director startup: '%d' { Init(0), Add(1), Load(2) }", setupDirector);
 
     if (setupDirector == SetupDirector::Init)
     {

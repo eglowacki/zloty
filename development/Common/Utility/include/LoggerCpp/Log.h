@@ -48,7 +48,6 @@ namespace yaget::ylog
         {
             eDebug = 0,
             eInfo,
-            eNotice,
             eWarning,
             eError,
             eCritic

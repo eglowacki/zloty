@@ -181,7 +181,7 @@ namespace yaget
                     *mAccumulator += timeDiff;
                 }
 
-                YLOG_PNOTICE(mTag, mSourceLocation.file_name(), mSourceLocation.line(), mSourceLocation.function_name(), "%s: '%s' (%s).", mMessage, conv::ToThousandsSep(timeDiff).c_str(), UnitName(TU).c_str());
+                YLOG_PINFO(mTag, mSourceLocation.file_name(), mSourceLocation.line(), mSourceLocation.function_name(), "%s: '%s' (%s).", mMessage, conv::ToThousandsSep(timeDiff).c_str(), UnitName(TU).c_str());
             }
 
         private:

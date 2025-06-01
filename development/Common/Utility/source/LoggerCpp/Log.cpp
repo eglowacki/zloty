@@ -67,8 +67,6 @@ const char* Log::toString(Log::Level aLevel)
             break;
         case Log::Level::eInfo: pString = "INFO";
             break;
-        case Log::Level::eNotice: pString = "NOTE";
-            break;
         case Log::Level::eWarning: pString = "WARN";
             break;
         case Log::Level::eError: pString = "EROR";
@@ -91,8 +89,6 @@ Log::Level Log::toLevel(const char* apLevel)
         level = Log::Level::eDebug;
     else if (0 == strncmp(apLevel, "INFO", 4))
         level = Log::Level::eInfo;
-    else if (0 == strncmp(apLevel, "NOTE", 4))
-        level = Log::Level::eNotice;
     else if (0 == strncmp(apLevel, "WARN", 4))
         level = Log::Level::eWarning;
     else if (0 == strncmp(apLevel, "EROR", 4))

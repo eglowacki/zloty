@@ -345,7 +345,7 @@ TEST_F(CoordinatorSet, ComponentCapacity)
         }
 
         float avgTick = (accumulator * 1.0f) / kNumTicks;
-        YLOG_NOTICE("TEST", "Average Tick %s (%s) after %d tries.", conv::ToThousandsSep(avgTick).c_str(), metrics::UnitName(ScoperUnit).c_str(), kNumTicks);
+        YLOG_INFO("TEST", "Average Tick %s (%s) after %d tries.", conv::ToThousandsSep(avgTick).c_str(), metrics::UnitName(ScoperUnit).c_str(), kNumTicks);
     }
 
     size_t counter = 0;
@@ -394,5 +394,5 @@ TEST_F(CoordinatorSet, ComponentCapacity)
         }
     }
 
-    YLOG_NOTICE("TEST", "Counter is: '%d'", counter);
+    YLOG_INFO("TEST", "Counter is: '%d'", counter);
 }

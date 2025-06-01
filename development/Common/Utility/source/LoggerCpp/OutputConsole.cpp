@@ -36,8 +36,6 @@ unsigned short OutputConsole::toWin32Attribute(Log::Level aLevel)
             break; // white
         case Log::Level::eInfo: code = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
             break;
-        case Log::Level::eNotice: code = FOREGROUND_GREEN;
-            break; // green
         case Log::Level::eWarning: code = FOREGROUND_RED | FOREGROUND_GREEN;
             break; // orange
         case Log::Level::eError: code = FOREGROUND_RED;

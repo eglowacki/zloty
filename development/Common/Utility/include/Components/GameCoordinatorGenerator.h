@@ -154,7 +154,7 @@ namespace yaget::comp::db
                 }
             }
             sqlCommand += ", PRIMARY KEY('Id'));";
-            YLOG_NOTICE("GSYS", "[%s]", sqlCommand.c_str());
+            YLOG_INFO("GSYS", "[%s]", sqlCommand.c_str());
             results.emplace_back(sqlCommand);
         });
 

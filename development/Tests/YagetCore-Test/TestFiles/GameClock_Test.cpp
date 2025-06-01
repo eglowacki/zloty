@@ -111,7 +111,7 @@ TEST_F(Time, Sleep)
                                     conv::ToThousandsSep(BusySleepDuration), metrics::UnitName(time::kMicrosecondUnit),
                                     conv::ToThousandsSep(SleepDuration), metrics::UnitName(time::kMicrosecondUnit));
 
-    YLOG_NOTICE("TEST", loadsMessage.c_str());
+    YLOG_INFO("TEST", loadsMessage.c_str());
 }
 
 TEST_F(Time, FromToConversion)

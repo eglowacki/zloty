@@ -35,11 +35,11 @@ yaget::render::platform::DeviceDebugger::DeviceDebugger()
         debugController1->EnableDebugLayer();
         debugController1->SetEnableGPUBasedValidation(true);
 
-        YLOG_NOTICE("DEVI", "DeviceDebugger Activated.");
+        YLOG_INFO("DEVI", "DeviceDebugger Activated.");
     }
     else
     {
-        YLOG_NOTICE("DEVI", "DeviceDebugger NOT Activated.");
+        YLOG_INFO("DEVI", "DeviceDebugger NOT Activated.");
     }
 }
 
@@ -116,11 +116,11 @@ void yaget::render::platform::DeviceDebugger::ActivateMessageSeverity(const ComP
 
         infoQueue->PushStorageFilter(&newFilter);
 #endif // 0
-        YLOG_NOTICE("DEVI", "DeviceDebugger MessageSeverity Activated. On Corruption: '%s', On Error: '%s', On Warning: '%s'.", conv::ToBool(breakOnCorruption).c_str(), conv::ToBool(breakOnError).c_str(), conv::ToBool(breakOnWarning).c_str());
+        YLOG_INFO("DEVI", "DeviceDebugger MessageSeverity Activated. On Corruption: '%s', On Error: '%s', On Warning: '%s'.", conv::ToBool(breakOnCorruption).c_str(), conv::ToBool(breakOnError).c_str(), conv::ToBool(breakOnWarning).c_str());
     }
     else
     {
-        YLOG_NOTICE("DEVI", "DeviceDebugger MessageSeverity NOT Activated.");
+        YLOG_INFO("DEVI", "DeviceDebugger MessageSeverity NOT Activated.");
     }
 }
 

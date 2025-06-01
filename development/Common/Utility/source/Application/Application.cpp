@@ -114,13 +114,13 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
             const time::Microsecond_t actualProcessTime = platform::GetRealTime(time::kMicrosecondUnit) - startProcessTime;
             if (actualProcessTime > kFixedDeltaTime)
             {
-                YLOG_NOTICE("PROF", "Tick Loop tool too long. Budget: '%d' (mc), Actual: '%d' (mc).", kFixedDeltaTime, actualProcessTime);
+                YLOG_INFO("PROF", "Tick Loop tool too long. Budget: '%d' (mc), Actual: '%d' (mc).", kFixedDeltaTime, actualProcessTime);
                 if (platform::IsDebuggerAttached())
                 {
                     // since we are under debugger, we just adjust the main timer to account for that loss time (maybe due to break point)
                     platform::AdjustDrift(actualProcessTime - kFixedDeltaTime, time::kMicrosecondUnit);
                     mApplicationClock.Resync();
-                    YLOG_NOTICE("PROF", "Adjusted Main Real Time by: '%d' (mc).", actualProcessTime - kFixedDeltaTime);
+                    YLOG_INFO("PROF", "Adjusted Main Real Time by: '%d' (mc).", actualProcessTime - kFixedDeltaTime);
                 }
             }
 

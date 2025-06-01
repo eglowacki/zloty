@@ -58,7 +58,7 @@ namespace yaget::app::helpers
         int returnResult = 0;
         try
         {
-            YLOG_NOTICE("INIT", util::DisplayCurrentConfiguration(&options).c_str());
+            YLOG_INFO("INIT", util::DisplayCurrentConfiguration(&options).c_str());
             returnResult = callback();
         }
         catch (const ex::standard& e)

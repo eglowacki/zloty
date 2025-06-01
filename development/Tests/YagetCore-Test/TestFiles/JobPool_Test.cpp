@@ -76,7 +76,7 @@ TEST_F(Threads, JobPool)
     {
         loadsMessage += fmt::format("\n\tThreadId: {} = {}", metrics::MarkGetThreadName(elem.first), conv::ToThousandsSep(elem.second.load()));
     }
-    YLOG_NOTICE("TEST", loadsMessage.c_str());
+    YLOG_INFO("TEST", loadsMessage.c_str());
     EXPECT_EQ(counter, 0);
 
     {
@@ -131,10 +131,10 @@ TEST_F(Threads, AsyncWait)
             platform::BusySleep(100, time::kMilisecondUnit);
         });
 
-        YLOG_NOTICE("TEST", "Should see this right away.");
+        YLOG_INFO("TEST", "Should see this right away.");
 
         job.Join();
-        YLOG_NOTICE("TEST", "About 100 miliseconds later.");
+        YLOG_INFO("TEST", "About 100 miliseconds later.");
 
         job.Join();
         job.Join();
