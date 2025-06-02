@@ -159,7 +159,7 @@ namespace yaget::comp::db
         });
 
         return results;
-    };
+    }
 
     template <typename T>
     int64_t GenerateSystemsCoordinatorVersion()
@@ -208,6 +208,36 @@ namespace yaget::comp::db
     inline int64_t GenerateSystemsCoordinatorVersion<EmptySchema>()
     {
         return 0;
+    }
+
+    enum class GenerateCoordinator
+    {
+        Version,
+        Schema,
+        Log
+    };
+
+    template <typename T, enum F>
+    auto GenerateSystemsCoordinator()
+    {
+        if constexpr (F == GenerateCoordinator::Schema)
+        {
+            return GenerateSystemsCoordinatorSchema<T>();
+        }
+        if constexpr (F == GenerateCoordinator::Version)
+        {
+            return GenerateSystemsCoordinatorVersion<T>();
+        }
+        if constexpr (F == GenerateCoordinator::Log)
+        {
+            return static_cast<int64_t>(0);//GenerateSystemsCoordinatorLog<T>();
+        }
+    }
+
+    template <enum F>
+    auto GenerateSystemsCoordinator<EmptySchema>()
+    {
+        return GenerateSystemsCoordinator<EmptySchema, F>();
     }
 
 }
