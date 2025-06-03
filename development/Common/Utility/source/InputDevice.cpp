@@ -553,7 +553,7 @@ Strings input::InputDevice::GetActionNames() const
     Strings actionNames;
 
     std::unique_lock<std::mutex> locker(mActionMapMutex);
-    std::transform(mActionMap.begin(), mActionMap.end(), back_inserter(actionNames), [](const std::pair<std::string, ActionMap> &pair) 
+    std::transform(mActionMap.begin(), mActionMap.end(), std::back_inserter(actionNames), [](const std::pair<std::string, ActionMap> &pair) 
     {
         return pair.first; 
     });
