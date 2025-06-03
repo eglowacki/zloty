@@ -178,6 +178,8 @@ namespace yaget
             // Return true if actionName is registered with input device
             bool IsAction(const std::string& actionName) const;
 
+            Strings GetActionNames() const;
+
             // Return display string for key/input associated with this action
             std::string ActionToString(const std::string& actionName) const;
             void TriggerAction(const std::string& actionName, int32_t mouseX, int32_t mouseY, time::Microsecond_t timeStamp = platform::GetRealTime(time::kMicrosecondUnit));

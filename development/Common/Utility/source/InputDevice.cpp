@@ -548,6 +548,21 @@ bool input::InputDevice::IsAction(const std::string& actionName) const
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
+Strings input::InputDevice::GetActionNames() const
+{
+    Strings actionNames;
+
+    std::unique_lock<std::mutex> locker(mActionMapMutex);
+    std::transform(mActionMap.begin(), mActionMap.end(), back_inserter(actionNames), [](const std::pair<std::string, ActionMap> &pair) 
+    {
+        return pair.first; 
+    });
+
+    return actionNames;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
 std::string input::InputDevice::ActionToString(const std::string& actionName) const
 {
     std::unique_lock<std::mutex> locker(mActionMapMutex);
