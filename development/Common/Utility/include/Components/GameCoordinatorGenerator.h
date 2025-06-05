@@ -217,7 +217,7 @@ namespace yaget::comp::db
         Log
     };
 
-    template <typename T, enum F>
+    template <typename T, GenerateCoordinator F>
     auto GenerateSystemsCoordinator()
     {
         if constexpr (F == GenerateCoordinator::Schema)
@@ -234,8 +234,8 @@ namespace yaget::comp::db
         }
     }
 
-    template <enum F>
-    auto GenerateSystemsCoordinator<EmptySchema>()
+    template <GenerateCoordinator F>
+    auto GenerateSystemsCoordinator()
     {
         return GenerateSystemsCoordinator<EmptySchema, F>();
     }
