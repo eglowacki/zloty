@@ -80,7 +80,7 @@ namespace yaget
         // You can use this type of pattern to decorate RowPolicy
         //struct GlobalEntity : yaget::comp::RowPolicy<BoardComponent*, ScoreComponent*>
         //{
-        //    using AutoCleanup = bool; // cleanup any left over components on shutdown
+        //    using AutoCleanup = bool; // cleanup any leftover components on shutdown
         //    using Global = bool;      // used as a global entity
         //};
         //
@@ -91,7 +91,7 @@ namespace yaget
             static constexpr size_t NumComponents = std::tuple_size_v<std::remove_reference_t<Row>>;
 
 #ifndef YAGET_RELEASE
-            // NOTE: EG: Not sure if I like this be a compile define
+            // NOTE: EG: Not sure if I like this be a compiled define
             // This is probably more useful per to let user declare RowPolicy
             // with this option
             using AutoCleanup = bool;
