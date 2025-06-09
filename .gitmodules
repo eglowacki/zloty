@@ -16,5 +16,5 @@
 	path = development/Dependencies/FTXUI
 	url = https://github.com/ArthurSonzogni/FTXUI.git
 [submodule "DirectXTK12"]
-	path = DirectXTK12
+	path = development/Dependencies/DirectXTK12
 	url = https://github.com/microsoft/DirectXTK12.git
