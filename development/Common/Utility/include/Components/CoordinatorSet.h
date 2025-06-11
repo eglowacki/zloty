@@ -105,7 +105,7 @@ namespace yaget::comp
         template<typename S, typename T>
         constexpr void tuple_copy_if_source(const S& source, T& target)
         {
-            tuple_copy_if(source, target, [](const auto& sourceElement, const auto& targetElement)
+            tuple_copy_if(source, target, [](const auto& sourceElement, const auto& /*targetElement*/)
             {
                 return sourceElement != nullptr;
             });
@@ -487,10 +487,6 @@ namespace yaget::comp
             meta::for_each_type<TT>([this, &result, id]<typename T0>(const T0&)
             {
                 using BaseType = meta::strip_qualifiers_t<T0>;
-
-                BaseType* baseType{};
-                int z = 0;
-                z;
                 RemoveComponent<BaseType*>(id);
             });
 

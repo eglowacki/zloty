@@ -37,8 +37,8 @@ namespace yaget::comp
         {
         }
 
-        void AddInputEvent(const std::string& eventName, input::ActionNonParamCallback_t callback) const {}
-        void AddInputEvent(const std::string& eventName, input::ActionCallback_t callback) const {}
+        void AddInputEvent(const std::string& /*eventName*/, input::ActionNonParamCallback_t /*callback*/) const {}
+        void AddInputEvent(const std::string& /*eventName*/, input::ActionCallback_t /*callback*/) const {}
     };
 
 } // namespace yaget::comp

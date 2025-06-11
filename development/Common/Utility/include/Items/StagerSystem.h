@@ -77,7 +77,7 @@ namespace yaget::items
     // --------------------------------------------------------------------
     // impl methods
     template <typename CS, typename M>
-    void StagerSystem<CS, M>::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, StageComponent* stageComponent)
+    void StagerSystem<CS, M>::OnUpdate(comp::Id_t /*id*/, const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/, StageComponent* stageComponent)
     {
         const auto& requestedStageName = stageComponent->GetValue<db_stage::Name>();
 
@@ -89,6 +89,8 @@ namespace yaget::items
             const auto items = mDirector.GetStageItems(requestedStageName);
             if (!items.empty())
             {
+                const auto blend = stageComponent->GetValue<db_stage::Blend>();
+
                 // here we have choices on how to load requested stage
                 //  leave current items loaded
                 //  load requested ones
