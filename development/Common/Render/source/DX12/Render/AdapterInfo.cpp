@@ -290,16 +290,24 @@ yaget::render::info::Adapter yaget::render::info::SelectDefaultAdapter(size_t co
     const size_t resY = configInitBlock_ResY;
     //const bool fullScreen = configInitBlock.FullScreen;
 
+    //Filters resolutionFilter{
+    //    nullptr,
+    //    nullptr,
+    //    nullptr,
+    //    nullptr,
+    //    [resX, resY](auto resolution)
+    //    {
+    //        return resolution.mRefreshRate == 60 && resolution.mWidth == resX && resolution.mHeight == resY;
+    //    }
+    //};
+
     Filters resolutionFilter{
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        [resX, resY](auto resolution)
+        .mResolution = [resX, resY](auto resolution)
         {
             return resolution.mRefreshRate == 60 && resolution.mWidth == resX && resolution.mHeight == resY;
         }
     };
+
 
     auto selectedAdapter = SelectAdapter(hardwareAdapters, resolutionFilter);
 
@@ -321,7 +329,7 @@ yaget::render::info::Adapter yaget::render::info::SelectDefaultAdapter(size_t co
             return resolution.mRefreshRate == 60 && resolution.mWidth == width && resolution.mHeight == height;
         };
 
-        selectedAdapter = render::info::SelectAdapter(hardwareAdapters, resolutionFilter);
+        selectedAdapter = SelectAdapter(hardwareAdapters, resolutionFilter);
         error_handlers::ThrowOnError(selectedAdapter.IsValid(), "Could not create default video adapter");
     }
 
