@@ -5,10 +5,10 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(YAGET_DEPENDENCIES_PATH)\DirectXTK11-5.10.2020\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(YAGET_GLOBAL_DEPENDENCIES_FOLDER)\DirectXTK11-5.10.2020\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(YAGET_DEPENDENCIES_PATH)\DirectXTK11-5.10.2020\bin\CMake\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(YAGET_GLOBAL_DEPENDENCIES_FOLDER)\DirectXTK11-5.10.2020\bin\CMake\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>

@@ -7,12 +7,12 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <PostBuildEvent>
-      <Command>$(YAGET_ROOT_FOLDER)\DevTools\DependencyDeployment\deploy.py --root=$(YAGET_ROOT_FOLDER) --configuration=$(Configuration) --destination=$(YAGET_RUN_FOLDER) --metafile=$(ProjectDir)$(TargetName).deployment</Command>
+      <Command>$(YAGET_GLOBAL_DEPENDENCIES_FOLDER)\..\DevTools\DependencyDeployment\deploy.py --root=$(YAGET_GLOBAL_DEPENDENCIES_FOLDER) --configuration=$(Configuration) --destination=$(YAGET_RUN_FOLDER) --metafile=$(ProjectDir)$(TargetName).deployment</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <PostBuildEvent>
-      <Message>Executing dependency update for '$(YAGET_RUN_FOLDER)' using configuration '$(Configuration)' with metafile '$(ProjectDir)$(TargetName).deployment'</Message>
+      <Message>Executing dependency update for '$(YAGET_GLOBAL_DEPENDENCIES_FOLDER)' using configuration '$(Configuration)' with metafile '$(ProjectDir)$(TargetName).deployment'</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup />

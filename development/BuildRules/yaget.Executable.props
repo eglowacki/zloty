@@ -8,7 +8,7 @@
     <YAGET_BIN_TARGET_FOLDER>$(TargetDir)</YAGET_BIN_TARGET_FOLDER>
   </PropertyGroup>
   <PropertyGroup>
-    <OutDir>$(YAGET_ROOT_FOLDER)\branch\$(YAGET_BRANCH_FOLDER)\bin\$(ProjectName)\$(PlatformName).$(Configuration)\</OutDir>
+    <OutDir>$(YAGET_ROOT_FOLDER)\bin\$(ProjectName)\$(PlatformName).$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Manifest>

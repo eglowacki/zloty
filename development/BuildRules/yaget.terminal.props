@@ -5,8 +5,11 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(YAGET_DEPENDENCIES_PATH)\terminal-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(YAGET_GLOBAL_DEPENDENCIES_FOLDER)\terminal-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(YAGET_GLOBAL_DEPENDENCIES_FOLDER)\terminal-master\builds\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>
