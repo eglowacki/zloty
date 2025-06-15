@@ -10,6 +10,9 @@
     "Modules": {
         "DirectXTK12": {
             "version": ""
-        }
-     }
+        },
+        "fmt": {
+            "version": "10.1"
+		}
+    }
 }
