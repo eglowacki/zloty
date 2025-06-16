@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <PostBuildEvent>
-      <Command>$(YAGET_GLOBAL_DEPENDENCIES_FOLDER)\..\DevTools\DependencyDeployment\deploy.py --root=$(YAGET_GLOBAL_DEPENDENCIES_FOLDER) --configuration=$(Configuration) --destination=$(YAGET_RUN_FOLDER) --metafile=$(ProjectDir)$(TargetName).deployment</Command>
+      <Command>$(YAGET_GLOBAL_DEPENDENCIES_FOLDER)\..\DevTools\DependencyDeployment\deploy.py --root=$(YAGET_GLOBAL_DEPENDENCIES_FOLDER);$(YAGET_DEPENDENCIES_FOLDER) --configuration=$(Configuration) --destination=$(YAGET_RUN_FOLDER) --metafile=$(ProjectDir)$(TargetName).deployment</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
