@@ -49,8 +49,7 @@ namespace yaget::ylog
             eDebug = 0,
             eInfo,
             eWarning,
-            eError,
-            eCritic
+            eError
         };
 
         /**

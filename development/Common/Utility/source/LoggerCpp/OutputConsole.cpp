@@ -40,8 +40,6 @@ unsigned short OutputConsole::toWin32Attribute(Log::Level aLevel)
             break; // orange
         case Log::Level::eError: code = FOREGROUND_RED;
             break; // red
-        case Log::Level::eCritic: code = FOREGROUND_RED | FOREGROUND_INTENSITY;
-            break; // light red
     }
 
     return (code);

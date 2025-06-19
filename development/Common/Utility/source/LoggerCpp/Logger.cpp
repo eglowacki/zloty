@@ -42,11 +42,6 @@ yaget::ylog::Log yaget::ylog::Logger::error() const
     return Log(*this, Log::Level::eError);
 }
 
-yaget::ylog::Log yaget::ylog::Logger::critic() const
-{
-    return Log(*this, Log::Level::eCritic);
-}
-
 // To be used only by the Log class
 void yaget::ylog::Logger::output(const Log& aLog) const
 {

@@ -71,8 +71,6 @@ const char* Log::toString(Log::Level aLevel)
             break;
         case Log::Level::eError: pString = "EROR";
             break;
-        case Log::Level::eCritic: pString = "CRIT";
-            break;
         default: pString = "????";
             break;
     }
@@ -83,7 +81,7 @@ const char* Log::toString(Log::Level aLevel)
 // Convert a string representation of a Level to its corresponding value
 Log::Level Log::toLevel(const char* apLevel)
 {
-    Log::Level level;
+    Log::Level level = Log::Level::eDebug;
 
     if (0 == strncmp(apLevel, "DBUG", 4))
         level = Log::Level::eDebug;
@@ -93,8 +91,6 @@ Log::Level Log::toLevel(const char* apLevel)
         level = Log::Level::eWarning;
     else if (0 == strncmp(apLevel, "EROR", 4))
         level = Log::Level::eError;
-    else /* (0 == strncmp(apLevel, "CRIT", 4)*/
-        level = Log::Level::eCritic; // NOLINT(whitespace/newline)
 
     return level;
 }

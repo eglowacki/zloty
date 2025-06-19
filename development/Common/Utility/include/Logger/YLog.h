@@ -91,7 +91,6 @@ namespace yaget
     #define YLOG_INFO(tag, ...)                             yaget::ylog::Get().info().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)
     #define YLOG_WARNING(tag, ...)                          yaget::ylog::Get().warning().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)
     #define YLOG_ERROR(tag, ...)                            yaget::ylog::Get().error().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)
-    #define YLOG_CRITICAL(tag, ...)                         yaget::ylog::Get().critic().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)
 
     #define YLOG_PDEBUG(tag, file, line, function, ...)     yaget::ylog::Get().debug().Write(file, line, function, LOG_TAG(tag), true, __VA_ARGS__)
     #define YLOG_PINFO(tag, file, line, function, ...)      yaget::ylog::Get().info().Write(file, line, function, LOG_TAG(tag), true, __VA_ARGS__)
@@ -111,7 +110,6 @@ namespace yaget
     #define YLOG_INFO(tag, ...)                             do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_WARNING(tag, ...)                          do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_ERROR(tag, ...)                            do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
-    #define YLOG_CRITICAL(tag, ...)                         do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
 
     #define YLOG_PDEBUG(tag, file, line, function, ...)     do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_PINFO(tag, file, line, function, ...)      do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)

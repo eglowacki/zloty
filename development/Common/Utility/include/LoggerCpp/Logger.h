@@ -52,7 +52,6 @@ namespace yaget
             Log info() const;
             Log warning() const;
             Log error() const;
-            Log critic() const;
 
             /// @}
 
