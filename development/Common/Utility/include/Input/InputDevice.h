@@ -172,13 +172,11 @@ namespace yaget
 
             int MapKey(int value) const;
             void RegisterActionCallback(const std::string& actionName, ActionCallback_t actionCallback);
-            // SImple input callback that does not take any parameters. Ex: like quit, programmer might not care about
+            // Simple input callback that does not take any parameters. Ex: like quit, programmer might not care about
             // actionName, timeStamp, mouseX, mouseY or flags
             void RegisterSimpleActionCallback(const std::string& actionName, ActionNonParamCallback_t actionCallback);
             // Return true if actionName is registered with input device
             bool IsAction(const std::string& actionName) const;
-
-            Strings GetActionNames() const;
 
             // Return display string for key/input associated with this action
             std::string ActionToString(const std::string& actionName) const;
@@ -210,6 +208,8 @@ namespace yaget
         private:
             void LoadConfigFiles(io::VirtualTransportSystem& vts);
             void ProcessRecord(const Record& record);
+
+            Strings GetActionNames() const;
 
             mutable std::mutex mActionMapMutex;     // if we never want to re-load config file during runtime, then this mutex could go away
             mutable std::mutex mPendingInputsMutex;

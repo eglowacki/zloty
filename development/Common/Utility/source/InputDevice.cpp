@@ -182,6 +182,21 @@ namespace
         file << "}\n";
     }
 
+    yaget::Strings GetActionNameMatch(const std::string& actionName, const Strings& registeredNames)
+    {
+        if (actionName == "*")
+        {
+            return registeredNames;
+        }
+
+        if (std::find(registeredNames.begin(), registeredNames.end(), actionName) != registeredNames.end())
+        {
+            return { actionName };
+        }
+
+        return {};
+    }
+
 } // namespace
 
 
@@ -526,16 +541,30 @@ void input::InputDevice::RegisterActionCallback(const std::string& actionName, i
 {
     YAGET_ASSERT(actionCallback, "Registration for action: '%s' is not valid with empty actionCallback", actionName.c_str());
 
+    const auto& actionNames = GetActionNames();
     std::unique_lock<std::mutex> locker(mActionMapMutex);
-    std::map<std::string, ActionMap>::iterator it = mActionMap.find(actionName);
-    if (it != mActionMap.end())
+
+    const auto& matchedActionNames = GetActionNameMatch(actionName, actionNames);
+    YLOG_CERROR("INPT", matchedActionNames.empty(), "Action '%s' is not registered with input system, ignoring RegisterActionCallback", actionName.c_str());
+
+    for (auto it = matchedActionNames.begin(); it != matchedActionNames.end(); ++it)
     {
-        it->second.mCallbacks.push_back(actionCallback);
+        std::map<std::string, ActionMap>::iterator action = mActionMap.find(*it);
+        if (action != mActionMap.end())
+        {
+            action->second.mCallbacks.push_back(actionCallback);
+        }
     }
-    else
-    {
-        YLOG_ERROR("INPT", "Action '%s' is not registered with input system, ignoring RegisterActionCallback", actionName.c_str());
-    }
+
+    //std::map<std::string, ActionMap>::iterator it = mActionMap.find(actionName);
+    //if (it != mActionMap.end())
+    //{
+    //    it->second.mCallbacks.push_back(actionCallback);
+    //}
+    //else
+    //{
+    //    YLOG_ERROR("INPT", "Action '%s' is not registered with input system, ignoring RegisterActionCallback", actionName.c_str());
+    //}
 }
 
 
@@ -659,7 +688,7 @@ bool input::InputDevice::ActionMap::Is(const Record* record, const std::string& 
         }
     }
 
-    YAGET_ASSERT(currentRecord, "This should never happen, since this means that all recored where hit/validated.");
+    YAGET_ASSERT(currentRecord, "This should never happen, since this means that all recorded where hit/validated.");
     if (currentRecord->Is(record))
     {
         currentRecord->mValidHit = true;
