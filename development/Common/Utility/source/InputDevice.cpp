@@ -545,7 +545,7 @@ void input::InputDevice::RegisterActionCallback(const std::string& actionName, i
     std::unique_lock<std::mutex> locker(mActionMapMutex);
 
     const auto& matchedActionNames = GetActionNameMatch(actionName, actionNames);
-    YLOG_CERROR("INPT", matchedActionNames.empty(), "Action '%s' is not registered with input system, ignoring RegisterActionCallback", actionName.c_str());
+    YLOG_CERROR("INPT", !matchedActionNames.empty(), "Action '%s' is not registered with input system (%s), ignoring RegisterActionCallback", actionName.c_str(), conv::Convertor<Strings>::ToString(actionNames).c_str());
 
     for (auto it = matchedActionNames.begin(); it != matchedActionNames.end(); ++it)
     {
