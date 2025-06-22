@@ -209,8 +209,6 @@ namespace yaget
             void LoadConfigFiles(io::VirtualTransportSystem& vts);
             void ProcessRecord(const Record& record);
 
-            Strings GetActionNames() const;
-
             mutable std::mutex mActionMapMutex;     // if we never want to re-load config file during runtime, then this mutex could go away
             mutable std::mutex mPendingInputsMutex;
 
@@ -240,7 +238,10 @@ namespace yaget
                 std::vector<ActionCallback_t> mCallbacks;
 
             };
-            std::map<std::string, ActionMap> mActionMap;
+
+            using ActionsMap = std::map<std::string, ActionMap>;
+
+            ActionsMap mActionMap;
             std::stack<std::string> mContextStack;
         };
 

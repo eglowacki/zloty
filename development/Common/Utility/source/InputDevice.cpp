@@ -182,6 +182,7 @@ namespace
         file << "}\n";
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
     yaget::Strings GetActionNameMatch(const std::string& actionName, const Strings& registeredNames)
     {
         if (actionName == "*")
@@ -195,6 +196,20 @@ namespace
         }
 
         return {};
+    }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
+    template <typename T>
+    Strings GetActionNames(const T& actionsMap)
+    {
+        Strings actionNames;
+
+        std::transform(actionsMap.begin(), actionsMap.end(), std::back_inserter(actionNames), [](const auto& pair) 
+        {
+            return pair.first; 
+        });
+
+        return actionNames;
     }
 
 } // namespace
@@ -517,7 +532,7 @@ void input::InputDevice::TriggerAction(const std::string& actionName, int32_t mo
 
     std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
 
-    std::map<std::string, ActionMap>::iterator it = mActionMap.find(actionName);
+    ActionsMap::iterator it = mActionMap.find(actionName);
     if (it != mActionMap.end() && it->second.Is(nullptr, currentContextName))
     {
         ActionMap& actionMap = it->second;
@@ -541,22 +556,22 @@ void input::InputDevice::RegisterActionCallback(const std::string& actionName, i
 {
     YAGET_ASSERT(actionCallback, "Registration for action: '%s' is not valid with empty actionCallback", actionName.c_str());
 
-    const auto& actionNames = GetActionNames();
     std::unique_lock<std::mutex> locker(mActionMapMutex);
+    const auto& actionNames = GetActionNames(mActionMap);
 
     const auto& matchedActionNames = GetActionNameMatch(actionName, actionNames);
     YLOG_CERROR("INPT", !matchedActionNames.empty(), "Action '%s' is not registered with input system (%s), ignoring RegisterActionCallback", actionName.c_str(), conv::Convertor<Strings>::ToString(actionNames).c_str());
 
     for (auto it = matchedActionNames.begin(); it != matchedActionNames.end(); ++it)
     {
-        std::map<std::string, ActionMap>::iterator action = mActionMap.find(*it);
+        ActionsMap::iterator action = mActionMap.find(*it);
         if (action != mActionMap.end())
         {
             action->second.mCallbacks.push_back(actionCallback);
         }
     }
 
-    //std::map<std::string, ActionMap>::iterator it = mActionMap.find(actionName);
+    //ActionsMap::iterator it = mActionMap.find(actionName);
     //if (it != mActionMap.end())
     //{
     //    it->second.mCallbacks.push_back(actionCallback);
@@ -577,25 +592,10 @@ bool input::InputDevice::IsAction(const std::string& actionName) const
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
-Strings input::InputDevice::GetActionNames() const
-{
-    Strings actionNames;
-
-    std::unique_lock<std::mutex> locker(mActionMapMutex);
-    std::transform(mActionMap.begin(), mActionMap.end(), std::back_inserter(actionNames), [](const std::pair<std::string, ActionMap> &pair) 
-    {
-        return pair.first; 
-    });
-
-    return actionNames;
-}
-
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------
 std::string input::InputDevice::ActionToString(const std::string& actionName) const
 {
     std::unique_lock<std::mutex> locker(mActionMapMutex);
-    std::map<std::string, ActionMap>::const_iterator it = mActionMap.find(actionName);
+    ActionsMap::const_iterator it = mActionMap.find(actionName);
     if (it != mActionMap.end())
     {
         return (*it).second.ToString();
