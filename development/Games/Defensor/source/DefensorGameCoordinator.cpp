@@ -111,15 +111,17 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
         const auto& startingStage = dev::CurrentConfiguration().mInit.mStartingStage;
         if (auto stageComponent = LoadComponent<items::StageComponent>(stageId))
         {
-            auto observer = [stageComponent](auto oldValue, auto newValue)
+            if (!startingStage.empty())
             {
-                int z = 0;
-                z;
-            };
+                auto observer = [stageComponent](auto oldValue, auto newValue)
+                {
+                    int z = 0;
+                    z;
+                };
 
-            stageComponent->Connect<items::db_stage::Name>(observer);
-
-            stageComponent->SetValue<items::db_stage::Name>(startingStage);
+                stageComponent->Connect<items::db_stage::Name>(observer);
+                stageComponent->SetValue<items::db_stage::Name>(startingStage);
+            }
         }
     }
 }

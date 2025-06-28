@@ -179,14 +179,17 @@ namespace yaget::items
         const auto dbLock = LockDatabaseAccess();
         const auto& database = dbLock->DB();
 
-        bool getResult = true;
-        const auto componentParameters = database.GetRowTuple<Parameters>(command, &getResult);
-        if (result)
-        {
-            *result = getResult;
-        }
+        //bool getResult = true;
+        //const auto componentParameters = database.GetRowTuple<Parameters>(command, &getResult);
+        //if (result)
+        //{
+        //    *result = getResult;
+        //}
 
-        return componentParameters;
+        //return componentParameters;
+
+        return database.GetRowTuple<Parameters>(command, result);
+
     }
 
 } // namespace yaget::items

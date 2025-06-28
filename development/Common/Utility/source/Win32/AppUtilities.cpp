@@ -308,6 +308,12 @@ namespace
         return length;
     }
 
+    std::string MakeHTMLLink(const std::string& source)
+    {
+        //return yaget::conv::ReplaceString(source, " ", "%20");
+        return "file:///" + source;
+    }
+
 } // namespace
 
 
@@ -424,18 +430,20 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
     // Show loaded config file
     // show all search path for config file and marked used one with *
     std::string message = "=== Configuration Search Path:";
-    message += "\nFound and Used:\n   " + (!configFile.empty() ? configFile : "*NO CONFIGURATION*") + ".\nSearch Order:";
+
+    std::string selectedConfigFile = MakeHTMLLink(configFile);
+    message += "\nFound and Used:\n   " + (!selectedConfigFile.empty() ? selectedConfigFile : "*NO CONFIGURATION*") + ".\nSearch Order:";
 
     Strings searches = io::file::GenerateConfigSearchPath("Configuration", true, options);
     for (const auto& searched : searches)
     {
-        std::string linkable;
+        std::string linkable = searched;
         if (searched == configFile)
         {
-            linkable = "file:///";
+            linkable = MakeHTMLLink(searched);
         }
 
-        message += fmt::format("\n   {}{}", linkable, searched);
+        message += "\n   " + linkable;
      }
 
     // Show all aliases and it's corresponding path
@@ -455,9 +463,15 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
         std::string expendedAlias = util::ExpendEnv(env.first, nullptr);
 
         const bool isLinkable = fs::is_directory(expendedAlias) || fs::is_regular_file(expendedAlias);
-        const char* filePrefix = isLinkable ? "file:///" : "";
+        std::string linkable = expendedAlias;
+        if (isLinkable)
+        {
+            linkable = MakeHTMLLink(expendedAlias);
+        }
 
-        message += fmt::format("\n   Alias: '{}'{} = {}{}{}", env.first, spacing, (env.second.ReadOnly ? "R- " : "RW "), filePrefix, expendedAlias);
+        //const auto attrib = env.second.ReadOnly ? "R- " : "RW ";
+        //message += "\n   Alias: '" + env.first + "'" + spacing + attrib + linkable;
+        message += fmt::format("\n   Alias: '{}'{} = {}{}", env.first, spacing, (env.second.ReadOnly ? "R- " : "RW "), linkable);
     }
 
     const dev::Configuration& configuration = dev::CurrentConfiguration();
@@ -470,7 +484,7 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
         for (const auto& pathName : section.Path)
         {
             std::string potentialPath = util::ExpendEnv(pathName, nullptr);
-            message += fmt::format("\n     file:///{}", potentialPath);
+            message += "\n     " + MakeHTMLLink(potentialPath);
         }
     }
 
