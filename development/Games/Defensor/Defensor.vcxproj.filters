@@ -17,6 +17,9 @@
     <Filter Include="Source Files\Stager Files">
       <UniqueIdentifier>{38fd0fef-4f0f-422c-a101-a67844edea31}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Systems Files">
+      <UniqueIdentifier>{aed16a1b-6ae5-47da-9499-39fb54960e6d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -54,6 +57,9 @@
     </ClCompile>
     <ClCompile Include="source\Stager\StagerSystem.cpp">
       <Filter>Source Files\Stager Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Systems\InputSystem.cpp">
+      <Filter>Source Files\Systems Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -108,6 +114,9 @@
     </ClInclude>
     <ClInclude Include="source\Stager\StagerSystem.h">
       <Filter>Source Files\Stager Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Systems\InputSystem.h">
+      <Filter>Source Files\Systems Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
