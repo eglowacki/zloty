@@ -176,7 +176,6 @@ bool yaget::comp::db::PersistentBaseComponent<VT, Cap>::SetValue(const auto& new
     auto& currentValue = internal::GetValue<T, Row>(mDataStorage);
     if ((result = (currentValue != newValue)))
     {
-        const auto oldValue = currentValue;
         currentValue = newValue;
     }
 

@@ -64,6 +64,15 @@ namespace yaget::comp::db
     using make_observers_tuple_t = typename make_observers_tuple<Tuple>::type;
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
+    //  items::StageComponent* stageComponent = ...;
+    //  auto observer = [stageComponent](auto oldValue, auto newValue)
+    //  {
+    //      //...
+    //  };
+    //
+    //  stageComponent->Connect<items::db_stage::Name>(observer);
+    //  stageComponent->SetValue<items::db_stage::Name>(startingStage);
+    //
     template <typename VT, int Cap = DefaultPoolSize>
     class PersistentObserverComponent : public PersistentBaseComponent<VT, Cap>
     {
