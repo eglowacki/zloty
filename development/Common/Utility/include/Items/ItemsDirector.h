@@ -135,6 +135,8 @@ namespace yaget::items
     template <typename T>
     bool Director::SaveComponentState(const T* component)
     {
+        YAGET_ASSERT(component, "component parameter is nullptr. Can not save state of null object.");
+
         using ParameterNames = typename comp::db::RowDescription_t<T>::Row;
         using ParameterPack = typename comp::db::RowDescription_t<T>::Types;
 
