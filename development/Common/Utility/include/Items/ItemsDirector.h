@@ -138,7 +138,6 @@ namespace yaget::items
         YAGET_ASSERT(component, "component parameter is nullptr. Can not save state of null object.");
 
         using ParameterNames = typename comp::db::RowDescription_t<T>::Row;
-        using ParameterPack = typename comp::db::RowDescription_t<T>::Types;
 
         const auto tableName = comp::db::ResolveName<T>();
         Strings columnNames;
