@@ -320,6 +320,9 @@
     <ClCompile Include="..\source\Components\PersistentObserverComponent.cpp">
       <Filter>Component Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Components\NameComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -642,6 +645,9 @@
       <Filter>Items Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Components\PersistentObserverComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\NameComponent.h">
       <Filter>Component Files</Filter>
     </ClInclude>
   </ItemGroup>
