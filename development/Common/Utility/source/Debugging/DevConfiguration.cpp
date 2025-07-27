@@ -289,6 +289,7 @@ std::string yaget::dev::Initialize(const args::Options& options, const char* con
     // Debug.Metrics.TraceOn='Hello World'
     // Debug.Metrics.NumThreads=5
     // Debug.Metrics.WaitSeconds=5.4f
+    // Init.ItemsFile='Persistance@PlayerTest'
     const auto configValues = options.find<Strings>("config_value", {});
     for (const auto token : configValues)
     {

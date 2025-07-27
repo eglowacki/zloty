@@ -93,18 +93,10 @@ namespace yaget::items
 
                 // here we have choices on how to load requested stage
                 //  leave current items loaded
-                //  load requested ones
+                //  and load requested ones
                 mStagersStack.push({ requestedStageName, stageComponent->GetValue<db_stage::Blend>(), *this });
             }
-
-            int z = 0;
-            z;
-            //...
-
-            //mCurrentStage = stageName;
         }
-        int z = 0;
-        z;
     }
 } // namespace yaget::items
 
