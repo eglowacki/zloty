@@ -273,10 +273,16 @@ yaget::io::file::FileOpResult yaget::io::file::SaveFile(const std::string& fileN
 
 
 //---------------------------------------------------------------------------------------------------------------------------------
-bool yaget::io::file::IsFileExists(const std::string& fileName)
+bool yaget::io::file::IsFileExists(const std::string& fileName, bool onlyFile /*= false*/)
 {
     fs::path sourcePath = fs::path(util::ExpendEnv(fileName, nullptr));
-    return fs::exists(sourcePath);
+    bool pathExists = fs::exists(sourcePath);
+    if (onlyFile && pathExists)
+    {
+        pathExists = fs::is_regular_file(sourcePath);
+    }
+
+    return pathExists;
 }
 
 
