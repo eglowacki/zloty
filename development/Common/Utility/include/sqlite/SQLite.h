@@ -266,14 +266,15 @@ namespace yaget
         YAGET_ASSERT(!mStatements.contains(statementId), "Can not create new statement '%s' since it already exists.", conv::Convertor<std::string>::ToString(statementId).c_str());
 
         std::string timeStamp;
-        if (automaticTime == TimeStamp::Yes)
+        if (automaticTime == TimeStamp::Yes && !columnNames.empty())
         {
             timeStamp = ", TimeStamp";
         }
 
         int numValues = std::tuple_size_v<T> - 1;
         const char* updateStr = behaviour == Behaviour::Update ? "OR REPLACE" : "";
-        std::string command = fmt::format("INSERT {} INTO '{}' ({}{}) VALUES (?", updateStr, tableName, conv::Combine(columnNames, ", "), timeStamp);
+        const auto columns = columnNames.empty() ? "" : "(" + conv::Combine(columnNames, ", ") + timeStamp + ")";
+        std::string command = fmt::format("INSERT {} INTO '{}' {} VALUES (?", updateStr, tableName, columns);
         while (numValues)
         {
             command += ", ?";

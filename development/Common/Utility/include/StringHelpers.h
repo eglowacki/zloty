@@ -245,7 +245,7 @@ namespace yaget
         {
             if (theString.empty())
             {
-                return std::vector<std::string>();
+                return {};
             }
             else if (theDelimiter.empty())
             {
@@ -482,7 +482,7 @@ namespace yaget
         {
             static std::vector<std::string> FromString(const char* value)
             {
-                return value ? conv::Split(value, ",") : std::vector<std::string>();
+                return value ? conv::Split(value, ",", true) : std::vector<std::string>();
             }
 
             static std::string ToString(const std::vector<std::string>& value)
@@ -558,7 +558,7 @@ namespace yaget
             {
                 ValueT v{};
                 const std::string text(value);
-                const Strings tokens = conv::Split(text, "x");
+                const Strings tokens = conv::Split(text, "x", true);
                 if (!tokens.empty())
                 {
                     v.first = Convertor<V1>::FromString(tokens[0].c_str());

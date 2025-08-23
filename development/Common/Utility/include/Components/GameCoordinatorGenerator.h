@@ -28,7 +28,6 @@
 #include "sqlite/SQLite.h"
 #include "Components/Component.h"
 #include "VTS/ResolvedAssets.h"
-#include "VTS/VirtualTransportSystem.h"
 
 
 namespace yaget::comp::db
