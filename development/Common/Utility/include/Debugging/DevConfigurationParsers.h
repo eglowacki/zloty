@@ -140,7 +140,8 @@ namespace yaget::dev
             lhs.mEnvironmentList == rhs.mEnvironmentList &&
             lhs.mWindowOptions == rhs.mWindowOptions && 
             lhs.mGameDirectorScript == rhs.mGameDirectorScript &&
-            lhs.mStartingStage == rhs.mStartingStage;
+            lhs.mStartingStage == rhs.mStartingStage &&
+            lhs.mItemsFile == rhs.mItemsFile;
     }
 
     inline bool operator==(const Configuration::Runtime& lhs, const Configuration::Runtime& rhs)
@@ -377,6 +378,7 @@ namespace yaget::dev
         j["WindowOptions"] = init.mWindowOptions;
         j["GameDirectorScript"] = init.mGameDirectorScript;
         j["StartingStage"] = init.mStartingStage;
+        j["ItemsFile"] = init.mItemsFile;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -402,6 +404,7 @@ namespace yaget::dev
         init.mWindowOptions = json::GetValue(j, "WindowOptions", init.mWindowOptions);
         init.mGameDirectorScript = json::GetValue(j, "GameDirectorScript", init.mGameDirectorScript);
         init.mStartingStage = json::GetValue(j, "StartingStage", init.mStartingStage);
+        init.mItemsFile = json::GetValue(j, "ItemsFile", init.mItemsFile);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
