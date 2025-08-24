@@ -4,62 +4,6 @@
 #include "StringHelpers.h"
 #include <ranges>
 
-namespace fs = std::filesystem;
-
-namespace yaget::conv
-{
-    
-    template<typename... P>
-    struct Convertor<std::tuple<P...>>
-    {
-        using ValueT = std::tuple<P...>;
-        static ValueT FromString(const char* value)
-        {
-            ValueT v{};
-
-            const std::string text(value);
-            const Strings tokens = conv::Split(text, ";", true);
-
-            meta::for_loop<ValueT>([&tokens, &v]<std::size_t T0>()
-            {
-                constexpr std::size_t elementIndex = T0;
-                using ElementType = std::tuple_element_t<elementIndex, ValueT>;
-
-                ElementType paramValue = {};
-                if (elementIndex < tokens.size())
-                {
-                    const auto& paramString = tokens[elementIndex];
-                    paramValue = conv::Convertor<ElementType>::FromString(paramString.c_str());
-                }
-
-
-                std::get<elementIndex>(v) = paramValue;
-            });
-
-            return v;
-        }
-        static std::string ToString(const ValueT& value)
-        {
-            Strings stringValues;
-
-            meta::for_loop<ValueT>([&stringValues, &value]<std::size_t T0>()
-            {
-                constexpr std::size_t elementIndex = T0;
-
-                using ElementType = std::tuple_element_t<elementIndex, ValueT>;
-                const auto& elementValue = std::get<elementIndex>(value);
-
-                auto stringResult = Convertor<ElementType>::ToString(elementValue);
-                stringValues.push_back(stringResult);
-            });
-
-            auto result = conv::Combine(stringValues, ";");
-            return result;
-        }
-    };
-
-}
-
 
 namespace
 {
@@ -101,13 +45,20 @@ namespace
 
                         if (!systemsCoordinator.IsComponentTyped(componentName))
                         {
-                            if (systemsCoordinator.IsComponentTyped(componentName) + "Component")
+                            if (systemsCoordinator.IsComponentTyped(componentName + "Component"))
                             {
                                 componentName = componentName + "Component";
                             }
+                            else
+                            {
+                                componentName = "";
+                            }
                         }
 
-                        systemsCoordinator.PersistComponent(itemId, componentName, params);
+                        if (!componentName.empty())
+                        {
+                            systemsCoordinator.PersistComponent(itemId, componentName, params);
+                        }
                     }
                 }
             }

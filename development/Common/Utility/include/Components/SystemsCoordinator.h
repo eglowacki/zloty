@@ -300,7 +300,7 @@ bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::PersistComponent(yaget:
 template <typename T, typename M, typename A, typename ... S>
 bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::IsComponentTyped(const std::string& componentName) const
 {
-    return mCreationFunctions.find(componentName) != mCreationFunctions.end();
+    return mCreationFunctions.contains(componentName);
 }
 
 //-------------------------------------------------------------------------------------------------
