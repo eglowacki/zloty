@@ -323,6 +323,9 @@
     <ClCompile Include="..\source\Components\NameComponent.cpp">
       <Filter>Component Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Components\VelocityComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -648,6 +651,9 @@
       <Filter>Component Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Components\NameComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\VelocityComponent.h">
       <Filter>Component Files</Filter>
     </ClInclude>
   </ItemGroup>
