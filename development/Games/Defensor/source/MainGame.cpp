@@ -52,7 +52,8 @@ int defensor::Run(const yaget::args::Options& options)
     }
 
     const io::VirtualTransportSystem::AssetResolvers resolvers = {
-        { "JSON", io::ResolveAsset<io::JsonAsset> }
+        { "JSON", io::ResolveAsset<io::JsonAsset> },
+        { "PERS", io::ResolveAsset<io::StringsAsset> }
     };
 
     const auto& configInitBlock = dev::CurrentConfiguration().mInit;

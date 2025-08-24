@@ -54,7 +54,7 @@ namespace
         std::string flags;
         SetSettingsValue(flags, node, name);
 
-        std::vector<std::string> tokens = conv::Split(flags, "|");
+        std::vector<std::string> tokens = conv::Split(flags, "|", true);
 
         for (auto&& token : tokens)
         {
@@ -151,7 +151,7 @@ namespace
         return false;
     }
 
-    void DumpActionConstansts()
+    void DumpActionConstants()
     {
         std::string settingsPath = util::ExpendEnv("$(LogFolder)/ActionConstants.txt", nullptr);
 
@@ -190,7 +190,7 @@ namespace
             return registeredNames;
         }
 
-        if (std::find(registeredNames.begin(), registeredNames.end(), actionName) != registeredNames.end())
+        if (std::ranges::find(registeredNames, actionName) != registeredNames.end())
         {
             return { actionName };
         }
@@ -287,16 +287,16 @@ std::string input::InputDevice::Key::ToString() const
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
-void input::InputDevice::Mouse::Process(const std::string& actionName, ActionCallback_t actionCallback) const
+void input::InputDevice::Mouse::Process(const std::string& actionName, const std::string& contextName, ActionCallback_t actionCallback) const
 {
-    actionCallback(actionName, mTimeStamp, mPos.x, mPos.y, mFlags);
+    actionCallback(contextName, actionName, mTimeStamp, mPos.x, mPos.y, mFlags);
 }
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
-void input::InputDevice::Key::Process(const std::string& actionName, ActionCallback_t actionCallback) const
+void input::InputDevice::Key::Process(const std::string& actionName, const std::string& contextName, ActionCallback_t actionCallback) const
 {
-    actionCallback(actionName, mTimeStamp, 0, 0, mFlags);
+    actionCallback(contextName, actionName, mTimeStamp, 0, 0, mFlags);
 }
 
 
@@ -340,7 +340,7 @@ int input::InputDevice::MapKey(int value) const
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
 {
-    DumpActionConstansts();
+    DumpActionConstants();
 
     mKeyMap.insert(std::make_pair(192, 96));
     //mKeyMap.insert(std::make_pair(189, 45));
@@ -385,12 +385,12 @@ void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
         mActionMap.clear();
         for (const auto& rootElement : root)
         {
-            uint32_t flags = 0;
-            int keys = 0;
-            ActionMap actionMap;
-
             if (rootElement.is_object())
             {
+                uint32_t flags = 0;
+                int keys = 0;
+                ActionMap actionMap;
+
                 SetSettingsValue(actionMap.mName, rootElement, "Action");
                 SetSettingsValue(actionMap.mContextName, rootElement, "ContextName");
                 SetSettingsValue(actionMap.mDisplayText, rootElement, "DisplayName");
@@ -409,7 +409,7 @@ void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
                 }
 
                 mActionMap.insert(std::make_pair(actionMap.mName, actionMap));
-                YLOG_INFO("INPT", "Register '%s' action: %s", actionMap.mName.c_str(), actionMap.mRecord->ToString().c_str());
+                YLOG_INFO("INPT", "Registered '%s' action: %s", actionMap.mName.c_str(), actionMap.mRecord->ToString().c_str());
             }
         }
     }
@@ -456,7 +456,7 @@ void input::InputDevice::ProcessRecord(const Record& record)
         {
             for (auto&& callback : actionMap.mCallbacks)
             {
-                record.Process(action.first, callback);
+                record.Process(action.first, currentContextName, callback);
             }
         }
     }
@@ -538,7 +538,7 @@ void input::InputDevice::TriggerAction(const std::string& actionName, int32_t mo
         ActionMap& actionMap = it->second;
         for (auto&& callback : actionMap.mCallbacks)
         {
-            callback(actionName, timeStamp, mouseX, mouseY, actionMap.mRecord->mFlags);
+            callback(currentContextName, actionName, timeStamp, mouseX, mouseY, actionMap.mRecord->mFlags);
         }
     }
 }

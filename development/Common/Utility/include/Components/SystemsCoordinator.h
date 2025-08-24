@@ -92,6 +92,18 @@ namespace yaget::comp::gs
         items::Director& Director() { return mApp.Director(); }
         const items::Director& Director() const { return mApp.Director(); }
 
+        // Returns a reference to a specific game system (const and non-const versions)
+        template <typename GS>
+        const GS& GetGameSystem() const { return *std::get<std::shared_ptr<GS>>(mSystems); }
+
+        template <typename GS>
+        GS& GetGameSystem() { return *std::get<std::shared_ptr<GS>>(mSystems); }
+
+        // Save component persistent data to DB
+        bool PersistComponent(yaget::comp::Id_t id, const std::string& componentType, const std::string& params);
+        // Returns true of componentName does exist, otherwise false
+        bool IsComponentTyped(const std::string& componentName) const;
+
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
@@ -99,6 +111,9 @@ namespace yaget::comp::gs
         A& mApp;
         CoordinatorSet mCoordinatorSet;
         ManagedSystems mSystems;
+
+        using CreationFunction = std::function<void(yaget::comp::Id_t id, const std::string& params)>;
+        std::map<std::string, CreationFunction> mCreationFunctions;
     };
 
     namespace internal
@@ -147,8 +162,37 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
     , mApp(app)
     , mCoordinatorSet(&app.Director())
 {
-    auto This = this;
+    meta::for_loop<CoordinatorSet::FullRow>([this]<std::size_t T0>()
+    {
+        constexpr std::size_t index = T0;
+        using ComponentType = meta::strip_qualifiers_t<std::tuple_element_t<index, typename CoordinatorSet::FullRow>>;
 
+        if constexpr (has_component_types<ComponentType>)
+        {
+            const auto componentName = db::ResolveName<ComponentType>();
+            using ParamTypes = typename ComponentType::Types;
+
+            mCreationFunctions[componentName] = [this]([[maybe_unused]]Id_t id, [[maybe_unused]]const std::string& params)
+            {
+                auto componentParams = yaget::conv::Convertor<ParamTypes>::FromString(params.c_str());
+                ComponentType* component = std::apply([this, id, &componentParams](auto&&... params)
+                {
+                    return AddComponent<ComponentType>(id, params...);
+
+                }, componentParams);
+
+                if (component)
+                {
+                    SaveComponent(component);
+                    component = nullptr;
+                    // since we saved component data, component itself is no longer needed
+                    RemoveComponent<ComponentType>(id);
+                }
+            };
+        }
+    });
+
+    auto This = this;
     meta::for_loop<ManagedSystems>([This, this]<std::size_t T0>()
     {
         using BaseType = std::tuple_element_t<T0, ManagedSystems>;
@@ -234,6 +278,29 @@ template <typename TT>
 bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::RemoveItem(comp::Id_t id)
 {
     return mCoordinatorSet.template RemoveItem<TT>(id);
+}
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::PersistComponent(yaget::comp::Id_t id, const std::string& componentType, const std::string& params)
+{
+    if (auto it = mCreationFunctions.find(componentType); it != mCreationFunctions.end())
+    {
+        auto& creationFunction = it->second;
+        creationFunction(id, params);
+
+        return true;
+    }
+
+    return false;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename M, typename A, typename ... S>
+bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::IsComponentTyped(const std::string& componentName) const
+{
+    return mCreationFunctions.find(componentName) != mCreationFunctions.end();
 }
 
 //-------------------------------------------------------------------------------------------------

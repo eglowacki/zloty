@@ -177,6 +177,30 @@ namespace yaget::io
     };
 
     //-------------------------------------------------------------------------------------------------------------------------------
+    class StringsAsset : public Asset
+    {
+    public:
+        StringsAsset(const io::Tag& tag, io::Buffer buffer, const io::VirtualTransportSystem& vts)
+            : Asset(tag, buffer, vts)
+        {
+            file::imemstream memStream(BufferPointer(mBuffer), BufferSize(mBuffer));
+
+            std::string textLine;
+            while (std::getline(memStream, textLine))
+            {
+                conv::Trim(textLine);
+                if (!textLine.empty())
+                {
+                    mStrings.push_back(textLine);
+                    textLine = "";
+                }
+            }
+        }
+
+        Strings mStrings;
+    };
+
+    //-------------------------------------------------------------------------------------------------------------------------------
     template<typename T>
     inline std::shared_ptr<yaget::io::Asset> ResolveAsset(const io::Buffer& dataBuffer, const io::Tag& requestedTag, const io::VirtualTransportSystem& vts)
     {

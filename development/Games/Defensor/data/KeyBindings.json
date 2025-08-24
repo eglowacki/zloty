@@ -61,5 +61,19 @@
         "DisplayName": "~",
         "Flags": "ButtonDown",
         "Value": "`"
+    },
+    "Move Left": {
+        "Action": "Move Left",
+        "ContextName": "Game",
+        "DisplayName": "<-",
+        "Flags": "ButtonDown|ButtonUp",
+        "Value": "ArrowLeft"
+    },
+    "Move Right": {
+        "Action": "Move Right",
+        "ContextName": "Game",
+        "DisplayName": "->",
+        "Flags": "ButtonDown|ButtonUp",
+        "Value": "ArrowRight"
     }
 }

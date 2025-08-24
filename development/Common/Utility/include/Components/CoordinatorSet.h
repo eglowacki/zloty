@@ -186,6 +186,10 @@ namespace yaget::comp
     template<typename... Tuple>
     using coordinator_row_combine_t = typename coordinator_row_combine<Tuple...>::type;
 
+
+    template<typename T>
+    concept has_component_types = requires (T t) { {t.GetStorage()}; };
+
     //template<char ...C>
     //requires (sizeof...(C)%2 == 0)
     //constexpr std::string
@@ -385,25 +389,29 @@ namespace yaget::comp
             error_handlers::ThrowOnCheck(mDirector, fmt::format("Can not load component, director is nullptr"));
 
             C* component{};
-            bool result = false;
-            auto parameters = mDirector->LoadComponentState<C>(id, &result);;
 
-            if (result)
+            if constexpr (has_component_types<C>)
             {
-                FindMatchCoordinator<C>([&parameters, &component, id](auto* coordinator)
-                {
-                    if (component = coordinator->template FindComponent<C>(id); component)
-                    {
-                        component->SetStorage(parameters);
-                    }
-                });
+                bool result = false;
+                auto parameters = mDirector->LoadComponentState<C>(id, &result);;
 
-                if (!component)
+                if (result)
                 {
-                    component = std::apply([this, id](auto &&... args)
+                    FindMatchCoordinator<C>([&parameters, &component, id](auto* coordinator)
                     {
-                        return AddComponent<C>(id, args...);
-                    }, parameters);
+                        if (component = coordinator->template FindComponent<C>(id); component)
+                        {
+                            component->SetStorage(parameters);
+                        }
+                    });
+
+                    if (!component)
+                    {
+                        component = std::apply([this, id](auto &&... args)
+                        {
+                            return AddComponent<C>(id, args...);
+                        }, parameters);
+                    }
                 }
             }
 

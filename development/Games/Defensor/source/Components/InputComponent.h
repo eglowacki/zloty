@@ -15,16 +15,16 @@
 #pragma once
 
 #include "Components/PersistentBaseComponent.h"
-#include "Input/InputDevice.h"
+//#include "Input/InputDevice.h"
 
 
 namespace yaget::comp
 {
     namespace db_input
     {
-        struct Event { using Types = std::string; };
+        struct ActionNames { using Types = Strings; };
 
-        using ValueTypes = std::tuple<Event>;
+        using ValueTypes = std::tuple<ActionNames>;
 
     } // namespace db_input
 
@@ -32,13 +32,11 @@ namespace yaget::comp
     class InputComponent : public db::PersistentBaseComponent<db_input::ValueTypes>
     {
     public:
-        InputComponent(Id_t id, const db_input::Event::Types& event = {})
+        InputComponent(Id_t id, const db_input::ActionNames::Types& event = {})
             : PersistentBaseComponent(id, std::tie(event))
-        {
-        }
+        {}
 
-        void AddInputEvent(const std::string& /*eventName*/, input::ActionNonParamCallback_t /*callback*/) const {}
-        void AddInputEvent(const std::string& /*eventName*/, input::ActionCallback_t /*callback*/) const {}
+        std::set<std::string> mTriggeredAction;
     };
 
 } // namespace yaget::comp
