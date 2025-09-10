@@ -106,3 +106,9 @@ development/Common/Script/Lua-5.4.7/
 development/Common/Utility/include/sqlite/sqlite-amalgamation-3470200/
 
 *.DotSettings
+
+development/Dependencies/googletest
+
+development/Dependencies/DirectXTK12
+
+development/Dependencies/fmt-10.1
