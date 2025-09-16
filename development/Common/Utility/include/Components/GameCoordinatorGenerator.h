@@ -64,7 +64,7 @@ namespace yaget::comp::db
 
         // used in outputting sqlite type from c++ types.
         template <typename T>
-        inline std::string ResolveDatabaseType() { return "STRING"; }
+        std::string ResolveDatabaseType() { return "STRING"; }
 
         template<>
         inline std::string ResolveDatabaseType<int>() { return "INTEGER"; }
@@ -80,6 +80,9 @@ namespace yaget::comp::db
 
         template<>
         inline std::string ResolveDatabaseType<double>() { return "REAL"; }
+
+        template<typename T>
+        concept has_coordinatorset = requires { typename T::CoordinatorSet; };
 
     }
 
@@ -122,92 +125,36 @@ namespace yaget::comp::db
 
     // Generates sql schema for items composed of various components,
     // each component composed of columns, which are properties of values (parameters to ctor)
-    template <typename T>
-    Strings GenerateSystemsCoordinatorSchema()
+    template <typename T, typename R>
+    R GenerateSystemsCoordinator2(auto callback)
     {
         using namespace yaget;
 
-        using SystemsCoordinator = T;
-        using FullRow = typename SystemsCoordinator::CoordinatorSet::FullRow;
-
-        Strings results;
-        meta::for_each_type<FullRow>([&results]<typename T0>(const T0&)
+        R results{};
+        if constexpr (internal::has_coordinatorset<T>)
         {
-            using BaseType = meta::strip_qualifiers_t<T0>;
-            using ParameterNames = typename comp::db::RowDescription_t<BaseType>::Row;
-            using ParameterPack = typename comp::db::RowDescription_t<BaseType>::Types;
-            static_assert(std::tuple_size_v<ParameterNames> == std::tuple_size_v<ParameterPack>, "Names and types of Component properties must match in size");
+            using FullRow = typename T::CoordinatorSet::FullRow;
 
-            const auto& tableName = ResolveName<BaseType>();
-            const auto& columnNames = db::GetPolicyRowNames<ParameterNames>();
-            const auto& typeNames = db::GetPolicyRowTypes<ParameterPack>();
-
-            std::string sqlCommand = fmt::format("CREATE TABLE '{}' ('Id' {} CHECK(Id != 0) UNIQUE", tableName, internal::ResolveDatabaseType<comp::Id_t>());
-            if (!columnNames.empty())
+            meta::for_each_type<FullRow>([&results, &callback]<typename T0>(const T0&)
             {
-                auto cn_it = columnNames.begin();
-                auto tn_it = typeNames.begin();
-                for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
-                {
-                    sqlCommand += fmt::format(", '{}' {}", *cn_it, *tn_it);
-                }
-            }
-            sqlCommand += ", PRIMARY KEY('Id'));";
-            YLOG_DEBUG("GSYS", "[%s]", sqlCommand.c_str());
-            results.emplace_back(sqlCommand);
-        });
+                using BaseType = meta::strip_qualifiers_t<T0>;
+                using ParameterNames = typename RowDescription_t<BaseType>::Row;
+                using ParameterPack = typename RowDescription_t<BaseType>::Types;
+                static_assert(std::tuple_size_v<ParameterNames> == std::tuple_size_v<ParameterPack>, "Names and types of Component properties must match in size");
+
+                const auto& tableName = ResolveName<BaseType>();
+                const auto& columnNames = GetPolicyRowNames<ParameterNames>();
+                const auto& typeNames = GetPolicyRowTypes<ParameterPack>();
+
+                results = callback(results, tableName, columnNames, typeNames);
+            });
+        }
 
         return results;
     }
 
-    template <typename T>
-    int64_t GenerateSystemsCoordinatorVersion()
-    {
-        using namespace yaget;
-
-        using SystemsCoordinator = T;
-        using FullRow = typename SystemsCoordinator::CoordinatorSet::FullRow;
-
-        int64_t schemaVersion = 0;
-        meta::for_each_type<FullRow>([&schemaVersion]<typename T0>(const T0&)
-        {
-            using BaseType = meta::strip_qualifiers_t<T0>;
-            using ParameterNames = typename RowDescription_t<BaseType>::Row;
-            using ParameterPack = typename RowDescription_t<BaseType>::Types;
-            static_assert(std::tuple_size_v<ParameterNames> == std::tuple_size_v<ParameterPack>, "Names and types of Component properties must match in size");
-
-            const auto& tableName = ResolveName<BaseType>();
-            const auto& columnNames = db::GetPolicyRowNames<ParameterNames>();
-            const auto& typeNames = db::GetPolicyRowTypes<ParameterPack>();
-
-            conv::hash_combine(schemaVersion, tableName);
-            if (!columnNames.empty())
-            {
-                auto cn_it = columnNames.begin();
-                auto tn_it = typeNames.begin();
-                for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
-                {
-                    conv::hash_combine(schemaVersion, *cn_it, *tn_it);
-                }
-            }
-        });
-
-        return schemaVersion;
-    }
 
     struct EmptySchema {};
-
-    template <>
-    inline Strings GenerateSystemsCoordinatorSchema<EmptySchema>()
-    {
-        return {};
-    }
-
-    template <>
-    inline int64_t GenerateSystemsCoordinatorVersion<EmptySchema>()
-    {
-        return 0;
-    }
 
     enum class GenerateCoordinator
     {
@@ -221,22 +168,77 @@ namespace yaget::comp::db
     {
         if constexpr (F == GenerateCoordinator::Schema)
         {
-            return GenerateSystemsCoordinatorSchema<T>();
+            return GenerateSystemsCoordinator2<T, Strings>([](auto results, auto tableName, auto columnNames, auto typeNames)
+            {
+                std::string sqlCommand = fmt::format("CREATE TABLE '{}' ('Id' {} CHECK(Id != 0) UNIQUE", tableName, internal::ResolveDatabaseType<comp::Id_t>());
+
+                auto cn_it = columnNames.begin();
+                auto tn_it = typeNames.begin();
+                for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
+                {
+                    sqlCommand += fmt::format(", '{}' {}", *cn_it, *tn_it);
+                }
+            
+                sqlCommand += ", PRIMARY KEY('Id'));";
+                YLOG_DEBUG("GSYS", "[%s]", sqlCommand.c_str());
+                results.emplace_back(sqlCommand);
+
+                return results;
+            });
         }
         if constexpr (F == GenerateCoordinator::Version)
         {
-            return GenerateSystemsCoordinatorVersion<T>();
+            return GenerateSystemsCoordinator2<T, int64_t>([](auto results, auto tableName, auto columnNames, auto typeNames)
+            {
+                conv::hash_combine(results, tableName);
+                auto cn_it = columnNames.begin();
+                auto tn_it = typeNames.begin();
+                for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
+                {
+                    conv::hash_combine(results, *cn_it, *tn_it);
+                }
+
+                return results;
+            });
         }
         if constexpr (F == GenerateCoordinator::Log)
         {
-            return static_cast<int64_t>(0);//GenerateSystemsCoordinatorLog<T>();
+
+            auto lines = GenerateSystemsCoordinator2<T, Strings>([](auto results, auto tableName, auto columnNames, auto typeNames)
+            {
+                std::string logLine = fmt::format("====: '{}'\n\t{} id", tableName, ResolveName<comp::Id_t>());
+
+                auto cn_it = columnNames.begin();
+                auto tn_it = typeNames.begin();
+                for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
+                {
+                    logLine += fmt::format(",\n\t '{}' {}", *tn_it, *cn_it);
+                }
+
+                if (!columnNames.empty())
+                {
+                    logLine += "\n";
+                }
+            
+                results.emplace_back(logLine);
+
+                return results;
+            });
+
+            auto systemNames = fmt::format("=== Game System Hierarchy:\n\tTop Coordinator: '{}' with registered systems:\n", ResolveName<T>());
+            systemNames += "\t\t" + conv::Combine(GetPolicyRowNames<typename T::Systems>(), "\n\t\t");
+            //systemNames += conv::Combine(lines, nullptr);//"\n\t");
+
+            return systemNames;
+
+
+            //lines.insert(lines.begin(), fmt::format("Root Coordinator: {}\n", ResolveName<T>()));
+            //auto systemNames = conv::Combine(GetPolicyRowNames<typename T::Systems>(), "\n");
+            //systemNames.insert(systemNames.begin(), fmt::format("Root Coordinator: {}\n", ResolveName<T>()));
+            //systemNames.insert(systemNames.end(), lines.begin(), lines.end());
+
+
+            //return conv::Combine(systemNames, nullptr);
         }
     }
-
-    template <GenerateCoordinator F>
-    auto GenerateSystemsCoordinator()
-    {
-        return GenerateSystemsCoordinator<EmptySchema, F>();
-    }
-
 }

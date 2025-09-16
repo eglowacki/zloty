@@ -3,7 +3,7 @@
 #include "Items/ItemsDirector.h"
 #include "StringHelpers.h"
 #include <ranges>
-
+#include <iostream>
 
 namespace
 {
@@ -222,6 +222,37 @@ namespace
         std::map<yaget::comp::Id_t, yaget::Strings> mItems;
     };
 
+    template <typename T>
+    struct BindConstructor
+    {
+        template<typename... Args>
+        T operator()(Args&&...args)const
+        {
+            return T(std::forward<Args>(args)...);
+        }
+    };
+    template<typename type, typename...args>
+    void getFuncInfo(type(*/*func*/)(args...))
+    {
+        using Params = std::tuple<args...>;
+        Params param{};
+        param;
+        // some code here...
+        // here my example:
+        ((std::cout << typeid(args).name() << "\n"),...);
+    }
+
+    template <typename Fn>
+    void Bar(Fn f)
+    {
+        //f(10);
+        //getFuncInfo(&f);
+    }
+    //void someRandomFunction(int a, float b, double c, const char* d, int e[], std::pair<int, const char*> f)
+    //{
+    //    a;b;c;d;e;f;
+    //}
+
 }
 
 
@@ -229,6 +260,8 @@ namespace
 defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging& m, Application& app)
     : SystemsCoordinator(m, app)
 {
+    //Bar(BindConstructor<comp::VelocityComponent>());
+
     const auto& itemsFile = dev::CurrentConfiguration().mInit.mItemsFile;
     if (!itemsFile.empty())
     {
@@ -265,6 +298,9 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
         inputSystem.SetContext("Game");
         app.Input().PushContext("Game");
     }
+
+
+
 }
 
 

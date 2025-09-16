@@ -172,7 +172,7 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
             const auto componentName = db::ResolveName<ComponentType>();
             using ParamTypes = typename ComponentType::Types;
 
-            mCreationFunctions[componentName] = [this]([[maybe_unused]]Id_t id, [[maybe_unused]]const std::string& params)
+            mCreationFunctions[componentName] = [this](Id_t id, [[maybe_unused]]const std::string& params)
             {
                 auto componentParams = yaget::conv::Convertor<ParamTypes>::FromString(params.c_str());
                 ComponentType* component = std::apply([this, id, &componentParams](auto&&... params)
@@ -189,6 +189,24 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
                     RemoveComponent<ComponentType>(id);
                 }
             };
+        }
+        else
+        {
+            if constexpr (std::is_constructible_v<ComponentType, comp::Id_t>)
+            {
+                // let's add non-persistent component, only if we can be constructed with Id as parameter to ctor
+                const auto componentName = db::ResolveName<ComponentType>();
+                mCreationFunctions[componentName] = [this]([[maybe_unused]]Id_t id, [[maybe_unused]]const std::string&)
+                {
+                    if (ComponentType* component = AddComponent<ComponentType>(id))
+                    {
+                    //    SaveComponent(component);
+                    //    component = nullptr;
+                    //    // since we saved component data, component itself is no longer needed
+                    //    RemoveComponent<ComponentType>(id);
+                    }
+                };
+            }
         }
     });
 
