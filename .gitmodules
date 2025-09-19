@@ -16,6 +16,9 @@
 [submodule "DirectXTK12"]
 	path = development/Dependencies/DirectXTK12
 	url = https://github.com/microsoft/DirectXTK12.git
-[submodule "googletest"]
+[submodule "development/Dependencies/googletest"]
 	path = development/Dependencies/googletest
 	url = https://github.com/google/googletest.git
+[submodule "development/Dependencies/flatbuffers"]
+	path = development/Dependencies/flatbuffers
+	url = https://github.com/google/flatbuffers.git
