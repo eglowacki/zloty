@@ -1,24 +1,28 @@
 [submodule "development/Dependencies/DirectXTK12-06.2023"]
-	path = development/Dependencies/DirectXTK12-06.2023
-	url = https://github.com/microsoft/DirectXTK12.git
+    path = development/Dependencies/DirectXTK12-06.2023
+    url = https://github.com/microsoft/DirectXTK12.git
 [submodule "development/Dependencies/fmt-10.1"]	
-	path = development/Dependencies/fmt-10.1
-	url = https://github.com/fmtlib/fmt.git
+    path = development/Dependencies/fmt-10.1
+    url = https://github.com/fmtlib/fmt.git
 [submodule "development/Dependencies/terminal-01.2024"]	
-	path = development/Dependencies/terminal-01.2024
-	url = https://github.com/jupyter-xeus/cpp-terminal.git
+    path = development/Dependencies/terminal-01.2024
+    url = https://github.com/jupyter-xeus/cpp-terminal.git
 [submodule "development/Dependencies/nlohmann-json-3.11"]	
-	path = development/Dependencies/nlohmann-json-3.11
-	url = https://github.com/nlohmann/json.git
+    path = development/Dependencies/nlohmann-json-3.11
+    url = https://github.com/nlohmann/json.git
 [submodule "development/Dependencies/FTXUI"]
-	path = development/Dependencies/FTXUI
-	url = https://github.com/ArthurSonzogni/FTXUI.git
-[submodule "DirectXTK12"]
-	path = development/Dependencies/DirectXTK12
-	url = https://github.com/microsoft/DirectXTK12.git
+    path = development/Dependencies/FTXUI
+    url = https://github.com/ArthurSonzogni/FTXUI.git
+[submodule "development/Dependencies/DirectXTK12"]
+    path = development/Dependencies/DirectXTK12
+    url = https://github.com/microsoft/DirectXTK12.git
 [submodule "development/Dependencies/googletest"]
-	path = development/Dependencies/googletest
-	url = https://github.com/google/googletest.git
+    path = development/Dependencies/googletest
+    url = https://github.com/google/googletest.git
 [submodule "development/Dependencies/flatbuffers"]
-	path = development/Dependencies/flatbuffers
-	url = https://github.com/google/flatbuffers.git
+    path = development/Dependencies/flatbuffers
+    url = https://github.com/google/flatbuffers.git
+[submodule "development/Dependencies/DirectX-Headers"]
+    path = development/Dependencies/DirectX-Headers
+    url = https://github.com/microsoft/DirectX-Headers.git
+
