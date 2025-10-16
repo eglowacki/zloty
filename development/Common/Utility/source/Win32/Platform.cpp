@@ -293,7 +293,7 @@ namespace
                 nlohmann::json jsonBlock;
                 to_json(jsonBlock, configuration);
                 const auto blockString = "\n" + json::PrettyPrint(jsonBlock);
-                YLOG_NOTICE("CORE", "%s", blockString.c_str());
+                YLOG_INFO("CORE", "%s", blockString.c_str());
                 platform::DebuggerOutput(blockString);
 
                 return system::InitializationResult::Helped;

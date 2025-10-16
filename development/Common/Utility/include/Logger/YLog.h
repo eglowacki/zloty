@@ -89,20 +89,16 @@ namespace yaget
 
     #define YLOG_DEBUG(tag, ...)                            yaget::ylog::Get().debug().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)
     #define YLOG_INFO(tag, ...)                             yaget::ylog::Get().info().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)
-    #define YLOG_NOTICE(tag, ...)                           yaget::ylog::Get().notice().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)
     #define YLOG_WARNING(tag, ...)                          yaget::ylog::Get().warning().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)
     #define YLOG_ERROR(tag, ...)                            yaget::ylog::Get().error().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)
-    #define YLOG_CRITICAL(tag, ...)                         yaget::ylog::Get().critic().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), true, __VA_ARGS__)
 
     #define YLOG_PDEBUG(tag, file, line, function, ...)     yaget::ylog::Get().debug().Write(file, line, function, LOG_TAG(tag), true, __VA_ARGS__)
     #define YLOG_PINFO(tag, file, line, function, ...)      yaget::ylog::Get().info().Write(file, line, function, LOG_TAG(tag), true, __VA_ARGS__)
-    #define YLOG_PNOTICE(tag, file, line, function, ...)    yaget::ylog::Get().notice().Write(file, line, function, LOG_TAG(tag), true, __VA_ARGS__)
     #define YLOG_PWARNING(tag, file, line, function, ...)   yaget::ylog::Get().warning().Write(file, line, function, LOG_TAG(tag), true, __VA_ARGS__)
     #define YLOG_PERROR(tag, file, line, function, ...)     yaget::ylog::Get().error().Write(file, line, function, LOG_TAG(tag), true, __VA_ARGS__)
 
     #define YLOG_CDEBUG(tag, bValid, ...)                   yaget::ylog::Get().debug().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), bValid == false, __VA_ARGS__)
     #define YLOG_CINFO(tag, bValid, ...)                    yaget::ylog::Get().info().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), bValid == false, __VA_ARGS__)
-    #define YLOG_CNOTICE(tag, bValid, ...)                  yaget::ylog::Get().notice().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), bValid == false, __VA_ARGS__)
     #define YLOG_CWARNING(tag, bValid, ...)                 yaget::ylog::Get().warning().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), bValid == false, __VA_ARGS__)
     #define YLOG_CERROR(tag, bValid, ...)                   yaget::ylog::Get().error().Write(__FILE__, __LINE__, __FUNCTION__, LOG_TAG(tag), bValid == false, __VA_ARGS__)
 
@@ -112,20 +108,16 @@ namespace yaget
 
     #define YLOG_DEBUG(tag, ...)                            do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_INFO(tag, ...)                             do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
-    #define YLOG_NOTICE(tag, ...)                           do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_WARNING(tag, ...)                          do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_ERROR(tag, ...)                            do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
-    #define YLOG_CRITICAL(tag, ...)                         do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
 
     #define YLOG_PDEBUG(tag, file, line, function, ...)     do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_PINFO(tag, file, line, function, ...)      do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
-    #define YLOG_PNOTICE(tag, file, line, function, ...)    do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_PWARNING(tag, file, line, function, ...)   do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_PERROR(tag, file, line, function, ...)     do { YLOG_UNUSED1(tag); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
 
     #define YLOG_CDEBUG(tag, bValid, ...)                   do { YLOG_UNUSED2(tag, bValid); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_CINFO(tag, bValid, ...)                    do { YLOG_UNUSED2(tag, bValid); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
-    #define YLOG_CNOTICE(tag, bValid, ...)                  do { YLOG_UNUSED2(tag, bValid); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_CWARNING(tag, bValid, ...)                 do { YLOG_UNUSED2(tag, bValid); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
     #define YLOG_CERROR(tag, bValid, ...)                   do { YLOG_UNUSED2(tag, bValid); YLOG_ALL_UNUSED_IMPL( YLOG_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__ ); } while(0)
 

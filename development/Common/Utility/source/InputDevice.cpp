@@ -54,7 +54,7 @@ namespace
         std::string flags;
         SetSettingsValue(flags, node, name);
 
-        std::vector<std::string> tokens = conv::Split(flags, "|");
+        std::vector<std::string> tokens = conv::Split(flags, "|", true);
 
         for (auto&& token : tokens)
         {
@@ -151,7 +151,7 @@ namespace
         return false;
     }
 
-    void DumpActionConstansts()
+    void DumpActionConstants()
     {
         std::string settingsPath = util::ExpendEnv("$(LogFolder)/ActionConstants.txt", nullptr);
 
@@ -180,6 +180,36 @@ namespace
         file << "    \"Flags\" : \"ButtonDown\",\n";
         file << "    \"Value\" : \"ESC\"\n";
         file << "}\n";
+    }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
+    yaget::Strings GetActionNameMatch(const std::string& actionName, const Strings& registeredNames)
+    {
+        if (actionName == "*")
+        {
+            return registeredNames;
+        }
+
+        if (std::ranges::find(registeredNames, actionName) != registeredNames.end())
+        {
+            return { actionName };
+        }
+
+        return {};
+    }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
+    template <typename T>
+    Strings GetActionNames(const T& actionsMap)
+    {
+        Strings actionNames;
+
+        std::transform(actionsMap.begin(), actionsMap.end(), std::back_inserter(actionNames), [](const auto& pair) 
+        {
+            return pair.first; 
+        });
+
+        return actionNames;
     }
 
 } // namespace
@@ -257,16 +287,16 @@ std::string input::InputDevice::Key::ToString() const
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
-void input::InputDevice::Mouse::Process(const std::string& actionName, ActionCallback_t actionCallback) const
+void input::InputDevice::Mouse::Process(const std::string& actionName, const std::string& contextName, ActionCallback_t actionCallback) const
 {
-    actionCallback(actionName, mTimeStamp, mPos.x, mPos.y, mFlags);
+    actionCallback(contextName, actionName, mTimeStamp, mPos.x, mPos.y, mFlags);
 }
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
-void input::InputDevice::Key::Process(const std::string& actionName, ActionCallback_t actionCallback) const
+void input::InputDevice::Key::Process(const std::string& actionName, const std::string& contextName, ActionCallback_t actionCallback) const
 {
-    actionCallback(actionName, mTimeStamp, 0, 0, mFlags);
+    actionCallback(contextName, actionName, mTimeStamp, 0, 0, mFlags);
 }
 
 
@@ -310,7 +340,7 @@ int input::InputDevice::MapKey(int value) const
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
 {
-    DumpActionConstansts();
+    DumpActionConstants();
 
     mKeyMap.insert(std::make_pair(192, 96));
     //mKeyMap.insert(std::make_pair(189, 45));
@@ -355,12 +385,12 @@ void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
         mActionMap.clear();
         for (const auto& rootElement : root)
         {
-            uint32_t flags = 0;
-            int keys = 0;
-            ActionMap actionMap;
-
             if (rootElement.is_object())
             {
+                uint32_t flags = 0;
+                int keys = 0;
+                ActionMap actionMap;
+
                 SetSettingsValue(actionMap.mName, rootElement, "Action");
                 SetSettingsValue(actionMap.mContextName, rootElement, "ContextName");
                 SetSettingsValue(actionMap.mDisplayText, rootElement, "DisplayName");
@@ -379,7 +409,7 @@ void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
                 }
 
                 mActionMap.insert(std::make_pair(actionMap.mName, actionMap));
-                YLOG_INFO("INPT", "Register '%s' action: %s", actionMap.mName.c_str(), actionMap.mRecord->ToString().c_str());
+                YLOG_INFO("INPT", "Registered '%s' action: %s", actionMap.mName.c_str(), actionMap.mRecord->ToString().c_str());
             }
         }
     }
@@ -426,7 +456,7 @@ void input::InputDevice::ProcessRecord(const Record& record)
         {
             for (auto&& callback : actionMap.mCallbacks)
             {
-                record.Process(action.first, callback);
+                record.Process(action.first, currentContextName, callback);
             }
         }
     }
@@ -502,13 +532,13 @@ void input::InputDevice::TriggerAction(const std::string& actionName, int32_t mo
 
     std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
 
-    std::map<std::string, ActionMap>::iterator it = mActionMap.find(actionName);
+    ActionsMap::iterator it = mActionMap.find(actionName);
     if (it != mActionMap.end() && it->second.Is(nullptr, currentContextName))
     {
         ActionMap& actionMap = it->second;
         for (auto&& callback : actionMap.mCallbacks)
         {
-            callback(actionName, timeStamp, mouseX, mouseY, actionMap.mRecord->mFlags);
+            callback(currentContextName, actionName, timeStamp, mouseX, mouseY, actionMap.mRecord->mFlags);
         }
     }
 }
@@ -527,15 +557,29 @@ void input::InputDevice::RegisterActionCallback(const std::string& actionName, i
     YAGET_ASSERT(actionCallback, "Registration for action: '%s' is not valid with empty actionCallback", actionName.c_str());
 
     std::unique_lock<std::mutex> locker(mActionMapMutex);
-    std::map<std::string, ActionMap>::iterator it = mActionMap.find(actionName);
-    if (it != mActionMap.end())
+    const auto& actionNames = GetActionNames(mActionMap);
+
+    const auto& matchedActionNames = GetActionNameMatch(actionName, actionNames);
+    YLOG_CERROR("INPT", !matchedActionNames.empty(), "Action '%s' is not registered with input system (%s), ignoring RegisterActionCallback", actionName.c_str(), conv::Convertor<Strings>::ToString(actionNames).c_str());
+
+    for (auto it = matchedActionNames.begin(); it != matchedActionNames.end(); ++it)
     {
-        it->second.mCallbacks.push_back(actionCallback);
+        ActionsMap::iterator action = mActionMap.find(*it);
+        if (action != mActionMap.end())
+        {
+            action->second.mCallbacks.push_back(actionCallback);
+        }
     }
-    else
-    {
-        YLOG_ERROR("INPT", "Action '%s' is not registered with input system, ignoring RegisterActionCallback", actionName.c_str());
-    }
+
+    //ActionsMap::iterator it = mActionMap.find(actionName);
+    //if (it != mActionMap.end())
+    //{
+    //    it->second.mCallbacks.push_back(actionCallback);
+    //}
+    //else
+    //{
+    //    YLOG_ERROR("INPT", "Action '%s' is not registered with input system, ignoring RegisterActionCallback", actionName.c_str());
+    //}
 }
 
 
@@ -551,7 +595,7 @@ bool input::InputDevice::IsAction(const std::string& actionName) const
 std::string input::InputDevice::ActionToString(const std::string& actionName) const
 {
     std::unique_lock<std::mutex> locker(mActionMapMutex);
-    std::map<std::string, ActionMap>::const_iterator it = mActionMap.find(actionName);
+    ActionsMap::const_iterator it = mActionMap.find(actionName);
     if (it != mActionMap.end())
     {
         return (*it).second.ToString();
@@ -644,7 +688,7 @@ bool input::InputDevice::ActionMap::Is(const Record* record, const std::string& 
         }
     }
 
-    YAGET_ASSERT(currentRecord, "This should never happen, since this means that all recored where hit/validated.");
+    YAGET_ASSERT(currentRecord, "This should never happen, since this means that all recorded where hit/validated.");
     if (currentRecord->Is(record))
     {
         currentRecord->mValidHit = true;

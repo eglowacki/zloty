@@ -27,7 +27,7 @@ namespace yaget::comp
     } // namespace db_menu
 
 
-    class MenuComponent : public db::PersistentBaseComponent<db_menu::ValueTypes>
+    class MenuComponent : public db::PersistentBaseComponent<db_menu::ValueTypes, comp::GlobalPoolSize>
     {
     public:
         MenuComponent(Id_t id, const db_menu::Event::Types& event)

@@ -1,0 +1,26 @@
+// valid single line commands:
+//      //
+//      Version
+//
+// valid multi line commands:
+//      New Item
+//      New Global Item
+//      Stages
+// 'New Item' and 'New Global Item' have subtype: StageName
+
+Version: 1
+
+New Item
+Name: Player
+LocationComponent3: [x = 1.00, y = 2.00, z = 3.00];[x = 4.00, y = 5.00, z = 6.00, w = 7.00];[x = 8.00, y = 9.00, z = 10.00]
+Input: Move Left, Move Right
+StageName: Boot
+Velocity: 
+
+New Global Item
+StageComponent: Boot
+
+Stages
+Boot
+Level 1
+Level 2

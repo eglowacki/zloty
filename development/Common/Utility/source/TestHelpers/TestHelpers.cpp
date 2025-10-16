@@ -20,7 +20,7 @@ namespace
                 "Debug": {
                     "Logging": {
                         "Filters": [],
-                        "Level": "NOTE",
+                        "Level": "INFO",
                         "Outputs": {
                             "ylog::OutputDebug": {
                                 "split_lines": "true"

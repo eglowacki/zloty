@@ -16,19 +16,24 @@
 #pragma once
 
 //#include "YagetCore.h"
-#include "Squadron/SquadronSystem.h"
-#include "Squadron/PlayerSystem.h"
+#include "Components/SystemsCoordinator.h"
 #include "Squadron/MenuSystem.h"
-#include <Components/SystemsCoordinator.h>
-#include "Items/StagerSystem.h"
+#include "Squadron/PlayerSystem.h"
+#include "Squadron/SquadronSystem.h"
+#include "Stager/StagerSystem.h"
+#include "Systems/InputSystem.h"
 
 
 namespace defensor::game
 {
-    class DefensorSystemsCoordinator : public yaget::comp::gs::SystemsCoordinator<GameCoordinatorSet, Messaging, Application, MenuSystem, PlayerSystem, SquadronSystem, DefensorStagerSystem>
+    class DefensorSystemsCoordinator : public yaget::comp::gs::SystemsCoordinator<GameCoordinatorSet, Messaging, Application, ProcessInputSystem, MenuSystem, PlayerSystem, SquadronSystem, DefensorStagerSystem, ClearInputSystem>
     {
     public:
         DefensorSystemsCoordinator(Messaging& m, Application& app);
         ~DefensorSystemsCoordinator() = default;
+
+        // only used to show off that we can override any method from base class without virtual inheritance
+        void Tick(const time::GameClock& gameClock, metrics::Channel& channel);
+
     };
 }

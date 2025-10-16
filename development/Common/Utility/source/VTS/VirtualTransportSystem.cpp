@@ -129,27 +129,35 @@ void yaget::io::VirtualTransportSystem::onBlobLoaded(const io::Buffer& dataBuffe
         {
             // incoming data blob, find converter callback for it and execute
             const std::string command = fmt::format("SELECT Sections.Converters FROM Sections INNER JOIN Tags ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", requestedTag.mGuid.str());
-            std::string converterType;
+            //std::string converterType;
+
+            Strings convertorNames;
 
             if (DatabaseHandle dHandle = LockDatabaseAccess())
             {
-                converterType = GetCell<std::string>(dHandle->DB(), command);
+                const auto converterTypes = GetCell<std::string>(dHandle->DB(), command);
+                convertorNames = conv::Split(converterTypes, ",", true);
             }
 
-            auto converter = FindAssetConverter(converterType);
-            YAGET_ASSERT(converter, "Asset Resolvers section '%s' does not have entry for: '%s'. Requested tag: '%s', Expended: '%s'.",
-                requestedTag.mSectionName.c_str(),
-                converterType.c_str(),
-                requestedTag.mVTSName.c_str(),
-                requestedTag.ResolveVTS().c_str());
-
-            if (auto newAsset = converter(dataBuffer, requestedTag, *this))
+            for (const auto& convertorName : convertorNames)
             {
-                std::unique_lock<std::mutex> locker(mMutexAssets);
-                asset = FindAssetNonMT(requestedTag);
-                if (!asset)
+                auto converter = FindAssetConverter(convertorName);
+                YAGET_ASSERT(converter, "Asset Resolvers section '%s' does not have entry for: '%s'. Requested tag: '%s', Expended: '%s'.",
+                    requestedTag.mSectionName.c_str(),
+                    convertorName.c_str(),
+                    requestedTag.mVTSName.c_str(),
+                    requestedTag.ResolveVTS().c_str());
+
+                if (auto newAsset = converter(dataBuffer, requestedTag, *this))
                 {
-                    asset = AddAssetNonMT(newAsset);
+                    std::unique_lock<std::mutex> locker(mMutexAssets);
+                    asset = FindAssetNonMT(requestedTag);
+                    if (!asset)
+                    {
+                        asset = AddAssetNonMT(newAsset);
+                    }
+
+                    break;
                 }
             }
         }

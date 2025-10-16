@@ -2,7 +2,7 @@
 	"Configuration" : {
 		"Debug": {
 			"Logging": {
-				"Filters": [ "INPT", "WIND", "MULT", "POOL" ],
+				"Filters": [ "INPT", "WIND", "MULT", "POOL", "WIN", "APP" ],
 				"Level": "DBUG",
 				"Outputs": {
 					"ylog::OutputDebug": {
@@ -25,7 +25,7 @@
 				"TraceOn": true
 			}
 		},
-		"Graphics": {
+		"Graphics": {																				   
 			"Device": "",
 			"MemoryReport": false,
 			"GPUTraceback": false
@@ -52,6 +52,15 @@
 					}
 				},
 				{
+					"Persistance": {
+						"Converters": "PERS",
+						"Filters": [ "*.pers" ],
+						"Path": [ "$(AppFolder)" ],
+						"ReadOnly": true,
+						"Recursive": false
+					}
+				},
+				{
 					"UserOptions": {
 						"Path": [ "$(UserDataFolder)/UserOptions" ],
 						"ReadOnly": false,
@@ -63,8 +72,8 @@
 			],
 			"WindowOptions": "UserOptions@WindowConfiguration",
 			"VSync": false,
-			"StartingStage": "Boot"
-
+			"StartingStage": "",
+			"ItemsFile": ""
 		}
 	}
 }

@@ -108,9 +108,6 @@ OutputConsole::~OutputConsole()
         case ylog::Log::Level::eError:
             color = DirectX::Colors::Red;
             break;
-        case ylog::Log::Level::eCritic:
-            color = DirectX::Colors::Purple;
-            break;
         default:
             color = DirectX::Colors::Aqua;
             break;

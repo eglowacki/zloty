@@ -5,14 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Data Files">
       <UniqueIdentifier>{c5bcc4d2-4b25-4397-9bb6-e25f7c65b3fb}</UniqueIdentifier>
     </Filter>
@@ -24,6 +16,9 @@
     </Filter>
     <Filter Include="Source Files\Stager Files">
       <UniqueIdentifier>{38fd0fef-4f0f-422c-a101-a67844edea31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Systems Files">
+      <UniqueIdentifier>{aed16a1b-6ae5-47da-9499-39fb54960e6d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,6 +58,9 @@
     <ClCompile Include="source\Stager\StagerSystem.cpp">
       <Filter>Source Files\Stager Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\Systems\InputSystem.cpp">
+      <Filter>Source Files\Systems Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Defensor.deployment">
@@ -74,6 +72,9 @@
       <Filter>Data Files</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\KeyBindings.json">
+      <Filter>Data Files</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\PlayerTest.pers">
       <Filter>Data Files</Filter>
     </CopyFileToFolders>
   </ItemGroup>
@@ -116,6 +117,9 @@
     </ClInclude>
     <ClInclude Include="source\Stager\StagerSystem.h">
       <Filter>Source Files\Stager Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Systems\InputSystem.h">
+      <Filter>Source Files\Systems Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

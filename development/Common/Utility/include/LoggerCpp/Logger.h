@@ -50,10 +50,8 @@ namespace yaget
             /// @{ Utility const method to produce Log objets, used to collect the stream to output
             Log debug() const;
             Log info() const;
-            Log notice() const;
             Log warning() const;
             Log error() const;
-            Log critic() const;
 
             /// @}
 

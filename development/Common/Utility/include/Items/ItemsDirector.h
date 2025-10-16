@@ -43,6 +43,9 @@ namespace yaget::items
 
         IdGameCache& IdCache() { return mIdGameCache; }
 
+        template <typename S>
+        bool SaveComponentState(comp::Id_t componentId, const std::string& componentName, const S& storage);
+
         // save T::mDataStorage to DB
         template <typename T>
         bool SaveComponentState(const T* component);
@@ -111,9 +114,12 @@ namespace yaget::items
     {
     public:
         DefaultDirector(const std::string& name = "Director", RuntimeMode runTimeMode = RuntimeMode::Default)
-            : Director("$(DatabaseFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinatorSchema<T>(), {}, comp::db::GenerateSystemsCoordinatorVersion<T>(), runTimeMode)
+            : Director("$(DatabaseFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinator<T, comp::db::GenerateCoordinator::Schema>(), {}, comp::db::GenerateSystemsCoordinator<T, comp::db::GenerateCoordinator::Version>(), runTimeMode)
         {}
     };
+
+    template<typename T>
+    concept is_persistent_type = requires (T t) { {t.GetStorage()}; };
 
     template <typename T>
     class SetupDirector : public DefaultDirector<T>
@@ -132,36 +138,46 @@ namespace yaget::items
     // database file, thus destroying previous data
     using SetupBlankDirector = SetupDirector<comp::db::EmptySchema>;
 
-    template <typename T>
-    bool Director::SaveComponentState(const T* component)
+    template <typename S>
+    bool Director::SaveComponentState(comp::Id_t componentId, const std::string& componentName, const S& storage)
     {
-        using ParameterNames = typename comp::db::RowDescription_t<T>::Row;
-        using ParameterPack = typename comp::db::RowDescription_t<T>::Types;
-
-        const auto tableName = comp::db::ResolveName<T>();
-        Strings columnNames;
-        columnNames.push_back("Id");
-        columnNames.append_range(comp::db::GetPolicyRowNames<ParameterNames>());
-
-        const SQLite::StatementId_t statementId = "statementId_" + tableName;
-
-        auto componentId = static_cast<comp::Id_t>(component->Id());
-        auto inputParam = std::tuple_cat(std::tuple(componentId), component->Storage());
+        const SQLite::StatementId_t statementId = "statementId_" + componentName;
+        auto inputParam = std::tuple_cat(std::tuple(componentId), storage);
 
         const auto dbLock = LockDatabaseAccess();
         auto& database = dbLock->DB();
         db::Transaction transaction(database);
 
-        auto result = database.ExecuteStatementTuple(statementId, tableName, inputParam, columnNames, SQLite::Behaviour::Update);
+        // SELECT 1 FROM PRAGMA_TABLE_INFO('your_table') WHERE name='column1';
+        // SELECT * FROM PRAGMA_TABLE_INFO('LocationComponent3');
+        //      cid name        type    notnull dflt_value  pk
+        //      0	Id	        INTEGER	0		NULL        1
+        //      1	Position	STRING	0		NULL        0
+        //      2	Orientation	STRING	0		NULL        0
+        //      3	Scale	    STRING	0		NULL        0
+        auto result = database.ExecuteStatementTuple(statementId, componentName, inputParam, {}, SQLite::Behaviour::Update);
         if (!result)
         {
             transaction.Rollback();
 
-            const std::string message = fmt::format("Updating component: '{}' failed. {}.", tableName, ParseErrors(database));
+            const std::string message = fmt::format("Updating component: '{}' failed. {}.", componentName, ParseErrors(database));
             YLOG_WARNING("DIRE", message.c_str());
         }
 
         return result;
+    }
+
+    template <typename T>
+    bool Director::SaveComponentState(const T* component)
+    {
+        YLOG_CERROR("DIRE", (component != nullptr), "component parameter is nullptr. Can not save state of null object.");
+        if (!component)
+        {
+            return false;
+        }
+
+        const auto componentName = comp::db::ResolveName<T>();
+        return SaveComponentState(component->Id(), componentName, component->GetStorage());
     }
 
     template <typename T>
@@ -179,14 +195,7 @@ namespace yaget::items
         const auto dbLock = LockDatabaseAccess();
         const auto& database = dbLock->DB();
 
-        bool getResult = true;
-        const auto componentParameters = database.GetRowTuple<Parameters>(command, &getResult);
-        if (result)
-        {
-            *result = getResult;
-        }
-
-        return componentParameters;
+        return database.GetRowTuple<Parameters>(command, result);
     }
 
 } // namespace yaget::items

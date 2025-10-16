@@ -77,7 +77,7 @@ yaget::render::ResourceReflector::ResourceReflector(io::BufferView data)
     hr = shaderReflectior->GetDesc(&desc);
     error_handlers::ThrowOnError(hr, "Could not get shader reflection description for shader data");
 
-    YLOG_NOTICE("COMP", "Shader Reflection: Input Parameters = %d, Output Parameters = %d.", desc.InputParameters, desc.OutputParameters);
+    YLOG_INFO("COMP", "Shader Reflection: Input Parameters = %d, Output Parameters = %d.", desc.InputParameters, desc.OutputParameters);
 
     for (uint32_t i = 0; i < desc.InputParameters; ++i)
     {
@@ -92,7 +92,7 @@ yaget::render::ResourceReflector::ResourceReflector(io::BufferView data)
         //error_handlers::ThrowOnError(hr, "Could not get input shaderVariable for shader data");
 
 
-        YLOG_NOTICE("COMP", "Shader Reflection: Input Parameter Index: %d, Name: '%s', SemanticIndex: %d, Register: %d.", i, paramDesc.SemanticName, paramDesc.SemanticIndex, paramDesc.Register);
+        YLOG_INFO("COMP", "Shader Reflection: Input Parameter Index: %d, Name: '%s', SemanticIndex: %d, Register: %d.", i, paramDesc.SemanticName, paramDesc.SemanticIndex, paramDesc.Register);
     }
 
     for (uint32_t i = 0; i < desc.OutputParameters; ++i)
@@ -101,6 +101,6 @@ yaget::render::ResourceReflector::ResourceReflector(io::BufferView data)
         hr = shaderReflectior->GetOutputParameterDesc(i, &paramDesc);
         error_handlers::ThrowOnError(hr, "Could not get output param description for shader data");
 
-        YLOG_NOTICE("COMP", "Shader Reflection: Output Parameter Index: %d, Name: '%s', SemanticIndex: %d, Register: %d.", i, paramDesc.SemanticName, paramDesc.SemanticIndex, paramDesc.Register);
+        YLOG_INFO("COMP", "Shader Reflection: Output Parameter Index: %d, Name: '%s', SemanticIndex: %d, Register: %d.", i, paramDesc.SemanticName, paramDesc.SemanticIndex, paramDesc.Register);
     }
 }

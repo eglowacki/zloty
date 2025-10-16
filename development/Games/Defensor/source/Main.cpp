@@ -1,7 +1,10 @@
 #include "MainGame.h"
 #include "YagetVersion.h"
 #include "App/AppHarness.h"
+
+
 #include "VTS/DiagnosticVirtualTransportSystem.h"
+#include "LoggerCpp/OutputConsole.h"
 #include "LoggerCpp/OutputDebug.h"
 #include "LoggerCpp/OutputFile.h"
 #include "MemoryManager/PoolAllocator.h"
@@ -31,8 +34,11 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     memory::InitializeAllocations();
 
     args::Options options("Yaget.Defensor");
+    options.add_options()
+        ("director_startup", "How to have Director startup and initialized. Options are: init - create from scratch, add - add to existing one, load - load from existing (default).", args::value<std::string>())
+    ;
 
-    const int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug>(lpCmdLine, options, nullptr, 0, [&options]()
+    const int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug, ylog::OutputConsole>(lpCmdLine, options, nullptr, 0, [&options]()
     {
         metrics::Channel channel("Main.Defensor");
 

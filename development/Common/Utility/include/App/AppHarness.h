@@ -58,7 +58,7 @@ namespace yaget::app::helpers
         int returnResult = 0;
         try
         {
-            YLOG_NOTICE("INIT", util::DisplayCurrentConfiguration(&options).c_str());
+            YLOG_INFO("INIT", util::DisplayCurrentConfiguration(&options).c_str());
             returnResult = callback();
         }
         catch (const ex::standard& e)
@@ -83,7 +83,6 @@ namespace yaget::app::helpers
 
         metrics::MarkAddMessage("Ended Game", metrics::MessageScope::Process, 0);
 
-        //render::Device::DebugReport();
         return returnResult;
     }
 
@@ -115,7 +114,7 @@ namespace yaget::app::helpers
             lineCommands += i == argc - 1 ? "" : " ";
         }
 
-        if (extraParameters.length())
+        if (!extraParameters.empty())
         {
             lineCommands += lineCommands.empty() ? extraParameters : " " + extraParameters;
         }

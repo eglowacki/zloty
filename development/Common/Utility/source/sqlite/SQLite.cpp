@@ -191,7 +191,7 @@ yaget::SQLite::Statement::Statement(sqlite3* database, const std::string& comman
 {
     int result = sqlite3_prepare_v2(mDatabase, command.c_str(), static_cast<int>(command.size()), &mStm, 0);
     const char* errorMessage = sqlite3_errmsg(mDatabase);
-    YAGET_ASSERT(result == SQLITE_OK, "SQLite Statement prepare failed: %s.", errorMessage ? errorMessage : "");
+    YAGET_ASSERT(result == SQLITE_OK, "SQLite Statement '%s' prepare failed: %s.", command.c_str(), errorMessage ? errorMessage : "");
 }
 
 void yaget::SQLite::Statement::ResetBindings()

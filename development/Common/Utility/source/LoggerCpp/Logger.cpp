@@ -32,11 +32,6 @@ yaget::ylog::Log yaget::ylog::Logger::info() const
     return Log(*this, Log::Level::eInfo);
 }
 
-yaget::ylog::Log yaget::ylog::Logger::notice() const
-{
-    return Log(*this, Log::Level::eNotice);
-}
-
 yaget::ylog::Log yaget::ylog::Logger::warning() const
 {
     return Log(*this, Log::Level::eWarning);
@@ -45,11 +40,6 @@ yaget::ylog::Log yaget::ylog::Logger::warning() const
 yaget::ylog::Log yaget::ylog::Logger::error() const
 {
     return Log(*this, Log::Level::eError);
-}
-
-yaget::ylog::Log yaget::ylog::Logger::critic() const
-{
-    return Log(*this, Log::Level::eCritic);
 }
 
 // To be used only by the Log class

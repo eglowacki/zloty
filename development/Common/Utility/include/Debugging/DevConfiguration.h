@@ -139,7 +139,11 @@ namespace yaget
                 // which script to start running when GameDirector is initialized, aka boot script
                 std::string mGameDirectorScript;
                 // Which stage name to start with
+                // format of VirtualTransportSystem::Section type
                 std::string mStartingStage;
+                // This will add all component data into DB from mItemsFile, which is
+                // format of VirtualTransportSystem::Section type
+                std::string mItemsFile;
 
                 // This represents certain command line options, specially video/window options
                 struct CLO

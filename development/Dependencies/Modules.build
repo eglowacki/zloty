@@ -9,14 +9,10 @@
 
     "Modules": {
         "DirectXTK12": {
-            "version": "06.2023"
+            "version": ""
         },
         "fmt": {
-            "version": "10.1",
-			"tests": [ "bin/Debug/format-test.exe", "bin/Release/format-test.exe" ]
-        },
-        "nlohmann-json": {
-            "version": "3.11"
-        }
+            "version": "10.1"
+		}
     }
 }

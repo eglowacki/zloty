@@ -76,7 +76,7 @@ namespace yaget
 
         constexpr uint32_t kMaxMouseButtons  = 32;
 
-        using ActionCallback_t = std::function<void(const std::string& /*actionName*/, uint64_t /*timeStamp*/, int32_t /*mouseX*/, int32_t /*mouseY*/, uint32_t /*flags*/)>;
+        using ActionCallback_t = std::function<void(const std::string& /*contextName*/, const std::string& /*actionName*/, uint64_t /*timeStamp*/, int32_t /*mouseX*/, int32_t /*mouseY*/, uint32_t /*flags*/)>;
         using ActionNonParamCallback_t = std::function<void()>;
 
         class InputDevice : public Noncopyable<InputDevice>
@@ -113,7 +113,7 @@ namespace yaget
 
                 virtual std::string ToString() const;
 
-                virtual void Process(const std::string& actionName, ActionCallback_t actionCallback) const = 0;
+                virtual void Process(const std::string& actionName, const std::string& contextName, ActionCallback_t actionCallback) const = 0;
 
                 const uint32_t mFlags = 0;                      ///< Different flags, different meaning based on what kind of input.
                 const time::Microsecond_t mTimeStamp = 0;     ///< Time of that input.
@@ -130,7 +130,7 @@ namespace yaget
                 // From Record
                 bool Is(const Record *target, bool andCompare = true) const override;
                 std::string ToString() const override;
-                void Process(const std::string& actionName, ActionCallback_t actionCallback) const override;
+                void Process(const std::string& actionName, const std::string& contextName, ActionCallback_t actionCallback) const override;
 
                 const unsigned char mValue = 0;     ///< ASCII number if this key.
                 mutable bool mDown = false;         ///< handles the case, when key down and up actions are the same one
@@ -162,7 +162,7 @@ namespace yaget
                 // from Record
                 bool Is(const Record *target, bool andCompare = true) const override;
                 std::string ToString() const override;
-                void Process(const std::string& actionName, ActionCallback_t actionCallback) const override;
+                void Process(const std::string& actionName, const std::string& contextName, ActionCallback_t actionCallback) const override;
             };
 
 
@@ -172,7 +172,7 @@ namespace yaget
 
             int MapKey(int value) const;
             void RegisterActionCallback(const std::string& actionName, ActionCallback_t actionCallback);
-            // SImple input callback that does not take any parameters. Ex: like quit, programmer might not care about
+            // Simple input callback that does not take any parameters. Ex: like quit, programmer might not care about
             // actionName, timeStamp, mouseX, mouseY or flags
             void RegisterSimpleActionCallback(const std::string& actionName, ActionNonParamCallback_t actionCallback);
             // Return true if actionName is registered with input device
@@ -238,7 +238,10 @@ namespace yaget
                 std::vector<ActionCallback_t> mCallbacks;
 
             };
-            std::map<std::string, ActionMap> mActionMap;
+
+            using ActionsMap = std::map<std::string, ActionMap>;
+
+            ActionsMap mActionMap;
             std::stack<std::string> mContextStack;
         };
 

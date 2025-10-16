@@ -44,7 +44,7 @@ void ylog::Initialize(const args::Options& options)
 
     Logger& logObject = ylog::Get();
 
-    //DBUG, INFO, NOTE, WARN, EROR
+    //DBUG, INFO, WARN, EROR
     Log::Level level = Log::toLevel(logConfig.Level.c_str());
     logObject = Logger(logObject.getName().c_str());
     logObject.setLevel(level);

@@ -42,7 +42,7 @@ namespace
             {
                 gpuTraceback = true;
 
-                YLOG_NOTICE("DEVI", "GPU Debug Traceback activated.");
+                YLOG_INFO("DEVI", "GPU Debug Traceback activated.");
 
                 //Nsight Aftermath event markers and resource tracking is incompatible with the
                 //D3D debug layer and tools using D3D API interception, such as Microsoft PIX
@@ -225,7 +225,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
                     }
                 }
 
-                YLOG_NOTICE("DEVI", "Found Adapter: Name: '%s', Software: '%s', VendorId: '%d', DeviceId: '%d', Video Memory: '%s' bytes, System Memory: '%s' bytes, Flags: '%d'.",
+                YLOG_INFO("DEVI", "Found Adapter: Name: '%s', Software: '%s', VendorId: '%d', DeviceId: '%d', Video Memory: '%s' bytes, System Memory: '%s' bytes, Flags: '%d'.",
                     conv::wide_to_utf8(desc.Description).c_str(), IsSoftware(desc.Flags).c_str(), desc.VendorId, desc.DeviceId,
                     conv::ToThousandsSep(desc.DedicatedVideoMemory).c_str(), conv::ToThousandsSep(desc.SharedSystemMemory).c_str(), desc.Flags);
 
@@ -290,16 +290,24 @@ yaget::render::info::Adapter yaget::render::info::SelectDefaultAdapter(size_t co
     const size_t resY = configInitBlock_ResY;
     //const bool fullScreen = configInitBlock.FullScreen;
 
+    //Filters resolutionFilter{
+    //    nullptr,
+    //    nullptr,
+    //    nullptr,
+    //    nullptr,
+    //    [resX, resY](auto resolution)
+    //    {
+    //        return resolution.mRefreshRate == 60 && resolution.mWidth == resX && resolution.mHeight == resY;
+    //    }
+    //};
+
     Filters resolutionFilter{
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        [resX, resY](auto resolution)
+        .mResolution = [resX, resY](auto resolution)
         {
             return resolution.mRefreshRate == 60 && resolution.mWidth == resX && resolution.mHeight == resY;
         }
     };
+
 
     auto selectedAdapter = SelectAdapter(hardwareAdapters, resolutionFilter);
 
@@ -321,7 +329,7 @@ yaget::render::info::Adapter yaget::render::info::SelectDefaultAdapter(size_t co
             return resolution.mRefreshRate == 60 && resolution.mWidth == width && resolution.mHeight == height;
         };
 
-        selectedAdapter = render::info::SelectAdapter(hardwareAdapters, resolutionFilter);
+        selectedAdapter = SelectAdapter(hardwareAdapters, resolutionFilter);
         error_handlers::ThrowOnError(selectedAdapter.IsValid(), "Could not create default video adapter");
     }
 
@@ -390,7 +398,7 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
     auto backgroundSupported = featureSupport.BackgroundProcessingSupported();
     optionsText += "    Background Processing: " + conv::Convertor<bool>::ToString(backgroundSupported);
 
-    YLOG_NOTICE("DEVI", "D3D Features:\n%s", optionsText.c_str());
+    YLOG_INFO("DEVI", "D3D Features:\n%s", optionsText.c_str());
 
     return { hardwareDevice, hardwareAdapter, factory };
 }

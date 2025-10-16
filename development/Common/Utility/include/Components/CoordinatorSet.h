@@ -105,7 +105,7 @@ namespace yaget::comp
         template<typename S, typename T>
         constexpr void tuple_copy_if_source(const S& source, T& target)
         {
-            tuple_copy_if(source, target, [](const auto& sourceElement, const auto& targetElement)
+            tuple_copy_if(source, target, [](const auto& sourceElement, const auto& /*targetElement*/)
             {
                 return sourceElement != nullptr;
             });
@@ -185,6 +185,10 @@ namespace yaget::comp
 
     template<typename... Tuple>
     using coordinator_row_combine_t = typename coordinator_row_combine<Tuple...>::type;
+
+
+    template<typename T>
+    concept has_component_types = requires (T t) { {t.GetStorage()}; };
 
     //template<char ...C>
     //requires (sizeof...(C)%2 == 0)
@@ -363,6 +367,8 @@ namespace yaget::comp
                 }
             });
 
+            // NOTE EG: 2/23/2025
+            // Could not get this code below working, so resorted to manual code above
             //FindMatchCoordinator<C>([&](auto* coordinator)
             //{
             //    /*component =*/ coordinator->template AddComponent<C>(id, std::forward<Args>(args)...);
@@ -383,25 +389,29 @@ namespace yaget::comp
             error_handlers::ThrowOnCheck(mDirector, fmt::format("Can not load component, director is nullptr"));
 
             C* component{};
-            bool result = false;
-            auto parameters = mDirector->LoadComponentState<C>(id, &result);;
 
-            if (result)
+            if constexpr (has_component_types<C>)
             {
-                FindMatchCoordinator<C>([&parameters, &component, id](auto* coordinator)
-                {
-                    if (component = coordinator->template FindComponent<C>(id); component)
-                    {
-                        component->Storage() = parameters;
-                    }
-                });
+                bool result = false;
+                auto parameters = mDirector->LoadComponentState<C>(id, &result);;
 
-                if (!component)
+                if (result)
                 {
-                    component = std::apply([this, id](auto &&... args)
+                    FindMatchCoordinator<C>([&parameters, &component, id](auto* coordinator)
                     {
-                        return AddComponent<C>(id, args...);
-                    }, parameters);
+                        if (component = coordinator->template FindComponent<C>(id); component)
+                        {
+                            component->SetStorage(parameters);
+                        }
+                    });
+
+                    if (!component)
+                    {
+                        component = std::apply([this, id](auto &&... args)
+                        {
+                            return AddComponent<C>(id, args...);
+                        }, parameters);
+                    }
                 }
             }
 
@@ -436,10 +446,28 @@ namespace yaget::comp
         bool RemoveComponent(comp::Id_t id)
         {
             bool result = false;
-            FindMatchCoordinator<C>([&result, id](auto* coordinator)
+            bool coordinatorFound = false;
+
+            meta::for_loop<NumCoordinators>([&]<std::size_t T0>()
             {
-                result = coordinator->template RemoveComponent<C>(id);
+                constexpr std::size_t coordinatorIndex = T0;
+
+                if (!coordinatorFound)
+                {
+                    if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
+                    {
+                        auto& coordinator = GetCoordinator<coordinatorIndex>();
+                        result = coordinator.template RemoveComponent<C>(id);
+                        coordinatorFound = true;
+                    }
+                }
             });
+            // NOTE EG: 2/23/2025
+            // Could not get this code below working, so resorted to manual code above
+            //FindMatchCoordinator<C>([&result, id](auto* coordinator)
+            //{
+            //    result = coordinator->template RemoveComponent<C>(id);
+            //});
 
             return result;
         }
@@ -457,6 +485,20 @@ namespace yaget::comp
             });
 
             return item;
+        }
+
+        //-------------------------------------------------------------------------------------------------
+        template <typename TT = FullRow>
+        bool RemoveItem(comp::Id_t id)
+        {
+            bool result = true;
+            meta::for_each_type<TT>([this, &result, id]<typename T0>(const T0&)
+            {
+                using BaseType = meta::strip_qualifiers_t<T0>;
+                RemoveComponent<BaseType*>(id);
+            });
+
+            return result;
         }
 
     private:

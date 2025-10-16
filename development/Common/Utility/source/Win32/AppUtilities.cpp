@@ -308,6 +308,12 @@ namespace
         return length;
     }
 
+    std::string MakeHTMLLink(const std::string& source)
+    {
+        //return yaget::conv::ReplaceString(source, " ", "%20");
+        return "file:///" + source;
+    }
+
 } // namespace
 
 
@@ -424,18 +430,20 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
     // Show loaded config file
     // show all search path for config file and marked used one with *
     std::string message = "=== Configuration Search Path:";
-    message += "\nFound and Used:\n   " + (!configFile.empty() ? configFile : "*NO CONFIGURATION*") + ".\nSearch Order:";
+
+    std::string selectedConfigFile = MakeHTMLLink(configFile);
+    message += "\nFound and Used:\n   " + (!selectedConfigFile.empty() ? selectedConfigFile : "*NO CONFIGURATION*") + ".\nSearch Order:";
 
     Strings searches = io::file::GenerateConfigSearchPath("Configuration", true, options);
     for (const auto& searched : searches)
     {
-        std::string linkable;
+        std::string linkable = searched;
         if (searched == configFile)
         {
-            linkable = "file:///";
+            linkable = MakeHTMLLink(searched);
         }
 
-        message += fmt::format("\n   {}{}", linkable, searched);
+        message += "\n   " + linkable;
      }
 
     // Show all aliases and it's corresponding path
@@ -455,9 +463,15 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
         std::string expendedAlias = util::ExpendEnv(env.first, nullptr);
 
         const bool isLinkable = fs::is_directory(expendedAlias) || fs::is_regular_file(expendedAlias);
-        const char* filePrefix = isLinkable ? "file:///" : "";
+        std::string linkable = expendedAlias;
+        if (isLinkable)
+        {
+            linkable = MakeHTMLLink(expendedAlias);
+        }
 
-        message += fmt::format("\n   Alias: '{}'{} = {}{}{}", env.first, spacing, (env.second.ReadOnly ? "R- " : "RW "), filePrefix, expendedAlias);
+        //const auto attrib = env.second.ReadOnly ? "R- " : "RW ";
+        //message += "\n   Alias: '" + env.first + "'" + spacing + attrib + linkable;
+        message += fmt::format("\n   Alias: '{}'{} = {}{}", env.first, spacing, (env.second.ReadOnly ? "R- " : "RW "), linkable);
     }
 
     const dev::Configuration& configuration = dev::CurrentConfiguration();
@@ -470,7 +484,7 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
         for (const auto& pathName : section.Path)
         {
             std::string potentialPath = util::ExpendEnv(pathName, nullptr);
-            message += fmt::format("\n     file:///{}", potentialPath);
+            message += "\n     " + MakeHTMLLink(potentialPath);
         }
     }
 
@@ -742,7 +756,7 @@ std::vector<std::string> yaget::util::ui::SelectOpenFileNames(const char* filter
 //---------------------------------------------------------------------------------------------------------------------------------
 std::string yaget::util::SelectSaveFileName(const char* filter, const char* dialogTitle)
 {
-    const char *Title = dialogTitle ? dialogTitle : "Save Asset As";
+    const char *Title = dialogTitle ? dialogTitle : "Save As";
 
     //char szFileName[MAX_PATH] = "";
     char szFileName[MAX_PATH] = { 0 };
@@ -788,7 +802,7 @@ void yaget::util::DisplayDialog(const char* title, const char* message)
 }
 
 #else
-    #error  "Need to implement SelectOpenFileName, SelectSaveFileName, DisplayDialog, ThrowOnError for your platform."
+    #error  "Need to implement SelectOpenFileName, SelectSaveFileName, DisplayDialog for your platform."
 #endif // _WIN32
 
 
@@ -803,7 +817,7 @@ void yaget::util::DefaultOptions(args::Options& options)
         ("f,log_filter", "Filter out specific log tags.", args::value<std::vector<std::string>>())
         ("log_filter_clear", "Clear all log filter (show it all)") 
         ("o,log_output", "Which log outputs to attach (ylog::OutputFile, ylog::OutputConsole, ylog::OutputDebug, imgui::OutputConsole).", args::value<std::vector<std::string>>())
-        ("l,log_level", "Log Level to show (DBUG, INFO, NOTE, WARN, CRIT).", args::value<std::string>())
+        ("l,log_level", "Log Level to show (DBUG, INFO, WARN, EROR).", args::value<std::string>())
         ("res_x", "Resolution x (width) (default 1366).", args::value<int>())
         ("res_y", "Resolution y (height) (default 768).", args::value<int>())
         ("full_screen", "Full screen with requested resolution, or if res_x/y not set, use current desktop size.")

@@ -203,7 +203,7 @@ std::string yaget::io::file::FindConfigFile(const std::string& name, bool addApp
 yaget::io::file::FileOpResult yaget::io::file::RemoveFile(const std::string& fileName)
 {
     fs::path sourcePath = fs::path(util::ExpendEnv(fileName, nullptr));
-    YLOG_INFO("FILE", "Removing file '%s'.", sourcePath.generic_string().c_str());
+    YLOG_DEBUG("FILE", "Removing file '%s'.", sourcePath.generic_string().c_str());
 
     std::error_code ec;
     bool result = fs::remove(sourcePath, ec);
@@ -273,10 +273,16 @@ yaget::io::file::FileOpResult yaget::io::file::SaveFile(const std::string& fileN
 
 
 //---------------------------------------------------------------------------------------------------------------------------------
-bool yaget::io::file::IsFileExists(const std::string& fileName)
+bool yaget::io::file::IsFileExists(const std::string& fileName, bool onlyFile /*= false*/)
 {
     fs::path sourcePath = fs::path(util::ExpendEnv(fileName, nullptr));
-    return fs::exists(sourcePath);
+    bool pathExists = fs::exists(sourcePath);
+    if (onlyFile && pathExists)
+    {
+        pathExists = fs::is_regular_file(sourcePath);
+    }
+
+    return pathExists;
 }
 
 

@@ -83,8 +83,8 @@ namespace yaget::io::file
     //! Save data in buffer to a file
     FileOpResult SaveFile(const std::string& fileName, const io::Buffer& buffer);
 
-    //! Return true if file exist, otherwise false
-    bool IsFileExists(const std::string& fileName);
+    //! Return true if file exist or directory, otherwise false
+    bool IsFileExists(const std::string& fileName, bool onlyFile = false);
 
     //! Set file attribute to one of Attributes enum
     enum class Attributes { ReadOnly, ReadWrite };
