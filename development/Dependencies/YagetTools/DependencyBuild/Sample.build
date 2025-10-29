@@ -1,0 +1,80 @@
+{
+    "Comment": "Drives build.py script to get/git dependent libraries, configure, compiler and install",
+
+    "Defaults": {
+        "cmake": { "build_folder": "builds" },
+        "configurations": [ "Release", "Debug" ],
+        "cmakeCompileCommands": [ "-GVisual Studio 17 2022", "-Ax64", "-Wno-dev" ]
+    },
+
+    "Modules": {
+        "assimp": {
+            "version": "5.0.1",
+            "cmake": { "options": [ "-DASSIMP_BUILD_ZLIB=ON" ] },
+            "git": "https://github.com/assimp",
+            "tests": [ "bin/Debug/unit.exe", "bin/Release/unit.exe" ],
+            "options": { "suppress_tests": true }
+        },
+
+        "flatbuffers": {
+            "version": "1.12.0",
+            "git": "https://github.com/google",
+            "tests": [ "Debug/flattests.exe", "Release/flattests.exe" ]
+        },
+
+        "DirectXTex": {
+            "version": "170",
+            "git": "https://github.com/microsoft"
+        },
+
+        "DirectXTK11": {
+            "version": "5.10.2020",
+            "git": "https://github.com/microsoft"
+        },
+
+        "DirectXTK12": {
+            "version": "04.06.2021",
+            "git": "https://github.com/microsoft"
+        },
+
+        "DirectX-Headers": {
+            "version": "12",
+            "git": "https://github.com/microsoft"
+        },
+
+        "fmt": {
+            "version": "6.2.0",
+            "git": "https://github.com/fmtlib",
+            "tests": [ "bin/Debug/format-test.exe", "bin/Release/format-test.exe" ]
+        },
+
+        "nlohmann-json": {
+            "version": "3.7.3",
+            "git": "https://github.com/nlohmann/json",
+            "tests": [ "ctest --output-on-failure -C Debug", "ctest --output-on-failure -C Release" ],
+            "options": { "suppress_tests": true }
+        }
+    },
+
+    "Evaluations": {
+        "reactphysics3d": {
+            "version": "0.7.1",
+            "cmake": { "options": [ "-DRP3D_COMPILE_TESTBED=ON", "-DRP3D_COMPILE_TESTS=ON", "-DRP3D_PROFILING_ENABLED=ON", "-DRP3D_LOGS_ENABLED=ON" ] },
+            "git": "https://github.com/DanielChappuis",
+            "tests": [ "test/Debug/tests.exe", "test/Release/tests.exe" ]
+        },
+
+        "PhysX": {
+            "version": "4.1",
+            "cmake": { "options": [ "-DRP3D_COMPILE_TESTBED=ON", "-DRP3D_COMPILE_TESTS=ON", "-DRP3D_PROFILING_ENABLED=ON", "-DRP3D_LOGS_ENABLED=ON" ] },
+            "git": "https://github.com/NVIDIAGameWorks",
+            "msdev": { "solutions": "PhysXSDK" },
+            "build_folder": "compiler/vc16win64"
+        },
+
+        "bullet3": {
+            "version": "2.8.9",
+            "git": "https://github.com/bulletphysics"
+        }
+    }
+}

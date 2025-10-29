@@ -1,0 +1,14 @@
+#!wing
+#!version=10.0
+##################################################################
+# Wing project file                                              #
+##################################################################
+[project attributes]
+debug.launch-configs = (2,
+                        {})
+proj.file-list = [loc('build.py'),
+                  loc('Sample.build')]
+proj.file-type = 'shared'
+proj.launch-config = {loc('build.py'): ('project',
+        ('--root="" --metafile=.\\Sample.build  --display',
+         ''))}
