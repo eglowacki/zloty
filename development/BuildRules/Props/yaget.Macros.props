@@ -9,6 +9,7 @@
     <YAGET_GLOBAL_DEPENDENCIES_FOLDER>C:\Development\yaget\Dependencies</YAGET_GLOBAL_DEPENDENCIES_FOLDER>
   </PropertyGroup>
   <PropertyGroup>
+    <_PropertySheetDisplayName>yaget.Macros</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>

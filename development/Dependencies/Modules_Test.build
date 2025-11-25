@@ -8,22 +8,8 @@
     },
 
     "Modules": {
-        "DirectXTK12": {
-            "version": ""
-        },
-        "fmt": {
-            "version": "10.1"
-        },
         "googletest": {
-            "version": ""
-        },
-        "DirectX-Headers": {
-            "version": ""
-        },
-        "flatbuffers": {
             "version": ""
         }
     }
 }
-
-
