@@ -22,4 +22,6 @@
 [submodule "development/Dependencies/DirectX-Headers"]
     path = development/Dependencies/DirectX-Headers
     url = https://github.com/microsoft/DirectX-Headers.git
-
+[submodule "development/Dependencies/DirectXShaderCompiler"]
+    path = development/Dependencies/DirectXShaderCompiler
+    url = https://github.com/microsoft/DirectXShaderCompiler.git
