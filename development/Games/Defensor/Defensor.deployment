@@ -1,9 +1,8 @@
 {
   "Configuration": {
     "Common": [
-      "WinPIXEventRuntime-1.0.220810001/bin/x64/WinPixEventRuntime.dll",
-      "DirectXShaderCompiler-07.2022/bin/x64\\dxcompiler.dll",
-      "DirectXShaderCompiler-07.2022/bin/x64\\dxil.dll"
+      "DirectX-Compiler/bin/x64/dxcompiler.dll",
+      "DirectX-Compiler/bin/x64/dxil.dll"
     ],
     "Release": [
       "assimp-5.0.1/builds/bin/Release/assimp-vc143-mt.dll"

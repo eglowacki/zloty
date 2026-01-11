@@ -15,6 +15,8 @@
 
 #include "YagetCore.h"
 
+#if 0
+
 #include "Mathter/Vector.hpp"
 #include "Mathter/Matrix.hpp"
 #include "Mathter/Quaternion.hpp"
@@ -35,3 +37,4 @@ namespace yaget::math
 
 } // namespace yaget::math
 
+#endif // #if 0

@@ -5,6 +5,7 @@
 
 //CHECK_EQUAL(expected, actual);
 
+#if 0
 class Math : public ::testing::Test
 {
 };
@@ -51,3 +52,4 @@ TEST_F(Math, InterpolatorDown)
     interpolator.Update(stepT);
     EXPECT_FLOAT_EQ(endValue, interpolator.Value());
 }
+#endif // #if 0

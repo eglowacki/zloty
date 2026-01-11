@@ -64,7 +64,7 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::rende
     }
 
     YLOG_INFO("DEVI", "Device created and initialized.");
-    PIXSetMarker(0x0, "Device created.");
+    //PIXSetMarker(0x0, "Device created.");
 }
 
 

@@ -14,7 +14,7 @@
 #pragma once
 
 #include "Render/RenderCore.h"
-#include <pix3.h>
+//#include <pix3.h>
 
 namespace yaget::metrics::render
 {

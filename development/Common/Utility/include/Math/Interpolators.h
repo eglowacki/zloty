@@ -15,6 +15,7 @@
 
 #include "Math/YagetMath.h"
 
+#if 0
 namespace yaget::math
 {
     enum class InterpolatorDirection { Up, Down, Both };
@@ -74,3 +75,4 @@ namespace yaget::math
 
 } // namespace yaget::math
 
+#endif // #if 0

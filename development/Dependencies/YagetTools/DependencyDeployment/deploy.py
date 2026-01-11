@@ -41,7 +41,7 @@ def UpdateDeploymentFiles(files, roots, destination, silentPrint, test):
 
         elif not sourceExist:
             if not silentPrint:
-                print("[{}] ERROR missing: '{}' does not exist.".format(deployTag, ConvertPath(sourceFile)))
+                print("[{}] Missing: '{}' does not exist.".format(deployTag, ConvertPath(sourceFile)))
 
 # Load actuall meta configuration file (.deployment)
 # from disk and return json object or None
@@ -94,7 +94,7 @@ def main():
                                                     Sample input --destination=bin --metafile=bins
                                                     or [$(YAGET_ROOT_FOLDER)/DevTools/DependencyDeployment/deploy.py --root=$(YAGET_ROOT_FOLDER) --configuration=$(Configuration) --destination=$(YAGET_RUN_FOLDER) --metafile=$(ProjectDir)$(TargetName).deployment]
                                                     ''')
-    parser.add_argument('-r', '--root', dest='root', default='.\\', help='Root used in prefix of files to copy')
+    parser.add_argument('-r', '--root', dest='root', nargs='*', default=['.\\'], help='Root used in prefix of files to copy')
     parser.add_argument('-c', '--configuration', dest='configuration', default='Release', help='Build configuration to use as a source of dependencies')
     parser.add_argument('-d', '--destination', dest='destination', required=True, help='Where to copy the dependent files')
     parser.add_argument('-m', '--metafile', dest='meta', required=True, help='Json file name which contains list of configurations and files to copy from root/file_to_copy to destination/file_to_copy. .deployment extension is appended if passed file name does not exist.')
@@ -115,7 +115,7 @@ def main():
 
     silentPrint = args.silent
 
-    roots = args.root.split(';')
+    roots = args.root#.split(';')
     if not silentPrint:
         print("[{}] INFO: Search roots: {}".format(deployTag, roots))
 
