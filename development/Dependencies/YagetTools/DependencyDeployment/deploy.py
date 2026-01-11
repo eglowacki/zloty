@@ -41,7 +41,7 @@ def UpdateDeploymentFiles(files, roots, destination, silentPrint, test):
 
         elif not sourceExist:
             if not silentPrint:
-                print("[{}] Missing: '{}' does not exist.".format(deployTag, ConvertPath(sourceFile)))
+                print("[{}] WARN Missing:'{}' does not exist.".format(deployTag, ConvertPath(sourceFile)))
 
 # Load actuall meta configuration file (.deployment)
 # from disk and return json object or None
@@ -167,6 +167,8 @@ def main():
 
     if not silentPrint:
         print("[{}] Yaget deployment finished.".format(deployTag))
+
+    exit(0)
 
 
 if __name__ == "__main__":
