@@ -311,7 +311,8 @@ namespace
     std::string MakeHTMLLink(const std::string& source)
     {
         //return yaget::conv::ReplaceString(source, " ", "%20");
-        return "file:///" + source;
+        //return "file:///" + source;
+        return source;
     }
 
 } // namespace
