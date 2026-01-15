@@ -224,6 +224,9 @@ namespace yaget
             InputRecords_t mPendingInputs;
             std::map<int, int> mKeyMap;
 
+            using InputRipeater = std::vector<std::shared_ptr<Key>>;
+            InputRipeater mInputRipeater;
+
             struct ActionMap
             {
                 bool Is(const Record* record, const std::string& currentContextName);

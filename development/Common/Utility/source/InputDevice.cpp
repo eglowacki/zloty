@@ -427,7 +427,24 @@ void input::InputDevice::KeyRecord(uint32_t flags, int keyValue, yaget::time::Mi
 
     auto record = std::make_shared<Key>(timeStamp, flags, static_cast<unsigned char>(keyValue));
     YLOG_DEBUG("INPT", "Generated Key (%d) Record: '%s'.' at time (ms): '%d'.", keyValue, record->ToString().c_str(), time::FromTo<uint32_t>(timeStamp, time::kMicrosecondUnit, time::kMilisecondUnit));
-    mPendingInputs.push(std::move(record));
+
+    if (flags & input::kButtonDown)
+    {
+        auto keyInput = std::dynamic_pointer_cast<Key>(record);
+        mInputRipeater.push_back(keyInput);
+    }
+    else
+    {
+        mPendingInputs.push(std::move(record));
+
+        if (flags & input::kButtonUp)
+        {
+            std::erase_if(mInputRipeater, [flags, keyValue](const auto& record)
+            {
+                return record->mFlags & input::kButtonDown && record->mValue == keyValue;
+            });
+        }
+    }
 }
 
 
@@ -485,6 +502,9 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
                 mPendingInputs.pop();
             }
         }
+
+        // we also need to add/synthetise inputs in between down and up state
+        inputsToProcess.push_range(mInputRipeater);
     }
 
     uint32_t numMessages = 0;
