@@ -26,6 +26,6 @@ namespace defensor::game
         PlayerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet);
 
     private:
-        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, comp::LocationComponent3* locationComponent, comp::InputComponent* inputComponent);
+        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, comp::LocationComponent3* locationComponent, const comp::InputComponent* inputComponent);
     };
 }

@@ -35,6 +35,11 @@ namespace yaget::comp
             : PersistentBaseComponent(id, std::tie(event))
         {}
 
+        bool IsAction(const std::string& actionName) const
+        {
+            return mTriggeredAction.find(actionName) != mTriggeredAction.end();
+        }
+
         std::set<std::string> mTriggeredAction;
     };
 
