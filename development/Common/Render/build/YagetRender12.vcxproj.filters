@@ -46,12 +46,6 @@
     <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h">
       <Filter>Source Files\Triangle Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\DX12\Render\Platform\DeviceDebugger.h">
-      <Filter>Source Files\Platform Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\DX12\Render\Platform\Adapter.h">
-      <Filter>Source Files\Platform Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\DX12\imgui-docking\imconfig.h">
       <Filter>Source Files\UI Files\ImGui Files</Filter>
     </ClInclude>
@@ -91,9 +85,6 @@
     <ClInclude Include="..\include\DX12\Render\RenderCore.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\DX12\Render\Polygons\Polygon.h">
-      <Filter>Source Files\Polygons Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\DX12\Render\RenderStringHelpers.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -117,6 +108,15 @@
     </ClInclude>
     <ClInclude Include="..\source\DX12\Render\EnumConversion.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Platform\Adapter.h">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Platform\DeviceDebugger.h">
+      <Filter>Source Files\Platform Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Polygons\Polygon.h">
+      <Filter>Source Files\Polygons Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

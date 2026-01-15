@@ -149,6 +149,9 @@
     <ClInclude Include="..\include\DX12\Render\AdapterInfo.h" />
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
     <ClInclude Include="..\include\DX12\Render\Device.h" />
+    <ClInclude Include="..\include\DX12\Render\Platform\Adapter.h" />
+    <ClInclude Include="..\include\DX12\Render\Platform\DeviceDebugger.h" />
+    <ClInclude Include="..\include\DX12\Render\Polygons\Polygon.h" />
     <ClInclude Include="..\include\DX12\Render\RenderCore.h" />
     <ClInclude Include="..\include\DX12\Render\Waiter.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\backends\imgui_impl_dx12.h" />
@@ -161,16 +164,13 @@
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\source\DX12\Render\EnumConversion.h" />
     <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h" />
-    <ClInclude Include="..\source\DX12\Render\Platform\Adapter.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\CommandAllocators.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\Commander.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\CommandListPool.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\CommandQueue.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h" />
-    <ClInclude Include="..\source\DX12\Render\Platform\DeviceDebugger.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\ResourceCompiler.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h" />
-    <ClInclude Include="..\source\DX12\Render\Polygons\Polygon.h" />
     <ClInclude Include="..\source\DX12\Render\RenderStringHelpers.h" />
     <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h" />
     <ClInclude Include="..\source\DX12\Render\UI\Layer.h" />

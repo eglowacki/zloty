@@ -31,10 +31,16 @@ namespace D3D12MA
 
 namespace yaget::render
 {
+    namespace platform
+    {
+        class Adapter;
+    }
+
     class Polygon
     {
     public:
         Polygon(ID3D12Device* device, D3D12MA::Allocator* allocator, bool useTwo);
+        Polygon(const platform::Adapter& adapter, bool useTwo);
         ~Polygon();
 
         ID3D12GraphicsCommandList* Render(ID3D12GraphicsCommandList* commandList, std::function<void(ID3D12GraphicsCommandList* commandList)> setup);
