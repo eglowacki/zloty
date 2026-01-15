@@ -20,6 +20,9 @@
     <Filter Include="Source Files\Systems Files">
       <UniqueIdentifier>{aed16a1b-6ae5-47da-9499-39fb54960e6d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Renders Files">
+      <UniqueIdentifier>{c233ebc5-b498-4b16-b5bd-6b0fe8e3e4b4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -60,6 +63,24 @@
     </ClCompile>
     <ClCompile Include="source\Systems\InputSystem.cpp">
       <Filter>Source Files\Systems Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DefensorRenderCoordinator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Renders\RenderSystem.cpp">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Systems\FrameStateCollectorSystem.cpp">
+      <Filter>Source Files\Systems Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Renders\FrameStateGatherSystem.cpp">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Renders\SceneComponent.cpp">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Renders\RenderComponent.cpp">
+      <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -120,6 +141,24 @@
     </ClInclude>
     <ClInclude Include="source\Systems\InputSystem.h">
       <Filter>Source Files\Systems Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DefensorRenderCoordinator.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Renders\RenderSystem.h">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Systems\FrameStateCollectorSystem.h">
+      <Filter>Source Files\Systems Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Renders\FrameStateGatherSystem.h">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Renders\SceneComponent.h">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Renders\RenderComponent.h">
+      <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

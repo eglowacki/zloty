@@ -4,6 +4,7 @@
 #include "Render/Platform/D3D12MemAlloc.h"
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/Platform/ResourceCompiler.h"
+#include "Render/Platform/Adapter.h"
 #include "MathFacade.h"
 
 #include <d3dx12.h>
@@ -185,6 +186,13 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
 
     memcpy(bufferData, scaledTriangle.data(), verticesBufferSize);
     triangleData->Unmap(0, nullptr);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::Polygon::Polygon(const yaget::render::platform::Adapter& adapter, bool useTwo)
+    : Polygon(adapter.GetDevice(), adapter.GetAllocator(), useTwo)
+{
 }
 
 

@@ -92,7 +92,7 @@ void yaget::render::platform::CommandListPool::FreeUsed(ComPtr<ID3D12GraphicsCom
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandListPool::Handle::Handle(CommandListPool& commandPool, ComPtr<ID3D12GraphicsCommandList4> commandList, CommandQueue::Type type, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex)
-    : mCommandPool(commandPool)
+    : mCommandPool(&commandPool)
     , mCommandList(commandList)
     , mType(type)
     , mRenderTarget(renderTarget)
@@ -106,7 +106,7 @@ yaget::render::platform::CommandListPool::Handle::Handle(CommandListPool& comman
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandListPool::Handle::~Handle()
 {
-    mCommandPool.FreeUsed(mCommandList, mType);
+    mCommandPool->FreeUsed(mCommandList, mType);
 }
 
 

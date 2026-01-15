@@ -31,9 +31,20 @@ namespace yaget
         // This represents memory with size but it does not own, thus does not delete/cleanup
         using BufferView = std::pair<const char*, size_t>;
 
+        template<typename T>
+        T* cast_data(const Buffer& buffer)
+        {
+            return reinterpret_cast<T*>(buffer.first.get());
+        }
+
         inline const char* BufferPointer(const Buffer& buffer)
         {
-            return reinterpret_cast<const char*>(buffer.first.get());
+            return cast_data<const char>(buffer);
+        }
+
+        inline char* BufferPointer(Buffer& buffer)
+        {
+            return cast_data<char>(buffer);
         }
 
         inline size_t BufferSize(const Buffer& buffer)
@@ -52,6 +63,20 @@ namespace yaget
         {
             Buffer dataBuffer = CreateBuffer(size);
             std::memcpy(dataBuffer.first.get(), data, size);
+            return dataBuffer;
+        }
+
+        inline Buffer ResizeBuffer(const Buffer& buffer, size_t size)
+        {
+            if (size <= BufferSize(buffer))
+            {
+                auto retValue = buffer;
+                retValue.second = size;
+                return retValue;
+            }
+
+            Buffer dataBuffer = CreateBuffer(size);
+            std::memcpy(dataBuffer.first.get(), BufferPointer(buffer), BufferSize(buffer));
             return dataBuffer;
         }
 

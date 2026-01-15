@@ -18,6 +18,7 @@
 
 #include "YagetCore.h"
 #include "App/WindowApplication.h"
+#include "Components/GameSystem.h"
 #include "Render/Device.h"
 
 
@@ -36,15 +37,35 @@ namespace yaget::render
             }
         }
 
+        DeviceB& Device() { return mDevice; }
+        const DeviceB& Device() const { return mDevice; }
+
     private:
-        void OnResize() override { mDevice.Resize(); }
-        void OnSurfaceStateChange() override { mDevice.SurfaceStateChange(); }
+        void OnResize() override { Device().Resize(); }
+        void OnSurfaceStateChange() override { Device().SurfaceStateChange(); }
         int64_t onHandleRawInput(WindowHandle_t hWnd, uint32_t message, uint64_t wParam, int64_t lParam) override
         {
-            return mDevice.OnHandleRawInput(hWnd, message, wParam, lParam);
+            return Device().OnHandleRawInput(hWnd, message, wParam, lParam);
         }
 
         DeviceB mDevice;
+    };
+
+    template<typename CS, typename EndMarker, typename M, typename... Comp>
+    class RenderSystemApp : public comp::gs::GameSystem<CS, EndMarker, M, Comp...>
+    {
+    protected:
+        RenderSystemApp(const char* niceName, M& messaging, Application& app, yaget::comp::gs::GameSystem<CS, EndMarker, M, Comp...>::UpdateFunctor updateFunctor, CS& coordinatorSet)
+            : yaget::comp::gs::GameSystem<CS, yaget::comp::gs::GenerateEndMarker, M, Comp...>(niceName, messaging, app, updateFunctor, coordinatorSet)
+            , mApplication(static_cast<yaget::render::DesktopApplication&>(app))
+        {}
+
+        yaget::render::DeviceB& GetDevice()
+        {
+            return mApplication.Device();
+        }
+
+        yaget::render::DesktopApplication& mApplication;
     };
 
 }

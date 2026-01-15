@@ -226,11 +226,11 @@ void yaget::render::platform::CommandQueues::CommandQueueData::Flush()
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandQueues::CQ::CQ(CommandQueueData& cqData, bool finished)
-    : mCommandQueueData(cqData)
+    : mCommandQueueData(&cqData)
 {
     if (finished)
     {
-        mCommandQueueData.Flush();
+        mCommandQueueData->Flush();
     }
 }
 
@@ -238,7 +238,7 @@ yaget::render::platform::CommandQueues::CQ::CQ(CommandQueueData& cqData, bool fi
 //-------------------------------------------------------------------------------------------------
 uint64_t yaget::render::platform::CommandQueues::CQ::Signal()
 {
-    const auto signalValue = mCommandQueueData.Signal();
+    const auto signalValue = mCommandQueueData->Signal();
     return signalValue;
 }
 
@@ -246,7 +246,7 @@ uint64_t yaget::render::platform::CommandQueues::CQ::Signal()
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::CommandQueues::CQ::Wait(uint64_t signalValue) const
 {
-    mCommandQueueData.Wait(signalValue);
+    mCommandQueueData->Wait(signalValue);
 }
 
 
@@ -262,12 +262,12 @@ void yaget::render::platform::CommandQueues::CQ::Execute(ID3D12GraphicsCommandLi
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::CommandQueues::CQ::Execute(std::vector<ID3D12GraphicsCommandList4*> commands)
 {
-    mCommandQueueData.mCommandQueue->ExecuteCommandLists(static_cast<UINT>(commands.size()), (ID3D12CommandList* const*)&commands[0]);
+    mCommandQueueData->mCommandQueue->ExecuteCommandLists(static_cast<UINT>(commands.size()), (ID3D12CommandList* const*)&commands[0]);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 ID3D12CommandQueue* yaget::render::platform::CommandQueues::CQ::GetCommandQueue() const
 {
-    return mCommandQueueData.mCommandQueue.Get();
+    return mCommandQueueData->mCommandQueue.Get();
 }

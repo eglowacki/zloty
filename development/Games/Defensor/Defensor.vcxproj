@@ -145,12 +145,18 @@
     <ClCompile Include="source\Components\ScriptComponent.cpp" />
     <ClCompile Include="source\Components\UnitComponent.cpp" />
     <ClCompile Include="source\DefensorGameCoordinator.cpp" />
+    <ClCompile Include="source\DefensorRenderCoordinator.cpp" />
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\MainGame.cpp" />
+    <ClCompile Include="source\Renders\FrameStateGatherSystem.cpp" />
+    <ClCompile Include="source\Renders\RenderComponent.cpp" />
+    <ClCompile Include="source\Renders\RenderSystem.cpp" />
+    <ClCompile Include="source\Renders\SceneComponent.cpp" />
     <ClCompile Include="source\Squadron\MenuSystem.cpp" />
     <ClCompile Include="source\Squadron\PlayerSystem.cpp" />
     <ClCompile Include="source\Squadron\SquadronSystem.cpp" />
     <ClCompile Include="source\Stager\StagerSystem.cpp" />
+    <ClCompile Include="source\Systems\FrameStateCollectorSystem.cpp" />
     <ClCompile Include="source\Systems\InputSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -179,12 +185,18 @@
     <ClInclude Include="source\Components\UnitComponent.h" />
     <ClInclude Include="source\DefensorGameCoordinator.h" />
     <ClInclude Include="source\DefensorGameTypes.h" />
+    <ClInclude Include="source\DefensorRenderCoordinator.h" />
     <ClInclude Include="source\DefensorRenderTypes.h" />
     <ClInclude Include="source\MainGame.h" />
+    <ClInclude Include="source\Renders\FrameStateGatherSystem.h" />
+    <ClInclude Include="source\Renders\RenderComponent.h" />
+    <ClInclude Include="source\Renders\RenderSystem.h" />
+    <ClInclude Include="source\Renders\SceneComponent.h" />
     <ClInclude Include="source\Squadron\MenuSystem.h" />
     <ClInclude Include="source\Squadron\PlayerSystem.h" />
     <ClInclude Include="source\Squadron\SquadronSystem.h" />
     <ClInclude Include="source\Stager\StagerSystem.h" />
+    <ClInclude Include="source\Systems\FrameStateCollectorSystem.h" />
     <ClInclude Include="source\Systems\InputSystem.h" />
   </ItemGroup>
   <ItemGroup>
