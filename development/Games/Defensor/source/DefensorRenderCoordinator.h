@@ -28,7 +28,7 @@ namespace defensor::render
     {
      public:
         DefensorSystemsCoordinator(Messaging& m, yaget::Application& app);
-        ~DefensorSystemsCoordinator();// = default;
+        ~DefensorSystemsCoordinator();
 
     private:
         yaget::render::DesktopApplication& mApplication;

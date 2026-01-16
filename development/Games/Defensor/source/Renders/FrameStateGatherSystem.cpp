@@ -22,8 +22,6 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(yaget::comp::Id_t id, co
 
         if (auto payload = mMessaging.ConsumePayload())
         {
-            //using EntityState = game::EntityState;
-
             auto entityState = io::cast_data<render::EntityState>(payload->mBuffer);
             for (auto i = 0; i < payload->mNumEntities; ++i)
             {
@@ -40,14 +38,6 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(yaget::comp::Id_t id, co
                     return e.mId;
                 }) | 
                 std::ranges::to<std::set>();
-
-            //std::map<comp::Id_t, game::EntityState> newFrameRenderEntities = 
-            //    sceneComponent->mEntities | 
-            //    std::views::transform([](const auto& e)
-            //    {
-            //        return std::make_pair(e.mId, e);
-            //    }) | 
-            //    std::ranges::to<std::map>();
 
             auto& coordinator = GetCS().GetCoordinator<RenderEntity>();
             auto oldFrameRenderIds = coordinator.GetItemIds<RenderEntity>();
@@ -72,6 +62,7 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(yaget::comp::Id_t id, co
     }
 }
 
+
 //-------------------------------------------------------------------------------------------------
 defensor::render::FrameStateClearSystem::FrameStateClearSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
     : GameSystem("FrameStateClearSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
@@ -92,4 +83,3 @@ void defensor::render::FrameStateClearSystem::OnUpdate(yaget::comp::Id_t id, con
         sceneComponent->mEntities = {};
     }
 }
-

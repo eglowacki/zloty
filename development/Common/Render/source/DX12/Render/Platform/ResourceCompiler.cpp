@@ -42,7 +42,7 @@ yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const cha
 #endif // YAGET_DEBUG_RENDER == 1
 
         ComPtr<ID3DBlob> error;
-        const HRESULT hr = ::D3DCompile(data.first, data.second, nullptr, nullptr, nullptr, entryName, target, compileFlags, 0, &mShaderBlob, &error);
+        const HRESULT hr = ::D3DCompile(io::BufferPointer(data), io::BufferSize(data), nullptr, nullptr, nullptr, entryName, target, compileFlags, 0, &mShaderBlob, &error);
         error_handlers::ThrowOnError(hr, fmt::format("Could not compile shader with entry point: '{}' and target: '{}'. {}", entryName, target, (error ? static_cast<const char*>(error->GetBufferPointer()) : "")));
     }
 }
