@@ -152,28 +152,16 @@ yaget::render::Polygon::Polygon(ID3D12Device* device, D3D12MA::Allocator* alloca
     for (auto i = 0; i < numTriangles; ++i)
     {
         auto selectedVertex0 = useTwo ? vertices2[0] : vertices[0];
-        selectedVertex0.position.x *= scale;
-        selectedVertex0.position.y *= scale;
-        selectedVertex0.position.z *= scale;
-        selectedVertex0.position.x += offset.x;
-        selectedVertex0.position.y += offset.y;
-        selectedVertex0.position.z += offset.z;
+        selectedVertex0.position = math3d::Vector3(selectedVertex0.position) *= scale;
+        selectedVertex0.position = math3d::Vector3(selectedVertex0.position) += offset;
 
         auto selectedVertex1 = useTwo ? vertices2[1] : vertices[1];
-        selectedVertex1.position.x *= scale;
-        selectedVertex1.position.y *= scale;
-        selectedVertex1.position.z *= scale;
-        selectedVertex1.position.x += offset.x;
-        selectedVertex1.position.y += offset.y;
-        selectedVertex1.position.z += offset.z;
+        selectedVertex1.position = math3d::Vector3(selectedVertex1.position) *= scale;
+        selectedVertex1.position = math3d::Vector3(selectedVertex1.position) += offset;
 
         auto selectedVertex2 = useTwo ? vertices2[2] : vertices[2];
-        selectedVertex2.position.x *= scale;
-        selectedVertex2.position.y *= scale;
-        selectedVertex2.position.z *= scale;
-        selectedVertex2.position.x += offset.x;
-        selectedVertex2.position.y += offset.y;
-        selectedVertex2.position.z += offset.z;
+        selectedVertex2.position = math3d::Vector3(selectedVertex2.position) *= scale;
+        selectedVertex2.position = math3d::Vector3(selectedVertex2.position) += offset;
 
         scaledTriangle.push_back(selectedVertex0);
         scaledTriangle.push_back(selectedVertex1);
