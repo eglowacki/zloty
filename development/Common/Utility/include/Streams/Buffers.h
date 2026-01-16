@@ -52,6 +52,23 @@ namespace yaget
             return buffer.second;
         }
 
+        template<typename T>
+        const T* cast_data(const BufferView& buffer)
+        {
+            return reinterpret_cast<const T*>(buffer.first);
+        }
+
+        inline const char* BufferPointer(const BufferView& buffer)
+        {
+            return cast_data<const char>(buffer);
+        }
+
+        inline size_t BufferSize(const BufferView& buffer)
+        {
+            return buffer.second;
+        }
+
+
         //! Helper to create Buffer of size
         inline Buffer CreateBuffer(size_t size)
         {
