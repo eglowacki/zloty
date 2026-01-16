@@ -81,7 +81,13 @@ namespace
     using Entity = comp::RowPolicy<AComponent*, BComponent*, CComponent*, DComponent*, items::StageComponent*>;
     using EntityCoordinator = comp::Coordinator<Entity>;
     using GameCoordinatorSet = comp::CoordinatorSet<EntityCoordinator>;
-    using StagerSystem = items::StagerSystem<GameCoordinatorSet, Messaging>;
+    class StagerSystem : public items::StagerSystem<GameCoordinatorSet, Messaging>
+    {
+    public:
+        StagerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
+            : yaget::items::StagerSystem<GameCoordinatorSet, Messaging>("TestStagerSystem", messaging, app, coordinatorSet)
+        {}
+    };
 
     using SystemsCoordinator = comp::gs::SystemsCoordinator<GameCoordinatorSet, Messaging, Application, StagerSystem>;
 

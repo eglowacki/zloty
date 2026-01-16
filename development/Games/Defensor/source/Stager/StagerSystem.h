@@ -20,15 +20,12 @@
 
 namespace defensor::game
 {
-    //using DefensorStagerSystem = yaget::items::StagerSystem<GameCoordinatorSet, Messaging>;
-
     class DefensorStagerSystem : public yaget::items::StagerSystem<GameCoordinatorSet, Messaging>
     {
     public:
         DefensorStagerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-            : yaget::items::StagerSystem<GameCoordinatorSet, Messaging>(messaging, app, coordinatorSet)
+            : yaget::items::StagerSystem<GameCoordinatorSet, Messaging>("DefensorStagerSystem", messaging, app, coordinatorSet)
         {}
     };
-
 
 }

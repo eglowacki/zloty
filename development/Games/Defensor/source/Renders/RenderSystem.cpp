@@ -5,7 +5,7 @@
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
-    : RenderSystemApp("SquadronSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+    : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
 {
 }
@@ -42,6 +42,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             {
                 auto renderComponent = std::get<RenderComponent*>(row);
                 renderComponent->mMatrix = math3d::Matrix(data->mMatrix);
+
+                //YLOG_DEBUG("GSYS", "============ Player Position: '%f'", renderComponent->mMatrix.Translation().x);
             }
 
             return true;

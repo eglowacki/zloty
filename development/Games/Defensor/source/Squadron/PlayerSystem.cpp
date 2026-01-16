@@ -42,5 +42,5 @@ void defensor::game::PlayerSystem::OnUpdate(yaget::comp::Id_t id, const yaget::t
         locationComponent->SetValue<comp::db_location::Position>(position);
     }
 
-    YLOG_DEBUG("GSYS", "============ Player Position: '%f'", locationComponent->GetValue<comp::db_location::Position>().x);
+    //YLOG_DEBUG("GSYS", "============ Player Position: '%f'", locationComponent->GetValue<comp::db_location::Position>().x);
 }
