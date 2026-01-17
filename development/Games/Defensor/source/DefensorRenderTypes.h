@@ -28,7 +28,8 @@ namespace defensor::render
     {
         yaget::comp::Id_t mId = comp::INVALID_ID;
         float mMatrix[16] = {};
-    };
+        io::Tag mAsset;
+    };  
     //--------------------------------------------------------------------------
 
 }

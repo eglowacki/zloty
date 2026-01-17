@@ -1,21 +1,21 @@
 ﻿#include "Renders/RenderComponent.h"
 #include "Render/Platform/Adapter.h"
-#include "Render/Polygons/Polygon.h"
+#include "VTS/VirtualTransportSystem.h"
 #include <d3d12.h>
 
 
-defensor::render::RenderComponent::RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const yaget::render::platform::Adapter& adapter)
+defensor::render::RenderComponent::RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& assetTag, io::VirtualTransportSystem& vts, const yaget::render::platform::Adapter& adapter)
     : BaseComponent(id)
     , mMatrix(matrix)
-    , mPolygon(std::make_unique<yaget::render::Polygon>(adapter.GetDevice(), adapter.GetAllocator(), false /*useTwo*/))
+    , mRenderShape(adapter.GetAllocator(), assetTag, vts)
 {
 }
 
-defensor::render::RenderComponent::~RenderComponent()
-{
-}
 
-void defensor::render::RenderComponent::Render(ID3D12GraphicsCommandList* commandList)
+defensor::render::RenderComponent::~RenderComponent() = default;
+
+
+void defensor::render::RenderComponent::Render(ID3D12GraphicsCommandList* commandList) const
 {
-    mPolygon->Render(commandList, {});
+    mRenderShape.Render(commandList);
 }

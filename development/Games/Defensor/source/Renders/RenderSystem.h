@@ -14,6 +14,8 @@
 #pragma once
 
 #include "DefensorGameTypes.h"
+#include "RenderPipeline.h"
+#include "Renders/RenderSignatures.h"
 #include "Math/Interpolators.h"
 #include "Render/DesktopApplication.h"
 
@@ -33,6 +35,8 @@ namespace defensor::render
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, RenderComponent* renderComponent, SceneComponent* sceneComponent);
 
         math3d::Interpolator mColorInterpolator;
+        RenderSignatures mRenderSignatures;
+        RenderPipeline mRenderPipeline;
     };
 
 }

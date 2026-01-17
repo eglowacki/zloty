@@ -79,7 +79,13 @@
     <ClCompile Include="source\Renders\SceneComponent.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\Renders\RenderSignatures.cpp">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClCompile>
     <ClCompile Include="source\Renders\RenderComponent.cpp">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Renders\RenderPipeline.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -158,6 +164,12 @@
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Renders\RenderComponent.h">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Renders\RenderSignatures.h">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Renders\RenderPipeline.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
   </ItemGroup>

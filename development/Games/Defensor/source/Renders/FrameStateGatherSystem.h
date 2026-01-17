@@ -21,7 +21,7 @@
 
 namespace defensor::render
 {
-    // thisd should be first system in Coordinator setup
+    // this should be first system in Coordinator setup
     class FrameStateGatherSystem : public yaget::render::RenderSystemApp<RenderCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, SceneComponent*>
     {
     public:
@@ -32,7 +32,7 @@ namespace defensor::render
     };
 
 
-    // thisd should be last system in Coordinator setup
+    // this should be last system in Coordinator setup
     class FrameStateClearSystem : public comp::gs::GameSystem<RenderCoordinatorSet, comp::gs::GenerateEndMarker, defensor::game::Messaging, SceneComponent*>
     {
     public:

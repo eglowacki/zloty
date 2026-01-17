@@ -1,16 +1,14 @@
-#include "Render/Device.h"
 #include "App/AppUtilities.h"
-#include "Debugging/DevConfiguration.h"
 #include "Metrics/Concurrency.h"
-#include "Render/Platform/Adapter.h"
+#include "Render/Device.h"
 #include "Render/Metrics/RenderMetrics.h"
+#include "Render/Platform/Adapter.h"
 #include "Render/Platform/CommandAllocators.h"
 #include "Render/Platform/CommandListPool.h"
+#include "Render/Platform/CommandQueue.h"
 #include "Render/Platform/SwapChain.h"
-#include "Render/Polygons/Polygon.h"
 #include "StringHelpers.h"
 #include "Time/GameClock.h"
-#include "Render/Platform/CommandQueue.h"
 #include <d3d12.h>
 
 
@@ -142,32 +140,10 @@ void yaget::render::DeviceB::Shutdown()
 }
 
 
-//    //auto commandHandleA = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator, renderTarget, descriptorHeap, frameIndex);
-//    //commandHandleA.TransitionToRenderTarget();
-//    //commandHandleA.ClearRenderTarget(color);
-//
-//    //mPolygon->Render(commandHandleA, {});
-//
-//    //commandHandleA.TransitionToPresent(true /*closeCommand*/);
-//
-//    //auto commandHandleB = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator, renderTarget, descriptorHeap, frameIndex);
-//    //commandHandleB.TransitionToRenderTarget();
-//
-//    //mPolygon2->Render(commandHandleB, {});
-//
-//    //commandHandleB.TransitionToPresent(true /*closeCommand*/);
-//
-//    //commandQueue.Execute({ commandHandleA, commandHandleB });
-//    ////commandQueue.Execute(commandHandleA);
-//    //mFrameFenceValues[frameIndex] = commandQueue.Signal();
-//
-//    //mSwapChain->Present(gameClock, channel);
-
-
 //-------------------------------------------------------------------------------------------------
 yaget::render::DeviceB::FramerHandle yaget::render::DeviceB::GetFramerHandle(const time::GameClock& gameClock, metrics::Channel& channel, const colors::Color* color)
 {
-    return FramerHandle(gameClock, channel, *this, color);
+    return { gameClock, channel, *this, color };
 }
 
 

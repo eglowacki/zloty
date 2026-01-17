@@ -12,7 +12,7 @@ defensor::render::FrameStateGatherSystem::FrameStateGatherSystem(Messaging& mess
 //-------------------------------------------------------------------------------------------------
 void defensor::render::FrameStateGatherSystem::OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, SceneComponent* sceneComponent)
 {
-    gameClock; channel; sceneComponent;
+    gameClock; channel;
 
     if (id == comp::END_ID_MARKER)
     {
@@ -46,12 +46,14 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(yaget::comp::Id_t id, co
             std::ranges::set_difference(newFrameRenderIds, oldFrameRenderIds, std::inserter(newIds, newIds.end())); 
             std::ranges::set_difference(oldFrameRenderIds, newFrameRenderIds, std::inserter(deletedIds, deletedIds.end())); 
 
+            auto& vts = mApplication.VTS();
             auto& device = GetDevice();
             const auto& adapter = device.GetAdapter();
-            std::ranges::for_each(newIds, [this, sceneComponent, &adapter](const auto& id)
+            std::ranges::for_each(newIds, [this, sceneComponent, &adapter, &vts](const auto& id)
             {
                 auto data = sceneComponent->FindState(id);
-                GetCS().AddComponent<RenderComponent>(id, math3d::Matrix(data->mMatrix), adapter);
+
+                GetCS().AddComponent<RenderComponent>(id, math3d::Matrix(data->mMatrix), data->mAsset, vts, adapter);
             });
 
             std::ranges::for_each(deletedIds, [this](const auto& id)

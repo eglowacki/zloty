@@ -97,9 +97,6 @@
     <ClInclude Include="..\source\DX12\Render\Platform\Commander.h">
       <Filter>Source Files\Platform Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\DX12\Render\Platform\ResourceCompiler.h">
-      <Filter>Source Files\Platform Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\DX12\Render\Platform\CommandListPool.h">
       <Filter>Source Files\Platform Files</Filter>
     </ClInclude>
@@ -115,8 +112,11 @@
     <ClInclude Include="..\include\DX12\Render\Platform\DeviceDebugger.h">
       <Filter>Source Files\Platform Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\DX12\Render\Polygons\Polygon.h">
+    <ClInclude Include="..\include\DX12\Render\Polygons\RenderShape.h">
       <Filter>Source Files\Polygons Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Platform\ResourceCompiler.h">
+      <Filter>Source Files\Platform Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -171,9 +171,6 @@
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp">
       <Filter>Source Files\Application Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\DX12\Render\Polygons\Polygon.cpp">
-      <Filter>Source Files\Polygons Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\DX12\Render\RenderStringHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -194,6 +191,9 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Platform\CommandAllocators.cpp">
       <Filter>Source Files\Platform Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Polygons\RenderShape.cpp">
+      <Filter>Source Files\Polygons Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
