@@ -6,7 +6,11 @@
 //  Maintained by: Edgar
 //
 //  NOTES:
-//
+//      This system collects data from logic/game thread and packages into 
+//      MessagingPayload structure, which then get's used by Reder thread
+//      to actually render the geometry representing that particular
+//      asset (item/entity). There are stuctures like render::EntityState
+//      that provide interface for marshaling data between threads.
 //
 //  #include "Systems/FrameStateCollectorSystem.h"
 //
@@ -14,8 +18,6 @@
 //! \file
 #pragma once
 
-
-#include "Components/GameSystem.h"
 #include "DefensorGameTypes.h"
 
 namespace defensor::game

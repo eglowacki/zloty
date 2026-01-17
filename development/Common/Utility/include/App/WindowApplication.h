@@ -20,11 +20,8 @@
 
 namespace yaget
 {
-    // NOTE: EG: This should be unique_ptr but since compiler update, it error's out with unique
-    // using shared until I can revisit this and figure out how to properly fix this.
-    // https://github.com/eglowacki/zloty/issues/47#issue-1339365812
     template <typename T>
-    using ManagedPointer = std::shared_ptr<T>;
+    using ManagedPointer = std::unique_ptr<T>;
 
     namespace app { class ProcHandler; }
     namespace io { class VirtualTransportSystem; }
@@ -33,6 +30,7 @@ namespace yaget
     {
     public:
         WindowApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
+        ~WindowApplication();
 
         app::DisplaySurface GetSurface() const override;
 

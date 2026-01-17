@@ -20,7 +20,6 @@
 namespace yaget::render 
 {
     class DeviceB; 
-    //class DesktopApplication; 
 }
 
 namespace defensor::render
