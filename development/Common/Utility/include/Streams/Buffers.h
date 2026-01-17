@@ -37,6 +37,12 @@ namespace yaget
             return reinterpret_cast<T*>(buffer.first.get());
         }
 
+        template<typename T>
+        size_t size_data(const T& buffer)
+        {
+            return buffer.second;
+        }
+
         inline const char* BufferPointer(const Buffer& buffer)
         {
             return cast_data<const char>(buffer);

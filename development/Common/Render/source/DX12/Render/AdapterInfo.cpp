@@ -377,6 +377,9 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
     auto bindingTier = featureSupport.ResourceBindingTier();
     optionsText += "    " + conv::Convertor<D3D12_RESOURCE_BINDING_TIER>::ToString(bindingTier) + "\n";
 
+    auto heapTier = featureSupport.ResourceHeapTier();
+    optionsText += "    " + conv::Convertor<D3D12_RESOURCE_HEAP_TIER>::ToString(heapTier) + "\n";
+
     auto maxFeatureLevel = featureSupport.MaxSupportedFeatureLevel();
     optionsText += "    " + conv::Convertor<D3D_FEATURE_LEVEL>::ToString(maxFeatureLevel) + "\n";
 

@@ -1,6 +1,5 @@
 #include "Render/Platform/SwapChain.h"
 #include "StringHelpers.h"
-#include "Render/Polygons/Polygon.h"
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/Metrics/RenderMetrics.h"
 #include "Render/AdapterInfo.h"

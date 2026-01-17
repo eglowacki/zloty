@@ -70,6 +70,17 @@ namespace yaget::conv
 
     //-------------------------------------------------------------------------------------------------
     template <>
+    struct Convertor<D3D12_RESOURCE_HEAP_TIER>
+    {
+        static std::string ToString(D3D12_RESOURCE_HEAP_TIER value)
+        {
+            return "Resource Heap:Tier:    " + std::to_string(static_cast<int>(value));
+        }          
+    };
+
+
+    //-------------------------------------------------------------------------------------------------
+    template <>
     struct Convertor<D3D_SHADER_MODEL>
     {
         static std::string ToString(D3D_SHADER_MODEL value)
