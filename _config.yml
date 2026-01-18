@@ -1,1 +1,9 @@
-theme: jekyll-theme-merlot
+# Site settings
+title: YAGET
+author:
+  name: Edgar
+  email: edgar_glowacki@yahoo.com
+description: "Yet Another Game Engine Technolodgy."
+
+# Build settings
+remote_theme: jekyll/minima
