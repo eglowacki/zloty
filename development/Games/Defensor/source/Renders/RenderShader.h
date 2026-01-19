@@ -17,6 +17,7 @@
 #include "Render/RenderCore.h"
 #include "Streams/Buffers.h"
 #include "VTS/VirtualTransportSystem.h"
+#include "Render/Cache/AssetCache.h"
 #include "Streams/Buffers.h"
 
 
@@ -24,33 +25,33 @@ namespace defensor::render
 {
     using namespace yaget;
 
-    //-------------------------------------------------------------------------------------------------
-    class ShaderCache
-    {
-    public:
-        ShaderCache(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
-        ~ShaderCache();
+    ////-------------------------------------------------------------------------------------------------
+    //class ShaderCache
+    //{
+    //public:
+    //    ShaderCache(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
+    //    ~ShaderCache();
 
-        io::Buffer GetShader(const io::Tag& tag) const;
-        void SaveShader(const io::Tag& tag, io::Buffer buffer);
+    //    io::Buffer GetShader(const io::Tag& tag) const;
+    //    void SaveShader(const io::Tag& tag, io::Buffer buffer);
 
-    private:
-        io::VirtualTransportSystem& mVTS;
-        size_t mCacheHash{};
+    //private:
+    //    io::VirtualTransportSystem& mVTS;
+    //    size_t mCacheHash{};
 
-        // map of where the blob of dats is located (.second - offset)
-        // wirhin mCache
-        struct Location
-        {
-            size_t mOffset{};
-            size_t mSize{};
-        };
-        std::map<Guid, Location> mCacheIndex;
-        io::MessagingBuffer mCache;
-        bool mCacheDirty = false;
+    //    // map of where the blob of dats is located (.second - offset)
+    //    // wirhin mCache
+    //    struct Location
+    //    {
+    //        size_t mOffset{};
+    //        size_t mSize{};
+    //    };
+    //    std::map<Guid, Location> mCacheIndex;
+    //    io::MessagingBuffer mCache;
+    //    bool mCacheDirty = false;
 
-        io::VirtualTransportSystem::Section mCacheSection;
-    };
+    //    io::VirtualTransportSystem::Section mCacheSection;
+    //};
 
 
     //-------------------------------------------------------------------------------------------------
@@ -77,6 +78,7 @@ namespace defensor::render
         std::map<io::Tag, io::Buffer> mShaders;
         io::VirtualTransportSystem& mVTS;
 
-        ShaderCache mShaderCache;
+        yaget::render::AssetCache mCache;
     };
+
 }

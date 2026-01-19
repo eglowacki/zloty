@@ -32,6 +32,9 @@
     <Filter Include="Source Files\Metrics Files">
       <UniqueIdentifier>{bbe02cd5-26d0-435a-876d-efdc6c28efcf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Cache Files">
+      <UniqueIdentifier>{c0e866b1-5fb6-4db7-a5ab-92de5800c5ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\Device.h">
@@ -118,6 +121,9 @@
     <ClInclude Include="..\include\DX12\Render\Platform\ResourceCompiler.h">
       <Filter>Source Files\Platform Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Cache\AssetCache.h">
+      <Filter>Source Files\Cache Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -194,6 +200,9 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Polygons\RenderShape.cpp">
       <Filter>Source Files\Polygons Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Cache\AssetCache.cpp">
+      <Filter>Source Files\Cache Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

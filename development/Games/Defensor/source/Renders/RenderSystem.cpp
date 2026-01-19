@@ -24,14 +24,35 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
     , mAssetPoolThread("PreloadRenderAssets", 1)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
-    , mRenderSignatures(GetDevice().GetAdapter().GetDevice())
-    , mRenderPipeline(GetDevice().GetAdapter().GetDevice())
+    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS())
+    , mRenderPipeline(GetDevice().GetAdapter().GetDevice(), app.VTS())
     , mRenderShader(app.VTS())
 {
     mAssetPoolThread.AddTask([this]()
     {
         PreloadAssets();
     });
+}
+
+
+namespace
+{
+    std::array<float, 16> GetMatrixAsFloats(const math3d::Matrix& matrix)
+    {
+                const auto kMatrixSize = 4;
+        
+                std::array<float, 16> floatMatrix;
+                //std::ranges::fill(matrix, 1.0f);
+                for (auto r = 0; r < kMatrixSize; ++r)
+                {
+                    for (auto c = 0; c < kMatrixSize; ++c)
+                    {
+                        floatMatrix[r * kMatrixSize + c] = matrix(r, c);
+                    }
+                }
+
+        return floatMatrix;
+    }
 }
 
 
@@ -66,15 +87,11 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         auto vertexShaderTag = vts.GetTag(vertexSection);
         auto pixelShaderTag = vts.GetTag(pixelSection);
 
-        //static auto vertexGuid = NewGuid();
-        //static auto shaderGuid = NewGuid();
-        //io::Tag vertexShaderTag{ "EmbeddedVertexShader", vertexGuid };
-        //io::Tag pixelShaderTag{ "EmbeddedPixelShader", shaderGuid };
         auto vertexShaderBuffer = mRenderShader.GetShader(vertexShaderTag, RenderShader::ShaderType::Vertex);
         auto pixelShaderBuffer = mRenderShader.GetShader(pixelShaderTag, RenderShader::ShaderType::Pixel);
 
         uint64_t pipeFlag = sigFlag;
-        conv::hash_combine(pipeFlag, vertexShaderTag.Hash(), pixelShaderTag.Hash());
+        //conv::hash_combine(pipeFlag, vertexShaderTag.Hash(), pixelShaderTag.Hash());
         auto pipe = mRenderPipeline.GetPipeline(pipeFlag, rootSig, vertexShaderBuffer, pixelShaderBuffer);
 
         commandList->SetGraphicsRootSignature(rootSig);
@@ -83,6 +100,15 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         coordinator.ForEach<RenderEntity>([commandList](comp::Id_t /*id*/, const auto& row)
         {
             auto renderComponent = std::get<RenderComponent*>(row);
+            const auto location = renderComponent->mMatrix;
+
+            auto matrix = GetMatrixAsFloats(location);
+            std::ranges::fill(matrix, 0.2f);
+
+            commandList->SetGraphicsRoot32BitConstants(0,       // RootParameterIndex
+                                                       16,      // Num32BitValuesToSet
+                                                       matrix.data(),  // pSrcData
+                                                       0); // DestOffsetIn32BitValues
             renderComponent->Render(commandList);
 
             return true;
