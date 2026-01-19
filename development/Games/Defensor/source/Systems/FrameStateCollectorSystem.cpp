@@ -44,7 +44,7 @@ void defensor::game::FrameStateCollectorSystem::OnUpdate(yaget::comp::Id_t id, c
             }
         }
 
-        mCurrentFrameState->WriteDataChunk(entityState);
+        mCurrentFrameState->WriteDataChunk(&entityState, sizeof(entityState));
     }
 }
 

@@ -263,7 +263,7 @@ void yaget::io::FileLoader::Load(const Strings& filePathList, const std::vector<
         metrics::Channel channel(fmt::format("FileLoader got '{}' files", filePathList.size()));
 
         auto callback = doneCallbacks.begin();
-        const bool isOneCallback = doneCallbacks.size() == filePathList.size() ? false : true;
+        const bool isOneCallback = doneCallbacks.size() != filePathList.size();
         for (const auto& it : filePathList)
         {
             YAGET_ASSERT(io::file::IsFileExists(it), "File: '%s' does not exist.", it.c_str());

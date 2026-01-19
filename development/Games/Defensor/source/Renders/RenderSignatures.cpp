@@ -28,15 +28,18 @@ namespace
 }
 
 
+//-------------------------------------------------------------------------------------------------
 defensor::render::RenderSignatures::RenderSignatures(ID3D12Device* device)
     : mDevice(device)
 {
 }
 
 
+//-------------------------------------------------------------------------------------------------
 defensor::render::RenderSignatures::~RenderSignatures() = default;
 
 
+//-------------------------------------------------------------------------------------------------
 ID3D12RootSignature* defensor::render::RenderSignatures::GetSignature(uint64_t sigType)
 {
     if (auto it = mSignatures.find(sigType); it != mSignatures.end())

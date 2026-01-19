@@ -55,7 +55,7 @@ namespace yaget
             bool operator <(const Asset& rhs) const { return mTag < rhs.mTag; }
 
         protected:
-            Asset(const io::Tag& tag, io::Buffer buffer, const VirtualTransportSystem& vts) : mTag(tag), mBuffer(buffer), mVTS(vts) {}
+            Asset(const io::Tag& tag, const io::Buffer& buffer, const VirtualTransportSystem& vts) : mTag(tag), mBuffer(buffer), mVTS(vts) {}
 
             bool mValid = true;
             const VirtualTransportSystem& mVTS;

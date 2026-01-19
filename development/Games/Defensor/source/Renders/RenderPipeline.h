@@ -14,6 +14,7 @@
 #pragma once
 
 #include "Render/RenderCore.h"
+#include "Streams/Buffers.h"
 
 struct ID3D12PipelineState;
 struct ID3D12RootSignature;
@@ -22,13 +23,15 @@ struct ID3D12Device;
 
 namespace defensor::render
 {
+    using namespace yaget;
+
     class RenderPipeline
     {
     public:
         RenderPipeline(ID3D12Device* device);
         ~RenderPipeline();
 
-        ID3D12PipelineState* GetPipeline(uint64_t pipeType, ID3D12RootSignature* rootSignature);
+        ID3D12PipelineState* GetPipeline(uint64_t pipeType, ID3D12RootSignature* rootSignature, io::Buffer vertexShaderBuffer, io::Buffer pixelShaderBuffer);
 
     private:
         ID3D12Device* mDevice = {};

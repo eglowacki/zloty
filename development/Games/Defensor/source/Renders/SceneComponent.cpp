@@ -2,11 +2,14 @@
 #include <ranges>
 
 
+//-------------------------------------------------------------------------------------------------
 defensor::render::SceneComponent::SceneComponent(comp::Id_t id)
     : BaseComponent(id)
 {
 }
 
+
+//-------------------------------------------------------------------------------------------------
 const defensor::render::EntityState* defensor::render::SceneComponent::FindState(comp::Id_t id) const
 {
     const auto result = std::ranges::find_if(mEntities, [id](const auto& element)
@@ -18,6 +21,7 @@ const defensor::render::EntityState* defensor::render::SceneComponent::FindState
 }
 
 
+//-------------------------------------------------------------------------------------------------
 yaget::comp::ItemIds defensor::render::SceneComponent::GetIds() const
 {
     comp::ItemIds ids = 

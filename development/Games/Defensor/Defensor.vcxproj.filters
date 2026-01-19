@@ -23,6 +23,9 @@
     <Filter Include="Source Files\Renders Files">
       <UniqueIdentifier>{c233ebc5-b498-4b16-b5bd-6b0fe8e3e4b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\Shaders">
+      <UniqueIdentifier>{7892a253-a1eb-4377-b7ec-211dd4bd5500}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -88,6 +91,9 @@
     <ClCompile Include="source\Renders\RenderPipeline.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\Renders\RenderShader.cpp">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Defensor.deployment">
@@ -103,6 +109,12 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\PlayerTest.pers">
       <Filter>Data Files</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\Basic.ps">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\Basic.vs">
+      <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +182,9 @@
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Renders\RenderPipeline.h">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Renders\RenderShader.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
   </ItemGroup>

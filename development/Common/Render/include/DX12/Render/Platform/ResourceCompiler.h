@@ -25,10 +25,10 @@ namespace yaget::render
     {
     public:
         ResourceCompiler(io::BufferView data, const char* entryName, const char* target, bool useNewestCompiler);
-        ID3D10Blob* GetCompiled() const;
+        io::Buffer GetCompiled() const;
 
     private:
-        ComPtr<ID3D10Blob> mShaderBlob;
+        io::Buffer mBinaryBlob;
     };
 
 
