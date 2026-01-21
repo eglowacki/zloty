@@ -15,28 +15,21 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
-//#include "Components/SystemsCoordinator.h"
-#include "GameSystem/Messaging.h"
+#include "Components/ComponentTypes.h"
 
 namespace defensor::render
 {
-    //using Messaging = comp::gs::Messaging<std::shared_ptr<char>>;
+    using namespace yaget;
 
-    //struct EditorComponent { static constexpr int Capacity = 64; };
-    //struct EmptyComponent { static constexpr int Capacity = 64; };
-    //struct BlankComponent { static constexpr int Capacity = 64; };
-    //struct RenderComponent { static constexpr int Capacity = 64; };
+    //--------------------------------------------------------------------------
+    // used in entity scene composition for renderer. This is filled in
+    // from game thread and comsumed by render thread
+    struct EntityState
+    {
+        yaget::comp::Id_t mId = comp::INVALID_ID;
+        float mMatrix[16] = {};
+        io::Tag mAsset;
+    };  
+    //--------------------------------------------------------------------------
 
-    //using RenderEntity = comp::GlobalRowPolicy<RenderComponent*>;
-
-    //using GlobalEntity = comp::GlobalRowPolicy<EditorComponent*>;
-    //using Entity = comp::RowPolicy<EmptyComponent*, BlankComponent*>;
-
-    //using GlobalCoordinator = comp::Coordinator<GlobalEntity>;
-    //using EntityCoordinator = comp::Coordinator<Entity>;
-    //using EditorGameCoordinatorSet = comp::CoordinatorSet<GlobalCoordinator, EntityCoordinator>;
-
-    //using RenderCoordinator = comp::Coordinator<RenderEntity>;
-    //using RenderCoordinatorSet = comp::CoordinatorSet<RenderCoordinator>;
 }

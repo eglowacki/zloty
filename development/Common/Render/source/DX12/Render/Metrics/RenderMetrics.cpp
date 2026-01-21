@@ -41,7 +41,7 @@
 //-------------------------------------------------------------------------------------------------
 void yaget::metrics::render::LoadWinPixGpuCapturer()
 {
-    PIXLoadLatestWinPixGpuCapturerLibrary();
+    //PIXLoadLatestWinPixGpuCapturerLibrary();
     //if (GetModuleHandle(L"WinPixGpuCapturer.dll") == 0)
     //{
     //    LoadLibrary(GetLatestWinPixGpuCapturerPath().c_str());

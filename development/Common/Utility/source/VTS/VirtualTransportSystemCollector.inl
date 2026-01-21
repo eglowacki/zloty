@@ -1,8 +1,9 @@
 //VirtualTransportSystemCollector.inl
 
 #include "HashUtilities.h"
-
+#include "App/FileUtilities.h"
 #include "Core/ErrorHandlers.h"
+#include "Debugging/DevConfiguration.h"
 
 namespace
 {
@@ -463,11 +464,10 @@ namespace
 
 		if (reset)
 		{
-			std::error_code ec;
-			std::uintmax_t result = fs::remove(fs::path(fileName), ec);
-			if (result == static_cast<std::uintmax_t>(-1) || result == 0)
+			const auto& [result, errorMessage] = yaget::io::file::RemoveFile(fileName);
+			if (!result)
 			{
-				const std::string message = fmt::format("Delete database file '{}' from disk failed with error: '{}: {}'.", fileName, ec.value(), ec.message());
+				const std::string message = fmt::format("Delete database file '{}' from disk failed with error: '{}'.", fileName, errorMessage);
 				yaget::error_handlers::Throw("VTS", message);
 			}
 		}

@@ -22,11 +22,12 @@
 #include "Squadron/SquadronSystem.h"
 #include "Stager/StagerSystem.h"
 #include "Systems/InputSystem.h"
+#include "Systems/FrameStateCollectorSystem.h"
 
 
 namespace defensor::game
 {
-    class DefensorSystemsCoordinator : public yaget::comp::gs::SystemsCoordinator<GameCoordinatorSet, Messaging, Application, ProcessInputSystem, MenuSystem, PlayerSystem, SquadronSystem, DefensorStagerSystem, ClearInputSystem>
+    class DefensorSystemsCoordinator : public yaget::comp::gs::SystemsCoordinator<GameCoordinatorSet, Messaging, Application, ProcessInputSystem, MenuSystem, PlayerSystem, SquadronSystem, DefensorStagerSystem, ClearInputSystem, FrameStateCollectorSystem>
     {
     public:
         DefensorSystemsCoordinator(Messaging& m, Application& app);

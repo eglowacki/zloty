@@ -1,12 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
-    <Import Project="yaget.flatbuffers.props" />
-    <Import Project="yaget.nlohmann_json.props" />
+    <Import Project="Props\yaget.flatbuffers.props" />
+    <Import Project="Props\yaget.nlohmann_json.props" />
     <Import Project="Props\yaget.fmt.props" />
-    <Import Project="yaget.terminal.props" />
     <Import Project="Props\yaget.Math.DXTK.props" />
-    <Import Project="yaget.Mather.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
   </PropertyGroup>

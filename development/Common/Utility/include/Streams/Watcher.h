@@ -58,7 +58,7 @@ namespace yaget::io
 
         using Tickets = std::vector<Ticket>;
         mt::Variable<Tickets> mTickets;
-        mt::Variable<Strings> mWatchedFiles;    // used bu imgui to display which one are watched and provide user trigger
+        mt::Variable<Strings> mWatchedFiles;
         mt::JobPool mObserver;
     };
 

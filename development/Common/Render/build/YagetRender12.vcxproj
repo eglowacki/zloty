@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -67,17 +67,13 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\..\BuildRules\yaget.Debug.props" />
     <Import Project="..\..\..\BuildRules\yaget.StaticLibrary.props" />
-    <Import Project="..\..\..\BuildRules\yaget.DX12.Helper.props" />
-    <Import Project="..\..\..\BuildRules\yaget.PIX.props" />
-    <Import Project="..\..\..\BuildRules\yaget.GPUTraceback.props" />
+    <Import Project="..\..\..\BuildRules\Props\yaget.Render12.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\..\BuildRules\yaget.Release.props" />
     <Import Project="..\..\..\BuildRules\yaget.StaticLibrary.props" />
-    <Import Project="..\..\..\BuildRules\yaget.DX12.Helper.props" />
-    <Import Project="..\..\..\BuildRules\yaget.PIX.props" />
-    <Import Project="..\..\..\BuildRules\yaget.GPUTraceback.props" />
+    <Import Project="..\..\..\BuildRules\Props\yaget.Render12.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -151,8 +147,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\AdapterInfo.h" />
+    <ClInclude Include="..\include\DX12\Render\Cache\AssetCache.h" />
+    <ClInclude Include="..\include\DX12\Render\Cache\CacheWatcher.h" />
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
     <ClInclude Include="..\include\DX12\Render\Device.h" />
+    <ClInclude Include="..\include\DX12\Render\Platform\Adapter.h" />
+    <ClInclude Include="..\include\DX12\Render\Platform\DeviceDebugger.h" />
+    <ClInclude Include="..\include\DX12\Render\Platform\ResourceCompiler.h" />
+    <ClInclude Include="..\include\DX12\Render\Polygons\RenderShape.h" />
     <ClInclude Include="..\include\DX12\Render\RenderCore.h" />
     <ClInclude Include="..\include\DX12\Render\Waiter.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\backends\imgui_impl_dx12.h" />
@@ -165,16 +167,12 @@
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\source\DX12\Render\EnumConversion.h" />
     <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h" />
-    <ClInclude Include="..\source\DX12\Render\Platform\Adapter.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\CommandAllocators.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\Commander.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\CommandListPool.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\CommandQueue.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h" />
-    <ClInclude Include="..\source\DX12\Render\Platform\DeviceDebugger.h" />
-    <ClInclude Include="..\source\DX12\Render\Platform\ResourceCompiler.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h" />
-    <ClInclude Include="..\source\DX12\Render\Polygons\Polygon.h" />
     <ClInclude Include="..\source\DX12\Render\RenderStringHelpers.h" />
     <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h" />
     <ClInclude Include="..\source\DX12\Render\UI\Layer.h" />
@@ -188,6 +186,8 @@
     <ClCompile Include="..\source\DX12\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="..\source\DX12\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="..\source\DX12\Render\AdapterInfo.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Cache\AssetCache.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Cache\CacheWatcher.cpp" />
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
@@ -203,7 +203,7 @@
     <ClCompile Include="..\source\DX12\Render\Platform\DeviceDebugger.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\ResourceCompiler.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\SwapChain.cpp" />
-    <ClCompile Include="..\source\DX12\Render\Polygons\Polygon.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Polygons\RenderShape.cpp" />
     <ClCompile Include="..\source\DX12\Render\RenderStringHelpers.cpp" />
     <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp" />
     <ClCompile Include="..\source\DX12\Render\UI\Layer.cpp" />
@@ -215,6 +215,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\source\DX12\imgui-docking\misc\debuggers\imgui.natstepfilter" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Utility\build\YagetCore.vcxproj">
+      <Project>{07303b2d-746e-4e66-9f3e-e0c5d4a31d80}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

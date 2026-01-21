@@ -15,7 +15,6 @@
 #pragma once
 
 #include "Components/PersistentBaseComponent.h"
-//#include "Input/InputDevice.h"
 
 
 namespace yaget::comp
@@ -35,6 +34,11 @@ namespace yaget::comp
         InputComponent(Id_t id, const db_input::ActionNames::Types& event = {})
             : PersistentBaseComponent(id, std::tie(event))
         {}
+
+        bool IsAction(const std::string& actionName) const
+        {
+            return mTriggeredAction.find(actionName) != mTriggeredAction.end();
+        }
 
         std::set<std::string> mTriggeredAction;
     };

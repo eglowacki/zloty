@@ -22,10 +22,11 @@
 #include "Platform/WindowsLean.h"
 #include <SimpleMath.h>
 #include <DirectXColors.h>
+#include <numbers>
 
 namespace math3d
 {
-    using namespace DirectX::SimpleMath;
+    using namespace DirectX::SimpleMath;                                                                                                                                                                                    
 
     inline math3d::Matrix CreateMatrix(const math3d::Vector3& location, const math3d::Quaternion& rotation, const math3d::Vector3& scale = {1.0f, 1.0f, 1.0f })
     {
@@ -47,7 +48,7 @@ namespace math3d
         return a * 57.29577951f;
     }
 
-    constexpr float kPI(3.14159265359f);
+    constexpr float kPI(std::numbers::pi_v<float>);
 
 } // namespace math3d
 

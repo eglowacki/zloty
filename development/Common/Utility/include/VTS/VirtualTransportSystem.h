@@ -22,7 +22,7 @@
 #include "Platform/Support.h"
 #include "Streams/Buffers.h"
 #include "VTS/BlobLoader.h"
-
+#include "Streams/Guid.h"
 
 namespace
 {
@@ -55,7 +55,7 @@ namespace yaget
             bool operator <(const Asset& rhs) const { return mTag < rhs.mTag; }
 
         protected:
-            Asset(const io::Tag& tag, io::Buffer buffer, const VirtualTransportSystem& vts) : mTag(tag), mBuffer(buffer), mVTS(vts) {}
+            Asset(const io::Tag& tag, const io::Buffer& buffer, const VirtualTransportSystem& vts) : mTag(tag), mBuffer(buffer), mVTS(vts) {}
 
             bool mValid = true;
             const VirtualTransportSystem& mVTS;
@@ -141,6 +141,7 @@ namespace yaget
             std::vector<io::Tag> GetTags(const Section& section) const { return GetTags(Sections{ section }); }
             std::vector<io::Tag> GetTags(const Sections& sections) const;
             io::Tag GetTag(const Section& section) const { std::vector<io::Tag> tags = GetTags(section); return tags.empty() ? io::Tag() : *tags.begin(); }
+            io::Tag FindTag(const Guid& guid) const;
 
             //! Return number of valid tags under sectionName/blobName
             size_t GetNumTags(const Section& section) const { return GetNumTags(Sections{ section }); }
@@ -148,7 +149,7 @@ namespace yaget
 
             // Create tag data based on section. This includes new guid or recovered guid
             io::Tag GenerateTag(const Section& section) const;
-            io::Tag AssureTag(const Section& section);
+            io::Tag AssureTag(const Section& section) const;
 
             //! Return true if section(s) does exist in DB 
             bool IsSectionValid(const Section& section) const { return IsSectionValid(Sections{ section }); }

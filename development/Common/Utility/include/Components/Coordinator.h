@@ -192,24 +192,34 @@ namespace yaget::comp
 template<typename P>
 yaget::comp::Coordinator<P>::~Coordinator()
 {
+    comp::ItemIds ids = 
+        mItems | 
+        std::views::transform([](const auto& e)
+        {
+            return comp::StripQualifiers(e.first);
+        }) | 
+        std::ranges::to<std::set>();
+
     if constexpr (internal::has_auto_cleanup<Policy>)
     {
         YLOG_CWARNING("GSYS", mItems.empty(), "Coordinator [%s] still has '%d' outstanding component(s): [%s], cleaning up...",
             conv::Combine(mComponentNames, ", ").c_str(),
-            mItems.size(), 
-            conv::Combine(mItems, "], [").c_str());
+            ids.size(), 
+            conv::Combine(ids, "], [").c_str());
 
-        comp::ItemIds items;
-        for (const auto& [id, row] : mItems)
-        {
-            items.insert(id);
-        }
+        comp::ItemIds items =
+            mItems | 
+            std::views::transform([](const auto& e)
+            {
+                return e.first;
+            }) | 
+            std::ranges::to<std::set>();
 
         RemoveItems(items);
     }
     else
     {
-        YAGET_ASSERT(mItems.empty(), "Coordinator [%s] still has '%d' outstanding component(s): [%s]", conv::Combine(mComponentNames, ", ").c_str(), mItems.size(), conv::Combine(mItems, "], [").c_str());
+        YAGET_ASSERT(mItems.empty(), "Coordinator [%s] still has '%d' outstanding component(s): [%s]", conv::Combine(mComponentNames, ", ").c_str(), ids.size(), conv::Combine(ids, "], [").c_str());
     }
 }
 

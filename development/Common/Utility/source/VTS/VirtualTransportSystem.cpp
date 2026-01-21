@@ -6,7 +6,6 @@
 #include "Metrics/Concurrency.h"
 #include "Streams/Buffers.h"
 #include "Metrics/Concurrency.h"
-
 #include <filesystem>
 #include <utility>
 namespace fs = std::filesystem;
@@ -16,6 +15,7 @@ namespace fs = std::filesystem;
 #include "VirtualTransportSystemCollector.inl"
 
 
+//--------------------------------------------------------------------------------------------------
 yaget::io::VirtualTransportSystem::VirtualTransportSystem(dev::Configuration::Init::VTSConfigList configList, VirtualTransportSystem::DoneCallback doneCallback, const AssetResolvers& assetResolvers, const std::string& fileName, RuntimeMode reset)
     : mRuntimeMode(RuntimeMode::Optimum)
     , mDoneCallback(std::move(doneCallback))
@@ -28,6 +28,7 @@ yaget::io::VirtualTransportSystem::VirtualTransportSystem(dev::Configuration::In
 }
 
 
+//--------------------------------------------------------------------------------------------------
 yaget::io::VirtualTransportSystem::VirtualTransportSystem(RuntimeMode runtimeMode, const std::string& fileName)
     : mRuntimeMode(runtimeMode)
     , mRequestPool("vts.Request", 1)
@@ -37,6 +38,7 @@ yaget::io::VirtualTransportSystem::VirtualTransportSystem(RuntimeMode runtimeMod
 }
 
 
+//--------------------------------------------------------------------------------------------------
 yaget::io::VirtualTransportSystem::~VirtualTransportSystem()
 {
     const double MaxTimeToWait = 5.0;
@@ -92,6 +94,7 @@ yaget::io::VirtualTransportSystem::~VirtualTransportSystem()
 }
 
 
+//--------------------------------------------------------------------------------------------------
 void yaget::io::VirtualTransportSystem::onEntriesCollected()
 {
     mSectionEntriesCollector = nullptr;
@@ -100,12 +103,14 @@ void yaget::io::VirtualTransportSystem::onEntriesCollected()
 }
 
 
+//--------------------------------------------------------------------------------------------------
 void yaget::io::VirtualTransportSystem::onErrorBlobLoader(const std::string& filePathName, const std::string& errorMessage)
 {
     YLOG_WARNING("VTS", "Blob '%s' failed to load. %s.", filePathName.c_str(), errorMessage.c_str());
 };
 
 
+//--------------------------------------------------------------------------------------------------
 yaget::io::VirtualTransportSystem::AssetResolver yaget::io::VirtualTransportSystem::FindAssetConverter(const std::string& converterType) const
 {
     if (auto it = mAssetResolvers.find(converterType); it!= std::end(mAssetResolvers))
@@ -116,6 +121,8 @@ yaget::io::VirtualTransportSystem::AssetResolver yaget::io::VirtualTransportSyst
     return {};
 }
 
+
+//--------------------------------------------------------------------------------------------------
 void yaget::io::VirtualTransportSystem::onBlobLoaded(const io::Buffer& dataBuffer, const io::Tag& requestedTag, BlobAssetCallback assetLoaded, std::atomic_size_t* tagsCounter)
 {
     metrics::Channel span(fmt::format("BlobLoaded {}", requestedTag.mVTSName).c_str());
@@ -273,6 +280,8 @@ bool yaget::io::VirtualTransportSystem::AttachTransientBlob(const std::vector<st
     return true;
 }
 
+
+//--------------------------------------------------------------------------------------------------
 bool yaget::io::VirtualTransportSystem::AttachTransientBlobNonMT(const std::vector<std::shared_ptr<io::Asset>>& assets, yaget::db::Transaction& transaction)
 {
     using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
@@ -297,6 +306,7 @@ bool yaget::io::VirtualTransportSystem::AttachTransientBlobNonMT(const std::vect
 }
 
 
+//--------------------------------------------------------------------------------------------------
 bool yaget::io::VirtualTransportSystem::UpdateAssetData(const std::shared_ptr<io::Asset>& asset, VirtualTransportSystem::Request request)
 {
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
@@ -361,6 +371,7 @@ bool yaget::io::VirtualTransportSystem::UpdateAssetData(const std::shared_ptr<io
     return false;
 }
 
+
 //--------------------------------------------------------------------------------------------------
 size_t yaget::io::VirtualTransportSystem::GetNumTags(const Sections& sections) const
 {
@@ -400,6 +411,7 @@ size_t yaget::io::VirtualTransportSystem::GetNumTags(const Sections& sections) c
 }
 
 
+//--------------------------------------------------------------------------------------------------
 bool yaget::io::VirtualTransportSystem::IsSectionValid(const Sections& sections) const
 {
     if (DatabaseHandle dHandle = LockDatabaseAccess())
@@ -419,6 +431,7 @@ bool yaget::io::VirtualTransportSystem::IsSectionValid(const Sections& sections)
 }
 
 
+//--------------------------------------------------------------------------------------------------
 std::vector<yaget::io::Tag> yaget::io::VirtualTransportSystem::GetTags(const Sections& sections) const
 {
     std::vector<io::Tag> results;
@@ -464,6 +477,30 @@ std::vector<yaget::io::Tag> yaget::io::VirtualTransportSystem::GetTags(const Sec
 }
 
 
+//--------------------------------------------------------------------------------------------------
+yaget::io::Tag yaget::io::VirtualTransportSystem::FindTag(const Guid& guid) const
+{
+    std::string command = fmt::format("SELECT Name, VTS, Section FROM Tags WHERE Guid = '{}'", guid.str());
+
+    if (DatabaseHandle dHandle = LockDatabaseAccess())
+    {
+        using TagRow = std::tuple<std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
+        auto tag = mDatabase.DB().GetRowTuple<TagRow>(command, nullptr);
+         
+        yaget::io::Tag resultTag;
+        resultTag.mGuid = guid;
+        resultTag.mName = std::get<0>(tag);
+        resultTag.mVTSName = std::get<1>(tag);
+        resultTag.mSectionName = std::get<2>(tag);
+
+        return resultTag;
+    }
+
+    return {};
+}
+
+
+//--------------------------------------------------------------------------------------------------
 yaget::io::Tag yaget::io::VirtualTransportSystem::GenerateTag(const Section& section) const
 {
     using TargetSection = std::tuple<std::string /*Name*/, Strings /*Path*/, Strings /*Filters*/, std::string /*Converters*/, bool /*ReadOnly*/>;
@@ -510,7 +547,8 @@ yaget::io::Tag yaget::io::VirtualTransportSystem::GenerateTag(const Section& sec
 }
 
 
-yaget::io::Tag yaget::io::VirtualTransportSystem::AssureTag(const Section& section)
+//--------------------------------------------------------------------------------------------------
+yaget::io::Tag yaget::io::VirtualTransportSystem::AssureTag(const Section& section) const
 {
     auto tag = GetTag(section);
     if (!tag.IsValid())
@@ -522,7 +560,7 @@ yaget::io::Tag yaget::io::VirtualTransportSystem::AssureTag(const Section& secti
 }
 
 
-
+//--------------------------------------------------------------------------------------------------
 size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>& tags, BlobAssetCallback blobAssetCallback, std::atomic_size_t* tagsCounter)
 {
 
@@ -595,6 +633,7 @@ size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>
 }
 
 
+//--------------------------------------------------------------------------------------------------
 std::string yaget::io::VirtualTransportSystem::GetResolverType(const io::Tag& tag) const
 {
     std::string resolverType;
@@ -610,6 +649,7 @@ std::string yaget::io::VirtualTransportSystem::GetResolverType(const io::Tag& ta
 }
 
 
+//--------------------------------------------------------------------------------------------------
 std::string yaget::io::NormalizePath(const std::string& filePath)
 {
     fs::path fsPath(filePath);

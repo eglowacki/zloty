@@ -28,7 +28,7 @@ namespace yaget::io
     class JsonAsset : public Asset
     {
     public:
-        JsonAsset(const io::Tag& tag, io::Buffer buffer, const io::VirtualTransportSystem& vts) : Asset(tag, buffer, vts)
+        JsonAsset(const io::Tag& tag, const io::Buffer& buffer, const io::VirtualTransportSystem& vts) : Asset(tag, buffer, vts)
         {
             // We want ability to create instance of json asset type without actual data buffer. This is in essence a default ctor.
             if (mBuffer.second)
@@ -72,7 +72,7 @@ namespace yaget::io
         using Validate = std::function<bool()>;
 
         template <typename... F>
-        StructDataAsset(const io::Tag& tag, io::Buffer buffer, const io::VirtualTransportSystem& vts, const char* rootName, Validate validate, F&&... args)
+        StructDataAsset(const io::Tag& tag, const io::Buffer& buffer, const io::VirtualTransportSystem& vts, const char* rootName, Validate validate, F&&... args)
             : JsonAsset(tag, buffer, vts)
         {
             if (mValid)
@@ -153,7 +153,7 @@ namespace yaget::io
     class ImageAsset : public Asset
     {
     public:
-        ImageAsset(const io::Tag& tag, io::Buffer buffer, const io::VirtualTransportSystem& vts)
+        ImageAsset(const io::Tag& tag, const io::Buffer& buffer, const io::VirtualTransportSystem& vts)
             : Asset(tag, buffer, vts) 
             , mHeader{ image::Header::PixelType::None, image::Header::DataType::RT }
             , mPixels(buffer.second ? image::Process(mBuffer, &mHeader) : io::CreateBuffer(0))
@@ -165,22 +165,20 @@ namespace yaget::io
     };
 
     //-------------------------------------------------------------------------------------------------------------------------------
-    class StringAsset : public Asset
+    // buffer all the data treated as a binary blob. It's up to user to make sense of this data
+    class BinAsset : public Asset
     {
     public:
-        StringAsset(const io::Tag& tag, io::Buffer buffer, const io::VirtualTransportSystem& vts)
+        BinAsset(const io::Tag& tag, const io::Buffer& buffer, const io::VirtualTransportSystem& vts)
             : Asset(tag, buffer, vts)
-            , mString(io::BufferPointer(buffer), io::BufferSize(buffer))
         {}
-
-        std::string mString;
     };
 
     //-------------------------------------------------------------------------------------------------------------------------------
     class StringsAsset : public Asset
     {
     public:
-        StringsAsset(const io::Tag& tag, io::Buffer buffer, const io::VirtualTransportSystem& vts)
+        StringsAsset(const io::Tag& tag, const io::Buffer& buffer, const io::VirtualTransportSystem& vts)
             : Asset(tag, buffer, vts)
         {
             file::imemstream memStream(BufferPointer(mBuffer), BufferSize(mBuffer));
@@ -201,8 +199,9 @@ namespace yaget::io
     };
 
     //-------------------------------------------------------------------------------------------------------------------------------
-    template<typename T>
-    inline std::shared_ptr<yaget::io::Asset> ResolveAsset(const io::Buffer& dataBuffer, const io::Tag& requestedTag, const io::VirtualTransportSystem& vts)
+    template<typename T>  //Asset
+    requires std::is_base_of_v<Asset, T> && (!std::same_as<Asset, T>)
+    inline std::shared_ptr<Asset> ResolveAsset(const Buffer& dataBuffer, const io::Tag& requestedTag, const io::VirtualTransportSystem& vts)
     {
         auto asset = std::make_shared<T>(requestedTag, dataBuffer, vts);
         return asset->IsValid() ? asset : nullptr;

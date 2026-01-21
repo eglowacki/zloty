@@ -33,7 +33,8 @@ yaget::io::tool::VirtualTransportSystem::VirtualTransportSystem(dev::Configurati
             auto numPaths = resolvedPaths.size();
             for (const auto& it : resolvedPaths)
             {
-                logMessage += fmt::format("    file:///{}", util::ExpendEnv(it, nullptr));
+                logMessage += fmt::format("    Expended Path: '{}'", util::ExpendEnv(it, nullptr));
+                //logMessage += fmt::format("    file:///{}", util::ExpendEnv(it, nullptr));
 
                 if (--numPaths || numSections)
                 {

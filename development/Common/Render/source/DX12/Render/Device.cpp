@@ -1,48 +1,84 @@
-#include "Render/Device.h"
 #include "App/AppUtilities.h"
-#include "Debugging/DevConfiguration.h"
 #include "Metrics/Concurrency.h"
-#include "Platform/Adapter.h"
+#include "Render/Device.h"
 #include "Render/Metrics/RenderMetrics.h"
+#include "Render/Platform/Adapter.h"
 #include "Render/Platform/CommandAllocators.h"
 #include "Render/Platform/CommandListPool.h"
+#include "Render/Platform/CommandQueue.h"
 #include "Render/Platform/SwapChain.h"
-#include "Render/Polygons/Polygon.h"
 #include "StringHelpers.h"
 #include "Time/GameClock.h"
-
 #include <d3d12.h>
 
 
 namespace
 {
+    using namespace yaget;
+
     constexpr uint32_t NumCommands = 6;
-}
 
-
-//-------------------------------------------------------------------------------------------------
-yaget::render::ColorInterpolator::ColorInterpolator(const colors::Color& startColor, const colors::Color& endColor)
-    : mStartColor{ startColor }
-    , mEndColor{ endColor }
-{
-}
-
-
-//-------------------------------------------------------------------------------------------------
-colors::Color yaget::render::ColorInterpolator::GetColor(const time::GameClock& gameClock)
-{
-    const math3d::Color adjustedColor = math3d::Color::Lerp(mStartColor, mEndColor, mCurrentColorT);
-    mCurrentColorT += (gameClock.GetDeltaTimeSecond() * mColorTDirection) * 0.75f;
-    if (mCurrentColorT > 1.0f)
+    struct Framer
     {
-        mColorTDirection = -1.0f;
-    }
-    else if (mCurrentColorT < 0.0f)
-    {
-        mColorTDirection = 1.0f;
-    }
+        Framer(const time::GameClock& gameClock, metrics::Channel& channel, render::DeviceB& device, const colors::Color* color)
+            : mDevice(device)
+            , mFrameIndex(mDevice.mSwapChain->GetCurrentBackBufferIndex())
+            , mCommandQueue(Framer::GetCommandQueueHandle(device, mFrameIndex))
+            , mCommandHandle(Framer::GetCommandHandle(device, mFrameIndex, color))
+            , mGameClock(gameClock)
+            , mChannel(channel)
+        {}
 
-    return adjustedColor;
+        ~Framer()
+        {
+            mCommandHandle.TransitionToPresent(true /*closeCommand*/);
+            mCommandQueue.Execute(mCommandHandle);
+            mDevice.mFrameFenceValues[mFrameIndex] = mCommandQueue.Signal();
+
+            mDevice.mSwapChain->Present(mGameClock, mChannel);
+
+            mDevice.mWaiter.Wait();
+        }
+
+        ID3D12GraphicsCommandList* GetCommandList()
+        {
+            return mCommandHandle;
+        }
+
+        static render::platform::CommandQueues::CQ GetCommandQueueHandle(render::DeviceB& device, uint32_t frameIndex)
+        {
+            auto commandQueues = device.mCommandQueues->GetCQ(render::platform::CommandQueue::Type::Direct, false /*finished*/);
+            const auto fenceValue = device.mFrameFenceValues[frameIndex];
+            commandQueues.Wait(fenceValue);
+
+            return std::move(commandQueues);
+        }
+
+        static render::platform::CommandListPool::Handle GetCommandHandle(render::DeviceB& device, uint32_t frameIndex, const colors::Color* color)
+        {
+            auto allocator = device.mCommandAllocators->GetCommandAllocator(render::platform::CommandQueue::Type::Direct, frameIndex);
+            auto renderTarget = device.mSwapChain->GetCurrentRenderTarget();
+            auto descriptorHeap = device.mSwapChain->GetDescriptorHeap();
+
+            auto commandHandle = device.mCommandListPool->GetCommandList(render::platform::CommandQueue::Type::Direct, allocator, renderTarget, descriptorHeap, frameIndex);
+            commandHandle.TransitionToRenderTarget();
+
+            if (color)
+            {
+                commandHandle.ClearRenderTarget(*color);
+            }
+
+            return commandHandle;
+        }
+
+        render::DeviceB& mDevice;
+        uint32_t mFrameIndex = 0;
+        render::platform::CommandQueues::CQ mCommandQueue;
+        render::platform::CommandListPool::Handle mCommandHandle;
+        const time::GameClock& mGameClock;
+        metrics::Channel& mChannel;
+    };
+
 }
 
 
@@ -50,13 +86,10 @@ colors::Color yaget::render::ColorInterpolator::GetColor(const time::GameClock& 
 yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo)
     : mWindowFrame{ windowFrame }
     , mAdapter{ std::make_unique<platform::Adapter>(mWindowFrame, adapterInfo) }
-    , mPolygon{ std::make_unique<Polygon>(mAdapter->GetDevice(), mAdapter->GetAllocator(), false /*useTwo*/) }
-    , mPolygon2{ std::make_unique<Polygon>(mAdapter->GetDevice(), mAdapter->GetAllocator(), true /*useTwo*/) }
     , mCommandAllocators{ std::make_unique<platform::CommandAllocators>(mAdapter->GetDevice(), mWindowFrame.GetSurface().NumBackBuffers()) }
     , mCommandQueues{ std::make_unique<platform::CommandQueues>(mAdapter->GetDevice()) }
     , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory(), mCommandQueues->GetCQ(platform::CommandQueue::Type::Direct, false /*finished*/).GetCommandQueue()) }
     , mCommandListPool{ std::make_unique<platform::CommandListPool>(mAdapter->GetDevice(), NumCommands) }
-    , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
 {
     for (uint32_t i = 0; i < static_cast<uint32_t>(mWindowFrame.GetSurface().NumBackBuffers()); ++i)
     {
@@ -64,7 +97,7 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::rende
     }
 
     YLOG_INFO("DEVI", "Device created and initialized.");
-    PIXSetMarker(0x0, "Device created.");
+    //PIXSetMarker(0x0, "Device created.");
 }
 
 
@@ -72,7 +105,7 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::rende
 yaget::render::DeviceB::~DeviceB()
 {
     YLOG_INFO("DEVI", "Device shutdown.");
-    mCommandQueues->Reset();
+    Shutdown();
 }
 
 
@@ -101,41 +134,27 @@ int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWi
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::DeviceB::RenderFrame(const time::GameClock& gameClock, metrics::Channel& channel)
+void yaget::render::DeviceB::Shutdown()
 {
-    const auto frameIndex = mSwapChain->GetCurrentBackBufferIndex();
+    mCommandQueues->Reset();
+}
 
-    const auto fenceValue = mFrameFenceValues[frameIndex];
-    auto commandQueue = mCommandQueues->GetCQ(platform::CommandQueue::Type::Direct, false /*finished*/);
-    commandQueue.Wait(fenceValue);
 
-    auto allocator = mCommandAllocators->GetCommandAllocator(platform::CommandQueue::Type::Direct, frameIndex);
+//-------------------------------------------------------------------------------------------------
+yaget::render::DeviceB::FramerHandle yaget::render::DeviceB::GetFramerHandle(const time::GameClock& gameClock, metrics::Channel& channel, const colors::Color* color)
+{
+    return { gameClock, channel, *this, color };
+}
 
-    auto renderTarget = mSwapChain->GetCurrentRenderTarget();
-    auto descriptorHeap = mSwapChain->GetDescriptorHeap();
 
-    const colors::Color color = mColorInterpolator.GetColor(gameClock);
+//-------------------------------------------------------------------------------------------------
+yaget::render::DeviceB::FramerHandle::FramerHandle(const time::GameClock& gameClock, metrics::Channel& channel, DeviceB& device, const colors::Color* color)
+    : mFramer(std::make_shared<Framer>(gameClock, channel, device, color))
+{
+}
 
-    auto commandHandleA = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator, renderTarget, descriptorHeap, frameIndex);
-    commandHandleA.TransitionToRenderTarget();
-    commandHandleA.ClearRenderTarget(color);
 
-    mPolygon->Render(commandHandleA, {});
-
-    commandHandleA.TransitionToPresent(true /*closeCommand*/);
-
-    auto commandHandleB = mCommandListPool->GetCommandList(platform::CommandQueue::Type::Direct, allocator, renderTarget, descriptorHeap, frameIndex);
-    commandHandleB.TransitionToRenderTarget();
-
-    mPolygon2->Render(commandHandleB, {});
-
-    commandHandleB.TransitionToPresent(true /*closeCommand*/);
-
-    commandQueue.Execute({ commandHandleA, commandHandleB });
-    mFrameFenceValues[frameIndex] = commandQueue.Signal();
-    //commandQueue.Execute(commandHandleA);
-
-    mSwapChain->Present(gameClock, channel);
-
-    mWaiter.Wait();
+ID3D12GraphicsCommandList* yaget::render::DeviceB::FramerHandle::GetCommandList()
+{
+    return mFramer->GetCommandList();
 }

@@ -1,0 +1,15 @@
+{
+    "Include": "Modules/modules.deployment",
+
+    "Configuration": {
+        "Common": [
+            "your_file_name_to_deploy"
+        ],
+        "Debug": [
+            "your_file_name_to_deploy for Debug build configuration"
+        ],
+        "Release": [
+            "your_file_name_to_deploy for Release build configuration"
+        ]
+    }
+}

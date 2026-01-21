@@ -32,7 +32,7 @@ namespace yaget::comp
     class ScriptComponent : public db::PersistentBaseComponent<db_script::ValueTypes>
     {
     public:
-        using Asset = std::shared_ptr<io::StringAsset>;
+        using Asset = std::shared_ptr<io::BinAsset>;
 
         ScriptComponent(Id_t id, const db_script::Script::Types& scriptType, const db_script::Section::Types& section)
             : PersistentBaseComponent(id, std::tie(scriptType, section))

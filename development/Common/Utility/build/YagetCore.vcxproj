@@ -113,6 +113,7 @@
     <ClCompile Include="..\source\Metrics\Concurrency.cpp" />
     <ClCompile Include="..\source\Metrics\Gather.cpp" />
     <ClCompile Include="..\source\Metrics\PerformanceTracer.cpp" />
+    <ClCompile Include="..\source\Parsers\DependencyGraph.cpp" />
     <ClCompile Include="..\source\Parsers\Parser.cpp" />
     <ClCompile Include="..\source\sqlite\shell.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -239,6 +240,7 @@
     <ClInclude Include="..\include\Metrics\Gather.h" />
     <ClInclude Include="..\include\Metrics\Performance.h" />
     <ClInclude Include="..\include\Metrics\PerformanceTracer.h" />
+    <ClInclude Include="..\include\Parsers\DependencyGraph.h" />
     <ClInclude Include="..\include\Parsers\Parser.h" />
     <ClInclude Include="..\include\Platform\Support.h" />
     <ClInclude Include="..\include\Platform\WindowsLean.h" />
@@ -300,26 +302,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>

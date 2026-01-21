@@ -255,9 +255,10 @@ namespace yaget::comp
                 });
             }
 
+            bool itemsProcessed = false;
             //---------------------------------------------------------------------------------------------
             // we need to iterate over each coordinator and collect results
-            meta::for_loop<NumCoordinators>([this, &collectedItems]<std::size_t T0>()
+            meta::for_loop<NumCoordinators>([this, &collectedItems, &itemsProcessed]<std::size_t T0>()
             {
                 constexpr std::size_t coordinatorIndex = T0;
 
@@ -276,6 +277,8 @@ namespace yaget::comp
                             internalc::tuple_copy(row, collectedItems[id]);
                             return true;
                         });
+
+                        itemsProcessed = true;
                     }
                 }
             });
@@ -287,7 +290,7 @@ namespace yaget::comp
             if constexpr (usesGlobal)
             {
                 // only if there is no regular items (collectedItems) and we have ONE global item (collectedGlobalItem)
-                if (collectedItems.empty() && !collectedGlobalItem.empty() && collectedGlobalItem.size() == 1)
+                if (!itemsProcessed && collectedItems.empty() && !collectedGlobalItem.empty() && collectedGlobalItem.size() == 1)
                 {
                     collectedItems = collectedGlobalItem;
                 }

@@ -1,8 +1,9 @@
-﻿#include "MainGame.h"
+#include "MainGame.h"
 
 #include <Debugging/DevConfiguration.h>
 #include "DefensorGameTypes.h"
 #include "DefensorGameCoordinator.h"
+#include "DefensorRenderCoordinator.h"
 #include "Items/ItemsDirector.h"
 #include "Render/DesktopApplication.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
@@ -31,7 +32,7 @@ namespace yaget::app
         const items::Director::RuntimeMode directorMode = options.find<bool>("director_fix", false) ? items::Director::RuntimeMode::Reset : items::Director::RuntimeMode::Default;
         D director(vts, "Director", directorMode);
 
-        const auto selectedAdapter = render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
+        const auto selectedAdapter = yaget::render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
         A app("Yaget.Defensor", director, vts, options, selectedAdapter);
 
         //return std::move(app);
@@ -56,7 +57,9 @@ int defensor::Run(const yaget::args::Options& options)
 
     const io::VirtualTransportSystem::AssetResolvers resolvers = {
         { "JSON", io::ResolveAsset<io::JsonAsset> },
-        { "PERS", io::ResolveAsset<io::StringsAsset> }
+        { "COMP", io::ResolveAsset<io::StringsAsset> },
+        { "PERS", io::ResolveAsset<io::StringsAsset> },
+        { "BIN", io::ResolveAsset<io::BinAsset> }
     };
 
     const auto& configInitBlock = dev::CurrentConfiguration().mInit;
@@ -66,10 +69,10 @@ int defensor::Run(const yaget::args::Options& options)
     const items::Director::RuntimeMode directorMode = options.find<bool>("director_fix", false) ? items::Director::RuntimeMode::Reset : items::Director::RuntimeMode::Default;
     items::DefaultDirector<game::DefensorSystemsCoordinator> director("Director", directorMode);
 
-    const auto selectedAdapter = render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
-    render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
+    const auto selectedAdapter = yaget::render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
+    yaget::render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
 
     game::Messaging messaging{};
 
-    return comp::gs::RunGame<game::DefensorSystemsCoordinator>(messaging, app);
+    return comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app);
 }

@@ -79,7 +79,7 @@ namespace yaget::render::platform
 
         void Reset();
 
-        struct CQ : private yaget::Noncopyable<CQ>
+        struct CQ// : public yaget::Noncopyable<CQ>
         {
             CQ(CommandQueueData& cqData, bool finished);
 
@@ -92,7 +92,7 @@ namespace yaget::render::platform
             ID3D12CommandQueue* GetCommandQueue() const;
 
         private:
-            CommandQueueData& mCommandQueueData;
+            CommandQueueData* mCommandQueueData = nullptr;
         };
 
         // Get command queue for the specific type. If finished is true

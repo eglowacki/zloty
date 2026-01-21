@@ -1,0 +1,15 @@
+{
+    "Comment": "Drives build.py script to get/git dependent libraries, configure, compiler and install",
+
+    "Defaults": {
+        "cmake": { "build_folder": "builds" },
+        "configurations": [ "Release", "Debug" ],
+        "cmakeCompileCommands": [ "-GVisual Studio 17 2022", "-Ax64", "-Wno-dev" ]
+    },
+
+    "Modules": {
+        "googletest": {
+            "version": ""
+        }
+    }
+}

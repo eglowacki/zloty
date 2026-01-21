@@ -2,11 +2,11 @@
 	"Configuration" : {
 		"Debug": {
 			"Logging": {
-				"Filters": [ "INPT", "WIND", "MULT", "POOL", "WIN", "APP" ],
-				"Level": "DBUG",
+				"Filters": [ "INPT", "WIND", "MULT", "POOL", "WIN", "APP", "METR", "!GSYS" ],
+				"Level": "INFO",
 				"Outputs": {
 					"ylog::OutputDebug": {
-						"split_lines": "true"
+						"split_lines": "true"																											
 					},
 					"ylog::OutputFile": {
 						"max_startup_size": "0",
@@ -21,7 +21,7 @@
 				"AllowFallbackToFile": false,
 				"AllowSocketConnection": false,
 				"SocketConnectionTimeout": 100,
-				"TraceFileName": "$(Temp)/$(AppName)_trace.json",
+				"TraceFileName": "$(Temp)/Traces/$(AppName)_trace.json",
 				"TraceOn": true
 			}
 		},
@@ -62,17 +62,62 @@
 				},
 				{
 					"UserOptions": {
+						"Converters": "JSON",
+						"Filters": [ "*.json" ],
 						"Path": [ "$(UserDataFolder)/UserOptions" ],
 						"ReadOnly": false,
-						"Recursive": false,
+						"Recursive": false
+					}
+				},
+				{
+					"VeretexShaders": {
+						"Converters": "COMP",
+						"Filters": [ "*.vs" ],
+						"Path": [ "$(DataFolder)/Data/Shaders/Vertex" ],
+						"ReadOnly": true,
+						"Recursive": false
+					}
+				},
+				{
+					"PixelShaders": {
+						"Converters": "COMP",
+						"Filters": [ "*.ps" ],
+						"Path": [ "$(DataFolder)/Data/Shaders/Pixel" ],
+						"ReadOnly": true,
+						"Recursive": false
+					}
+				},
+				{
+					"Caches": {
+						"Converters": "BIN",
+						"Filters": [ "*.cache" ],
+						"Path": [ "$(AppDataFolder)/Caches" ],
+						"ReadOnly": false,
+						"Recursive": false
+					}
+				},
+				{
+					"Transient": {
+						"Converters": "BIN",
+						"Filters": [ "*.tran" ],
+						"Path": [ "$(AppDataFolder)/Transient" ],
+						"ReadOnly": false,
+						"Recursive": false
+					}
+				},
+				{
+					"Manifest": {
+						"Converters": "JSON",
 						"Filters": [ "*.json" ],
-						"Converters": "JSON"
+						"Path": [ "$(DataFolder)/Data/Manifest" ],
+						"ReadOnly": false,
+						"Recursive": false
 					}
 				}
 			],
 			"WindowOptions": "UserOptions@WindowConfiguration",
 			"VSync": false,
-			"StartingStage": "",
+			"StartingStage": "Boot",
 			"ItemsFile": ""
 		}
 	}

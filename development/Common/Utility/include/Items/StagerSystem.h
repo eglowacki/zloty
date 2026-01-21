@@ -30,8 +30,8 @@ namespace yaget::items
     class StagerSystem : public comp::gs::GameSystem<CS, comp::gs::NoEndMarker, M, StageComponent*>
     {
     public:
-        StagerSystem(M& messaging, Application& app, CS& coordinatorSet)
-            : comp::gs::GameSystem<CS, comp::gs::NoEndMarker, M, StageComponent*>("StagerSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+        StagerSystem(const char* niceName, M& messaging, Application& app, CS& coordinatorSet)
+            : comp::gs::GameSystem<CS, comp::gs::NoEndMarker, M, StageComponent*>(niceName, messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
             , mDirector(app.Director())
         {}
 

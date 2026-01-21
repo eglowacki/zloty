@@ -36,7 +36,7 @@ namespace yaget::render::platform
         CommandListPool(ID3D12Device* device, uint32_t numCommands);
         ~CommandListPool();
 
-        struct Handle : private Noncopyable<Handle>
+        struct Handle// : private Noncopyable<Handle>
         {
             Handle(CommandListPool& commandPool, ComPtr<ID3D12GraphicsCommandList4> commandList, CommandQueue::Type type, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex);
             ~Handle();
@@ -49,7 +49,7 @@ namespace yaget::render::platform
             ID3D12GraphicsCommandList4* operator->() const { return mCommandList.Get(); }
 
         private:
-            CommandListPool& mCommandPool;
+            CommandListPool* mCommandPool = nullptr;
             ComPtr<ID3D12GraphicsCommandList4> mCommandList;
             CommandQueue::Type mType;
 

@@ -14,7 +14,50 @@
 #pragma once
 
 #include "Math/YagetMath.h"
+#include "MathFacade.h"
+#include "Time/GameClock.h"
 
+namespace DirectX::SimpleMath   // this is aliased as math3d
+{
+    using namespace yaget;
+
+    class Interpolator
+    {
+    public:
+        Interpolator(const colors::Color& startColor, const colors::Color& endColor)
+            : mStartColor{ startColor }
+            , mEndColor{ endColor }
+        {
+        }
+
+        colors::Color GetColor(const time::GameClock& gameClock)
+        {
+            const colors::Color adjustedColor = colors::Color::Lerp(mStartColor, mEndColor, mCurrentColorT);
+            mCurrentColorT += (gameClock.GetDeltaTimeSecond() * mColorTDirection) * 0.75f;
+            if (mCurrentColorT > 1.0f)
+            {
+                mColorTDirection = -1.0f;
+            }
+            else if (mCurrentColorT < 0.0f)
+            {
+                mColorTDirection = 1.0f;
+            }
+
+            return adjustedColor;
+        }
+
+    private:
+        const colors::Color mStartColor = colors::White;
+        const colors::Color mEndColor = colors::Black;
+        float mCurrentColorT = 0.0f;
+        float mColorTDirection = 1.0f;
+    };
+}
+
+
+
+
+#if 0
 namespace yaget::math
 {
     enum class InterpolatorDirection { Up, Down, Both };
@@ -74,3 +117,4 @@ namespace yaget::math
 
 } // namespace yaget::math
 
+#endif // #if 0
