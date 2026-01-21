@@ -50,9 +50,8 @@ namespace
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderPipeline::RenderPipeline(ID3D12Device* device, io::VirtualTransportSystem& vts)
-    : mDevice(device)
-    , mVTS(vts)
-    , mCache(mVTS, yaget::io::VirtualTransportSystem::Section("Caches@Pipelines"))
+    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Pipelines"))
+    , mDevice(device)
 {
 }
 
@@ -62,28 +61,37 @@ defensor::render::RenderPipeline::~RenderPipeline() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-ID3D12PipelineState* defensor::render::RenderPipeline::GetPipeline(uint64_t pipeType, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer)
+ID3D12PipelineState* defensor::render::RenderPipeline::GetPipeline(const yaget::io::Tag& tag, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer)
 {
-    YAGET_ASSERT(pipeType < yaget::render::AssetCache::TypeToTag.size(), "pipeType '%d' is not valid for pipeline", pipeType);
+    YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 
-    if (auto it = mPipelines.find(pipeType); it != mPipelines.end())
+    AssureTagWatch(tag, [this](auto tag) { CachedAssetChanged(tag); });
+
+    if (auto it = mPipelines.find(tag); it != mPipelines.end())
     {
         return it->second.Get();
     }
 
-    io::Buffer cachedData = mCache.GetCachedAsset(yaget::render::AssetCache::TypeToTag[pipeType]);
+    io::Buffer cachedData = mCache.GetCachedAsset(tag);
 
     auto pipe = CreatePipeline<DirectX::VertexPositionColor>(mDevice, rootSignature, vertexShaderBuffer, pixelShaderBuffer, cachedData);
-    mPipelines.insert({pipeType, pipe});
+    mPipelines.insert({tag, pipe});
 
     if (!io::size_data(cachedData))
     {
         yaget::render::ComPtr<ID3DBlob> pipeBlob;
         HRESULT hr = pipe->GetCachedBlob(&pipeBlob);
-        error_handlers::ThrowOnError(hr, fmt::format("Could not get ID3D12PipelineState '{}' as a blob to save it", pipeType));
+        error_handlers::ThrowOnError(hr, fmt::format("Could not get ID3D12PipelineState '{}' as a blob to save it", conv::Convertor<io::Tag>::ToString(tag)));
 
-        mCache.SaveCachedAsset(yaget::render::AssetCache::TypeToTag[pipeType], io::CreateBuffer(static_cast<const char*>(pipeBlob->GetBufferPointer()), pipeBlob->GetBufferSize()));
+        mCache.SaveCachedAsset(tag, io::CreateBuffer(static_cast<const char*>(pipeBlob->GetBufferPointer()), pipeBlob->GetBufferSize()));
     }
 
     return pipe.Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void defensor::render::RenderPipeline::CachedAssetChanged(const yaget::io::Tag& tag)
+{
+    tag;
 }

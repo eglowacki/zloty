@@ -26,6 +26,9 @@
     <Filter Include="Data Files\Shaders">
       <UniqueIdentifier>{7892a253-a1eb-4377-b7ec-211dd4bd5500}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\Manifest">
+      <UniqueIdentifier>{ea385ff2-e892-4d46-b391-7d82459be62b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -115,6 +118,9 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Shaders\Vertex\Basic.vs">
       <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\RenderDependencies.json">
+      <Filter>Data Files\Manifest</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

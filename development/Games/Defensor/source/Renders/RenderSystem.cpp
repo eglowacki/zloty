@@ -1,4 +1,4 @@
-﻿#include "Renders/RenderSystem.h"
+#include "Renders/RenderSystem.h"
 #include "Render/Device.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Platform/Adapter.h"
@@ -6,37 +6,7 @@
 
 namespace
 {
-
-    //void PreloadAssets(defensor::render::RenderSignatures& renderSignatures, defensor::render::RenderPipeline& renderPipeline, defensor::render::RenderShader& renderShader, yaget::io::VirtualTransportSystem& vts)
-    //{
-    //    yaget::io::VirtualTransportSystem::Sections shaderSections;
-    //    for (const auto& section : shaderSections)
-    //    {
-    //        
-    //    }
-    //}
-    
-}
-
-
-//-------------------------------------------------------------------------------------------------
-defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
-    : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
-    , mAssetPoolThread("PreloadRenderAssets", 1)
-    , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
-    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS())
-    , mRenderPipeline(GetDevice().GetAdapter().GetDevice(), app.VTS())
-    , mRenderShader(app.VTS())
-{
-    mAssetPoolThread.AddTask([this]()
-    {
-        PreloadAssets();
-    });
-}
-
-
-namespace
-{
+    //---------------------------------------------------------------------------------
     std::array<float, 16> GetMatrixAsFloats(const math3d::Matrix& matrix)
     {
                 const auto kMatrixSize = 4;
@@ -53,6 +23,64 @@ namespace
 
         return floatMatrix;
     }
+
+    yaget::io::Tag AttachTransientAsset(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
+    {
+        using namespace yaget;
+
+        auto sigSection = render::AssetCache::operator[](assetCacheType);
+        auto tag = vts.GenerateTag(sigSection);
+        std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>({}, tag, vts);
+        vts.AttachTransientBlob(newAsset);
+
+        return tag;
+    }
+
+    yaget::io::Tag TypeToTag(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
+    {
+        auto section = yaget::render::AssetCache::operator[](assetCacheType);
+        auto tag = vts.GetTag(section);
+        if (!tag.IsValid())
+        {
+            tag = vts.GenerateTag(section);
+        }
+
+        return tag;
+    }
+
+}
+
+
+//-------------------------------------------------------------------------------------------------
+defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
+    : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+    , mAssetPoolThread("PreloadRenderAssets", 1)
+    , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
+    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS())
+    , mRenderPipeline(GetDevice().GetAdapter().GetDevice(), app.VTS())
+    , mRenderShader(app.VTS())
+    , mDependencyGraph(app.VTS(), io::VirtualTransportSystem::Section("Manifest@RenderDependencies"))
+{
+    using namespace yaget::render;
+
+    auto& vts = mApplication.VTS();
+
+    auto sigTag = AttachTransientAsset(BasicSignature, vts);
+    auto pipeTag = AttachTransientAsset(BasicPipeline, vts);
+
+    auto vertexSection = AssetCache::operator[](BasicVertex);
+    auto vertexTag = vts.GetTag(vertexSection);
+    auto pixelSection = AssetCache::operator[](BasicPixel);
+    auto pixelTag = vts.GetTag(pixelSection);
+
+    mDependencyGraph.Add(pipeTag.mGuid, sigTag.mGuid);
+    mDependencyGraph.Add(pipeTag.mGuid, vertexTag.mGuid);
+    mDependencyGraph.Add(pipeTag.mGuid, pixelTag.mGuid);
+
+    mAssetPoolThread.AddTask([this]()
+    {
+        PreloadAssets();
+    });
 }
 
 
@@ -69,30 +97,23 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
     if (id == comp::END_ID_MARKER)
     {
+        auto& vts = mApplication.VTS();
+
         const colors::Color color = mColorInterpolator.GetColor(gameClock);
         auto& device = GetDevice();
         auto framerHandle = device.GetFramerHandle(gameClock, channel, &color);
         auto commandList = framerHandle.GetCommandList();
 
-        uint64_t PositionSig = 1;
-        //uint64_t TextureSig = 2;
-        uint64_t ColorSig = 4;
-        uint64_t sigFlag = PositionSig|ColorSig;
-        auto rootSig = mRenderSignatures.GetSignature(sigFlag);
+        auto signatureTag = TypeToTag(yaget::render::BasicSignature, vts);
+        auto rootSig = mRenderSignatures.GetSignature(signatureTag);
 
-        auto& vts = mApplication.VTS();
-
-        io::VirtualTransportSystem::Section vertexSection("VeretexShaders@Basic");
-        io::VirtualTransportSystem::Section pixelSection("PixelShaders@Basic");
-        auto vertexShaderTag = vts.GetTag(vertexSection);
-        auto pixelShaderTag = vts.GetTag(pixelSection);
-
+        auto vertexShaderTag = TypeToTag(yaget::render::BasicVertex, vts);
+        auto pixelShaderTag = TypeToTag(yaget::render::BasicPixel, vts);
         auto vertexShaderBuffer = mRenderShader.GetShader(vertexShaderTag, RenderShader::ShaderType::Vertex);
         auto pixelShaderBuffer = mRenderShader.GetShader(pixelShaderTag, RenderShader::ShaderType::Pixel);
 
-        uint64_t pipeFlag = sigFlag;
-        //conv::hash_combine(pipeFlag, vertexShaderTag.Hash(), pixelShaderTag.Hash());
-        auto pipe = mRenderPipeline.GetPipeline(pipeFlag, rootSig, vertexShaderBuffer, pixelShaderBuffer);
+        auto pipelineTag = TypeToTag(yaget::render::BasicPipeline, vts);
+        auto pipe = mRenderPipeline.GetPipeline(pipelineTag, rootSig, vertexShaderBuffer, pixelShaderBuffer);
 
         commandList->SetGraphicsRootSignature(rootSig);
         commandList->SetPipelineState(pipe);
@@ -103,12 +124,9 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             const auto location = renderComponent->mMatrix;
 
             auto matrix = GetMatrixAsFloats(location);
-            std::ranges::fill(matrix, 0.2f);
+            std::ranges::fill(matrix, 0.75f);
 
-            commandList->SetGraphicsRoot32BitConstants(0,       // RootParameterIndex
-                                                       16,      // Num32BitValuesToSet
-                                                       matrix.data(),  // pSrcData
-                                                       0); // DestOffsetIn32BitValues
+            commandList->SetGraphicsRoot32BitConstants(0, 16, matrix.data(), 0);
             renderComponent->Render(commandList);
 
             return true;
@@ -124,8 +142,6 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             {
                 auto renderComponent = std::get<RenderComponent*>(row);
                 renderComponent->mMatrix = math3d::Matrix(data->mMatrix);
-
-                //YLOG_DEBUG("GSYS", "============ Player Position: '%f'", renderComponent->mMatrix.Translation().x);
             }
 
             return true;
@@ -147,9 +163,6 @@ void defensor::render::RenderSystem::PreloadAssets()
 
     mRenderShader.GetShaders(vertexShaderTags, RenderShader::ShaderType::Vertex);
     mRenderShader.GetShaders(pixelShaderTags, RenderShader::ShaderType::Pixel);
-
-    //io::BLobLoader<io::Asset> shaderLoader(vts, vertexShaderTags);
-    //auto shaderList = shaderLoader.Assets();
 
     yaget::platform::Sleep(1, time::kSecondUnit);
 

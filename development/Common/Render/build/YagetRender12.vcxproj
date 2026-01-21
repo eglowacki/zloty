@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\AdapterInfo.h" />
     <ClInclude Include="..\include\DX12\Render\Cache\AssetCache.h" />
+    <ClInclude Include="..\include\DX12\Render\Cache\CacheWatcher.h" />
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
     <ClInclude Include="..\include\DX12\Render\Device.h" />
     <ClInclude Include="..\include\DX12\Render\Platform\Adapter.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="..\source\DX12\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="..\source\DX12\Render\AdapterInfo.cpp" />
     <ClCompile Include="..\source\DX12\Render\Cache\AssetCache.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Cache\CacheWatcher.cpp" />
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />

@@ -180,7 +180,7 @@ namespace yaget
 
             inline bool operator<(const Tag& other) const
             {
-                return mGuid.bytes() < other.mGuid.bytes();
+                return mGuid < other.mGuid;
             }
 
             inline std::string ResolveVTS() const

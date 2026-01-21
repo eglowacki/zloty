@@ -95,6 +95,24 @@
 						"ReadOnly": false,
 						"Recursive": false
 					}
+				},
+				{
+					"Transient": {
+						"Converters": "BIN",
+						"Filters": [ "*.tran" ],
+						"Path": [ "$(AppDataFolder)/Transient" ],
+						"ReadOnly": false,
+						"Recursive": false
+					}
+				},
+				{
+					"Manifest": {
+						"Converters": "JSON",
+						"Filters": [ "*.json" ],
+						"Path": [ "$(DataFolder)/Data/Manifest" ],
+						"ReadOnly": false,
+						"Recursive": false
+					}
 				}
 			],
 			"WindowOptions": "UserOptions@WindowConfiguration",

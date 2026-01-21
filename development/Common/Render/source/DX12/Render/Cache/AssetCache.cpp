@@ -4,30 +4,28 @@
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
 
-//------------------------------------------------------------------------------------------------- 
-std::map<uint64_t, yaget::io::Tag> yaget::render::AssetCache::TypeToTag =
+
+//-------------------------------------------------------------------------------------------------
+std::map<yaget::render::AssetCacheType, yaget::io::VirtualTransportSystem::Section> yaget::render::AssetCache::TypeToSection =
 {
-    {1, {"One", yaget::Guid("0B1E1308-FA78-4341-896A-B12BF1F0BA43") }},
-    {2, {"Two", yaget::Guid("FA1E875D-277B-4C1D-A31E-31EF6ADD6253") }},
-    {3, {"Three", yaget::Guid("96E3870E-CE8F-472D-AC1B-C4D89B61F893") }},
-    {4, {"Four", yaget::Guid("C6A31CA5-2261-4745-88DB-FC9CE460BBE5") }},
-    {5, {"Five", yaget::Guid("FAA49895-41DD-4FF0-880A-83DB868311D4") }},
-    {6, {"Six", yaget::Guid("066ECD15-CE86-4FF6-8193-B56FDDD5E874") }},
-    {7, {"Seven", yaget::Guid("FA8DE50F-D05A-48EE-A3B0-2D8D5778F352") }},
-    {8, {"Eight", yaget::Guid("0B403C34-A121-416C-A334-E25A749A9B74") }},
-    {9, {"Nine", yaget::Guid("EA2E941C-A738-4AFB-BC8B-5BF6827A7666") }},
-    {10, {"Ten", yaget::Guid("06BD9DF5-8435-4DBD-BB9A-E938CD72E914") }},
-    {11, {"Eleven", yaget::Guid("2F7F5788-FD58-4AA2-86EF-ACD2719B2E02") }},
-    {12, {"Twelve", yaget::Guid("7A5D7803-3CA7-4B4A-9D3B-2F1DAE46F3D3") }},
-    {13, {"Thirteen", yaget::Guid("CF540FA7-614E-4BEE-A5FD-A83B18272B75") }},
-    {14, {"Fourteen", yaget::Guid("081E407C-FDBE-4AE2-9BC6-757F1CFAE55D") }},
-    {15, {"Fifteen", yaget::Guid("ACADEE94-250B-422A-A566-98A0C4C0BBB4") }},
-    {16, {"Sixteen", yaget::Guid("D3C5E3D1-1F2C-4C1E-8E2F-8D6F4B8C9A2E") }},
-    {17, {"Seventeen", yaget::Guid("60190975-B0C2-414C-9C29-7155285AF5A9") }},
-    {15, {"Eighteen", yaget::Guid("A521B9BB-194F-46B5-BAA0-A649B903C946") }},
-    {16, {"Nineteen", yaget::Guid("68E1FD3D-B8BB-47AD-B939-259A96938A67") }},
-    {17, {"Twenty", yaget::Guid("DF9F4AC1-4200-4CE8-9F29-BE17171B9274") }},
+     { BasicVertex, yaget::io::VirtualTransportSystem::Section("VeretexShaders@Basic")},
+     { BasicPixel, yaget::io::VirtualTransportSystem::Section("PixelShaders@Basic")},
+     { BasicSignature, yaget::io::VirtualTransportSystem::Section("Transient@BasicSig")},
+     { BasicPipeline, yaget::io::VirtualTransportSystem::Section("Transient@BasicPipe")},
 };
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::io::VirtualTransportSystem::Section yaget::render::AssetCache::operator[](AssetCacheType typeFlag)
+{
+    if (auto it = TypeToSection.find(typeFlag); it != TypeToSection.end())
+    {
+        return it->second;
+    }
+
+    YLOG_ERROR("DEVI", "There is no asset section associated with AssetCacheType: '%d'", typeFlag);
+    return {};
+}
 
 
 //-------------------------------------------------------------------------------------------------

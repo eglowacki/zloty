@@ -14,11 +14,12 @@
 #pragma once
 
 #include "DefensorGameTypes.h"
-#include "RenderPipeline.h"
-#include "RenderShader.h"
-#include "Renders/RenderSignatures.h"
 #include "Math/Interpolators.h"
+#include "Parsers/DependencyGraph.h"
 #include "Render/DesktopApplication.h"
+#include "RenderPipeline.h"
+#include "Renders/RenderSignatures.h"
+#include "RenderShader.h"
 
 
 namespace defensor::render
@@ -30,7 +31,6 @@ namespace defensor::render
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, RenderComponent* renderComponent, SceneComponent* sceneComponent);
-
         void PreloadAssets();
 
         mt::JobPool mAssetPoolThread;
@@ -38,6 +38,8 @@ namespace defensor::render
         RenderSignatures mRenderSignatures;
         RenderPipeline mRenderPipeline;
         RenderShader mRenderShader;
+
+        DependencyGraph mDependencyGraph;
 
         std::atomic_bool mAssetsPreloaded{false};
     };

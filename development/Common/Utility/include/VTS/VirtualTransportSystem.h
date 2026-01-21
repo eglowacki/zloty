@@ -22,7 +22,7 @@
 #include "Platform/Support.h"
 #include "Streams/Buffers.h"
 #include "VTS/BlobLoader.h"
-
+#include "Streams/Guid.h"
 
 namespace
 {
@@ -141,6 +141,7 @@ namespace yaget
             std::vector<io::Tag> GetTags(const Section& section) const { return GetTags(Sections{ section }); }
             std::vector<io::Tag> GetTags(const Sections& sections) const;
             io::Tag GetTag(const Section& section) const { std::vector<io::Tag> tags = GetTags(section); return tags.empty() ? io::Tag() : *tags.begin(); }
+            io::Tag FindTag(const Guid& guid) const;
 
             //! Return number of valid tags under sectionName/blobName
             size_t GetNumTags(const Section& section) const { return GetNumTags(Sections{ section }); }

@@ -6,7 +6,6 @@
 #include "Metrics/Concurrency.h"
 #include "Streams/Buffers.h"
 #include "Metrics/Concurrency.h"
-
 #include <filesystem>
 #include <utility>
 namespace fs = std::filesystem;
@@ -461,6 +460,28 @@ std::vector<yaget::io::Tag> yaget::io::VirtualTransportSystem::GetTags(const Sec
 
     std::ranges::reverse(results);
     return results;
+}
+
+
+yaget::io::Tag yaget::io::VirtualTransportSystem::FindTag(const Guid& guid) const
+{
+    std::string command = fmt::format("SELECT Name, VTS, Section FROM Tags WHERE Guid = '{}'", guid.str());
+
+    if (DatabaseHandle dHandle = LockDatabaseAccess())
+    {
+        using TagRow = std::tuple<std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
+        auto tag = mDatabase.DB().GetRowTuple<TagRow>(command, nullptr);
+         
+        yaget::io::Tag resultTag;
+        resultTag.mGuid = guid;
+        resultTag.mName = std::get<0>(tag);
+        resultTag.mVTSName = std::get<1>(tag);
+        resultTag.mSectionName = std::get<2>(tag);
+
+        return resultTag;
+    }
+
+    return {};
 }
 
 

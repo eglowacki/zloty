@@ -124,6 +124,9 @@
     <ClInclude Include="..\include\DX12\Render\Cache\AssetCache.h">
       <Filter>Source Files\Cache Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Cache\CacheWatcher.h">
+      <Filter>Source Files\Cache Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -202,6 +205,9 @@
       <Filter>Source Files\Polygons Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Cache\AssetCache.cpp">
+      <Filter>Source Files\Cache Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Cache\CacheWatcher.cpp">
       <Filter>Source Files\Cache Files</Filter>
     </ClCompile>
   </ItemGroup>

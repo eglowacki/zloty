@@ -1,9 +1,5 @@
 #include "RenderShader.h"
-
-#include <CommonStates.h>
 #include "Render/Platform/ResourceCompiler.h"
-#include <d3dx12.h>
-#include <VertexTypes.h>
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
 
@@ -55,8 +51,7 @@ namespace
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderShader::RenderShader(yaget::io::VirtualTransportSystem& vts)
-    : mVTS(vts)
-    , mCache(mVTS, yaget::io::VirtualTransportSystem::Section("Caches@Shaders"))
+    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Shaders"))
 {
 }
 
@@ -69,6 +64,8 @@ defensor::render::RenderShader::~RenderShader() = default;
 yaget::io::Buffer defensor::render::RenderShader::GetShader(const yaget::io::Tag& tag, ShaderType shaderType)
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
+
+    AssureTagWatch(tag, [this](auto tag) { CachedAssetChanged(tag); });
 
     if (auto it = mShaders.find(tag); it != mShaders.end())
     {
@@ -128,4 +125,11 @@ std::vector<yaget::io::Buffer> defensor::render::RenderShader::GetShaders(const 
         std::ranges::to<std::vector>();
 
     return results;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void defensor::render::RenderShader::CachedAssetChanged(const io::Tag& tag)
+{
+    tag;
 }

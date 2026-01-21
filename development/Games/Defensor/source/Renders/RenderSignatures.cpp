@@ -9,7 +9,7 @@
 namespace
 {
    
-    yaget::render::ComPtr<ID3D12RootSignature> CreateRootSignature(uint64_t /*sigType*/, ID3D12Device* device, yaget::io::Buffer& buffer)
+    yaget::render::ComPtr<ID3D12RootSignature> CreateRootSignature(const yaget::io::Tag& /*tag*/, ID3D12Device* device, yaget::io::Buffer& buffer)
     {
         yaget::render::ComPtr<ID3DBlob> signature;
         char* bufferPointer = yaget::io::cast_data<char>(buffer);
@@ -47,9 +47,8 @@ namespace
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderSignatures::RenderSignatures(ID3D12Device* device, yaget::io::VirtualTransportSystem& vts)
-    : mDevice(device)
-    , mVTS(vts)
-    , mCache(mVTS, yaget::io::VirtualTransportSystem::Section("Caches@Signatures"))
+    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Signatures"))
+    , mDevice(device)
 {
 }
 
@@ -59,25 +58,34 @@ defensor::render::RenderSignatures::~RenderSignatures() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-ID3D12RootSignature* defensor::render::RenderSignatures::GetSignature(uint64_t sigType)
+ID3D12RootSignature* defensor::render::RenderSignatures::GetSignature(const yaget::io::Tag& tag)
 {
-    YAGET_ASSERT(sigType < yaget::render::AssetCache::TypeToTag.size(), "sigType '%d' is not valid for signature", sigType);
+    YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 
-    if (auto it = mSignatures.find(sigType); it != mSignatures.end())
+    AssureTagWatch(tag, [this](auto tag) { CachedAssetChanged(tag); });
+
+    if (auto it = mSignatures.find(tag); it != mSignatures.end())
     {
         return it->second.Get();
     }
 
-    yaget::io::Buffer cachedData = mCache.GetCachedAsset(yaget::render::AssetCache::TypeToTag[sigType]);
+    yaget::io::Buffer cachedData = mCache.GetCachedAsset(tag);
     bool missingCachedData = yaget::io::size_data(cachedData) == 0;
 
-    auto sig = CreateRootSignature(sigType, mDevice, cachedData);
-    mSignatures.insert({sigType, sig});
+    auto sig = CreateRootSignature(tag, mDevice, cachedData);
+    mSignatures.insert({tag, sig});
 
     if (yaget::io::size_data(cachedData) && missingCachedData)
     {
-        mCache.SaveCachedAsset(yaget::render::AssetCache::TypeToTag[sigType], cachedData);
+        mCache.SaveCachedAsset(tag, cachedData);
     }
 
     return sig.Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void defensor::render::RenderSignatures::CachedAssetChanged(const yaget::io::Tag& tag)
+{
+    tag;
 }

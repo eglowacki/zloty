@@ -113,6 +113,7 @@
     <ClCompile Include="..\source\Metrics\Concurrency.cpp" />
     <ClCompile Include="..\source\Metrics\Gather.cpp" />
     <ClCompile Include="..\source\Metrics\PerformanceTracer.cpp" />
+    <ClCompile Include="..\source\Parsers\DependencyGraph.cpp" />
     <ClCompile Include="..\source\Parsers\Parser.cpp" />
     <ClCompile Include="..\source\sqlite\shell.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -239,6 +240,7 @@
     <ClInclude Include="..\include\Metrics\Gather.h" />
     <ClInclude Include="..\include\Metrics\Performance.h" />
     <ClInclude Include="..\include\Metrics\PerformanceTracer.h" />
+    <ClInclude Include="..\include\Parsers\DependencyGraph.h" />
     <ClInclude Include="..\include\Parsers\Parser.h" />
     <ClInclude Include="..\include\Platform\Support.h" />
     <ClInclude Include="..\include\Platform\WindowsLean.h" />

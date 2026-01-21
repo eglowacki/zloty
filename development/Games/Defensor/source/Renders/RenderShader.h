@@ -13,49 +13,19 @@
 //! \file
 #pragma once
 
-//#include <d3dcommon.h>
+#include "Streams/Watcher.h"
 #include "Render/RenderCore.h"
 #include "Streams/Buffers.h"
 #include "VTS/VirtualTransportSystem.h"
-#include "Render/Cache/AssetCache.h"
-#include "Streams/Buffers.h"
+#include "Render/Cache/CacheWatcher.h"
 
 
 namespace defensor::render
 {
     using namespace yaget;
 
-    ////-------------------------------------------------------------------------------------------------
-    //class ShaderCache
-    //{
-    //public:
-    //    ShaderCache(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
-    //    ~ShaderCache();
-
-    //    io::Buffer GetShader(const io::Tag& tag) const;
-    //    void SaveShader(const io::Tag& tag, io::Buffer buffer);
-
-    //private:
-    //    io::VirtualTransportSystem& mVTS;
-    //    size_t mCacheHash{};
-
-    //    // map of where the blob of dats is located (.second - offset)
-    //    // wirhin mCache
-    //    struct Location
-    //    {
-    //        size_t mOffset{};
-    //        size_t mSize{};
-    //    };
-    //    std::map<Guid, Location> mCacheIndex;
-    //    io::MessagingBuffer mCache;
-    //    bool mCacheDirty = false;
-
-    //    io::VirtualTransportSystem::Section mCacheSection;
-    //};
-
-
     //-------------------------------------------------------------------------------------------------
-    class RenderShader
+    class RenderShader : public yaget::render::CacheWatcher
     {
     public:
         RenderShader(io::VirtualTransportSystem& vts);
@@ -75,10 +45,9 @@ namespace defensor::render
         std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType);
 
     private:
-        std::map<io::Tag, io::Buffer> mShaders;
-        io::VirtualTransportSystem& mVTS;
+        void CachedAssetChanged(const io::Tag& tag);
 
-        yaget::render::AssetCache mCache;
+        std::map<io::Tag, io::Buffer> mShaders;
     };
 
 }
