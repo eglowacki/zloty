@@ -149,7 +149,7 @@ namespace yaget
 
             // Create tag data based on section. This includes new guid or recovered guid
             io::Tag GenerateTag(const Section& section) const;
-            io::Tag AssureTag(const Section& section);
+            io::Tag AssureTag(const Section& section) const;
 
             //! Return true if section(s) does exist in DB 
             bool IsSectionValid(const Section& section) const { return IsSectionValid(Sections{ section }); }
