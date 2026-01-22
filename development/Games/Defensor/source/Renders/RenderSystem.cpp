@@ -9,31 +9,10 @@ namespace
     //---------------------------------------------------------------------------------
     std::array<float, 16> GetMatrixAsFloats(const math3d::Matrix& matrix)
     {
-                const auto kMatrixSize = 4;
-        
-                std::array<float, 16> floatMatrix;
-                //std::ranges::fill(matrix, 1.0f);
-                for (auto r = 0; r < kMatrixSize; ++r)
-                {
-                    for (auto c = 0; c < kMatrixSize; ++c)
-                    {
-                        floatMatrix[r * kMatrixSize + c] = matrix(r, c);
-                    }
-                }
+        std::array<float, 16> floatArray;
+        DirectX::XMStoreFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(floatArray.data()), matrix);
 
-        return floatMatrix;
-    }
-
-    yaget::io::Tag AttachTransientAsset(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
-    {
-        using namespace yaget;
-
-        auto sigSection = render::AssetCache::operator[](assetCacheType);
-        auto tag = vts.GenerateTag(sigSection);
-        std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>({}, tag, vts);
-        vts.AttachTransientBlob(newAsset);
-
-        return tag;
+        return floatArray;
     }
 
     yaget::io::Tag TypeToTag(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
@@ -62,20 +41,6 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mDependencyGraph(app.VTS(), io::VirtualTransportSystem::Section("Manifest@RenderDependencies"))
 {
     using namespace yaget::render;
-
-    auto& vts = mApplication.VTS();
-
-    auto sigTag = AttachTransientAsset(BasicSignature, vts);
-    auto pipeTag = AttachTransientAsset(BasicPipeline, vts);
-
-    auto vertexSection = AssetCache::operator[](BasicVertex);
-    auto vertexTag = vts.GetTag(vertexSection);
-    auto pixelSection = AssetCache::operator[](BasicPixel);
-    auto pixelTag = vts.GetTag(pixelSection);
-
-    mDependencyGraph.Add(pipeTag.mGuid, sigTag.mGuid);
-    mDependencyGraph.Add(pipeTag.mGuid, vertexTag.mGuid);
-    mDependencyGraph.Add(pipeTag.mGuid, pixelTag.mGuid);
 
     mAssetPoolThread.AddTask([this]()
     {

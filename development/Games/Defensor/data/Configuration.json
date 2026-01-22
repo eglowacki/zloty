@@ -2,7 +2,7 @@
 	"Configuration" : {
 		"Debug": {
 			"Logging": {
-				"Filters": [ "INPT", "WIND", "MULT", "POOL", "WIN", "APP", "METR", "!GSYS" ],
+				"Filters": [ "INPT", "WIND", "MULT", "POOL", "WIN", "APP", "METR", "GSYS", "WATC" ],
 				"Level": "INFO",
 				"Outputs": {
 					"ylog::OutputDebug": {
@@ -110,6 +110,15 @@
 						"Converters": "JSON",
 						"Filters": [ "*.json" ],
 						"Path": [ "$(DataFolder)/Data/Manifest" ],
+						"ReadOnly": true,
+						"Recursive": false
+					}
+				},
+				{
+					"ManifestWrite": {
+						"Converters": "JSON",
+						"Filters": [ "*.json" ],
+						"Path": [ "$(DataFolder)../../../../Games/Defensor/data/Manifest" ],
 						"ReadOnly": false,
 						"Recursive": false
 					}

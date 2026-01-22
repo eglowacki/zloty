@@ -175,9 +175,6 @@ void yaget::io::Watcher::Observe()
         time::Milisecond_t endFrameTime = platform::GetRealTime(time::kMilisecondUnit);
         currentInterval -= endFrameTime - beginFrameTime;
     }
-
-    int zx = 0;
-    zx;
 }
 
 yaget::Strings yaget::io::Watcher::GetWatchedFiles() const

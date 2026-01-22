@@ -547,20 +547,20 @@ yaget::io::VirtualTransportSystem::Section::Section(const std::string& pathName)
 }
 
 
-inline yaget::io::VirtualTransportSystem::Section::Section(const io::Tag& tag)
+yaget::io::VirtualTransportSystem::Section::Section(const io::Tag& tag)
 	: Section(tag.mSectionName + "@" + tag.mName)
 {
 }
 
 
-inline yaget::io::VirtualTransportSystem::Section::Section(const Section& source)
+yaget::io::VirtualTransportSystem::Section::Section(const Section& source)
 	: Section()
 {
 	*this = source;
 }
 
 
-inline yaget::io::VirtualTransportSystem::Section& yaget::io::VirtualTransportSystem::Section::operator=(const Section& source)
+yaget::io::VirtualTransportSystem::Section& yaget::io::VirtualTransportSystem::Section::operator=(const Section& source)
 {
 	if (this != &source)
 	{
@@ -572,13 +572,13 @@ inline yaget::io::VirtualTransportSystem::Section& yaget::io::VirtualTransportSy
 }
 
 
-inline bool yaget::io::VirtualTransportSystem::Section::operator==(const Section& other) const
+bool yaget::io::VirtualTransportSystem::Section::operator==(const Section& other) const
 {
 	return Name == other.Name && Filter == other.Filter && Match == other.Match;
 }
 
 
-inline std::string yaget::io::VirtualTransportSystem::Section::ToString() const
+std::string yaget::io::VirtualTransportSystem::Section::ToString() const
 {
 	if (mName.empty())
 	{

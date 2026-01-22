@@ -1,7 +1,5 @@
 #include "Parsers/DependencyGraph.h"
-
 #include "VTS/ResolvedAssets.h"
-#include "VTS/VirtualTransportSystem.h"
 
 
 namespace
@@ -10,6 +8,32 @@ namespace
     {
         return "00000000-0000-0000-0000-00000000" + id;
     }
+
+
+    template <typename Key, typename Value>
+    std::size_t calculate_map_hash(const std::map<Key, Value>& m) 
+    {
+        std::size_t seed = 0;
+        std::hash<Key> hash_key;
+        std::hash<Value> hash_value;
+
+        // Iterate through the map. std::map guarantees a consistent, sorted order.
+        for (const auto& pair : m) 
+        {
+            std::size_t key_hash = hash_key(pair.first);
+            std::size_t value_hash = hash_value(pair.second);
+
+            // Combine the key and value hashes for the current pair
+            std::size_t pair_hash = key_hash;
+            yaget::conv::hash_combine(pair_hash, value_hash);
+
+            // Combine the current pair's hash into the total seed
+            yaget::conv::hash_combine(seed, pair_hash);
+        }
+
+        return seed;
+    }
+
 }
 
 
@@ -39,7 +63,6 @@ namespace yaget
             from_json(value, environment[key]);
         }
     }
-
 
 }
 
@@ -83,13 +106,11 @@ void yaget::DependencyNode::ResolveNames(const io::VirtualTransportSystem& vts)
     auto tag = vts.FindTag(mGuid);
     if (tag.IsValid())
     {
-        //io::VirtualTransportSystem::Section section(tag);
-        //mName = section.ToString();
-        mName = tag.mSectionName + "@" + tag.mName;
+        mName = conv::Convertor<Section>::ToString(Section(tag));
     }
     else if (!mName.empty())
     {
-        mGuid = vts.GetTag(io::VirtualTransportSystem::Section(mName)).mGuid;
+        mGuid = vts.GetTag(Section(mName)).mGuid;
     }
 
     for (auto& element : mDependencies)
@@ -99,64 +120,93 @@ void yaget::DependencyNode::ResolveNames(const io::VirtualTransportSystem& vts)
 }
 
 
+namespace
+{
+    template <typename T>
+    T TransformNodes(auto& dependencyData, yaget::io::VirtualTransportSystem& vts)
+    {
+        for (auto& node : dependencyData | std::views::values)
+        {
+            // disk file wil only have names, we need to resolve guids here
+            node.ResolveNames(vts);
+        }
+
+        T nodes = 
+            dependencyData | 
+            std::views::transform([](const auto& node)
+            {
+                int z = 0;
+                z;
+                if constexpr (std::is_same_v<typename T::key_type, yaget::Guid>)
+                {
+                    return typename T::value_type{node.second.mGuid, node.second};
+                }
+                else
+                {
+                    return typename T::value_type{node.second.mName, node.second};
+                }
+            }) | 
+            std::ranges::to<std::map>();
+
+        return nodes;
+    }
+
+    std::map<yaget::Guid, yaget::DependencyNode> ReadDependencyNodes(const yaget::io::VirtualTransportSystem::Section& section, yaget::io::VirtualTransportSystem& vts)
+    {
+        using namespace yaget;
+
+        std::map<Guid, DependencyNode> depNodes;
+
+        yaget::io::SingleBLobLoader<io::JsonAsset> cacheLoader(vts, section);
+        if (auto asset = cacheLoader.GetAsset())
+        {
+            auto& root = asset->root;
+            DiskDependencyData depData = root;
+            depNodes = TransformNodes<std::map<Guid, DependencyNode>>(depData, vts);
+        }
+
+        return depNodes;
+    }
+    
+}
+
+
 //-------------------------------------------------------------------------------------------------
 yaget::DependencyGraph::DependencyGraph(io::VirtualTransportSystem& vts, const io::VirtualTransportSystem::Section& fileName)
     : mVTS(vts)
     , mSection(fileName)
+    , mNodes(ReadDependencyNodes(mSection, mVTS))
+    , mNodesHash(calculate_map_hash(mNodes))
 {
-    io::SingleBLobLoader<io::JsonAsset> cacheLoader(mVTS, mSection);
-    if (auto asset = cacheLoader.GetAsset())
-    {
-        auto& root = asset->root;
-        DiskDependencyData depData = root;
-        for (auto& node : depData | std::views::values)
-        {
-            node.ResolveNames(mVTS);
-        }
-
-        mNodes = 
-            depData | 
-            std::views::transform([this](const auto& node)
-            {
-                return std::map<Guid, DependencyNode>::value_type{node.second.mGuid, node.second};
-            }) | 
-            std::ranges::to<std::map>();
-    }
 }
 
 
 //-------------------------------------------------------------------------------------------------
 yaget::DependencyGraph::~DependencyGraph()
 {
-    for (auto& node : mNodes | std::views::values)
-    {
-        node.ResolveNames(mVTS);
-    }
+    std::map<std::string, DependencyNode> depNode = TransformNodes<std::map<std::string, DependencyNode>>(mNodes, mVTS);
 
-    DiskDependencyData depNode = 
-        mNodes | 
-        std::views::transform([this](const auto& node)
+    auto nodesHash = calculate_map_hash(mNodes);
+    if (nodesHash != mNodesHash)
+    {
+        Section saveSection(mSection.Name + "Write@" + mSection.Filter);
+        const auto saveFileTag = mVTS.AssureTag(saveSection);
+        
+        nlohmann::json jsonBlock = depNode;
+        auto textBlock = json::PrettyPrint(jsonBlock);
+        io::Buffer buffer = io::CreateBuffer(textBlock);
+
+        io::SingleBLobLoader<io::JsonAsset> graphLoader(mVTS, saveFileTag);
+        if (auto asset = graphLoader.GetAsset())
         {
-                return DiskDependencyData::value_type{node.second.mName, node.second};
-        }) | 
-        std::ranges::to<std::map>();
-
-    const auto saveFileTag = mVTS.AssureTag(mSection);
-    
-    nlohmann::json jsonBlock = depNode;
-    auto textBlock = json::PrettyPrint(jsonBlock);
-    io::Buffer buffer = io::CreateBuffer(textBlock);
-
-    io::SingleBLobLoader<io::JsonAsset> graphLoader(mVTS, saveFileTag);
-    if (auto asset = graphLoader.GetAsset())
-    {
-        asset->mBuffer = buffer;
-        mVTS.UpdateAssetData(asset, io::VirtualTransportSystem::Request::UpdateOnly);
-    }
-    else
-    {
-        const auto newAsset = io::ResolveAsset<io::JsonAsset>(buffer, saveFileTag, mVTS);
-        mVTS.UpdateAssetData(newAsset, io::VirtualTransportSystem::Request::Add);
+            asset->mBuffer = buffer;
+            mVTS.UpdateAssetData(asset, io::VirtualTransportSystem::Request::UpdateOnly);
+        }
+        else
+        {
+            const auto newAsset = io::ResolveAsset<io::JsonAsset>(buffer, saveFileTag, mVTS);
+            mVTS.UpdateAssetData(newAsset, io::VirtualTransportSystem::Request::Add);
+        }
     }
 }
 

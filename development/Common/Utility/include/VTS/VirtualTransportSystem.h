@@ -506,14 +506,7 @@ namespace yaget
     {
         static std::string ToString(const io::VirtualTransportSystem::Section& value)
         {
-            if (std::string result = value.ToString(); !result.empty())
-            {
-                return result;
-            }
-            else
-            {
-                return "NULL";
-            }
+            return value.ToString();
         }
         static io::VirtualTransportSystem::Section FromString(const char* value)
         {
