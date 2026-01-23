@@ -231,6 +231,15 @@
     <ClInclude Include="..\include\LoggerCpp\Utils.h" />
     <ClInclude Include="..\include\Logger\CoreLogTags.h" />
     <ClInclude Include="..\include\Logger\YLog.h" />
+    <ClInclude Include="..\include\magic_enum\magic_enum.hpp" />
+    <ClInclude Include="..\include\magic_enum\magic_enum_all.hpp" />
+    <ClInclude Include="..\include\magic_enum\magic_enum_containers.hpp" />
+    <ClInclude Include="..\include\magic_enum\magic_enum_flags.hpp" />
+    <ClInclude Include="..\include\magic_enum\magic_enum_format.hpp" />
+    <ClInclude Include="..\include\magic_enum\magic_enum_fuse.hpp" />
+    <ClInclude Include="..\include\magic_enum\magic_enum_iostream.hpp" />
+    <ClInclude Include="..\include\magic_enum\magic_enum_switch.hpp" />
+    <ClInclude Include="..\include\magic_enum\magic_enum_utility.hpp" />
     <ClInclude Include="..\include\Math\Interpolators.h" />
     <ClInclude Include="..\include\Math\YagetMath.h" />
     <ClInclude Include="..\include\MemoryManager\NewAllocator.h" />
@@ -289,7 +298,6 @@
     <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="..\..\..\..\..\..\Dependencies\Mather\Mathter\Mathter.natvis" />
     <Natvis Include="..\..\..\BuildRules\Natvis\yaget.Core.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

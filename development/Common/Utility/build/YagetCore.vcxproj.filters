@@ -93,6 +93,9 @@
     <Filter Include="Core Files">
       <UniqueIdentifier>{7ca36875-f777-438d-b6bd-64fcef077f09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Debugging Files\Magic Enum Files">
+      <UniqueIdentifier>{9fafe32b-33bb-4254-9c47-0e01dbc60fc8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
@@ -662,6 +665,33 @@
     <ClInclude Include="..\include\Parsers\DependencyGraph.h">
       <Filter>Parsers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\magic_enum\magic_enum.hpp">
+      <Filter>Debugging Files\Magic Enum Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\magic_enum\magic_enum_all.hpp">
+      <Filter>Debugging Files\Magic Enum Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\magic_enum\magic_enum_containers.hpp">
+      <Filter>Debugging Files\Magic Enum Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\magic_enum\magic_enum_flags.hpp">
+      <Filter>Debugging Files\Magic Enum Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\magic_enum\magic_enum_format.hpp">
+      <Filter>Debugging Files\Magic Enum Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\magic_enum\magic_enum_fuse.hpp">
+      <Filter>Debugging Files\Magic Enum Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\magic_enum\magic_enum_iostream.hpp">
+      <Filter>Debugging Files\Magic Enum Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\magic_enum\magic_enum_switch.hpp">
+      <Filter>Debugging Files\Magic Enum Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\magic_enum\magic_enum_utility.hpp">
+      <Filter>Debugging Files\Magic Enum Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\source\Win32\CommandLineArgs.inl">
@@ -686,9 +716,6 @@
   <ItemGroup>
     <Natvis Include="..\..\..\BuildRules\Natvis\yaget.Core.natvis">
       <Filter>Debugging Files</Filter>
-    </Natvis>
-    <Natvis Include="..\..\..\..\..\..\Dependencies\Mather\Mathter\Mathter.natvis">
-      <Filter>Math</Filter>
     </Natvis>
   </ItemGroup>
 </Project>
