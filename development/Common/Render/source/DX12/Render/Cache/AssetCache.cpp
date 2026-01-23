@@ -61,7 +61,7 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::Virtu
 //-------------------------------------------------------------------------------------------------
 yaget::render::AssetCache::~AssetCache()
 {
-    if (mCacheDirty)
+    if (mCacheStatus != CacheStatus::Clean)
     {
         // we need to serialize mCacheIndex and mCache into a single buffer and save it back to VTS
         io::Buffer indexBuffer = io::CreateBuffer(sizeof(size_t) + mCacheIndex.size() * (sizeof(Guid) + sizeof(Location)));
@@ -111,6 +111,7 @@ yaget::io::Buffer yaget::render::AssetCache::GetCachedAsset(const yaget::io::Tag
 }
 
 
+//-------------------------------------------------------------------------------------------------
 void yaget::render::AssetCache::SaveCachedAsset(const yaget::io::Tag& tag, yaget::io::Buffer buffer)
 {
     // see if we already have this shader saved and if size matches, just overwrite
@@ -120,7 +121,7 @@ void yaget::render::AssetCache::SaveCachedAsset(const yaget::io::Tag& tag, yaget
         if (location.mSize == io::size_data(buffer))
         {
             io::CopyBuffer(buffer, mCache.mBuffer, location.mOffset);
-            mCacheDirty = true;
+            mCacheStatus = ored(mCacheStatus,CacheStatus::Dirty);
             return;
         }
 
@@ -131,7 +132,7 @@ void yaget::render::AssetCache::SaveCachedAsset(const yaget::io::Tag& tag, yaget
     mCacheIndex.insert({ tag.mGuid, { mCache.mWriteOffset, io::size_data(buffer) }});
     mCache.AssureWriteSize(io::size_data(buffer));
     mCache.WriteDataChunk(buffer);
-    mCacheDirty = true;
+    mCacheStatus = ored(mCacheStatus,CacheStatus::Holes);
 }
 
 
@@ -139,5 +140,5 @@ void yaget::render::AssetCache::SaveCachedAsset(const yaget::io::Tag& tag, yaget
 void yaget::render::AssetCache::ClearCachedAsset(const io::Tag& tag)
 {
     mCacheIndex.erase(tag.mGuid);
-    mCacheDirty = true;
+    mCacheStatus = ored(mCacheStatus,CacheStatus::Dirty);
 }

@@ -18,6 +18,11 @@
 #include "Streams/Buffers.h"
 #include "Render/Cache/CacheWatcher.h"
 
+namespace yaget
+{
+    class DependencyGraph;
+}
+
 struct ID3D12PipelineState;
 struct ID3D12RootSignature;
 struct ID3D12Device;
@@ -30,7 +35,7 @@ namespace defensor::render
     class RenderPipeline : public yaget::render::CacheWatcher
     {
     public:
-        RenderPipeline(ID3D12Device* device, io::VirtualTransportSystem& vts);
+        RenderPipeline(ID3D12Device* device, io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph);
         ~RenderPipeline();
 
         ID3D12PipelineState* GetPipeline(const yaget::io::Tag& tag, ID3D12RootSignature* rootSignature, io::Buffer vertexShaderBuffer, io::Buffer pixelShaderBuffer);
@@ -41,5 +46,7 @@ namespace defensor::render
         ID3D12Device* mDevice = {};
 
         std::map<yaget::io::Tag, yaget::render::ComPtr<ID3D12PipelineState>> mAssets;
+        DependencyGraph& mDependencyGraph;
+
     };
 }

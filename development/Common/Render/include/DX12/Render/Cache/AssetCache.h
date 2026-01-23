@@ -71,7 +71,7 @@ namespace yaget::render
 
         // describe pipeline state render target formats
         NumRTVTargetsOne = 1ULL << 26,
-        NumRTVTargetsTwo = 1ULL<< 27,
+        NumRTVTargetsTwo = 1ULL << 27,
         //NumRTVTargetsThree = 1ULL << 28,
         //NumRTVTargetsFour = 1ULL << 29,
 
@@ -89,26 +89,40 @@ namespace yaget::render
         DSVFormatBlah7 = 1ULL << 40,
     };
 
+    template <typename E>
+    constexpr E ored(E lhs, E rhs)
+    {
+        return static_cast<E>(
+            static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));
+    }
+    template <typename E>
+    constexpr E anded(E lhs, E rhs)
+    {
+        return static_cast<E>(
+            static_cast<uint64_t>(lhs) & static_cast<uint64_t>(rhs));
+    }
+
     //------------------------------------------------------------------------------------------------
     // Overload the bitwise OR operator for CarOptions
-    constexpr AssetCacheType operator|(AssetCacheType lhs, AssetCacheType rhs) 
+    constexpr AssetCacheType operator|(AssetCacheType lhs, AssetCacheType rhs)
     {
-        return static_cast<AssetCacheType>(
-            static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));
+        return ored(lhs, rhs);
     }
 
     //------------------------------------------------------------------------------------------------
     // Overload bitwise AND operator (and others like &, ^, ~, etc.)
     constexpr AssetCacheType operator&(AssetCacheType lhs, AssetCacheType rhs)
     {
-        return static_cast<AssetCacheType>(
-            static_cast<uint64_t>(lhs) & static_cast<uint64_t>(rhs));
+        return anded(lhs, rhs);
     }
 
     static AssetCacheType BasicVertex = AssetCacheType::VertexPosition | AssetCacheType::VertexColor;
     static AssetCacheType BasicPixel = AssetCacheType::PixelColor;
     static AssetCacheType BasicSignature = BasicVertex | BasicPixel | AssetCacheType::SigConstMatrix;
-    static AssetCacheType BasicPipeline = AssetCacheType::RasterizerStateCounterClockwise | AssetCacheType::BlendModeOpaque | AssetCacheType::DepthStateNone | AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
+    static AssetCacheType BasicPipeline = BasicSignature | 
+                                          AssetCacheType::RasterizerStateCounterClockwise |
+                                          AssetCacheType::BlendModeOpaque | AssetCacheType::DepthStateNone | 
+                                          AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
 
     //-------------------------------------------------------------------------------------------------
     class AssetCache
@@ -133,9 +147,17 @@ namespace yaget::render
             size_t mOffset{};
             size_t mSize{};
         };
+
         std::map<Guid, Location> mCacheIndex;
         io::MessagingBuffer mCache;
-        bool mCacheDirty = false;
+
+        enum class CacheStatus
+        {
+            Clean = 1 << 0,
+            Dirty = 1 << 1,
+            Holes = 1 << 2,
+        };
+        CacheStatus mCacheStatus = CacheStatus::Clean;
 
         io::VirtualTransportSystem::Section mCacheSection;
 
@@ -143,3 +165,4 @@ namespace yaget::render
     };
 
 }
+

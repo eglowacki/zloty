@@ -49,9 +49,10 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderPipeline::RenderPipeline(ID3D12Device* device, io::VirtualTransportSystem& vts)
+defensor::render::RenderPipeline::RenderPipeline(ID3D12Device* device, io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph)
     : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Pipelines"))
     , mDevice(device)
+    , mDependencyGraph(dependencyGraph)
 {
 }
 

@@ -36,12 +36,10 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mAssetPoolThread("PreloadRenderAssets", 1)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
     , mDependencyGraph(app.VTS(), io::VirtualTransportSystem::Section("Manifest@RenderDependencies"))
-    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS())
-    , mRenderPipeline(GetDevice().GetAdapter().GetDevice(), app.VTS())
-    , mRenderShader(app.VTS())
+    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph)
+    , mRenderPipeline(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph)
+    , mRenderShader(app.VTS(), mDependencyGraph)
 {
-    using namespace yaget::render;
-
     mAssetPoolThread.AddTask([this]()
     {
         PreloadAssets();

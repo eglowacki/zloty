@@ -46,9 +46,10 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderSignatures::RenderSignatures(ID3D12Device* device, yaget::io::VirtualTransportSystem& vts)
+defensor::render::RenderSignatures::RenderSignatures(ID3D12Device* device, yaget::io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph)
     : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Signatures"))
     , mDevice(device)
+    , mDependencyGraph(dependencyGraph)
 {
 }
 
@@ -63,7 +64,6 @@ ID3D12RootSignature* defensor::render::RenderSignatures::GetSignature(const yage
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 
     std::lock_guard mutexLocker(mMutex);
-
     AssureTagWatch(tag, [this](auto tag) { CachedAssetChanged(tag); });
 
     if (auto it = mAssets.find(tag); it != mAssets.end())

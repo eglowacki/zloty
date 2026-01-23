@@ -5,6 +5,7 @@
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
 #include "magic_enum/magic_enum.hpp"
+#include "Parsers/DependencyGraph.h"
 
 
 namespace
@@ -70,8 +71,9 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderShader::RenderShader(yaget::io::VirtualTransportSystem& vts)
+defensor::render::RenderShader::RenderShader(yaget::io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph)
     : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Shaders"))
+    , mDependencyGraph(dependencyGraph)
 {
 }
 
@@ -116,6 +118,9 @@ void defensor::render::RenderShader::CachedAssetChanged(const io::Tag& tag)
     mAssets.erase(tag);
     mCache.ClearCachedAsset(tag);
     mVTS.ClearAsset(tag);
+    DependencyNode* shaderNode = mDependencyGraph.Find(tag.mGuid);
+    shaderNode;
+
 }
 
 
