@@ -119,6 +119,7 @@ namespace yaget::render
 
         io::Buffer GetCachedAsset(const io::Tag& tag) const;
         void SaveCachedAsset(const io::Tag& tag, io::Buffer buffer);
+        void ClearCachedAsset(const io::Tag& tag);
 
         static yaget::io::VirtualTransportSystem::Section operator[](AssetCacheType typeFlag);
 

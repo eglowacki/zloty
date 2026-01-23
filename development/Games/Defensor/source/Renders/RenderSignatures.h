@@ -35,6 +35,6 @@ namespace defensor::render
 
         ID3D12Device* mDevice = {};
 
-        std::map<yaget::io::Tag, yaget::render::ComPtr<ID3D12RootSignature>> mSignatures;
+        std::map<yaget::io::Tag, yaget::render::ComPtr<ID3D12RootSignature>> mAssets;
     };
 }

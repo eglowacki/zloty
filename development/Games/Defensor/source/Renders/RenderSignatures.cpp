@@ -62,9 +62,11 @@ ID3D12RootSignature* defensor::render::RenderSignatures::GetSignature(const yage
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 
+    std::lock_guard mutexLocker(mMutex);
+
     AssureTagWatch(tag, [this](auto tag) { CachedAssetChanged(tag); });
 
-    if (auto it = mSignatures.find(tag); it != mSignatures.end())
+    if (auto it = mAssets.find(tag); it != mAssets.end())
     {
         return it->second.Get();
     }
@@ -73,7 +75,7 @@ ID3D12RootSignature* defensor::render::RenderSignatures::GetSignature(const yage
     bool missingCachedData = yaget::io::size_data(cachedData) == 0;
 
     auto sig = CreateRootSignature(tag, mDevice, cachedData);
-    mSignatures.insert({tag, sig});
+    mAssets.insert({tag, sig});
 
     if (yaget::io::size_data(cachedData) && missingCachedData)
     {
@@ -87,5 +89,8 @@ ID3D12RootSignature* defensor::render::RenderSignatures::GetSignature(const yage
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSignatures::CachedAssetChanged(const yaget::io::Tag& tag)
 {
-    tag;
+    std::lock_guard mutexLocker(mMutex);
+
+    mAssets.erase(tag);
+    mCache.ClearCachedAsset(tag);
 }

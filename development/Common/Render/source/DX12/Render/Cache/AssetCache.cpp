@@ -133,3 +133,11 @@ void yaget::render::AssetCache::SaveCachedAsset(const yaget::io::Tag& tag, yaget
     mCache.WriteDataChunk(buffer);
     mCacheDirty = true;
 }
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::AssetCache::ClearCachedAsset(const io::Tag& tag)
+{
+    mCacheIndex.erase(tag.mGuid);
+    mCacheDirty = true;
+}

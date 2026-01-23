@@ -35,10 +35,10 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
     , mAssetPoolThread("PreloadRenderAssets", 1)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
+    , mDependencyGraph(app.VTS(), io::VirtualTransportSystem::Section("Manifest@RenderDependencies"))
     , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS())
     , mRenderPipeline(GetDevice().GetAdapter().GetDevice(), app.VTS())
     , mRenderShader(app.VTS())
-    , mDependencyGraph(app.VTS(), io::VirtualTransportSystem::Section("Manifest@RenderDependencies"))
 {
     using namespace yaget::render;
 
@@ -78,6 +78,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         auto pixelShaderBuffer = mRenderShader.GetShader(pixelShaderTag, RenderShader::ShaderType::Pixel);
 
         auto pipelineTag = TypeToTag(yaget::render::BasicPipeline, vts);
+        //DependencyNode* psoNode = mDependencyGraph.Find(pipelineTag.mGuid);
+
         auto pipe = mRenderPipeline.GetPipeline(pipelineTag, rootSig, vertexShaderBuffer, pixelShaderBuffer);
 
         commandList->SetGraphicsRootSignature(rootSig);

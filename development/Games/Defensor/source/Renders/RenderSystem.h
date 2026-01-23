@@ -35,11 +35,11 @@ namespace defensor::render
 
         mt::JobPool mAssetPoolThread;
         math3d::Interpolator mColorInterpolator;
+
+        DependencyGraph mDependencyGraph;
         RenderSignatures mRenderSignatures;
         RenderPipeline mRenderPipeline;
         RenderShader mRenderShader;
-
-        DependencyGraph mDependencyGraph;
 
         std::atomic_bool mAssetsPreloaded{false};
     };

@@ -40,6 +40,6 @@ namespace defensor::render
 
         ID3D12Device* mDevice = {};
 
-        std::map<yaget::io::Tag, yaget::render::ComPtr<ID3D12PipelineState>> mPipelines;
+        std::map<yaget::io::Tag, yaget::render::ComPtr<ID3D12PipelineState>> mAssets;
     };
 }

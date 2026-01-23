@@ -22,7 +22,7 @@ namespace fs = std::filesystem;
 namespace
 {
     // milliseconds
-    const yaget::time::TimeUnits_t DefaultCleanupWait = 250;
+    const yaget::time::TimeUnits_t DefaultCleanupWait = 100;
 
 } // namespace
 
@@ -109,7 +109,12 @@ void yaget::io::Watcher::Observe()
                     it.mModTime = fs::last_write_time(p, ec);
                     if (ec)
                     {
-                        YLOG_ERROR("WATC", "Could not get last write time for watched file: '%s'.", it.mFileName.c_str());
+                        if (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory))
+                        {
+                            auto ecText = fmt::format("value = '{}'\ncategory = '{}'\nmessage = '{}'.", ec.value(), ec.category().name(), ec.message());
+                            YLOG_ERROR("WATC", "Could not get last write time for watched file: '%s'.\n%s.", it.mFileName.c_str(), ecText.c_str());
+                        }
+
                         it.mModTime = {};
                     }
 
@@ -129,10 +134,10 @@ void yaget::io::Watcher::Observe()
             }
 
             Strings watchedFiles;
-
-            for (auto& it : watchedTickets)
+            
+            if (mQuitRequested == false)
             {
-                if (mQuitRequested == false)
+                for (auto& it : watchedTickets)
                 {
                     fs::path p = it.mFileName;
                     std::error_code ec;
@@ -163,9 +168,9 @@ void yaget::io::Watcher::Observe()
                         }
 
                     }
-                }
 
-                watchedFiles.push_back(it.mFileName);
+                    watchedFiles.push_back(it.mFileName);
+                }
             }
 
             std::sort(watchedFiles.begin(), watchedFiles.end());

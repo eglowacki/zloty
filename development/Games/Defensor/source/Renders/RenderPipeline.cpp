@@ -65,9 +65,10 @@ ID3D12PipelineState* defensor::render::RenderPipeline::GetPipeline(const yaget::
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 
+    std::lock_guard mutexLocker(mMutex);
     AssureTagWatch(tag, [this](auto tag) { CachedAssetChanged(tag); });
 
-    if (auto it = mPipelines.find(tag); it != mPipelines.end())
+    if (auto it = mAssets.find(tag); it != mAssets.end())
     {
         return it->second.Get();
     }
@@ -75,7 +76,7 @@ ID3D12PipelineState* defensor::render::RenderPipeline::GetPipeline(const yaget::
     io::Buffer cachedData = mCache.GetCachedAsset(tag);
 
     auto pipe = CreatePipeline<DirectX::VertexPositionColor>(mDevice, rootSignature, vertexShaderBuffer, pixelShaderBuffer, cachedData);
-    mPipelines.insert({tag, pipe});
+    mAssets.insert({tag, pipe});
 
     if (!io::size_data(cachedData))
     {
@@ -93,5 +94,8 @@ ID3D12PipelineState* defensor::render::RenderPipeline::GetPipeline(const yaget::
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderPipeline::CachedAssetChanged(const yaget::io::Tag& tag)
 {
-    tag;
+    std::lock_guard mutexLocker(mMutex);
+
+    mAssets.erase(tag);
+    mCache.ClearCachedAsset(tag);
 }

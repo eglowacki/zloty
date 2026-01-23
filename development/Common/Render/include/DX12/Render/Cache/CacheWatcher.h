@@ -37,6 +37,7 @@ namespace yaget::render
         yaget::render::AssetCache mCache;
         io::Watcher mWatcher;
         std::set<io::Tag> mWatchedTags;
+        std::mutex mMutex;
     };
 
 }

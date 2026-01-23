@@ -1,5 +1,19 @@
 {
-    "0001": ["0010", "0011", "0012"],
-    "0002": ["0020", "0021", "0022"],
-    "0003": []
+    "Transient@BasicPipe": {
+        "dependencies": [
+            {
+                "dependencies": [],
+                "name": "Transient@BasicSig"
+            },
+            {
+                "dependencies": [],
+                "name": "VeretexShaders@Basic"
+            },
+            {
+                "dependencies": [],
+                "name": "PixelShaders@Basic"
+            }
+        ],
+        "name": "Transient@BasicPipe"
+    }
 }

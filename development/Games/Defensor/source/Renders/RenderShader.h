@@ -46,8 +46,9 @@ namespace defensor::render
 
     private:
         void CachedAssetChanged(const io::Tag& tag);
+        io::Buffer AssureShaderNonMT(const yaget::io::Tag& tag, ShaderType shaderType);
 
-        std::map<io::Tag, io::Buffer> mShaders;
+        std::map<io::Tag, io::Buffer> mAssets;
     };
 
 }
