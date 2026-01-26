@@ -89,6 +89,7 @@ namespace yaget::render
     };
 
 
+    //------------------------------------------------------------------------------------------------
     template <typename E>
     constexpr E ored(E lhs, E rhs)
     {
@@ -97,6 +98,7 @@ namespace yaget::render
     }
 
 
+    //------------------------------------------------------------------------------------------------
     template <typename E>
     constexpr E anded(E lhs, E rhs)
     {

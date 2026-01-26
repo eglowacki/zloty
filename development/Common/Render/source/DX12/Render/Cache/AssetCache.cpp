@@ -63,9 +63,7 @@ yaget::render::AssetCache::~AssetCache()
     if (mCacheStatus != CacheStatus::Clean)
     {
         // we need to serialize mCacheIndex and mCache into a single buffer and save it back to VTS
-        io::Buffer indexBuffer = io::CreateBuffer(
-                                                  sizeof(size_t) + mCacheIndex.size() * (sizeof(Guid) + sizeof(
-                                                      Location)));
+        io::Buffer indexBuffer = io::CreateBuffer(sizeof(size_t) + mCacheIndex.size() * (sizeof(Guid) + sizeof(Location)));
         auto dataPointer = io::cast_data<char>(indexBuffer);
         size_t offset = 0;
         auto numElements = mCacheIndex.size();
