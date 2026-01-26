@@ -15,7 +15,6 @@
 #pragma once
 
 #include "HashUtilities.h"
-#include "YagetCore.h"
 #include "Streams/Guid.h"
 #include "VTS/VirtualTransportSystem.h"
 
@@ -29,7 +28,9 @@ namespace yaget
         DependencyNode() = default;
         DependencyNode(const Guid& guid);
         void Add(const Guid& guid);
-        DependencyNode* FindNode(const Guid& guid) const;
+        DependencyNode* FindNode(const Guid& guid, std::vector<DependencyNode*> *pathTo) const;
+
+        bool IsSingleDepth() const;
 
         void ResolveNames(const io::VirtualTransportSystem& vts);
 
@@ -37,6 +38,7 @@ namespace yaget
 
         Guid mGuid;
         std::string mName;
+        bool mDirty = false;
         std::vector<DependencyNode> mDependencies;
     };
 
@@ -50,7 +52,7 @@ namespace yaget
 
         void Add(const Guid& parentGuid, const Guid& childGuid);
 
-        DependencyNode* Find(const Guid& guid) const;
+        DependencyNode* Find(const Guid& guid, std::vector<DependencyNode*> *pathTo) const;
 
     private:
         io::VirtualTransportSystem& mVTS;

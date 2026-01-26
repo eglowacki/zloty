@@ -5,6 +5,8 @@
 #include <d3dx12.h>
 #include <Fmt/format.h>
 #include <VertexTypes.h>
+
+#include "Parsers/DependencyGraph.h"
 #include "Streams/Buffers.h"
 
 
@@ -12,7 +14,7 @@ namespace
 {
  
     template<typename T>
-    yaget::render::ComPtr<ID3D12PipelineState> CreatePipeline(ID3D12Device* device, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer, yaget::io::Buffer dataBlob)
+    yaget::render::ComPtr<ID3D12PipelineState> CreatePipeline(ID3D12Device* device, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer, yaget::io::Buffer& dataBlob)
     {
         using namespace yaget;
 
@@ -42,6 +44,15 @@ namespace
         error_handlers::ThrowOnError(hr, "Could not create Pipeline State.");
         YAGET_RENDER_SET_DEBUG_NAME(pipelineState.Get(), fmt::format("Pipeline State"));
 
+        if (!io::size_data(dataBlob))
+        {
+            yaget::render::ComPtr<ID3DBlob> pipeBlob;
+            hr = pipelineState->GetCachedBlob(&pipeBlob);
+            error_handlers::ThrowOnError(hr, fmt::format("Could not get ID3D12PipelineState as a blob to save it"));
+
+            dataBlob = io::CreateBuffer(static_cast<const char*>(pipeBlob->GetBufferPointer()), pipeBlob->GetBufferSize());
+        }
+
         return pipelineState;
     }
 
@@ -50,9 +61,8 @@ namespace
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderPipeline::RenderPipeline(ID3D12Device* device, io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Pipelines"))
+    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Pipelines"), dependencyGraph)
     , mDevice(device)
-    , mDependencyGraph(dependencyGraph)
 {
 }
 
@@ -67,36 +77,11 @@ ID3D12PipelineState* defensor::render::RenderPipeline::GetPipeline(const yaget::
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 
     std::lock_guard mutexLocker(mMutex);
-    AssureTagWatch(tag, [this](auto tag) { CachedAssetChanged(tag); });
 
-    if (auto it = mAssets.find(tag); it != mAssets.end())
+    auto result = GetAsset(tag, [this, rootSignature, vertexShaderBuffer, pixelShaderBuffer](auto tag, auto& cachedData)
     {
-        return it->second.Get();
-    }
+        return CreatePipeline<DirectX::VertexPositionColor>(mDevice, rootSignature, vertexShaderBuffer, pixelShaderBuffer, cachedData);
+    });
 
-    io::Buffer cachedData = mCache.GetCachedAsset(tag);
-
-    auto pipe = CreatePipeline<DirectX::VertexPositionColor>(mDevice, rootSignature, vertexShaderBuffer, pixelShaderBuffer, cachedData);
-    mAssets.insert({tag, pipe});
-
-    if (!io::size_data(cachedData))
-    {
-        yaget::render::ComPtr<ID3DBlob> pipeBlob;
-        HRESULT hr = pipe->GetCachedBlob(&pipeBlob);
-        error_handlers::ThrowOnError(hr, fmt::format("Could not get ID3D12PipelineState '{}' as a blob to save it", conv::Convertor<io::Tag>::ToString(tag)));
-
-        mCache.SaveCachedAsset(tag, io::CreateBuffer(static_cast<const char*>(pipeBlob->GetBufferPointer()), pipeBlob->GetBufferSize()));
-    }
-
-    return pipe.Get();
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void defensor::render::RenderPipeline::CachedAssetChanged(const yaget::io::Tag& tag)
-{
-    std::lock_guard mutexLocker(mMutex);
-
-    mAssets.erase(tag);
-    mCache.ClearCachedAsset(tag);
+    return result.Get();
 }

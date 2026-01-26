@@ -28,7 +28,7 @@ namespace defensor::render
     using namespace yaget;
 
     //-------------------------------------------------------------------------------------------------
-    class RenderShader : public yaget::render::CacheWatcher
+    class RenderShader : public yaget::render::CacheWatcher<io::Buffer>
     {
     public:
         RenderShader(io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph);
@@ -48,12 +48,7 @@ namespace defensor::render
         std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType);
 
     private:
-        void CachedAssetChanged(const io::Tag& tag);
         io::Buffer AssureShaderNonMT(const yaget::io::Tag& tag, ShaderType shaderType);
-
-        std::map<io::Tag, io::Buffer> mAssets;
-        yaget::DependencyGraph& mDependencyGraph;
-
     };
 
 }

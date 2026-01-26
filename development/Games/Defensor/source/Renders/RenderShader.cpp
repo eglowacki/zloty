@@ -72,8 +72,7 @@ namespace
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderShader::RenderShader(yaget::io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Shaders"))
-    , mDependencyGraph(dependencyGraph)
+    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Shaders"), dependencyGraph)
 {
 }
 
@@ -111,27 +110,11 @@ std::vector<yaget::io::Buffer> defensor::render::RenderShader::GetShaders(const 
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::render::RenderShader::CachedAssetChanged(const io::Tag& tag)
-{
-    std::lock_guard mutexLocker(mMutex);
-
-    mAssets.erase(tag);
-    mCache.ClearCachedAsset(tag);
-    mVTS.ClearAsset(tag);
-    DependencyNode* shaderNode = mDependencyGraph.Find(tag.mGuid);
-    shaderNode;
-
-}
-
-
-//-------------------------------------------------------------------------------------------------
 yaget::io::Buffer defensor::render::RenderShader::AssureShaderNonMT(const yaget::io::Tag& tag, defensor::render::RenderShader::ShaderType shaderType)
 {
-    AssureTagWatch(tag, [this](auto tag) { CachedAssetChanged(tag); });
-
-    if (auto it = mAssets.find(tag); it != mAssets.end())
+    if (auto asset =  GetAsset(tag); io::size_data(asset))
     {
-        return it->second;
+        return asset;
     }
 
     if (auto shader = mCache.GetCachedAsset(tag); yaget::io::size_data(shader))

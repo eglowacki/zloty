@@ -32,21 +32,15 @@ namespace defensor::render
 {
     using namespace yaget;
 
-    class RenderPipeline : public yaget::render::CacheWatcher
+    class RenderPipeline : public yaget::render::CacheWatcher<yaget::render::ComPtr<ID3D12PipelineState>>
     {
     public:
-        RenderPipeline(ID3D12Device* device, io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph);
+        RenderPipeline(ID3D12Device* device, io::VirtualTransportSystem& vts, DependencyGraph& dependencyGraph);
         ~RenderPipeline();
 
-        ID3D12PipelineState* GetPipeline(const yaget::io::Tag& tag, ID3D12RootSignature* rootSignature, io::Buffer vertexShaderBuffer, io::Buffer pixelShaderBuffer);
+        ID3D12PipelineState* GetPipeline(const io::Tag& tag, ID3D12RootSignature* rootSignature, io::Buffer vertexShaderBuffer, io::Buffer pixelShaderBuffer);
 
     private:
-        void CachedAssetChanged(const yaget::io::Tag& tag);
-
         ID3D12Device* mDevice = {};
-
-        std::map<yaget::io::Tag, yaget::render::ComPtr<ID3D12PipelineState>> mAssets;
-        DependencyGraph& mDependencyGraph;
-
     };
 }

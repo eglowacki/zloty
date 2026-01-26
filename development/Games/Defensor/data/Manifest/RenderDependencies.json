@@ -1,18 +1,9 @@
 {
     "Transient@BasicPipe": {
         "dependencies": [
-            {
-                "dependencies": [],
-                "name": "Transient@BasicSig"
-            },
-            {
-                "dependencies": [],
-                "name": "VeretexShaders@Basic"
-            },
-            {
-                "dependencies": [],
-                "name": "PixelShaders@Basic"
-            }
+            "Transient@BasicSig",
+            "VeretexShaders@Basic",
+            "PixelShaders@Basic"
         ],
         "name": "Transient@BasicPipe"
     }
