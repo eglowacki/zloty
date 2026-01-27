@@ -65,6 +65,9 @@ app::DisplaySurface WindowApplication::GetSurface() const
     return app::DisplaySurface{ mWindowHandler->WinHandle(), surface };
 }
 
+
+size_t WindowApplication::IconId = 0;;
+
 WindowApplication::WindowApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options)
     : Application(title, director, vts, options)
     , mWindowHandler(std::make_unique<app::ProcHandler>(

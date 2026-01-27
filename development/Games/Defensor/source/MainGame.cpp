@@ -10,7 +10,7 @@
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 #include "Render/AdapterInfo.h"
-
+#include "../resource.h"
 
 namespace yaget::app
 {
@@ -86,6 +86,7 @@ int defensor::Run(const yaget::args::Options& options)
     const items::Director::RuntimeMode directorMode = options.find<bool>("director_fix", false) ? items::Director::RuntimeMode::Reset : items::Director::RuntimeMode::Default;
     items::DefaultDirector<game::DefensorSystemsCoordinator> director("Director", directorMode);
 
+    yaget::render::DesktopApplication::IconId = IDI_ICON2;
     const auto selectedAdapter = yaget::render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
     yaget::render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
 

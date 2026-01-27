@@ -1,5 +1,4 @@
 #include "RenderShader.h"
-
 #include "Core/ErrorHandlers.h"
 #include "Render/Platform/ResourceCompiler.h"
 #include "Streams/Guid.h"
@@ -10,8 +9,7 @@
 
 namespace
 {
-    const char* buildInShaderSource = 
-        R"( struct PSInput
+    const char* buildInShaderSource = R"( struct PSInput
             {
                 float4 position : SV_POSITION;
                 float4 color : COLOR;
@@ -40,41 +38,36 @@ namespace
         const char* mTarget;
     };
 
-    std::map<defensor::render::RenderShader::ShaderType, ShaderMapping> ShaderMappings =
-    {
-        { defensor::render::RenderShader::ShaderType::Vertex, {"VSMain", "vs_5_1"} },
-        { defensor::render::RenderShader::ShaderType::Pixel, {"PSMain", "ps_5_1"} },
-        { defensor::render::RenderShader::ShaderType::Geometry, {"GSMain", "gs_5_1"} },
-        { defensor::render::RenderShader::ShaderType::Compute, {"CSMain", "cs_5_1"} },
-        { defensor::render::RenderShader::ShaderType::Hull, {"HSMain", "hs_5_1"} },
-        { defensor::render::RenderShader::ShaderType::Domain, {"DSMain", "ds_5_1"} }
+    std::map<defensor::render::RenderShader::ShaderType, ShaderMapping> ShaderMappings = {
+        { defensor::render::RenderShader::ShaderType::Vertex, { "VSMain", "vs_5_1" } },
+        { defensor::render::RenderShader::ShaderType::Pixel, { "PSMain", "ps_5_1" } },
+        { defensor::render::RenderShader::ShaderType::Geometry, { "GSMain", "gs_5_1" } },
+        { defensor::render::RenderShader::ShaderType::Compute, { "CSMain", "cs_5_1" } },
+        { defensor::render::RenderShader::ShaderType::Hull, { "HSMain", "hs_5_1" } },
+        { defensor::render::RenderShader::ShaderType::Domain, { "DSMain", "ds_5_1" } }
     };
+
 
     yaget::io::Buffer CompileShader(const yaget::io::Buffer& sourceBuffer, defensor::render::RenderShader::ShaderType shaderType)
     {
         using namespace yaget;
-
         io::Buffer result;
         if (io::size_data(sourceBuffer))
         {
             const char* entryName = ShaderMappings[shaderType].mEntryPoint;
             const char* target = ShaderMappings[shaderType].mTarget;
-
             render::ResourceCompiler compiler(io::cast_to_view(sourceBuffer), entryName, target, false /*useNewestCompiler*/);
             result = compiler.GetCompiled();
         }
-
         return result;
     }
-
 }
 
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderShader::RenderShader(yaget::io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph)
     : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Shaders"), dependencyGraph)
-{
-}
+{}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -84,10 +77,9 @@ defensor::render::RenderShader::~RenderShader() = default;
 //-------------------------------------------------------------------------------------------------
 yaget::io::Buffer defensor::render::RenderShader::GetShader(const yaget::io::Tag& tag, ShaderType shaderType)
 {
-    YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
-
-    auto result = GetShaders( io::Tags{ tag }, shaderType);
-
+    YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(),
+                 yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
+    auto result = GetShaders(io::Tags{ tag }, shaderType);
     return !result.empty() ? *result.begin() : yaget::io::Buffer{};
 }
 
@@ -96,15 +88,10 @@ yaget::io::Buffer defensor::render::RenderShader::GetShader(const yaget::io::Tag
 std::vector<yaget::io::Buffer> defensor::render::RenderShader::GetShaders(const yaget::io::Tags& tags, ShaderType shaderType)
 {
     std::lock_guard mutexLocker(mMutex);
-
-    std::vector<yaget::io::Buffer> results = 
-        tags | 
-        std::views::transform([this, shaderType](const auto& tag)
-        {
-            return AssureShaderNonMT(tag, shaderType);
-        }) | 
-        std::ranges::to<std::vector>();
-
+    std::vector<yaget::io::Buffer> results = tags | std::views::transform([this, shaderType](const auto& tag)
+    {
+        return AssureShaderNonMT(tag, shaderType);
+    }) | std::ranges::to<std::vector>();
     return results;
 }
 
@@ -112,17 +99,15 @@ std::vector<yaget::io::Buffer> defensor::render::RenderShader::GetShaders(const 
 //-------------------------------------------------------------------------------------------------
 yaget::io::Buffer defensor::render::RenderShader::AssureShaderNonMT(const yaget::io::Tag& tag, defensor::render::RenderShader::ShaderType shaderType)
 {
-    if (auto asset =  GetAsset(tag); io::size_data(asset))
+    if (auto asset = GetAsset(tag); io::size_data(asset))
     {
         return asset;
     }
-
     if (auto shader = mCache.GetCachedAsset(tag); yaget::io::size_data(shader))
     {
         mAssets.insert({ tag, shader });
         return shader;
     }
-
     yaget::io::Buffer shaderBuffer;
     if (tag.mName == "EmbeddedVertexShader" || tag.mName == "EmbeddedPixelShader")
     {
@@ -136,17 +121,18 @@ yaget::io::Buffer defensor::render::RenderShader::AssureShaderNonMT(const yaget:
             shaderBuffer = asset->mBuffer;
         }
     }
-
     io::Buffer result = CompileShader(shaderBuffer, shaderType);
     if (!io::size_data(result))
     {
-        YLOG_ERROR("COMP", fmt::format("Could not get compiled {} shader for tag: '{}\n{}:'. Using built-in shader as s fallback.", magic_enum::enum_name(shaderType), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag), tag.ResolveVTS()).c_str());
+        YLOG_ERROR("COMP",
+                   fmt::format("Could not get compiled {} shader for tag: '{}\n{}:'. Using built-in shader as s fallback.", magic_enum::enum_name(shaderType),
+                       yaget::conv::Convertor<yaget::io::Tag>::ToString(tag), tag.ResolveVTS()).c_str());
         result = CompileShader(io::CreateBuffer(buildInShaderSource, std::strlen(buildInShaderSource)), shaderType);
-        error_handlers::ThrowOnError(io::size_data(result) > 0, fmt::format("Could not compile built-in shader type: '%s'. Source:\n'%s'", magic_enum::enum_name(shaderType), buildInShaderSource));
+        error_handlers::ThrowOnError(io::size_data(result) > 0,
+                                     fmt::format("Could not compile built-in shader type: '%s'. Source:\n'%s'", magic_enum::enum_name(shaderType),
+                                                 buildInShaderSource));
     }
-
     mAssets.insert({ tag, result });
     mCache.SaveCachedAsset(tag, result);
-
     return result;
 }

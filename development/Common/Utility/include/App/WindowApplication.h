@@ -29,6 +29,8 @@ namespace yaget
     class WindowApplication : public Application
     {
     public:
+        static size_t IconId;
+
         WindowApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
         ~WindowApplication();
 

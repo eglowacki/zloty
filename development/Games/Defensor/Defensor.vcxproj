@@ -202,6 +202,7 @@
     <None Include="Defensor.deployment" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="source\Components\InputComponent.h" />
     <ClInclude Include="source\Components\LocationComponent.h" />
     <ClInclude Include="source\Components\MenuComponent.h" />
@@ -230,6 +231,12 @@
     <ProjectReference Include="..\..\Common\Render\build\YagetRender12.vcxproj">
       <Project>{62c78a26-d56a-46c0-b205-8e1456749b02}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Defensor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\Images\Icons\MainApp.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

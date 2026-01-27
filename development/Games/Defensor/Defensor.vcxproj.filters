@@ -193,5 +193,12 @@
     <ClInclude Include="source\Renders\RenderShader.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Defensor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\Images\Icons\MainApp.ico" />
   </ItemGroup>
 </Project>

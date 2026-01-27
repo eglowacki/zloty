@@ -96,15 +96,12 @@ namespace yaget::render
         // will add to watch file changes if the file is not already watched
         void AssureTagWatch(const yaget::io::Tag& tag)
         {
-            if (auto node = mDependencyGraph.Find(tag.mGuid, nullptr))
+            if (auto node = mDependencyGraph.Find(tag.mGuid, nullptr); node->mDirty)
             {
-                if (node->mDirty)
-                {
-                    node->mDirty = false;
-                    mAssets.erase(tag);
-                    mCache.ClearCachedAsset(tag);
-                    mVTS.ClearAsset(tag);
-                }
+                node->mDirty = false;
+                mAssets.erase(tag);
+                mCache.ClearCachedAsset(tag);
+                mVTS.ClearAsset(tag);
             }
 
             if (!mWatchedTags.contains(tag))
@@ -120,10 +117,10 @@ namespace yaget::render
                         std::vector<yaget::DependencyNode*> pathTo;
                         if (yaget::DependencyNode* shaderNode = mDependencyGraph.Find(tag.mGuid, &pathTo))
                         {
-                            for (auto node : pathTo)
+                            std::for_each(pathTo.begin(), pathTo.end(), [](auto& node)
                             {
                                 node->mDirty = true;
-                            }
+                            });
                         }
                     });
                 }
