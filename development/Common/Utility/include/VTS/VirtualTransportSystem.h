@@ -159,6 +159,7 @@ namespace yaget
             void AddOverride(const std::shared_ptr<io::Asset>& asset);
             // Remove local cached assets, but preserve entry in DB. Used to force reload from disk on next request/load blob
             void ClearAssets(const io::Tags& tags);
+            void ClearAsset(const io::Tag& tag) { ClearAssets({ tag }); };
 
             void AttachTransientBlob(const std::shared_ptr<io::Asset>& asset) { AttachTransientBlob(std::vector<std::shared_ptr<io::Asset>>{ asset }); }
             bool AttachTransientBlob(const std::vector<std::shared_ptr<io::Asset>>& assets);
@@ -506,14 +507,7 @@ namespace yaget
     {
         static std::string ToString(const io::VirtualTransportSystem::Section& value)
         {
-            if (std::string result = value.ToString(); !result.empty())
-            {
-                return result;
-            }
-            else
-            {
-                return "NULL";
-            }
+            return value.ToString();
         }
         static io::VirtualTransportSystem::Section FromString(const char* value)
         {

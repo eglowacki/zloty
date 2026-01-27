@@ -12,23 +12,26 @@
 //////////////////////////////////////////////////////////////////////
 //! \file
 #pragma once
-
-#include "Streams/Watcher.h"
 #include "Render/RenderCore.h"
 #include "Streams/Buffers.h"
 #include "VTS/VirtualTransportSystem.h"
 #include "Render/Cache/CacheWatcher.h"
 
 
+namespace yaget
+{
+    class DependencyGraph;
+}
+
 namespace defensor::render
 {
     using namespace yaget;
 
     //-------------------------------------------------------------------------------------------------
-    class RenderShader : public yaget::render::CacheWatcher
+    class RenderShader : public yaget::render::CacheWatcher<io::Buffer>
     {
     public:
-        RenderShader(io::VirtualTransportSystem& vts);
+        RenderShader(io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph);
         ~RenderShader();
 
         enum class ShaderType
@@ -45,9 +48,7 @@ namespace defensor::render
         std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType);
 
     private:
-        void CachedAssetChanged(const io::Tag& tag);
-
-        std::map<io::Tag, io::Buffer> mShaders;
+        io::Buffer AssureShaderNonMT(const yaget::io::Tag& tag, ShaderType shaderType);
     };
 
 }

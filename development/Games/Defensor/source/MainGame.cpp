@@ -43,6 +43,23 @@ namespace yaget::app
 }
 
 
+namespace 
+{
+    yaget::io::Tag AttachTransientAsset(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
+    {
+        using namespace yaget;
+
+        auto sigSection = render::AssetCache::operator[](assetCacheType);
+        auto tag = vts.GenerateTag(sigSection);
+        std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>({}, tag, vts);
+        vts.AttachTransientBlob(newAsset);
+
+        return tag;
+    }
+    
+}
+
+
 int defensor::Run(const yaget::args::Options& options)
 {
     using namespace yaget;
@@ -73,6 +90,9 @@ int defensor::Run(const yaget::args::Options& options)
     yaget::render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
 
     game::Messaging messaging{};
+
+    AttachTransientAsset(yaget::render::BasicSignature, app.VTS());
+    AttachTransientAsset(yaget::render::BasicPipeline, app.VTS());
 
     return comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app);
 }

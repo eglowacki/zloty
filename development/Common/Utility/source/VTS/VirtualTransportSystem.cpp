@@ -480,20 +480,26 @@ std::vector<yaget::io::Tag> yaget::io::VirtualTransportSystem::GetTags(const Sec
 //--------------------------------------------------------------------------------------------------
 yaget::io::Tag yaget::io::VirtualTransportSystem::FindTag(const Guid& guid) const
 {
-    std::string command = fmt::format("SELECT Name, VTS, Section FROM Tags WHERE Guid = '{}'", guid.str());
-
-    if (DatabaseHandle dHandle = LockDatabaseAccess())
+    if (guid.IsValid())
     {
-        using TagRow = std::tuple<std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
-        auto tag = mDatabase.DB().GetRowTuple<TagRow>(command, nullptr);
-         
-        yaget::io::Tag resultTag;
-        resultTag.mGuid = guid;
-        resultTag.mName = std::get<0>(tag);
-        resultTag.mVTSName = std::get<1>(tag);
-        resultTag.mSectionName = std::get<2>(tag);
+        std::string command = fmt::format("SELECT Name, VTS, Section FROM Tags WHERE Guid = '{}'", guid.str());
 
-        return resultTag;
+        if (DatabaseHandle dHandle = LockDatabaseAccess())
+        {
+            using TagRow = std::tuple<std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
+            bool result = false;
+            auto tag = mDatabase.DB().GetRowTuple<TagRow>(command, &result);
+            if (result)
+            {
+                yaget::io::Tag resultTag;
+                resultTag.mGuid = guid;
+                resultTag.mName = std::get<0>(tag);
+                resultTag.mVTSName = std::get<1>(tag);
+                resultTag.mSectionName = std::get<2>(tag);
+
+                return resultTag;
+            }
+        }
     }
 
     return {};
@@ -524,6 +530,23 @@ yaget::io::Tag yaget::io::VirtualTransportSystem::GenerateTag(const Section& sec
 
         newTag.mName = filePath.filename().stem().string();
         newTag.mVTSName = filePath.generic_string();
+        fs::path vtsNamePath = (newTag.mVTSName);
+        if (!fs::path(newTag.mVTSName).has_extension())
+        {
+            Strings extensions = std::get<2>(targetSection);
+            YLOG_CERROR("VTS", (extensions.empty() || extensions.size() == 1), "Section for '%s' has '%d' extensions [%s]. Only first one will be used in Generating Tag", conv::Convertor<Section>::ToString(section).c_str(), extensions.size(), conv::Combine(extensions, ",").c_str());
+            if (auto it = extensions.begin(); it != extensions.end())
+            {
+                auto ext = *it;
+                if (auto pos = ext.find_last_of('.'); pos != std::string::npos)
+                {
+                    ext = ext.substr(pos + 1);
+                }
+
+                fs::path extPath(ext);
+                newTag.mVTSName = vtsNamePath.replace_extension(extPath).generic_string();
+            }
+        }
         newTag.mSectionName = section.Name;
 
         command = fmt::format("SELECT Guid FROM Deleted WHERE VTS = '{}';", newTag.mVTSName);

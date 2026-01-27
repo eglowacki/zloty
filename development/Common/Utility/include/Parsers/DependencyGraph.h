@@ -14,7 +14,7 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
+#include "HashUtilities.h"
 #include "Streams/Guid.h"
 #include "VTS/VirtualTransportSystem.h"
 
@@ -23,10 +23,14 @@ namespace yaget
 {
     struct DependencyNode 
     {
+        using Section = io::VirtualTransportSystem::Section;
+
         DependencyNode() = default;
         DependencyNode(const Guid& guid);
         void Add(const Guid& guid);
-        DependencyNode* FindNode(const Guid& guid) const;
+        DependencyNode* FindNode(const Guid& guid, std::vector<DependencyNode*> *pathTo) const;
+
+        bool IsSingleDepth() const;
 
         void ResolveNames(const io::VirtualTransportSystem& vts);
 
@@ -34,23 +38,54 @@ namespace yaget
 
         Guid mGuid;
         std::string mName;
+        bool mDirty = false;
         std::vector<DependencyNode> mDependencies;
     };
 
     class DependencyGraph
     {
     public:
-        DependencyGraph(io::VirtualTransportSystem& vts, const io::VirtualTransportSystem::Section& fileName);
+        using Section = io::VirtualTransportSystem::Section;
+
+        DependencyGraph(io::VirtualTransportSystem& vts, const Section& fileName);
         ~DependencyGraph();
 
         void Add(const Guid& parentGuid, const Guid& childGuid);
 
-        DependencyNode* Find(const Guid& guid) const;
+        DependencyNode* Find(const Guid& guid, std::vector<DependencyNode*> *pathTo) const;
 
     private:
-        std::map<Guid, DependencyNode> mNodes;
         io::VirtualTransportSystem& mVTS;
-        io::VirtualTransportSystem::Section mSection;
+        Section mSection;
+        std::map<Guid, DependencyNode> mNodes;
+        size_t mNodesHash{};
     };
 
 }
+
+
+//--------------------------------------------------------------------------------------------------
+template <>
+struct std::hash<yaget::DependencyNode>
+{
+    typedef yaget::DependencyNode argument_type;
+    typedef std::size_t result_type;
+
+    result_type operator()(argument_type const &dependencyNode) const
+    {
+        std::hash<yaget::Guid> hasherGuid;
+        std::hash<std::string> hasherName;
+        auto hasher = [&]()
+        {
+            size_t seed = 0;
+            yaget::conv::hash_combine(seed, hasherGuid(dependencyNode.mGuid), hasherName(dependencyNode.mName));
+            for (const auto& childNode : dependencyNode.mDependencies)
+            {
+                yaget::conv::hash_combine(seed, operator()(childNode));
+            }
+            return seed;
+        };
+
+        return hasher();
+    }
+};

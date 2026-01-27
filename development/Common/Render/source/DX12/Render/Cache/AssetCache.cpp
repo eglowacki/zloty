@@ -6,12 +6,13 @@
 
 
 //-------------------------------------------------------------------------------------------------
-std::map<yaget::render::AssetCacheType, yaget::io::VirtualTransportSystem::Section> yaget::render::AssetCache::TypeToSection =
+std::map<yaget::render::AssetCacheType, yaget::io::VirtualTransportSystem::Section>
+yaget::render::AssetCache::TypeToSection =
 {
-     { BasicVertex, yaget::io::VirtualTransportSystem::Section("VeretexShaders@Basic")},
-     { BasicPixel, yaget::io::VirtualTransportSystem::Section("PixelShaders@Basic")},
-     { BasicSignature, yaget::io::VirtualTransportSystem::Section("Transient@BasicSig")},
-     { BasicPipeline, yaget::io::VirtualTransportSystem::Section("Transient@BasicPipe")},
+    {BasicVertex, yaget::io::VirtualTransportSystem::Section("VeretexShaders@Basic")},
+    {BasicPixel, yaget::io::VirtualTransportSystem::Section("PixelShaders@Basic")},
+    {BasicSignature, yaget::io::VirtualTransportSystem::Section("Transient@BasicSig")},
+    {BasicPipeline, yaget::io::VirtualTransportSystem::Section("Transient@BasicPipe")},
 };
 
 
@@ -22,7 +23,6 @@ yaget::io::VirtualTransportSystem::Section yaget::render::AssetCache::operator[]
     {
         return it->second;
     }
-
     YLOG_ERROR("DEVI", "There is no asset section associated with AssetCacheType: '%d'", typeFlag);
     return {};
 }
@@ -31,7 +31,7 @@ yaget::io::VirtualTransportSystem::Section yaget::render::AssetCache::operator[]
 //-------------------------------------------------------------------------------------------------
 yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
     : mVTS(vts)
-    , mCacheSection(fileName)
+      , mCacheSection(fileName)
 {
     io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
     if (auto asset = cacheLoader.GetAsset())
@@ -39,7 +39,6 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::Virtu
         io::MessagingBuffer cache;
         cache.mBuffer = asset->mBuffer;
         cache.mWriteOffset = io::size_data(asset->mBuffer);
-
         auto numElements = *(reinterpret_cast<size_t*>(io::cast_data<char>(cache.mBuffer)));
         size_t offset = sizeof(numElements);
         for (size_t i = 0; i < numElements; ++i)
@@ -48,12 +47,12 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::Virtu
             offset += sizeof(Guid);
             Location *location = reinterpret_cast<Location*>(io::cast_data<char>(cache.mBuffer) + offset);
             offset += sizeof(Location);
-            mCacheIndex.insert({ *guid, *location });
+            mCacheIndex.insert({*guid, *location});
         }
-
         mCache = io::MessagingBuffer(io::size_data(cache.mBuffer) - offset);
         mCache.mWriteOffset = io::size_data(mCache.mBuffer);
-        memcpy(io::cast_data<char>(mCache.mBuffer), io::cast_data<char>(cache.mBuffer) + offset, io::size_data(mCache.mBuffer));
+        memcpy(io::cast_data<char>(mCache.mBuffer), io::cast_data<char>(cache.mBuffer) + offset,
+               io::size_data(mCache.mBuffer));
     }
 }
 
@@ -61,7 +60,7 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::Virtu
 //-------------------------------------------------------------------------------------------------
 yaget::render::AssetCache::~AssetCache()
 {
-    if (mCacheDirty)
+    if (mCacheStatus != CacheStatus::Clean)
     {
         // we need to serialize mCacheIndex and mCache into a single buffer and save it back to VTS
         io::Buffer indexBuffer = io::CreateBuffer(sizeof(size_t) + mCacheIndex.size() * (sizeof(Guid) + sizeof(Location)));
@@ -77,11 +76,9 @@ yaget::render::AssetCache::~AssetCache()
             std::memcpy(dataPointer + offset, &location, sizeof(location));
             offset += sizeof(location);
         }
-
         auto fullCacheData = io::CreateBuffer(io::size_data(indexBuffer) + io::size_data(mCache.mBuffer));
         io::CopyBuffer(indexBuffer, fullCacheData, 0);
         io::CopyBuffer(mCache.mBuffer, fullCacheData, io::size_data(indexBuffer));
-
         io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
         if (auto asset = cacheLoader.GetAsset())
         {
@@ -106,11 +103,12 @@ yaget::io::Buffer yaget::render::AssetCache::GetCachedAsset(const yaget::io::Tag
         // we need a way to just point Buffer into existing memory without creating a new buffer
         const auto& location = it->second;
         return io::CreateBuffer(io::cast_data<const char>(mCache.mBuffer) + location.mOffset, location.mSize);
-    }                                                             
+    }
     return {};
 }
 
 
+//-------------------------------------------------------------------------------------------------
 void yaget::render::AssetCache::SaveCachedAsset(const yaget::io::Tag& tag, yaget::io::Buffer buffer)
 {
     // see if we already have this shader saved and if size matches, just overwrite
@@ -120,16 +118,22 @@ void yaget::render::AssetCache::SaveCachedAsset(const yaget::io::Tag& tag, yaget
         if (location.mSize == io::size_data(buffer))
         {
             io::CopyBuffer(buffer, mCache.mBuffer, location.mOffset);
-            mCacheDirty = true;
+            mCacheStatus = ored(mCacheStatus, CacheStatus::Dirty);
             return;
         }
-
         std::memset(io::cast_data<char>(mCache.mBuffer) + location.mOffset, 0, location.mSize);
         mCacheIndex.erase(it);
     }
-
-    mCacheIndex.insert({ tag.mGuid, { mCache.mWriteOffset, io::size_data(buffer) }});
+    mCacheIndex.insert({tag.mGuid, {mCache.mWriteOffset, io::size_data(buffer)}});
     mCache.AssureWriteSize(io::size_data(buffer));
     mCache.WriteDataChunk(buffer);
-    mCacheDirty = true;
+    mCacheStatus = ored(mCacheStatus, CacheStatus::Holes);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::AssetCache::ClearCachedAsset(const io::Tag& tag)
+{
+    mCacheIndex.erase(tag.mGuid);
+    mCacheStatus = ored(mCacheStatus, CacheStatus::Dirty);
 }

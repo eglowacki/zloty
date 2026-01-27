@@ -4,6 +4,7 @@
 #include <Fmt/format.h>
 
 #include "Core/ErrorHandlers.h"
+#include "Parsers/DependencyGraph.h"
 
 
 namespace
@@ -11,7 +12,6 @@ namespace
    
     yaget::render::ComPtr<ID3D12RootSignature> CreateRootSignature(const yaget::io::Tag& /*tag*/, ID3D12Device* device, yaget::io::Buffer& buffer)
     {
-        yaget::render::ComPtr<ID3DBlob> signature;
         char* bufferPointer = yaget::io::cast_data<char>(buffer);
         size_t bufferSize = yaget::io::size_data(buffer);
 
@@ -28,6 +28,7 @@ namespace
             parameters[0].Constants.Num32BitValues = 16;
             CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc(1, static_cast<const D3D12_ROOT_PARAMETER1*>(parameters), 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
+            yaget::render::ComPtr<ID3DBlob> signature;
             HRESULT hr = ::D3D12SerializeVersionedRootSignature(&rootSignatureDesc, &signature, &error);
             yaget::error_handlers::ThrowOnError(hr, fmt::format("Could not serialize root signature. {}", error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
 
@@ -46,8 +47,8 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderSignatures::RenderSignatures(ID3D12Device* device, yaget::io::VirtualTransportSystem& vts)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Signatures"))
+defensor::render::RenderSignatures::RenderSignatures(ID3D12Device* device, yaget::io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph)
+    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Signatures"), dependencyGraph)
     , mDevice(device)
 {
 }
@@ -62,30 +63,12 @@ ID3D12RootSignature* defensor::render::RenderSignatures::GetSignature(const yage
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 
-    AssureTagWatch(tag, [this](auto tag) { CachedAssetChanged(tag); });
+    std::lock_guard mutexLocker(mMutex);
 
-    if (auto it = mSignatures.find(tag); it != mSignatures.end())
+    auto result = GetAsset(tag, [this](auto tag, auto& cachedData)
     {
-        return it->second.Get();
-    }
+        return CreateRootSignature(tag, mDevice, cachedData);
+    });
 
-    yaget::io::Buffer cachedData = mCache.GetCachedAsset(tag);
-    bool missingCachedData = yaget::io::size_data(cachedData) == 0;
-
-    auto sig = CreateRootSignature(tag, mDevice, cachedData);
-    mSignatures.insert({tag, sig});
-
-    if (yaget::io::size_data(cachedData) && missingCachedData)
-    {
-        mCache.SaveCachedAsset(tag, cachedData);
-    }
-
-    return sig.Get();
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void defensor::render::RenderSignatures::CachedAssetChanged(const yaget::io::Tag& tag)
-{
-    tag;
+    return result.Get();
 }

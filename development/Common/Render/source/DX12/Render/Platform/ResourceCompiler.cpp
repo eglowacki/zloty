@@ -44,9 +44,12 @@ yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const cha
         ComPtr<ID3DBlob> error;
         ComPtr<ID3DBlob> shaderBlob;
         const HRESULT hr = ::D3DCompile(io::BufferPointer(data), io::BufferSize(data), nullptr, nullptr, nullptr, entryName, target, compileFlags, 0, &shaderBlob, &error);
-        error_handlers::ThrowOnError(hr, fmt::format("Could not compile shader with entry point: '{}' and target: '{}'. {}", entryName, target, (error ? static_cast<const char*>(error->GetBufferPointer()) : "")));
 
-        mBinaryBlob = io::CreateBuffer(static_cast<const char*>(shaderBlob->GetBufferPointer()), shaderBlob->GetBufferSize());
+        YLOG_CERROR("COMP", SUCCEEDED(hr), fmt::format("Could not compile shader with entry point: '{}' and target: '{}'.\n{}", entryName, target, (error ? static_cast<const char*>(error->GetBufferPointer()) : "")).c_str());
+        if (SUCCEEDED(hr))
+        {
+            mBinaryBlob = io::CreateBuffer(static_cast<const char*>(shaderBlob->GetBufferPointer()), shaderBlob->GetBufferSize());
+        }
     }
 }
 

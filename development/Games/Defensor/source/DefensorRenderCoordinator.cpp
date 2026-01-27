@@ -6,13 +6,10 @@ defensor::render::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messagi
     : SystemsCoordinator(m, app)
     , mApplication(static_cast<yaget::render::DesktopApplication&>(app))
 {
-    constexpr auto sceneId = comp::GLOBAL_ID_MARKER;
-    AddComponent<SceneComponent>(sceneId);
+    AddComponent<SceneComponent>(comp::GLOBAL_ID_MARKER);
 }
 
 defensor::render::DefensorSystemsCoordinator::~DefensorSystemsCoordinator()
 {
-    int z = 0;
-    z;
     mApplication.Device().Shutdown();
 }
