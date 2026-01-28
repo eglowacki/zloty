@@ -67,7 +67,8 @@ namespace
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderShaders::RenderShaders(yaget::io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph, io::Watcher& watcher)
     : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Shaders"), dependencyGraph, watcher)
-{}
+{
+}
 
 
 //-------------------------------------------------------------------------------------------------
