@@ -242,7 +242,7 @@ yaget::DependencyGraph::DependencyGraph(io::VirtualTransportSystem& vts, const i
 //-------------------------------------------------------------------------------------------------
 yaget::DependencyGraph::~DependencyGraph()
 {
-    std::map<std::string, DependencyNode> depNode = TransformNodes<std::map<std::string, DependencyNode>>(mNodes, mVTS);
+    auto depNode = TransformNodes<DiskDependencyData>(mNodes, mVTS);
 
     auto nodesHash = calculate_map_hash(mNodes);
     if (nodesHash != mNodesHash)
