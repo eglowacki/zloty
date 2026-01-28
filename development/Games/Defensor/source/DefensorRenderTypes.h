@@ -23,7 +23,7 @@ namespace defensor::render
 
     //--------------------------------------------------------------------------
     // used in entity scene composition for renderer. This is filled in
-    // from game thread and comsumed by render thread
+    // from game thread and consumed by render thread
     struct EntityState
     {
         yaget::comp::Id_t mId = comp::INVALID_ID;
