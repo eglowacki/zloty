@@ -33,6 +33,7 @@ namespace defensor::render
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, RenderComponent* renderComponent, SceneComponent* sceneComponent);
         void PreloadAssets();
 
+        io::Watcher mWatcher;
         mt::JobPool mAssetPoolThread;
         math3d::Interpolator mColorInterpolator;
 

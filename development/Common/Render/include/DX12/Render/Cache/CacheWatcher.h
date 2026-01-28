@@ -32,11 +32,19 @@ namespace yaget::render
     class CacheWatcher
     {
     public:
-        CacheWatcher(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, DependencyGraph& dependencyGraph)
+        CacheWatcher(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, DependencyGraph& dependencyGraph, io::Watcher& watcher)
             : mVTS(vts)
             , mCache(mVTS, fileName)
             , mDependencyGraph(dependencyGraph)
+            , mWatcher(watcher)
         {
+        }
+        ~CacheWatcher()
+        {
+            std::ranges::for_each(mWatchedTags, [this](const auto& tag)
+            {
+                mWatcher.Remove(tag.Hash());
+            });
         }
 
     protected:
@@ -86,7 +94,7 @@ namespace yaget::render
 
         io::VirtualTransportSystem& mVTS;
         yaget::render::AssetCache mCache;
-        io::Watcher mWatcher;
+        io::Watcher& mWatcher;
         std::set<io::Tag> mWatchedTags;
         std::map<io::Tag, A> mAssets;
 

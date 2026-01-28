@@ -15,6 +15,7 @@ namespace
         return floatArray;
     }
 
+
     yaget::io::Tag TypeToTag(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
     {
         auto section = yaget::render::AssetCache::operator[](assetCacheType);
@@ -26,19 +27,18 @@ namespace
 
         return tag;
     }
-
 }
 
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
-    : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+    : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet)
     , mAssetPoolThread("PreloadRenderAssets", 1)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
     , mDependencyGraph(app.VTS(), io::VirtualTransportSystem::Section("Manifest@RenderDependencies"))
-    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph)
-    , mRenderPipeline(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph)
-    , mRenderShader(app.VTS(), mDependencyGraph)
+    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph, mWatcher)
+    , mRenderPipeline(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph, mWatcher)
+    , mRenderShader(app.VTS(), mDependencyGraph, mWatcher)
 {
     mAssetPoolThread.AddTask([this]()
     {
@@ -48,7 +48,8 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, RenderComponent* /*renderComponent*/, SceneComponent* sceneComponent)
+void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, RenderComponent* /*renderComponent*/,
+                                              SceneComponent* sceneComponent)
 {
     if (!mAssetsPreloaded)
     {

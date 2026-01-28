@@ -31,7 +31,7 @@ namespace defensor::render
     class RenderShader : public yaget::render::CacheWatcher<io::Buffer>
     {
     public:
-        RenderShader(io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph);
+        RenderShader(io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph, io::Watcher& watcher);
         ~RenderShader();
 
         enum class ShaderType

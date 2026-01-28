@@ -32,7 +32,7 @@ namespace defensor::render
     class RenderSignatures : public yaget::render::CacheWatcher<yaget::render::ComPtr<ID3D12RootSignature>>
     {
     public:
-        RenderSignatures(ID3D12Device* device, io::VirtualTransportSystem& vts, DependencyGraph& dependencyGraph);
+        RenderSignatures(ID3D12Device* device, io::VirtualTransportSystem& vts, DependencyGraph& dependencyGraph, io::Watcher& watcher);
         ~RenderSignatures();
 
         ID3D12RootSignature* GetSignature(const yaget::io::Tag& tag);

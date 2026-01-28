@@ -39,18 +39,22 @@ yaget::io::Watcher::~Watcher()
     {
         // there may be outstanding requests to remove watched file (engine shutdown may bunch up closing all threads closely together)
         //
-        auto message = fmt::format("Cleaning '{}' left over file watches", GetWatchedFiles().size());
-        metrics::TimeScoper<time::kMilisecondUnit> cleanupTimer(message.c_str());
-        auto endTime = platform::GetRealTime(time::kMilisecondUnit) + DefaultCleanupWait;
-        platform::Sleep([this, endTime]()
+        if (auto fileNames = GetWatchedFiles(); !fileNames.empty())
         {
-            if (GetWatchedFiles().empty() || endTime < platform::GetRealTime(time::kMilisecondUnit))
+            auto flatNames = conv::Combine(fileNames, ", ");
+            auto message = fmt::format("Cleaning '{}' left over file watches: '{}'", fileNames.size(), flatNames);
+            metrics::TimeScoper<time::kMilisecondUnit> cleanupTimer(message.c_str());
+            auto endTime = platform::GetRealTime(time::kMilisecondUnit) + DefaultCleanupWait;
+            platform::Sleep([this, endTime]()
             {
-                return false;
-            }
+                if (GetWatchedFiles().empty() || endTime < platform::GetRealTime(time::kMilisecondUnit))
+                {
+                    return false;
+                }
 
-            return true;
-        });
+                return true;
+            });
+        }
     }
 
     mQuit = true;
