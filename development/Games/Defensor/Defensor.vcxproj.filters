@@ -91,10 +91,10 @@
     <ClCompile Include="source\Renders\RenderComponent.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\Renders\RenderPipeline.cpp">
+    <ClCompile Include="source\Renders\RenderPipelines.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\Renders\RenderShader.cpp">
+    <ClCompile Include="source\Renders\RenderShaders.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -187,10 +187,10 @@
     <ClInclude Include="source\Renders\RenderSignatures.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Renders\RenderPipeline.h">
+    <ClInclude Include="source\Renders\RenderPipelines.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Renders\RenderShader.h">
+    <ClInclude Include="source\Renders\RenderShaders.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />

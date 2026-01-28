@@ -150,8 +150,8 @@
     <ClCompile Include="source\MainGame.cpp" />
     <ClCompile Include="source\Renders\FrameStateGatherSystem.cpp" />
     <ClCompile Include="source\Renders\RenderComponent.cpp" />
-    <ClCompile Include="source\Renders\RenderPipeline.cpp" />
-    <ClCompile Include="source\Renders\RenderShader.cpp" />
+    <ClCompile Include="source\Renders\RenderPipelines.cpp" />
+    <ClCompile Include="source\Renders\RenderShaders.cpp" />
     <ClCompile Include="source\Renders\RenderSignatures.cpp" />
     <ClCompile Include="source\Renders\RenderSystem.cpp" />
     <ClCompile Include="source\Renders\SceneComponent.cpp" />
@@ -215,8 +215,8 @@
     <ClInclude Include="source\MainGame.h" />
     <ClInclude Include="source\Renders\FrameStateGatherSystem.h" />
     <ClInclude Include="source\Renders\RenderComponent.h" />
-    <ClInclude Include="source\Renders\RenderPipeline.h" />
-    <ClInclude Include="source\Renders\RenderShader.h" />
+    <ClInclude Include="source\Renders\RenderPipelines.h" />
+    <ClInclude Include="source\Renders\RenderShaders.h" />
     <ClInclude Include="source\Renders\RenderSignatures.h" />
     <ClInclude Include="source\Renders\RenderSystem.h" />
     <ClInclude Include="source\Renders\SceneComponent.h" />

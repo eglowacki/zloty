@@ -17,9 +17,9 @@
 #include "Math/Interpolators.h"
 #include "Parsers/DependencyGraph.h"
 #include "Render/DesktopApplication.h"
-#include "RenderPipeline.h"
+#include "RenderPipelines.h"
 #include "Renders/RenderSignatures.h"
-#include "RenderShader.h"
+#include "RenderShaders.h"
 
 
 namespace defensor::render
@@ -39,8 +39,8 @@ namespace defensor::render
 
         DependencyGraph mDependencyGraph;
         RenderSignatures mRenderSignatures;
-        RenderPipeline mRenderPipeline;
-        RenderShader mRenderShader;
+        RenderPipelines mRenderPipelines;
+        RenderShaders mRenderShaders;
 
         std::atomic_bool mAssetsPreloaded{false};
     };

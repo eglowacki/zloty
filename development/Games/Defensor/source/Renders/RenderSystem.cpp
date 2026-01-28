@@ -37,8 +37,8 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
     , mDependencyGraph(app.VTS(), io::VirtualTransportSystem::Section("Manifest@RenderDependencies"))
     , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph, mWatcher)
-    , mRenderPipeline(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph, mWatcher)
-    , mRenderShader(app.VTS(), mDependencyGraph, mWatcher)
+    , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph, mWatcher)
+    , mRenderShaders(app.VTS(), mDependencyGraph, mWatcher)
 {
     mAssetPoolThread.AddTask([this]()
     {
@@ -73,13 +73,13 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
         auto vertexShaderTag = TypeToTag(yaget::render::BasicVertex, vts);
         auto pixelShaderTag = TypeToTag(yaget::render::BasicPixel, vts);
-        auto vertexShaderBuffer = mRenderShader.GetShader(vertexShaderTag, RenderShader::ShaderType::Vertex);
-        auto pixelShaderBuffer = mRenderShader.GetShader(pixelShaderTag, RenderShader::ShaderType::Pixel);
+        auto vertexShaderBuffer = mRenderShaders.GetShader(vertexShaderTag, RenderShaders::ShaderType::Vertex);
+        auto pixelShaderBuffer = mRenderShaders.GetShader(pixelShaderTag, RenderShaders::ShaderType::Pixel);
 
         auto pipelineTag = TypeToTag(yaget::render::BasicPipeline, vts);
         //DependencyNode* psoNode = mDependencyGraph.Find(pipelineTag.mGuid);
 
-        auto pipe = mRenderPipeline.GetPipeline(pipelineTag, rootSig, vertexShaderBuffer, pixelShaderBuffer);
+        auto pipe = mRenderPipelines.GetPipeline(pipelineTag, rootSig, vertexShaderBuffer, pixelShaderBuffer);
 
         commandList->SetGraphicsRootSignature(rootSig);
         commandList->SetPipelineState(pipe);
@@ -127,8 +127,8 @@ void defensor::render::RenderSystem::PreloadAssets()
     const io::VirtualTransportSystem::Section pixelShaderSection("PixelShaders");
     auto pixelShaderTags = vts.GetTags(pixelShaderSection);
 
-    mRenderShader.GetShaders(vertexShaderTags, RenderShader::ShaderType::Vertex);
-    mRenderShader.GetShaders(pixelShaderTags, RenderShader::ShaderType::Pixel);
+    mRenderShaders.GetShaders(vertexShaderTags, RenderShaders::ShaderType::Vertex);
+    mRenderShaders.GetShaders(pixelShaderTags, RenderShaders::ShaderType::Pixel);
 
     yaget::platform::Sleep(1, time::kSecondUnit);
 

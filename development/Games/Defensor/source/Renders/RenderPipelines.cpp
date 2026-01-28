@@ -1,6 +1,6 @@
 #include "Core/ErrorHandlers.h"
 #include "Render/Platform/DeviceDebugger.h"
-#include "RenderPipeline.h"
+#include "RenderPipelines.h"
 #include <CommonStates.h>
 #include <d3dx12.h>
 #include <Fmt/format.h>
@@ -60,7 +60,7 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderPipeline::RenderPipeline(ID3D12Device* device, io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph, io::Watcher& watcher)
+defensor::render::RenderPipelines::RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph, io::Watcher& watcher)
     : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Pipelines"), dependencyGraph, watcher)
     , mDevice(device)
 {
@@ -68,11 +68,11 @@ defensor::render::RenderPipeline::RenderPipeline(ID3D12Device* device, io::Virtu
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderPipeline::~RenderPipeline() = default;
+defensor::render::RenderPipelines::~RenderPipelines() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-ID3D12PipelineState* defensor::render::RenderPipeline::GetPipeline(const yaget::io::Tag& tag, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer)
+ID3D12PipelineState* defensor::render::RenderPipelines::GetPipeline(const yaget::io::Tag& tag, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer)
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 

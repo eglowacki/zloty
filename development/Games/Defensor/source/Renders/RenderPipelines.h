@@ -7,14 +7,13 @@
 //
 //  NOTES:
 //
-//  #include "Renders/RenderPipeline.h"
+//  #include "Renders/RenderPipelines.h"
 //
 //////////////////////////////////////////////////////////////////////
 //! \file
 #pragma once
 
 #include "Render/RenderCore.h"
-#include "Render/Cache/AssetCache.h"
 #include "Streams/Buffers.h"
 #include "Render/Cache/CacheWatcher.h"
 
@@ -32,11 +31,11 @@ namespace defensor::render
 {
     using namespace yaget;
 
-    class RenderPipeline : public yaget::render::CacheWatcher<yaget::render::ComPtr<ID3D12PipelineState>>
+    class RenderPipelines : public yaget::render::CacheWatcher<yaget::render::ComPtr<ID3D12PipelineState>>
     {
     public:
-        RenderPipeline(ID3D12Device* device, io::VirtualTransportSystem& vts, DependencyGraph& dependencyGraph, io::Watcher& watcher);
-        ~RenderPipeline();
+        RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, DependencyGraph& dependencyGraph, io::Watcher& watcher);
+        ~RenderPipelines();
 
         ID3D12PipelineState* GetPipeline(const io::Tag& tag, ID3D12RootSignature* rootSignature, io::Buffer vertexShaderBuffer, io::Buffer pixelShaderBuffer);
 

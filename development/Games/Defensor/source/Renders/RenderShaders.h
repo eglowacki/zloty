@@ -7,7 +7,7 @@
 //
 //  NOTES:
 //
-//  #include "Renders/RenderShader.h"
+//  #include "Renders/RenderShaders.h"
 //
 //////////////////////////////////////////////////////////////////////
 //! \file
@@ -28,11 +28,11 @@ namespace defensor::render
     using namespace yaget;
 
     //-------------------------------------------------------------------------------------------------
-    class RenderShader : public yaget::render::CacheWatcher<io::Buffer>
+    class RenderShaders : public yaget::render::CacheWatcher<io::Buffer>
     {
     public:
-        RenderShader(io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph, io::Watcher& watcher);
-        ~RenderShader();
+        RenderShaders(io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph, io::Watcher& watcher);
+        ~RenderShaders();
 
         enum class ShaderType
         {
