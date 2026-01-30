@@ -25,6 +25,3 @@
 [submodule "development/Dependencies/DirectXShaderCompiler"]
     path = development/Dependencies/DirectXShaderCompiler
     url = https://github.com/microsoft/DirectXShaderCompiler.git
-[submodule "development/Dependencies/better-enum"]
-	path = development/Dependencies/better-enum
-	url = https://github.com/aantron/better-enums.git
