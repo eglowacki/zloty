@@ -14,6 +14,7 @@
 #pragma once
 #include "Streams/Buffers.h"
 #include "VTS/VirtualTransportSystem.h"
+#include <magic_enum/magic_enum.hpp>
 
 
 namespace yaget::render
@@ -62,29 +63,29 @@ namespace yaget::render
         //DepthStateRead = 1ULL << 27,
 
         // describe pipeline state primitive topology
-        TopologyStateTriangle = 1ULL << 24,
-        TopologyStateLine     = 1ULL << 24,
-        TopologyStatePoint    = 1ULL << 24,
-        //TopologyStateNone = 1ULL << 25,
+        TopologyStateTriangle = 1ULL << 28,
+        TopologyStateLine     = 1ULL << 29,
+        TopologyStatePoint    = 1ULL << 30,
+        //TopologyStateNone = 1ULL << 31,
 
         // describe pipeline state render target formats
-        NumRTVTargetsOne = 1ULL << 26,
-        NumRTVTargetsTwo = 1ULL << 27,
-        //NumRTVTargetsThree = 1ULL << 28,
-        //NumRTVTargetsFour = 1ULL << 29,
+        NumRTVTargetsOne    = 1ULL << 33,
+        NumRTVTargetsTwo    = 1ULL << 34,
+        NumRTVTargetsThree  = 1ULL << 35,
+        NumRTVTargetsFour   = 1ULL << 36,
 
         // describe pipeline state render target formats
-        RTVFormatRGBA8   = 1ULL << 30,
-        RTVFormatRGBA16F = 1ULL << 31,
-        RTVFormatRGBA32F = 1ULL << 32,
-        DSVFormatD24S8   = 1ULL << 33,
-        DSVFormatBlah1   = 1ULL << 34,
-        DSVFormatBlah2   = 1ULL << 35,
-        DSVFormatBlah3   = 1ULL << 36,
-        DSVFormatBlah4   = 1ULL << 37,
-        DSVFormatBlah5   = 1ULL << 38,
-        DSVFormatBlah6   = 1ULL << 39,
-        DSVFormatBlah7   = 1ULL << 40,
+        RTVFormatRGBA8   = 1ULL << 40,
+        RTVFormatRGBA16F = 1ULL << 41,
+        RTVFormatRGBA32F = 1ULL << 42,
+        DSVFormatD24S8   = 1ULL << 43,
+        DSVFormatBlah1   = 1ULL << 44,
+        DSVFormatBlah2   = 1ULL << 45,
+        DSVFormatBlah3   = 1ULL << 46,
+        DSVFormatBlah4   = 1ULL << 47,
+        DSVFormatBlah5   = 1ULL << 48,
+        DSVFormatBlah6   = 1ULL << 49,
+        DSVFormatBlah7   = 1ULL << 50,
     };
 
 
@@ -171,3 +172,10 @@ namespace yaget::render
         static TypeToSectionMap TypeToSection;
     };
 }
+
+
+template <>
+struct magic_enum::customize::enum_range<yaget::render::AssetCacheType> {
+  static constexpr bool is_flags = true;
+};
+

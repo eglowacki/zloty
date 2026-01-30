@@ -5,25 +5,65 @@
 #include "HashUtilities.h"
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
-#include <magic_enum/magic_enum.hpp>
 
+
+//-------------------------------------------------------------------------------------------------
+namespace
+{
+    std::string CacheTypeToString(yaget::render::AssetCacheType value) 
+    {
+        std::string result;
+
+        auto temp_value = static_cast<uint64_t>(value); // Work with a copy
+        
+        while (temp_value != 0) 
+        {
+            // The expression (temp_value & -temp_value) isolates the least significant set bit
+            uint64_t lsb = temp_value & (-static_cast<int64_t>(temp_value)); 
+            
+            auto singleValue = static_cast<yaget::render::AssetCacheType>(lsb);
+            const auto enumName = magic_enum::enum_name(singleValue);
+
+            result += result.empty() ? enumName : " | " + std::string(enumName);
+
+            // Clear the least significant set bit
+            temp_value ^= lsb; 
+            // Alternatively, a common trick to clear the LSB: temp_value &= (temp_value - 1);
+        }
+
+        return result;
+    }
+    
+}
+
+
+//-------------------------------------------------------------------------------------------------
 namespace yaget::render
 {
-    
+    inline void to_json(nlohmann::json& j, const yaget::render::AssetCacheType cacheType)
+    {
+        const auto enumName = CacheTypeToString(cacheType);
+        j = enumName;
+    }
 
-        //inline void to_json(nlohmann::json& j, const yaget::render::AssetCacheType cacheType)
-        //{
-        //    const auto enumName = magic_enum::enum_name(cacheType);
-        //    j = enumName;
-        //}
+    inline void from_json(const nlohmann::json& j, yaget::render::AssetCacheType& cacheType)
+    {
+        std::string source;
+        j.get_to(source);
 
-        //inline void from_json(const nlohmann::json& j, VirtualTransportSystem::Section& section)
-        //{
-        //    std::string source;
-        //    j.get_to(source);
+        AssetCacheType result{};
+        auto bitValues = conv::Split(source, "|", true);
+        for (auto bit : bitValues)
+        {
+            auto enumBit = magic_enum::enum_cast<AssetCacheType>(bit);
+            if (enumBit.has_value())
+            {
+                result = result | enumBit.value();
+            }
+        }
 
-        //    section = VirtualTransportSystem::Section(source);
-        //}
+        cacheType = result;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -51,9 +91,16 @@ yaget::io::VirtualTransportSystem::Section yaget::render::AssetCache::operator[]
 //-------------------------------------------------------------------------------------------------
 void yaget::render::AssetCache::PopulateTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
+
+    //auto keyValue = iterate_set_bits(BasicPipeline);
+    //auto keyValue2 = iterate_set_bits(AssetCacheType::RTVFormatRGBA8);
+
     try
     {
         TypeToSectionMap newMap = io::LoadBlob<TypeToSectionMap>(vts, fileName);
+
+        bool result = TypeToSection == newMap;
+        result;
         int z = 0;
         z;
         
