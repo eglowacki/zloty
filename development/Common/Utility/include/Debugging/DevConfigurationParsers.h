@@ -154,7 +154,8 @@ namespace yaget::dev
     {
         return lhs.mDevice == rhs.mDevice &&
                lhs.mMemoryReport == rhs.mMemoryReport && 
-               lhs.mGPUTraceback == rhs.mGPUTraceback;
+               lhs.mGPUTraceback == rhs.mGPUTraceback &&
+               lhs.mClearCache == rhs.mClearCache;
     }
 
     inline bool operator==(const Configuration& lhs, const Configuration& rhs)
@@ -427,6 +428,7 @@ namespace yaget::dev
         j["Device"] = graphics.mDevice;
         j["MemoryReport"] = graphics.mMemoryReport;
         j["GPUTraceback"] = graphics.mGPUTraceback;
+        j["ClearCache"] = graphics.mClearCache;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -435,6 +437,7 @@ namespace yaget::dev
         graphics.mDevice = json::GetValue(j, "Device", graphics.mDevice);
         graphics.mMemoryReport = json::GetValue(j, "MemoryReport", graphics.mMemoryReport);
         graphics.mGPUTraceback = json::GetValue(j, "GPUTraceback", graphics.mGPUTraceback);
+        graphics.mClearCache = json::GetValue(j, "ClearCache", graphics.mClearCache);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------

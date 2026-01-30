@@ -24,7 +24,7 @@ namespace yaget::render
     class ResourceCompiler
     {
     public:
-        ResourceCompiler(io::BufferView data, const char* entryName, const char* target, bool useNewestCompiler);
+        ResourceCompiler(io::BufferView data, const char* entryName, const char* target, bool useOldCompiler);
         io::Buffer GetCompiled() const;
 
     private:

@@ -25,7 +25,7 @@
 				"TraceOn": true
 			}
 		},
-		"Graphics": {																				   
+		"Graphics": {
 			"Device": "",
 			"MemoryReport": false,
 			"GPUTraceback": false

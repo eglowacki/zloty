@@ -1,13 +1,33 @@
 #include "Render/Cache/AssetCache.h"
 #include "Render/Platform/ResourceCompiler.h"
 #include <VertexTypes.h>
+
+#include "HashUtilities.h"
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
+#include <magic_enum/magic_enum.hpp>
 
+namespace yaget::render
+{
+    
+
+        //inline void to_json(nlohmann::json& j, const yaget::render::AssetCacheType cacheType)
+        //{
+        //    const auto enumName = magic_enum::enum_name(cacheType);
+        //    j = enumName;
+        //}
+
+        //inline void from_json(const nlohmann::json& j, VirtualTransportSystem::Section& section)
+        //{
+        //    std::string source;
+        //    j.get_to(source);
+
+        //    section = VirtualTransportSystem::Section(source);
+        //}
+}
 
 //-------------------------------------------------------------------------------------------------
-std::map<yaget::render::AssetCacheType, yaget::io::VirtualTransportSystem::Section>
-yaget::render::AssetCache::TypeToSection =
+yaget::render::AssetCache::TypeToSectionMap yaget::render::AssetCache::TypeToSection =
 {
     {BasicVertex, yaget::io::VirtualTransportSystem::Section("VeretexShaders@Basic")},
     {BasicPixel, yaget::io::VirtualTransportSystem::Section("PixelShaders@Basic")},
@@ -29,30 +49,87 @@ yaget::io::VirtualTransportSystem::Section yaget::render::AssetCache::operator[]
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::render::AssetCache::PopulateTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+{
+    try
+    {
+        TypeToSectionMap newMap = io::LoadBlob<TypeToSectionMap>(vts, fileName);
+        int z = 0;
+        z;
+        
+    }
+    catch (nlohmann::json::exception& ex)
+    {
+        YLOG_ERROR("ASET", "Exception during loading of Dependency Nodes from: '%s'.\n\t%s",
+                   conv::Convertor<io::VirtualTransportSystem::Section>::ToString(fileName).c_str(), ex.what());
+    }
+}
+
+
+void yaget::render::AssetCache::SaveTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+{
+    nlohmann::json jsonBlock = AssetCache::TypeToSection;
+    auto textBlock = json::PrettyPrint(jsonBlock);
+    io::Buffer buffer = io::CreateBuffer(textBlock);
+    if (auto saveFileTag = vts.GetTag(fileName); saveFileTag.IsValid())
+    {
+        io::SingleBLobLoader<io::JsonAsset> cacheLoader(vts, saveFileTag);
+        auto asset = cacheLoader.GetAsset();
+
+        //std::hash<io::Buffer> hasher;
+        //auto has1 = hasher(asset->mBuffer);
+
+        //auto hash1 = conv::GenerateHash(asset->mBuffer);
+        //auto hash2 = conv::GenerateHash(buffer);
+        //if (hash1 != hash2)
+        {
+            asset->mBuffer = buffer;
+            vts.UpdateAssetData(asset, io::VirtualTransportSystem::Request::UpdateOnly);
+        }
+    }
+    else
+    {
+        auto newTag = vts.GenerateTag(fileName);
+        std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::JsonAsset>(buffer, newTag, vts);
+        vts.UpdateAssetData(newAsset, io::VirtualTransportSystem::Request::Add);
+    }
+}
+
+
+#include <magic_enum/magic_enum.hpp>
+
+//-------------------------------------------------------------------------------------------------
 yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
     : mVTS(vts)
-      , mCacheSection(fileName)
+    , mCacheSection(fileName)
 {
-    io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
-    if (auto asset = cacheLoader.GetAsset())
+    //const auto enumName = magic_enum::enum_name(AssetCacheType::VertexPosition);
+    //const auto enumValue = magic_enum::enum_cast<AssetCacheType>(enumName);
+
+    const auto& configBlock = dev::CurrentConfiguration().mGraphics;
+    if (!configBlock.mClearCache)
     {
-        io::MessagingBuffer cache;
-        cache.mBuffer = asset->mBuffer;
-        cache.mWriteOffset = io::size_data(asset->mBuffer);
-        auto numElements = *(reinterpret_cast<size_t*>(io::cast_data<char>(cache.mBuffer)));
-        size_t offset = sizeof(numElements);
-        for (size_t i = 0; i < numElements; ++i)
+        io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
+        if (auto asset = cacheLoader.GetAsset())
         {
-            Guid *guid = reinterpret_cast<Guid*>(io::cast_data<char>(cache.mBuffer) + offset);
-            offset += sizeof(Guid);
-            Location *location = reinterpret_cast<Location*>(io::cast_data<char>(cache.mBuffer) + offset);
-            offset += sizeof(Location);
-            mCacheIndex.insert({*guid, *location});
+            io::MessagingBuffer cache;
+            cache.mBuffer = asset->mBuffer;
+            cache.mWriteOffset = io::size_data(asset->mBuffer);
+            auto numElements = *(reinterpret_cast<size_t*>(io::cast_data<char>(cache.mBuffer)));
+            size_t offset = sizeof(numElements);
+            for (size_t i = 0; i < numElements; ++i)
+            {
+                Guid *guid = reinterpret_cast<Guid*>(io::cast_data<char>(cache.mBuffer) + offset);
+                offset += sizeof(Guid);
+                Location *location = reinterpret_cast<Location*>(io::cast_data<char>(cache.mBuffer) + offset);
+                offset += sizeof(Location);
+                mCacheIndex.insert({*guid, *location});
+            }
+            mCache = io::MessagingBuffer(io::size_data(cache.mBuffer) - offset);
+            mCache.mWriteOffset = io::size_data(mCache.mBuffer);
+            memcpy(io::cast_data<char>(mCache.mBuffer), io::cast_data<char>(cache.mBuffer) + offset,
+                   io::size_data(mCache.mBuffer));
         }
-        mCache = io::MessagingBuffer(io::size_data(cache.mBuffer) - offset);
-        mCache.mWriteOffset = io::size_data(mCache.mBuffer);
-        memcpy(io::cast_data<char>(mCache.mBuffer), io::cast_data<char>(cache.mBuffer) + offset,
-               io::size_data(mCache.mBuffer));
     }
 }
 

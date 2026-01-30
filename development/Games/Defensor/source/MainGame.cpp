@@ -94,6 +94,11 @@ int defensor::Run(const yaget::args::Options& options)
 
     AttachTransientAsset(yaget::render::BasicSignature, app.VTS());
     AttachTransientAsset(yaget::render::BasicPipeline, app.VTS());
+    yaget::render::AssetCache::PopulateTypeToSection(io::VirtualTransportSystem::Section("Manifest@TypeToSection"), app.VTS());
 
-    return comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app);
+    auto returnResult =  comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app);
+
+    yaget::render::AssetCache::SaveTypeToSection(io::VirtualTransportSystem::Section("ManifestWrite@TypeToSection"), app.VTS());
+
+    return returnResult;
 }

@@ -39,12 +39,12 @@ namespace
     };
 
     std::map<defensor::render::RenderShaders::ShaderType, ShaderMapping> ShaderMappings = {
-        { defensor::render::RenderShaders::ShaderType::Vertex, { "VSMain", "vs_5_1" } },
-        { defensor::render::RenderShaders::ShaderType::Pixel, { "PSMain", "ps_5_1" } },
-        { defensor::render::RenderShaders::ShaderType::Geometry, { "GSMain", "gs_5_1" } },
-        { defensor::render::RenderShaders::ShaderType::Compute, { "CSMain", "cs_5_1" } },
-        { defensor::render::RenderShaders::ShaderType::Hull, { "HSMain", "hs_5_1" } },
-        { defensor::render::RenderShaders::ShaderType::Domain, { "DSMain", "ds_5_1" } }
+        { defensor::render::RenderShaders::ShaderType::Vertex, { "VSMain", "vs_6_5" } },
+        { defensor::render::RenderShaders::ShaderType::Pixel, { "PSMain", "ps_6_5" } },
+        { defensor::render::RenderShaders::ShaderType::Geometry, { "GSMain", "gs_6_5" } },
+        { defensor::render::RenderShaders::ShaderType::Compute, { "CSMain", "cs_6_5" } },
+        { defensor::render::RenderShaders::ShaderType::Hull, { "HSMain", "hs_6_5" } },
+        { defensor::render::RenderShaders::ShaderType::Domain, { "DSMain", "ds_6_5" } }
     };
 
 
@@ -56,7 +56,7 @@ namespace
         {
             const char* entryName = ShaderMappings[shaderType].mEntryPoint;
             const char* target = ShaderMappings[shaderType].mTarget;
-            render::ResourceCompiler compiler(io::cast_to_view(sourceBuffer), entryName, target, false /*useNewestCompiler*/);
+            render::ResourceCompiler compiler(io::cast_to_view(sourceBuffer), entryName, target, false /*useOldCompiler*/);
             result = compiler.GetCompiled();
         }
         return result;

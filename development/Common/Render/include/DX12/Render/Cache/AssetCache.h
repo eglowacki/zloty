@@ -19,7 +19,6 @@
 namespace yaget::render
 {
     //-------------------------------------------------------------------------------------------------
-    // can you fix enum AssetCacheType?
     enum class AssetCacheType : uint64_t
     {
         // describe vertex shader
@@ -140,7 +139,9 @@ namespace yaget::render
         io::Buffer GetCachedAsset(const io::Tag& tag) const;
         void SaveCachedAsset(const io::Tag& tag, io::Buffer buffer);
         void ClearCachedAsset(const io::Tag& tag);
-        static yaget::io::VirtualTransportSystem::Section operator[](AssetCacheType typeFlag);
+        static io::VirtualTransportSystem::Section operator[](AssetCacheType typeFlag);
+        static void PopulateTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void SaveTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
 
     private:
         io::VirtualTransportSystem& mVTS;
@@ -165,6 +166,8 @@ namespace yaget::render
 
         CacheStatus mCacheStatus = CacheStatus::Clean;
         io::VirtualTransportSystem::Section mCacheSection;
-        static std::map<AssetCacheType, yaget::io::VirtualTransportSystem::Section> TypeToSection;
+
+        using TypeToSectionMap = std::map<AssetCacheType, io::VirtualTransportSystem::Section>;
+        static TypeToSectionMap TypeToSection;
     };
 }

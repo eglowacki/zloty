@@ -80,6 +80,15 @@ namespace yaget
             return buffer.second;
         }
 
+        inline bool operator==(const Buffer& lhs, const Buffer& rhs) 
+        {
+            return size_data(lhs) == size_data(rhs) && std::memcmp(cast_data<const char>(lhs), cast_data<const char>(rhs), size_data(lhs)) == 0;
+        }
+        inline bool operator!=(const Buffer& lhs, const Buffer& rhs) 
+        {
+            return !(lhs == rhs);
+        }
+
 
         //! Helper to create Buffer of size
         inline Buffer CreateBuffer(size_t size)
@@ -147,7 +156,7 @@ namespace yaget
 
             void WriteDataChunk(const auto* dataChunk, size_t dataSize)
             {
-                YAGET_ASSERT(mWriteOffset + sizeof(dataChunk) <= io::BufferSize(mBuffer), "Messaging buffer does not have enough space to write dataChunk out.");
+                YAGET_ASSERT(mWriteOffset + dataSize <= io::BufferSize(mBuffer), "Messaging buffer does not have enough space to write dataChunk out.");
 
                 std::memcpy(io::BufferPointer(mBuffer) + mWriteOffset, dataChunk, dataSize);
                 mWriteOffset += dataSize;

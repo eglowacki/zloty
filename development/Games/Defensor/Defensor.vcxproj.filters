@@ -102,6 +102,9 @@
     <None Include="Defensor.deployment">
       <Filter>Data Files</Filter>
     </None>
+    <None Include="data\Shaders\Pixel\Basic.vs">
+      <Filter>Data Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="data\Configuration.json">
@@ -116,10 +119,10 @@
     <CopyFileToFolders Include="data\Shaders\Pixel\Basic.ps">
       <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Shaders\Vertex\Basic.vs">
-      <Filter>Data Files\Shaders</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="data\Manifest\RenderDependencies.json">
+      <Filter>Data Files\Manifest</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\TypeToSection.json">
       <Filter>Data Files\Manifest</Filter>
     </CopyFileToFolders>
   </ItemGroup>

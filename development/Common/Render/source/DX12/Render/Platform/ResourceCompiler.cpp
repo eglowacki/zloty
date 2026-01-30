@@ -7,8 +7,11 @@
 
 #include <dxcapi.h>         // Be sure to link with dxcompiler.lib.
 #include <d3d12shader.h>    // Shader reflection.
+#include <ranges>
 
+#include "StringHelpers.h"
 #include "Core/ErrorHandlers.h"
+#include "Platform/Support.h"
 
 // New compiler for shaders
 // https://github.com/microsoft/DirectXShaderCompiler/wiki/Using-dxc.exe-and-dxcompiler.dll
@@ -16,21 +19,88 @@
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const char* entryName, const char* target, bool useNewestCompiler)
+yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const char* entryName, const char* target, bool useOldCompiler)
 {
-    if (useNewestCompiler)
+    if (useOldCompiler == false)
     {
         ComPtr<IDxcUtils> utils;
         HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
-        error_handlers::ThrowOnError(hr, "Could not create instance of IDxcUtils");
+        if(FAILED(hr))
+        {
+            YLOG_ERROR("COMP", fmt::format("Could not create DxcUtil object. {}", yaget::platform::LastErrorMessage()).c_str());
+            return;
+        }
 
         ComPtr<IDxcCompiler3> compiler;
         hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
-        error_handlers::ThrowOnError(hr, "Could not create instance of IDxcCompiler3");
+        if(FAILED(hr))
+        {
+            YLOG_ERROR("COMP", fmt::format("Could not create DxcCompiler3 object. {}", yaget::platform::LastErrorMessage()).c_str());
+            return;
+        }
 
-        ComPtr<IDxcIncludeHandler> pIncludeHandler;
-        hr = utils->CreateDefaultIncludeHandler(&pIncludeHandler);
-        error_handlers::ThrowOnError(hr, "Could not create Default Include Handler");
+        std::vector<std::wstring> arguments;
+        arguments.push_back(L"-E");
+        arguments.push_back(conv::utf8_to_wide(entryName));
+
+        // -T for the target profile (eg. 'ps_6_6')
+        arguments.push_back(L"-T");
+        arguments.push_back(conv::utf8_to_wide(target));
+
+        arguments.push_back(L"-encoding");
+        arguments.push_back(L"utf8");
+
+#if YAGET_DEBUG_RENDER == 1
+        arguments.push_back(L"-Zi");
+        arguments.push_back(L"-Qembed_debug");
+        arguments.push_back(L"-Od");
+#endif
+
+        arguments.push_back(L"-fdiagnostics-format=msvc");
+
+        //-rootsig-define <value> Read root signature from a #define
+        
+        std::vector<LPCWSTR> shaderArguments = arguments | std::views::transform([](const std::wstring& element)
+        {
+            return element.c_str();
+        }) | std::ranges::to<std::vector<LPCWSTR>>();
+
+        uint32_t codePage = CP_UTF8;
+        DxcText dxBuffer{ io::cast_data<const char>(data), io::size_data(data), codePage };
+        ComPtr<IDxcResult> result;
+        hr = compiler->Compile(&dxBuffer, shaderArguments.data(), static_cast<UINT32>(shaderArguments.size()), nullptr, IID_PPV_ARGS(&result));
+        if(FAILED(hr))
+        {
+            YLOG_ERROR("COMP", "Could not execute compiler for shader. %s", yaget::platform::LastErrorMessage().c_str());
+            return;
+        }
+
+        ComPtr<IDxcBlobUtf8> errors;
+        hr = result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
+        if(FAILED(hr))
+        {
+            YLOG_ERROR("COMP", "Could not get output for shader from compiled results. %s", yaget::platform::LastErrorMessage().c_str());
+            return;
+        }
+
+        if (errors && errors->GetStringLength())
+        {
+            YLOG_ERROR("COMP", fmt::format("Could not compile shader. {}", errors->GetStringPointer()).c_str());
+            return;
+        }
+
+        ComPtr<IDxcBlob> shaderBin;
+        hr = result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBin), nullptr);
+        if(FAILED(hr))
+        {
+            YLOG_ERROR("COMP", "Could not get bin shader from compiled results");
+            return;
+        }
+
+        const auto bufferSize = shaderBin->GetBufferSize();
+        mBinaryBlob = io::CreateBuffer(static_cast<const char*>(shaderBin->GetBufferPointer()), bufferSize);
+
+        //ResourceReflector resourceReflector(io::cast_to_view(mBinaryBlob));
     }
     else
     {

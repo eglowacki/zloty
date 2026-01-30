@@ -176,6 +176,7 @@ namespace yaget
                 bool mMemoryReport = false;
                 // activate GPU crash report
                 bool mGPUTraceback = false;
+                bool mClearCache = false;
             };
             Graphics mGraphics;
 
