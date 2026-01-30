@@ -40,13 +40,13 @@ namespace
 //-------------------------------------------------------------------------------------------------
 namespace yaget::render
 {
-    inline void to_json(nlohmann::json& j, const yaget::render::AssetCacheType cacheType)
+    inline void to_json(nlohmann::json& j, const AssetCacheType cacheType)
     {
         const auto enumName = CacheTypeToString(cacheType);
         j = enumName;
     }
 
-    inline void from_json(const nlohmann::json& j, yaget::render::AssetCacheType& cacheType)
+    inline void from_json(const nlohmann::json& j, AssetCacheType& cacheType)
     {
         std::string source;
         j.get_to(source);
@@ -91,48 +91,30 @@ yaget::io::VirtualTransportSystem::Section yaget::render::AssetCache::operator[]
 //-------------------------------------------------------------------------------------------------
 void yaget::render::AssetCache::PopulateTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
-
-    //auto keyValue = iterate_set_bits(BasicPipeline);
-    //auto keyValue2 = iterate_set_bits(AssetCacheType::RTVFormatRGBA8);
-
-    try
+    TypeToSectionMap newMap = io::LoadBlob<TypeToSectionMap>(vts, fileName);
+    if (!newMap.empty() && newMap != TypeToSection)
     {
-        TypeToSectionMap newMap = io::LoadBlob<TypeToSectionMap>(vts, fileName);
-
-        bool result = TypeToSection == newMap;
-        result;
-        int z = 0;
-        z;
-        
-    }
-    catch (nlohmann::json::exception& ex)
-    {
-        YLOG_ERROR("ASET", "Exception during loading of Dependency Nodes from: '%s'.\n\t%s",
-                   conv::Convertor<io::VirtualTransportSystem::Section>::ToString(fileName).c_str(), ex.what());
+        TypeToSection = newMap;
     }
 }
 
 
 void yaget::render::AssetCache::SaveTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
-    nlohmann::json jsonBlock = AssetCache::TypeToSection;
+    nlohmann::json jsonBlock = TypeToSection;
     auto textBlock = json::PrettyPrint(jsonBlock);
     io::Buffer buffer = io::CreateBuffer(textBlock);
     if (auto saveFileTag = vts.GetTag(fileName); saveFileTag.IsValid())
     {
-        io::SingleBLobLoader<io::JsonAsset> cacheLoader(vts, saveFileTag);
-        auto asset = cacheLoader.GetAsset();
-
-        //std::hash<io::Buffer> hasher;
-        //auto has1 = hasher(asset->mBuffer);
-
-        //auto hash1 = conv::GenerateHash(asset->mBuffer);
-        //auto hash2 = conv::GenerateHash(buffer);
-        //if (hash1 != hash2)
+        auto oldMap = io::LoadBlob<TypeToSectionMap>(vts, saveFileTag);
+        if (oldMap.empty() || oldMap != TypeToSection)
         {
+            io::SingleBLobLoader<io::JsonAsset> cacheLoader(vts, saveFileTag);
+            auto asset = cacheLoader.GetAsset();
             asset->mBuffer = buffer;
             vts.UpdateAssetData(asset, io::VirtualTransportSystem::Request::UpdateOnly);
         }
+
     }
     else
     {
@@ -142,8 +124,6 @@ void yaget::render::AssetCache::SaveTypeToSection(io::VirtualTransportSystem::Se
     }
 }
 
-
-#include <magic_enum/magic_enum.hpp>
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)

@@ -249,7 +249,7 @@ yaget::DependencyGraph::~DependencyGraph()
     auto nodesHash = calculate_map_hash(mNodes);
     if (nodesHash != mNodesHash)
     {
-        Section saveSection(mSection.Name + "Write@" + mSection.Filter);
+        Section saveSection(mSection.mName + "Write@" + mSection.mFilter);
         const auto saveFileTag = mVTS.AssureTag(saveSection);
 
         nlohmann::json jsonBlock = depNode;

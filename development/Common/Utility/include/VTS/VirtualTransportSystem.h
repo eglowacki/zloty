@@ -89,7 +89,7 @@ namespace yaget
                 Section(const io::Tag& tag);
                 Section& operator=(const Section& source);
                 bool operator==(const Section& other) const;
-                bool operator!=(const Section& other) const { return !(Name == other.Name && Filter == other.Filter && Match == other.Match); }
+                bool operator!=(const Section& other) const { return !(mName == other.mName && mFilter == other.mFilter && mMatch == other.mMatch); }
 
                 //! Initializes with string in a format Name@Filter. Filter is optional.
                 //! We do not enforce explicit here to allow easy of usage with strings
@@ -101,17 +101,10 @@ namespace yaget
 
                 std::string ToString() const;
 
-            private:
                 std::string mName;       // Section name
                 std::string mFilter;     // Filter of section. If empty, then grab all under section name
 
                 FilterMatch mMatch = FilterMatch::Like;
-
-            public:
-                const std::string& Name;
-                const std::string& Filter;
-                const FilterMatch& Match;
-
             };
             using Sections = std::vector<Section>;
 
@@ -255,14 +248,14 @@ namespace yaget
 
                 std::string columnsText = columns ? columns : "Guid, Name, VTS, Section";
                 std::string frontWild = "%", endWild = "%";
-                if (section.Match == FilterMatch::Override || section.Match == FilterMatch::Exact)
+                if (section.mMatch == FilterMatch::Override || section.mMatch == FilterMatch::Exact)
                 {
                     frontWild = "";
                     endWild = ".%";
                 }
 
-                std::string vtsText = section.Filter.empty() ? ";" : fmt::format(" AND VTS LIKE '{}{}{}' ORDER BY VTS;", frontWild, section.Filter, endWild);
-                std::string command = fmt::format("SELECT {} FROM Tags WHERE Section = '{}'{}", columnsText, section.Name, vtsText);
+                std::string vtsText = section.mFilter.empty() ? ";" : fmt::format(" AND VTS LIKE '{}{}{}' ORDER BY VTS;", frontWild, section.mFilter, endWild);
+                std::string command = fmt::format("SELECT {} FROM Tags WHERE Section = '{}'{}", columnsText, section.mName, vtsText);
                 return command;
             }
 

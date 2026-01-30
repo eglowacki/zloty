@@ -502,10 +502,8 @@ namespace
 
 
 yaget::io::VirtualTransportSystem::Section::Section()
-	: Name(mName)
-	, Filter(mFilter)
-	, Match(mMatch)
 {
+    
 }
 
 
@@ -574,7 +572,7 @@ yaget::io::VirtualTransportSystem::Section& yaget::io::VirtualTransportSystem::S
 
 bool yaget::io::VirtualTransportSystem::Section::operator==(const Section& other) const
 {
-	return Name == other.Name && Filter == other.Filter && Match == other.Match;
+	return mName == other.mName && mFilter == other.mFilter && mMatch == other.mMatch;
 }
 
 
