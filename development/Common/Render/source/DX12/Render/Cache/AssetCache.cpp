@@ -99,6 +99,7 @@ void yaget::render::AssetCache::PopulateTypeToSection(io::VirtualTransportSystem
 }
 
 
+//-------------------------------------------------------------------------------------------------
 void yaget::render::AssetCache::SaveTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
     nlohmann::json jsonBlock = TypeToSection;
@@ -130,9 +131,6 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::Virtu
     : mVTS(vts)
     , mCacheSection(fileName)
 {
-    //const auto enumName = magic_enum::enum_name(AssetCacheType::VertexPosition);
-    //const auto enumValue = magic_enum::enum_cast<AssetCacheType>(enumName);
-
     const auto& configBlock = dev::CurrentConfiguration().mGraphics;
     if (!configBlock.mClearCache)
     {
