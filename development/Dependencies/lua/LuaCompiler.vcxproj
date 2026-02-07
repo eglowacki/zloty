@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(ProjectDir)..\builds\lua\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)..\builds\lua\obj\compiler\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\builds\lua\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)..\builds\lua\obj\compiler\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(ProjectDir)..\builds\lua\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)..\builds\lua\obj\compiler\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\builds\lua\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)..\builds\lua\obj\compiler\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -15,8 +15,9 @@
 
 #include <filesystem>
 #include <fstream>
-
 #include "Core/ErrorHandlers.h"
+
+#include "Script/luacpp.h"
 
 namespace fs = std::filesystem;
 
@@ -81,6 +82,12 @@ namespace
     void ParseConfiguration(std::istream& configBindingsFile, const fs::path& configPath, IncludeTracker& includeTracker, yaget::dev::Configuration& configuration)
     {
         using namespace yaget;
+
+        constexpr bool useLua = false;
+        if (useLua)
+        {
+            
+        }
 
         try
         {

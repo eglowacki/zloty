@@ -10,6 +10,7 @@
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 #include "Render/AdapterInfo.h"
+#include "Script/luacpp.h"
 #include "../resource.h"
 
 namespace yaget::app
@@ -56,6 +57,15 @@ namespace
 
         return tag;
     }
+
+#if 0
+    static int l_log(lua_State* L) 
+    {
+        const char* msg = luaL_checkstring(L, 1);
+        YLOG_INFO("DEF", "%s\n", msg);
+        return 0; // Number of results
+    }
+#endif
     
 }
 
@@ -63,6 +73,22 @@ namespace
 int defensor::Run(const yaget::args::Options& options)
 {
     using namespace yaget;
+
+#if 0
+    lua_State* L = luaL_newstate(); // Create new Lua state
+    luaL_openlibs(L);               // Load Lua libraries
+
+    lua_pushcfunction(L, l_log);
+    lua_setglobal(L, "log");
+
+    // Execute Lua script
+    if (luaL_dostring(L, "log('Hello from Lua!')")) 
+    {
+        printf("Error: %s\n", lua_tostring(L, -1));
+    }
+
+    lua_close(L); // Close Lua state
+#endif
 
     if (options.find<bool>("vts_fix", false))
     {
