@@ -21,6 +21,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lua", "Lua", "{1A142A86-F5C
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaLibrary", "..\..\Dependencies\lua\LuaLibrary.vcxproj", "{28B256FA-623B-47F2-BBC1-44E46E955C58}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaInterpreter", "..\..\Dependencies\lua\LuaInterpreter.vcxproj", "{AA987A5F-410D-43CF-8058-AD39512BE461}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaCompiler", "..\..\Dependencies\lua\LuaCompiler.vcxproj", "{F8E907C3-C6D5-4348-BD4D-33B363F07C98}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -69,12 +73,30 @@ Global
 		{28B256FA-623B-47F2-BBC1-44E46E955C58}.Release|x64.Build.0 = Release|x64
 		{28B256FA-623B-47F2-BBC1-44E46E955C58}.Release|x86.ActiveCfg = Release|Win32
 		{28B256FA-623B-47F2-BBC1-44E46E955C58}.Release|x86.Build.0 = Release|Win32
+		{AA987A5F-410D-43CF-8058-AD39512BE461}.Debug|x64.ActiveCfg = Debug|x64
+		{AA987A5F-410D-43CF-8058-AD39512BE461}.Debug|x64.Build.0 = Debug|x64
+		{AA987A5F-410D-43CF-8058-AD39512BE461}.Debug|x86.ActiveCfg = Debug|Win32
+		{AA987A5F-410D-43CF-8058-AD39512BE461}.Debug|x86.Build.0 = Debug|Win32
+		{AA987A5F-410D-43CF-8058-AD39512BE461}.Release|x64.ActiveCfg = Release|x64
+		{AA987A5F-410D-43CF-8058-AD39512BE461}.Release|x64.Build.0 = Release|x64
+		{AA987A5F-410D-43CF-8058-AD39512BE461}.Release|x86.ActiveCfg = Release|Win32
+		{AA987A5F-410D-43CF-8058-AD39512BE461}.Release|x86.Build.0 = Release|Win32
+		{F8E907C3-C6D5-4348-BD4D-33B363F07C98}.Debug|x64.ActiveCfg = Debug|x64
+		{F8E907C3-C6D5-4348-BD4D-33B363F07C98}.Debug|x64.Build.0 = Debug|x64
+		{F8E907C3-C6D5-4348-BD4D-33B363F07C98}.Debug|x86.ActiveCfg = Debug|Win32
+		{F8E907C3-C6D5-4348-BD4D-33B363F07C98}.Debug|x86.Build.0 = Debug|Win32
+		{F8E907C3-C6D5-4348-BD4D-33B363F07C98}.Release|x64.ActiveCfg = Release|x64
+		{F8E907C3-C6D5-4348-BD4D-33B363F07C98}.Release|x64.Build.0 = Release|x64
+		{F8E907C3-C6D5-4348-BD4D-33B363F07C98}.Release|x86.ActiveCfg = Release|Win32
+		{F8E907C3-C6D5-4348-BD4D-33B363F07C98}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{28B256FA-623B-47F2-BBC1-44E46E955C58} = {1A142A86-F5CA-4EFD-8B9C-24C5B535C160}
+		{AA987A5F-410D-43CF-8058-AD39512BE461} = {1A142A86-F5CA-4EFD-8B9C-24C5B535C160}
+		{F8E907C3-C6D5-4348-BD4D-33B363F07C98} = {1A142A86-F5CA-4EFD-8B9C-24C5B535C160}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B4E4DB6A-E5CC-4AE7-917A-020D389BEA73}
