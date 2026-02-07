@@ -47,6 +47,9 @@ namespace defensor::render
         io::Buffer GetShader(const io::Tag& tag, ShaderType shaderType);
         std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType);
 
+        static void PopulateShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void SaveShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+
     private:
         io::Buffer AssureShaderNonMT(const yaget::io::Tag& tag, ShaderType shaderType);
     };

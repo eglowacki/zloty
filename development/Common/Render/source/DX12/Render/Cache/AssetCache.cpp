@@ -3,6 +3,7 @@
 #include <VertexTypes.h>
 
 #include "HashUtilities.h"
+#include "Render/Cache/CacheWatcher.h"
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
 
@@ -10,6 +11,20 @@
 //-------------------------------------------------------------------------------------------------
 namespace
 {
+    constexpr size_t CurrentFileVersion = 1;
+
+    struct YagetFileSignature
+    {
+        const char Signature[4] = { 'G','L','O','W' };
+        size_t Version = 0;
+
+        bool IsValid() const
+        {
+            return std::memcmp(Signature, "GLOW", 4) == 0 && Version <= CurrentFileVersion;
+        }
+    };
+   
+
     std::string CacheTypeToString(yaget::render::AssetCacheType value) 
     {
         std::string result;
@@ -91,45 +106,21 @@ yaget::io::VirtualTransportSystem::Section yaget::render::AssetCache::operator[]
 //-------------------------------------------------------------------------------------------------
 void yaget::render::AssetCache::PopulateTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
-    TypeToSectionMap newMap = io::LoadBlob<TypeToSectionMap>(vts, fileName);
-    if (!newMap.empty() && newMap != TypeToSection)
-    {
-        TypeToSection = newMap;
-    }
+    yaget::render::PopulateMap<TypeToSectionMap>(fileName, vts, TypeToSection);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::AssetCache::SaveTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
-    nlohmann::json jsonBlock = TypeToSection;
-    auto textBlock = json::PrettyPrint(jsonBlock);
-    io::Buffer buffer = io::CreateBuffer(textBlock);
-    if (auto saveFileTag = vts.GetTag(fileName); saveFileTag.IsValid())
-    {
-        auto oldMap = io::LoadBlob<TypeToSectionMap>(vts, saveFileTag);
-        if (oldMap.empty() || oldMap != TypeToSection)
-        {
-            io::SingleBLobLoader<io::JsonAsset> cacheLoader(vts, saveFileTag);
-            auto asset = cacheLoader.GetAsset();
-            asset->mBuffer = buffer;
-            vts.UpdateAssetData(asset, io::VirtualTransportSystem::Request::UpdateOnly);
-        }
-
-    }
-    else
-    {
-        auto newTag = vts.GenerateTag(fileName);
-        std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::JsonAsset>(buffer, newTag, vts);
-        vts.UpdateAssetData(newAsset, io::VirtualTransportSystem::Request::Add);
-    }
+    yaget::render::SaveMap(fileName, vts, TypeToSection);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
     : mVTS(vts)
-    , mCacheSection(fileName)
+    , mCacheSection(std::move(fileName))
 {
     const auto& configBlock = dev::CurrentConfiguration().mGraphics;
     if (!configBlock.mClearCache)
@@ -140,20 +131,33 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::Virtu
             io::MessagingBuffer cache;
             cache.mBuffer = asset->mBuffer;
             cache.mWriteOffset = io::size_data(asset->mBuffer);
-            auto numElements = *(reinterpret_cast<size_t*>(io::cast_data<char>(cache.mBuffer)));
-            size_t offset = sizeof(numElements);
-            for (size_t i = 0; i < numElements; ++i)
+            size_t offset = 0;
+
+            YagetFileSignature *fileSignature = reinterpret_cast<YagetFileSignature*>(io::cast_data<char>(cache.mBuffer) + offset);
+            offset += sizeof(YagetFileSignature);
+            if (!fileSignature->IsValid())
             {
-                Guid *guid = reinterpret_cast<Guid*>(io::cast_data<char>(cache.mBuffer) + offset);
-                offset += sizeof(Guid);
-                Location *location = reinterpret_cast<Location*>(io::cast_data<char>(cache.mBuffer) + offset);
-                offset += sizeof(Location);
-                mCacheIndex.insert({*guid, *location});
+                YLOG_ERROR("DEVI", "Unsupported cache format version: '%d'. Expected version is <= '%d'. Cache will be ignored.", fileSignature->Version, CurrentFileVersion);
+                return;
             }
-            mCache = io::MessagingBuffer(io::size_data(cache.mBuffer) - offset);
-            mCache.mWriteOffset = io::size_data(mCache.mBuffer);
-            memcpy(io::cast_data<char>(mCache.mBuffer), io::cast_data<char>(cache.mBuffer) + offset,
-                   io::size_data(mCache.mBuffer));
+            
+            if (fileSignature->Version == 1)
+            {
+                auto numElements = *(reinterpret_cast<size_t*>(io::cast_data<char>(cache.mBuffer) + offset));
+                offset += sizeof(numElements);
+                for (size_t i = 0; i < numElements; ++i)
+                {
+                    Guid* guid = reinterpret_cast<Guid*>(io::cast_data<char>(cache.mBuffer) + offset);
+                    offset += sizeof(Guid);
+                    Location* location = reinterpret_cast<Location*>(io::cast_data<char>(cache.mBuffer) + offset);
+                    offset += sizeof(Location);
+                    mCacheIndex.insert({ *guid, *location });
+                }
+                mCache = io::MessagingBuffer(io::size_data(cache.mBuffer) - offset);
+                mCache.mWriteOffset = io::size_data(mCache.mBuffer);
+                memcpy(io::cast_data<char>(mCache.mBuffer), io::cast_data<char>(cache.mBuffer) + offset,
+                    io::size_data(mCache.mBuffer));
+            }
         }
     }
 }
@@ -165,9 +169,18 @@ yaget::render::AssetCache::~AssetCache()
     if (mCacheStatus != CacheStatus::Clean)
     {
         // we need to serialize mCacheIndex and mCache into a single buffer and save it back to VTS
-        io::Buffer indexBuffer = io::CreateBuffer(sizeof(size_t) + mCacheIndex.size() * (sizeof(Guid) + sizeof(Location)));
+        // format of the buffer is [YagetFileSignature][numElements][{guid}{location}...][cacheData]
+        io::Buffer indexBuffer = io::CreateBuffer(sizeof(YagetFileSignature) + sizeof(size_t) + mCacheIndex.size() * (sizeof(Guid) + sizeof(Location)));
+
+        YagetFileSignature fileSignature;
+        fileSignature.Version = CurrentFileVersion;
+
         auto dataPointer = io::cast_data<char>(indexBuffer);
         size_t offset = 0;
+
+        std::memcpy(dataPointer + offset, &fileSignature, sizeof(fileSignature));
+        offset += sizeof(fileSignature);
+
         auto numElements = mCacheIndex.size();
         std::memcpy(dataPointer + offset, &numElements, sizeof(numElements));
         offset += sizeof(numElements);

@@ -28,6 +28,7 @@
 #include "Items/StageComponent.h"
 #include "Renders/RenderComponent.h"
 #include "Renders/SceneComponent.h"
+#include "Streams/Buffers.h"
 
 
 namespace defensor::game

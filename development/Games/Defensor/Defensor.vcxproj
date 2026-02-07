@@ -150,6 +150,7 @@
     <ClCompile Include="source\MainGame.cpp" />
     <ClCompile Include="source\Renders\FrameStateGatherSystem.cpp" />
     <ClCompile Include="source\Renders\RenderComponent.cpp" />
+    <ClCompile Include="source\Renders\RenderMaterial.cpp" />
     <ClCompile Include="source\Renders\RenderPipelines.cpp" />
     <ClCompile Include="source\Renders\RenderShaders.cpp" />
     <ClCompile Include="source\Renders\RenderSignatures.cpp" />
@@ -199,6 +200,13 @@
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Manifest</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Manifest</DestinationFolders>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\ShaderCompileOptions.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Manifest</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Manifest</DestinationFolders>
+    </CopyFileToFolders>
     <None Include="data\Shaders\Pixel\Basic.vs" />
     <None Include="Defensor.deployment" />
   </ItemGroup>
@@ -216,6 +224,7 @@
     <ClInclude Include="source\MainGame.h" />
     <ClInclude Include="source\Renders\FrameStateGatherSystem.h" />
     <ClInclude Include="source\Renders\RenderComponent.h" />
+    <ClInclude Include="source\Renders\RenderMaterial.h" />
     <ClInclude Include="source\Renders\RenderPipelines.h" />
     <ClInclude Include="source\Renders\RenderShaders.h" />
     <ClInclude Include="source\Renders\RenderSignatures.h" />

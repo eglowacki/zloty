@@ -5,6 +5,8 @@
 #include "VTS/ResolvedAssets.h"
 #include "magic_enum/magic_enum.hpp"
 #include "Parsers/DependencyGraph.h"
+#include "Json/JsonHelpers.h"
+#include <magic_enum/magic_enum.hpp>
 
 
 namespace
@@ -34,11 +36,37 @@ namespace
     // let's have a table of mapping between shader type to (entry point and target)
     struct ShaderMapping
     {
-        const char* mEntryPoint;
-        const char* mTarget;
+        std::string mEntryPoint;
+        std::string mTarget;
     };
 
-    std::map<defensor::render::RenderShaders::ShaderType, ShaderMapping> ShaderMappings = {
+    inline bool operator==(const ShaderMapping& lhs, const ShaderMapping& rhs)
+    {
+        return lhs.mEntryPoint == rhs.mEntryPoint && lhs.mTarget == rhs.mTarget;
+    }
+
+    inline bool operator!=(const ShaderMapping& lhs, const ShaderMapping& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    inline void to_json(nlohmann::json& j, const ShaderMapping shaderMapping)
+    {
+        j["EntryPoint"] = shaderMapping.mEntryPoint;
+        j["Target"] = shaderMapping.mTarget;
+
+        //const auto enumName = magic_enum::enum_name(shaderType);
+        //j = enumName;
+    }
+
+    inline void from_json(const nlohmann::json& j, ShaderMapping& shaderMapping)
+    {
+        shaderMapping.mEntryPoint = yaget::json::GetValue(j, "EntryPoint", shaderMapping.mEntryPoint);
+        shaderMapping.mTarget = yaget::json::GetValue(j, "Target", shaderMapping.mTarget);
+    }
+
+    using ShaderMappings = std::map<defensor::render::RenderShaders::ShaderType, ShaderMapping>;
+    ShaderMappings ShaderOptionsMappings = {
         { defensor::render::RenderShaders::ShaderType::Vertex, { "VSMain", "vs_6_5" } },
         { defensor::render::RenderShaders::ShaderType::Pixel, { "PSMain", "ps_6_5" } },
         { defensor::render::RenderShaders::ShaderType::Geometry, { "GSMain", "gs_6_5" } },
@@ -54,12 +82,35 @@ namespace
         io::Buffer result;
         if (io::size_data(sourceBuffer))
         {
-            const char* entryName = ShaderMappings[shaderType].mEntryPoint;
-            const char* target = ShaderMappings[shaderType].mTarget;
+            const char* entryName = ShaderOptionsMappings[shaderType].mEntryPoint.c_str();
+            const char* target = ShaderOptionsMappings[shaderType].mTarget.c_str();
             render::ResourceCompiler compiler(io::cast_to_view(sourceBuffer), entryName, target, false /*useOldCompiler*/);
             result = compiler.GetCompiled();
         }
         return result;
+    }
+
+}
+
+
+//-------------------------------------------------------------------------------------------------
+namespace defensor::render
+{
+    inline void to_json(nlohmann::json& j, const RenderShaders::ShaderType shaderType)
+    {
+        const auto enumName = magic_enum::enum_name(shaderType);
+        j = enumName;
+    }
+
+    inline void from_json(const nlohmann::json& j, RenderShaders::ShaderType& cacheType)
+    {
+        std::string source;
+        j.get_to(source);
+        auto enumValue = magic_enum::enum_cast<RenderShaders::ShaderType>(source);
+        if (enumValue.has_value())
+        {
+            cacheType = enumValue.value();
+        }
     }
 }
 
@@ -98,30 +149,40 @@ std::vector<yaget::io::Buffer> defensor::render::RenderShaders::GetShaders(const
 
 
 //-------------------------------------------------------------------------------------------------
+void defensor::render::RenderShaders::PopulateShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+{
+    yaget::render::PopulateMap<ShaderMappings>(fileName, vts, ShaderOptionsMappings);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void defensor::render::RenderShaders::SaveShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+{
+    yaget::render::SaveMap(fileName, vts, ShaderOptionsMappings);
+}
+
+
+//-------------------------------------------------------------------------------------------------
 yaget::io::Buffer defensor::render::RenderShaders::AssureShaderNonMT(const yaget::io::Tag& tag, defensor::render::RenderShaders::ShaderType shaderType)
 {
     if (auto asset = GetAsset(tag); io::size_data(asset))
     {
         return asset;
     }
+
     if (auto shader = mCache.GetCachedAsset(tag); yaget::io::size_data(shader))
     {
         mAssets.insert({ tag, shader });
         return shader;
     }
+
     yaget::io::Buffer shaderBuffer;
-    if (tag.mName == "EmbeddedVertexShader" || tag.mName == "EmbeddedPixelShader")
+    io::SingleBLobLoader<io::StringsAsset> shaderLoader(mVTS, tag);
+    if (auto asset = shaderLoader.GetAsset())
     {
-        shaderBuffer = io::CreateBuffer(buildInShaderSource, std::strlen(buildInShaderSource));
+        shaderBuffer = asset->mBuffer;
     }
-    else
-    {
-        io::SingleBLobLoader<io::StringsAsset> shaderLoader(mVTS, tag);
-        if (auto asset = shaderLoader.GetAsset())
-        {
-            shaderBuffer = asset->mBuffer;
-        }
-    }
+
     io::Buffer result = CompileShader(shaderBuffer, shaderType);
     if (!io::size_data(result))
     {
@@ -133,6 +194,7 @@ yaget::io::Buffer defensor::render::RenderShaders::AssureShaderNonMT(const yaget
                                      fmt::format("Could not compile built-in shader type: '%s'. Source:\n'%s'", magic_enum::enum_name(shaderType),
                                                  buildInShaderSource));
     }
+
     mAssets.insert({ tag, result });
     mCache.SaveCachedAsset(tag, result);
     return result;

@@ -97,6 +97,9 @@
     <ClCompile Include="source\Renders\RenderShaders.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\Renders\RenderMaterial.cpp">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Defensor.deployment">
@@ -123,6 +126,9 @@
       <Filter>Data Files\Manifest</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Manifest\TypeToSection.json">
+      <Filter>Data Files\Manifest</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\ShaderCompileOptions.json">
       <Filter>Data Files\Manifest</Filter>
     </CopyFileToFolders>
   </ItemGroup>
@@ -197,6 +203,9 @@
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="source\Renders\RenderMaterial.h">
+      <Filter>Source Files\Renders Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Defensor.rc" />

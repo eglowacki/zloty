@@ -97,6 +97,75 @@ yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const cha
             return;
         }
 
+#if 0
+        ComPtr<IDxcBlob> reflectionBlob{};
+        hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&reflectionBlob), nullptr);
+        if (SUCCEEDED(hr))
+        {
+            const DxcBuffer reflectionBuffer
+            {
+                .Ptr = reflectionBlob->GetBufferPointer(),
+                .Size = reflectionBlob->GetBufferSize(),
+                .Encoding = 0,
+            };
+
+            ComPtr<ID3D12ShaderReflection> shaderReflection{};
+            hr = utils->CreateReflection(&reflectionBuffer, IID_PPV_ARGS(&shaderReflection));
+            if (SUCCEEDED(hr))
+            {
+                D3D12_SHADER_DESC shaderDesc{};
+                hr = shaderReflection->GetDesc(&shaderDesc);        
+                if (SUCCEEDED(hr))
+                {
+                    auto shaderType = (shaderDesc.Version & 0xFFFF0000) >> 16;
+                    if (shaderType == D3D12_SHVER_VERTEX_SHADER)
+                    {
+                        //inputElementSemanticNames.reserve(shaderDesc.InputParameters);
+                        //inputElementDescs.reserve(shaderDesc.InputParameters);
+                        auto numInputParameters = shaderDesc.InputParameters;
+                        std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescs;
+
+                        for (const uint32_t parameterIndex : std::views::iota(0u, numInputParameters))
+                        {
+                            D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
+                            hr = shaderReflection->GetInputParameterDesc(parameterIndex, &signatureParameterDesc);
+                            //if (SUCCEEDED(hr))
+
+                            // Using the semantic name provided by the signatureParameterDesc directly to the input element desc will cause the SemanticName field to have garbage values.
+                            // This is because the SemanticName filed is a const wchar_t*. I am using a separate std::vector<std::string> for simplicity.
+                            std::string semanticName = signatureParameterDesc.SemanticName;
+                            //inputElementSemanticNames.emplace_back(signatureParameterDesc.SemanticName);
+
+                            inputElementDescs.emplace_back(D3D12_INPUT_ELEMENT_DESC{
+                                        .SemanticName = semanticName.c_str(),
+                                        .SemanticIndex = signatureParameterDesc.SemanticIndex,
+                                        //.Format = maskToFormat(signatureParameterDesc.Mask),
+                                        .InputSlot = 0u,
+                                        .AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT,
+                                        .InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+                                        // There doesn't seem to be a obvious way to 
+                                        // automate this currently, which might be a issue when instanced rendering is used
+                                        .InstanceDataStepRate = 0u,
+                                });
+                        }
+
+                        //inputLayoutDesc =
+                        //{
+                        //    .pInputElementDescs = inputElementDescs.data(),
+                        //    .NumElements = static_cast<uint32_t>(inputElementDescs.size()),
+                        //};
+                    }
+                }
+
+                int z = 0;
+                z;
+            }
+
+            int z = 0;
+            z;
+        }
+#endif // 0
+
         const auto bufferSize = shaderBin->GetBufferSize();
         mBinaryBlob = io::CreateBuffer(static_cast<const char*>(shaderBin->GetBufferPointer()), bufferSize);
 

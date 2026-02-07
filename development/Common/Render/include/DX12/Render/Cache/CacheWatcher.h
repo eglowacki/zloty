@@ -17,16 +17,49 @@
 #include "Parsers/DependencyGraph.h"
 #include "Streams/Buffers.h"
 #include "Streams/Watcher.h"
+#include "VTS/ResolvedAssets.h"
 #include "VTS/VirtualTransportSystem.h"
 
 
-namespace yaget
-{
-    class DependencyGraph;
-}
-
 namespace yaget::render
 {
+    template<typename T>
+    void PopulateMap(yaget::io::VirtualTransportSystem::Section fileName, yaget::io::VirtualTransportSystem& vts, T& currentMap)
+    {
+        T newMap = yaget::io::LoadBlob<T>(vts, fileName);
+        if (!newMap.empty() && newMap != currentMap)
+        {
+            currentMap = newMap;
+        }
+    }
+
+    template<typename T>
+    void SaveMap(yaget::io::VirtualTransportSystem::Section fileName, yaget::io::VirtualTransportSystem& vts, T& currentMap)
+    {
+        using namespace yaget;
+
+        nlohmann::json jsonBlock = currentMap;
+        auto textBlock = json::PrettyPrint(jsonBlock);
+        io::Buffer buffer = io::CreateBuffer(textBlock);
+        if (auto saveFileTag = vts.GetTag(fileName); saveFileTag.IsValid())
+        {
+            auto oldMap = io::LoadBlob<T>(vts, saveFileTag);
+            if (oldMap.empty() || oldMap != currentMap)
+            {
+                io::SingleBLobLoader<io::JsonAsset> cacheLoader(vts, saveFileTag);
+                auto asset = cacheLoader.GetAsset();
+                asset->mBuffer = buffer;
+                vts.UpdateAssetData(asset, io::VirtualTransportSystem::Request::UpdateOnly);
+            }
+        }
+        else
+        {
+            auto newTag = vts.GenerateTag(fileName);
+            std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::JsonAsset>(buffer, newTag, vts);
+            vts.UpdateAssetData(newAsset, io::VirtualTransportSystem::Request::Add);
+        }
+    }
+
     //-------------------------------------------------------------------------------------------------
     template <typename A>
     class CacheWatcher
