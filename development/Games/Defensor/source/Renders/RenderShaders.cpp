@@ -76,7 +76,7 @@ namespace
     };
 
 
-    yaget::io::Buffer CompileShader(const yaget::io::Buffer& sourceBuffer, defensor::render::RenderShaders::ShaderType shaderType)
+    yaget::io::Buffer CompileShader(const yaget::io::Buffer& sourceBuffer, defensor::render::RenderShaders::ShaderType shaderType, bool debugShaders)
     {
         using namespace yaget;
         io::Buffer result;
@@ -84,7 +84,7 @@ namespace
         {
             const char* entryName = ShaderOptionsMappings[shaderType].mEntryPoint.c_str();
             const char* target = ShaderOptionsMappings[shaderType].mTarget.c_str();
-            render::ResourceCompiler compiler(io::cast_to_view(sourceBuffer), entryName, target, false /*useOldCompiler*/);
+            render::ResourceCompiler compiler(io::cast_to_view(sourceBuffer), entryName, target, false, debugShaders);
             result = compiler.GetCompiled();
         }
         return result;
@@ -183,13 +183,19 @@ yaget::io::Buffer defensor::render::RenderShaders::AssureShaderNonMT(const yaget
         shaderBuffer = asset->mBuffer;
     }
 
-    io::Buffer result = CompileShader(shaderBuffer, shaderType);
+#if YAGET_DEBUG_RENDER == 1
+    bool debugShaders = true;
+#else
+    bool debugShaders = false;
+#endif
+
+    io::Buffer result = CompileShader(shaderBuffer, shaderType, debugShaders);
     if (!io::size_data(result))
     {
         YLOG_ERROR("COMP",
                    fmt::format("Could not get compiled {} shader for tag: '{}\n{}:'. Using built-in shader as s fallback.", magic_enum::enum_name(shaderType),
                        yaget::conv::Convertor<yaget::io::Tag>::ToString(tag), tag.ResolveVTS()).c_str());
-        result = CompileShader(io::CreateBuffer(buildInShaderSource, std::strlen(buildInShaderSource)), shaderType);
+        result = CompileShader(io::CreateBuffer(buildInShaderSource, std::strlen(buildInShaderSource)), shaderType, false);
         error_handlers::ThrowOnError(io::size_data(result) > 0,
                                      fmt::format("Could not compile built-in shader type: '%s'. Source:\n'%s'", magic_enum::enum_name(shaderType),
                                                  buildInShaderSource));

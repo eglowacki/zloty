@@ -19,7 +19,7 @@
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const char* entryName, const char* target, bool useOldCompiler)
+yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const char* entryName, const char* target, bool useOldCompiler, bool debugShaders)
 {
     if (useOldCompiler == false)
     {
@@ -50,11 +50,12 @@ yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const cha
         arguments.push_back(L"-encoding");
         arguments.push_back(L"utf8");
 
-#if YAGET_DEBUG_RENDER == 1
-        arguments.push_back(L"-Zi");
-        arguments.push_back(L"-Qembed_debug");
-        arguments.push_back(L"-Od");
-#endif
+        if (debugShaders)
+        {
+            arguments.push_back(L"-Zi");
+            arguments.push_back(L"-Qembed_debug");
+            arguments.push_back(L"-Od");
+        }
 
         arguments.push_back(L"-fdiagnostics-format=msvc");
 
