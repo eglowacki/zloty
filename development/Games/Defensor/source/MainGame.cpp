@@ -66,6 +66,46 @@ namespace
         return 0; // Number of results
     }
 #endif
+
+    struct MappingPopulator
+    {
+        std::function<void(const yaget::io::VirtualTransportSystem::Section& sectionName, yaget::io::VirtualTransportSystem& vts)> mPopulator;
+        std::function<void(const yaget::io::VirtualTransportSystem::Section& sectionName, yaget::io::VirtualTransportSystem& vts)> mSaver;
+        const std::string mSectionName;
+    };
+
+    std::vector<MappingPopulator> MappingPopulators = 
+    {
+        {&yaget::render::AssetCache::PopulateTypeToSection, &yaget::render::AssetCache::SaveTypeToSection, "Manifest@TypeToSection"},
+        {&defensor::render::RenderShaders::PopulateShaderMappings, &defensor::render::RenderShaders::SaveShaderMappings, "Manifest@ShaderCompileOptions"},
+    };
+
+    struct Mappers
+    {
+        Mappers(yaget::io::VirtualTransportSystem& vts)
+            : mVTS(vts)
+        {
+            AttachTransientAsset(yaget::render::BasicSignature, mVTS);
+            AttachTransientAsset(yaget::render::BasicPipeline, mVTS);
+
+            for (const auto mapping : MappingPopulators)
+            {
+                mapping.mPopulator(mapping.mSectionName, mVTS);
+            }
+        }
+
+        ~Mappers()
+        {
+            for (const auto mapping : MappingPopulators)
+            {
+                yaget::io::VirtualTransportSystem::Section populatorName = mapping.mSectionName;
+                yaget::io::VirtualTransportSystem::Section saverName = populatorName.mName + "Write@" + populatorName.mFilter;
+                mapping.mSaver(saverName, mVTS);
+            }
+        }
+
+        yaget::io::VirtualTransportSystem& mVTS;
+    };
     
 }
 
@@ -95,7 +135,8 @@ int defensor::Run(const yaget::args::Options& options)
         yaget::io::diag::VirtualTransportSystem vtsFixer(false, "$(DatabaseFolder)/vts.sqlite");
     }
 
-    const auto msgTextLine = comp::db::GenerateSystemsCoordinator<game::DefensorSystemsCoordinator, comp::db::GenerateCoordinator::Log>();
+    auto msgTextLine = comp::db::GenerateSystemsCoordinator<game::DefensorSystemsCoordinator, comp::db::GenerateCoordinator::Log>() +"\n\t";
+    msgTextLine += comp::db::GenerateSystemsCoordinator<render::DefensorSystemsCoordinator, comp::db::GenerateCoordinator::Log>();
     YLOG_INFO("DEF", msgTextLine.c_str());
 
     const io::VirtualTransportSystem::AssetResolvers resolvers = {
@@ -117,16 +158,8 @@ int defensor::Run(const yaget::args::Options& options)
     yaget::render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
 
     game::Messaging messaging{};
+    Mappers mappers(app.VTS());
 
-    AttachTransientAsset(yaget::render::BasicSignature, app.VTS());
-    AttachTransientAsset(yaget::render::BasicPipeline, app.VTS());
-    yaget::render::AssetCache::PopulateTypeToSection(io::VirtualTransportSystem::Section("Manifest@TypeToSection"), app.VTS());
-    render::RenderShaders::PopulateShaderMappings(io::VirtualTransportSystem::Section("Manifest@ShaderCompileOptions"), app.VTS());
-
-    auto returnResult =  comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app);
-
-    yaget::render::AssetCache::SaveTypeToSection(io::VirtualTransportSystem::Section("ManifestWrite@TypeToSection"), app.VTS());
-    render::RenderShaders::SaveShaderMappings(io::VirtualTransportSystem::Section("ManifestWrite@ShaderCompileOptions"), app.VTS());
-
+    auto returnResult = comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app);
     return returnResult;
 }
