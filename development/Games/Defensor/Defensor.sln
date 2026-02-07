@@ -17,8 +17,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetRender12", "..\..\Comm
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YagetCore-Test", "..\..\Tests\YagetCore-Test\YagetCore-Test.vcxproj", "{6C57825D-E4AA-43A5-89D7-52B97B0DCA76}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lua", "Lua", "{A00EC331-0612-4B22-83DA-B9E7A389E72E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
