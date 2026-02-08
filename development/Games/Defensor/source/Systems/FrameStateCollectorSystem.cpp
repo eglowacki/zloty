@@ -4,15 +4,15 @@
 
 //-------------------------------------------------------------------------------------------------
 defensor::game::FrameStateCollectorSystem::FrameStateCollectorSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-    : GameSystem("FrameStateCollectorSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+    : GameSystem("FrameStateCollectorSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet)
     , mCurrentFrameState(messaging.CreatePayload(/*sizeof(EntityState)*/))
 {
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::game::FrameStateCollectorSystem::OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& /*gameClock*/, yaget::metrics::Channel& /*channel*/, 
-    comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent)
+void defensor::game::FrameStateCollectorSystem::OnUpdate(comp::Id_t id, const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/,
+                                                         comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent)
 {
     constexpr size_t entitySize = sizeof(render::EntityState);
 
@@ -34,7 +34,7 @@ void defensor::game::FrameStateCollectorSystem::OnUpdate(yaget::comp::Id_t id, c
         const auto location = locationComponent->Matrix();
 
         YAGET_ASSERT(comp::IsIdPersistent(id), "We only support Persistent id's!!!");
-        render::EntityState entityState{ comp::StripQualifiers(id) };
+        render::EntityState entityState{ .mId = comp::StripQualifiers(id) };
         math3d::GetMatrixAsFloats(location, entityState.mMatrix);
 
         if (!materialComponent->mAssetTag.IsValid())
