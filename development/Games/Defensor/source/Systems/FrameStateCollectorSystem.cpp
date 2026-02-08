@@ -11,7 +11,8 @@ defensor::game::FrameStateCollectorSystem::FrameStateCollectorSystem(Messaging& 
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::game::FrameStateCollectorSystem::OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& /*gameClock*/, yaget::metrics::Channel& /*channel*/, comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent)
+void defensor::game::FrameStateCollectorSystem::OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& /*gameClock*/, yaget::metrics::Channel& /*channel*/, 
+    comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent)
 {
     constexpr size_t entitySize = sizeof(render::EntityState);
 
