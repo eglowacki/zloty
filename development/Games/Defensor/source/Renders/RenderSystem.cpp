@@ -39,8 +39,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, RenderComponent* /*renderComponent*/,
-                                              SceneComponent* sceneComponent)
+void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent)
 {
     if (!mAssetsPreloaded)
     {
@@ -52,7 +51,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
     if (id == comp::END_ID_MARKER)
     {
-        auto& vts = mApplication.VTS();
+        auto& vts = mApp.VTS();
 
         const colors::Color color = mColorInterpolator.GetColor(gameClock);
         auto& device = GetDevice();
@@ -112,7 +111,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 void defensor::render::RenderSystem::PreloadAssets()
 {
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
-    auto& vts = mApplication.VTS();
+    auto& vts = mApp.VTS();
     const io::VirtualTransportSystem::Section vertexShaderSection("VeretexShaders");
     auto vertexShaderTags = vts.GetTags(vertexShaderSection);
 
