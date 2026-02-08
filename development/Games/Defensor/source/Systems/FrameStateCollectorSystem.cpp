@@ -6,7 +6,6 @@
 defensor::game::FrameStateCollectorSystem::FrameStateCollectorSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
     : GameSystem("FrameStateCollectorSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
     , mCurrentFrameState(messaging.CreatePayload(/*sizeof(EntityState)*/))
-    , mVTS(app.VTS())
 {
 }
 
@@ -39,11 +38,10 @@ void defensor::game::FrameStateCollectorSystem::OnUpdate(yaget::comp::Id_t id, c
 
         if (!materialComponent->mAssetTag.IsValid())
         {
-            materialComponent->mAssetTag = mVTS.GetTag(materialComponent->GetValue<comp::db_material::Section>());
+            materialComponent->mAssetTag = mApp.VTS().GetTag(materialComponent->GetValue<comp::db_material::Section>());
         }
 
         memcpy(entityState.mAssetGuid, materialComponent->mAssetTag.mGuid.bytes().data(), 16);
         mCurrentFrameState->WriteDataChunk(&entityState, sizeof(entityState));
     }
 }
-
