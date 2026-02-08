@@ -122,6 +122,24 @@
 						"ReadOnly": false,
 						"Recursive": false
 					}
+				},
+				{
+					"Materials": {
+						"Converters": "JSON",
+						"Filters": [ "*.json" ],
+						"Path": [ "$(DataFolder)/Data/Materials" ],
+						"ReadOnly": true,
+						"Recursive": false
+					}
+				},
+				{
+					"MaterialsWrite": {
+						"Converters": "JSON",
+						"Filters": [ "*.json" ],
+						"Path": [ "$(DataFolder)../../../../Games/Defensor/data/Materials" ],
+						"ReadOnly": false,
+						"Recursive": false
+					}
 				}
 			],
 			"WindowOptions": "UserOptions@WindowConfiguration",

@@ -41,8 +41,9 @@ namespace yaget::comp::gs
 
     //---------------------------------------------------------------------------------------------------------
     template <typename CS, typename E, typename M, typename... Comps>
-    GameSystem<CS, E, M, Comps...>::GameSystem(const char* niceName, Messaging& messaging, Application& /*app*/, UpdateFunctor updateFunctor, CS& coordinatorSet)
+    GameSystem<CS, E, M, Comps...>::GameSystem(const char* niceName, Messaging& messaging, Application& app, UpdateFunctor updateFunctor, CS& coordinatorSet)
         : mMessaging(messaging)
+        , mApp(app)
         , mNiceName(niceName)
         , mUpdateFunctor(updateFunctor)
         , mCoordinatorSet(coordinatorSet)

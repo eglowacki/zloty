@@ -245,4 +245,12 @@ namespace yaget::io
         return loader.GetAsset();
     }
 
+    //-------------------------------------------------------------------------------------------------------------------------------
+    // Helper function to just return json object
+    inline std::shared_ptr<JsonAsset> LoadJson(VirtualTransportSystem& vts, const io::Tag& tag)
+    {
+        SingleBLobLoader<JsonAsset> loader(vts, tag);
+        return loader.GetAsset();
+    }
+
 } // namespace yaget::io

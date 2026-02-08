@@ -64,9 +64,9 @@ namespace yaget
             return reinterpret_cast<const T*>(buffer.first);
         }
 
-        inline BufferView cast_to_view(const Buffer& buffer)
+        inline BufferView cast_to_view(const Buffer& buffer, size_t offset = 0)
         {
-            return { cast_data<const char>(buffer), size_data(buffer) };
+            return { cast_data<const char>(buffer) + offset, size_data(buffer) - offset };
         }
 
 
@@ -165,6 +165,15 @@ namespace yaget
             void WriteDataChunk(const io::Buffer& buffer)
             {
                 WriteDataChunk(cast_data<const char>(buffer), size_data(buffer));
+            }
+
+            void WriteDataChunk(const auto& dataChunk)
+            {
+                Serialize(dataChunk, mBuffer);
+                //YAGET_ASSERT(mWriteOffset + dataSize <= io::BufferSize(mBuffer), "Messaging buffer does not have enough space to write dataChunk out.");
+
+                //std::memcpy(io::BufferPointer(mBuffer) + mWriteOffset, dataChunk, dataSize);
+                //mWriteOffset += dataSize;
             }
 
             io::Buffer mBuffer;

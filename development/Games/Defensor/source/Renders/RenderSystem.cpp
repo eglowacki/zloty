@@ -6,16 +6,6 @@
 
 namespace
 {
-    //---------------------------------------------------------------------------------
-    std::array<float, 16> GetMatrixAsFloats(const math3d::Matrix& matrix)
-    {
-        std::array<float, 16> floatArray;
-        DirectX::XMStoreFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(floatArray.data()), matrix);
-
-        return floatArray;
-    }
-
-
     yaget::io::Tag TypeToTag(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
     {
         auto section = yaget::render::AssetCache::operator[](assetCacheType);
@@ -27,6 +17,7 @@ namespace
 
         return tag;
     }
+
 }
 
 
@@ -89,10 +80,11 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             auto renderComponent = std::get<RenderComponent*>(row);
             const auto location = renderComponent->mMatrix;
 
-            auto matrix = GetMatrixAsFloats(location);
+            float matrix[16];
+            math3d::GetMatrixAsFloats(location, matrix);
             std::ranges::fill(matrix, 0.75f);
 
-            commandList->SetGraphicsRoot32BitConstants(0, 16, matrix.data(), 0);
+            commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
             renderComponent->Render(commandList);
 
             return true;

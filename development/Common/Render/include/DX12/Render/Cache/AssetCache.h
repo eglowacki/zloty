@@ -19,6 +19,18 @@
 
 namespace yaget::render
 {
+    enum class AssetCacheType : uint64_t;
+}
+
+
+template <>
+struct magic_enum::customize::enum_range<yaget::render::AssetCacheType> {
+  static constexpr bool is_flags = true;
+};
+
+
+namespace yaget::render
+{
     //-------------------------------------------------------------------------------------------------
     enum class AssetCacheType : uint64_t
     {
@@ -171,11 +183,60 @@ namespace yaget::render
         using TypeToSectionMap = std::map<AssetCacheType, io::VirtualTransportSystem::Section>;
         static TypeToSectionMap TypeToSection;
     };
+
+    namespace internal
+    {
+        inline std::string CacheTypeToString(yaget::render::AssetCacheType value)
+        {
+            std::string result;
+
+            auto temp_value = static_cast<uint64_t>(value); // Work with a copy
+
+            while (temp_value != 0)
+            {
+                // The expression (temp_value & -temp_value) isolates the least significant set bit
+                uint64_t lsb = temp_value & (-static_cast<int64_t>(temp_value));
+
+                auto singleValue = static_cast<yaget::render::AssetCacheType>(lsb);
+                const auto enumName = magic_enum::enum_name(singleValue);
+
+                result += result.empty() ? enumName : " | " + std::string(enumName);
+
+                // Clear the least significant set bit
+                temp_value ^= lsb;
+                // Alternatively, a common trick to clear the LSB: temp_value &= (temp_value - 1);
+            }
+
+            return result;
+        }
+
+    }
+
+    inline void to_json(nlohmann::json& j, const AssetCacheType cacheType)
+    {
+        const auto enumName = internal::CacheTypeToString(cacheType);
+        j = enumName;
+    }
+
+
+    inline void from_json(const nlohmann::json& j, AssetCacheType& cacheType)
+    {
+        std::string source;
+        j.get_to(source);
+
+        AssetCacheType result{};
+        auto bitValues = conv::Split(source, "|", true);
+        for (auto bit : bitValues)
+        {
+            auto enumBit = magic_enum::enum_cast<AssetCacheType>(bit);
+            if (enumBit.has_value())
+            {
+                result = result | enumBit.value();
+            }
+        }
+
+        cacheType = result;
+    }
+
 }
-
-
-template <>
-struct magic_enum::customize::enum_range<yaget::render::AssetCacheType> {
-  static constexpr bool is_flags = true;
-};
 

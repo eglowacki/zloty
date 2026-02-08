@@ -29,6 +29,9 @@
     <Filter Include="Data Files\Manifest">
       <UniqueIdentifier>{ea385ff2-e892-4d46-b391-7d82459be62b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\Materials">
+      <UniqueIdentifier>{44bb02cd-2f1d-483a-86a2-3e2f19959e77}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -130,6 +133,9 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Manifest\ShaderCompileOptions.json">
       <Filter>Data Files\Manifest</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\BasicMaterial.json">
+      <Filter>Data Files\Materials</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

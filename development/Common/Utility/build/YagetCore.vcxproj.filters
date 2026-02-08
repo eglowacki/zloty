@@ -335,6 +335,9 @@
     <ClCompile Include="..\source\Parsers\DependencyGraph.cpp">
       <Filter>Parsers</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Components\MaterialComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -697,6 +700,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Script\luacpp.h">
       <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\MaterialComponent.h">
+      <Filter>Component Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

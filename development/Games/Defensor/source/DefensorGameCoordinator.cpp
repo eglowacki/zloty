@@ -261,6 +261,7 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     : SystemsCoordinator(m, app)
 {
     //Bar(BindConstructor<comp::VelocityComponent>());
+    //"Persistance@PlayerTest"
 
     const auto& itemsFile = dev::CurrentConfiguration().mInit.mItemsFile;
     if (!itemsFile.empty())
@@ -268,15 +269,18 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
         io::SingleBLobLoader<io::StringsAsset> fileLoader(app.VTS(), itemsFile);
         auto asset = fileLoader.GetAsset();
         const auto& lines = asset ? asset->mStrings : Strings{};
-
-        try
+        YLOG_CERROR("GSYS", !lines.empty(), "Could not load '%s' file to populate persistent data in DB.", itemsFile.c_str());
+        if (!lines.empty())
         {
-            PersistentReader persistentReader(lines, app.IdCache);
-            persistentReader.PersistData(*this);
-        }
-        catch (const ex::bad_init& e)
-        {
-            YLOG_ERROR("GSYS", "PersistentReader '%s' failed: %s", itemsFile.c_str(), e.what());
+            try
+            {
+                PersistentReader persistentReader(lines, app.IdCache);
+                persistentReader.PersistData(*this);
+            }
+            catch (const ex::bad_init& e)
+            {
+                YLOG_ERROR("GSYS", "PersistentReader '%s' failed: %s", itemsFile.c_str(), e.what());
+            }
         }
 
         auto& inputSystem = GetGameSystem<ProcessInputSystem>();

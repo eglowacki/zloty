@@ -16,6 +16,7 @@ LocationComponent3: [x = 1.00, y = 2.00, z = 3.00];[x = 4.00, y = 5.00, z = 6.00
 Input: Move Left, Move Right
 StageName: Boot
 Velocity: 
+Material: Materials@BasicMaterial
 
 New Global Item
 StageComponent: Boot
