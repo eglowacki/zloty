@@ -7,9 +7,9 @@
 //
 //  NOTES:
 //      This system collects data from logic/game thread and packages into 
-//      MessagingPayload structure, which then get's used by Reder thread
+//      MessagingPayload structure, which then gets used by Render thread
 //      to actually render the geometry representing that particular
-//      asset (item/entity). There are stuctures like render::EntityState
+//      asset (item/entity). There are structures like render::EntityState
 //      that provide interface for marshaling data between threads.
 //
 //  #include "Systems/FrameStateCollectorSystem.h"
