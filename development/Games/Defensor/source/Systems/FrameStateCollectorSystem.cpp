@@ -12,7 +12,7 @@ defensor::game::FrameStateCollectorSystem::FrameStateCollectorSystem(Messaging& 
 
 //-------------------------------------------------------------------------------------------------
 void defensor::game::FrameStateCollectorSystem::OnUpdate(comp::Id_t id, const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/,
-                                                         comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent)
+                                                         const comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent)
 {
     constexpr size_t entitySize = sizeof(render::EntityState);
 
@@ -42,7 +42,8 @@ void defensor::game::FrameStateCollectorSystem::OnUpdate(comp::Id_t id, const ti
             materialComponent->mAssetTag = mApp.VTS().GetTag(materialComponent->GetValue<comp::db_material::Section>());
         }
 
-        memcpy(entityState.mAssetGuid, materialComponent->mAssetTag.mGuid.bytes().data(), 16);
+        constexpr auto guidSize = sizeof(Guid::DataBuffer);
+        memcpy(entityState.mAssetGuid, materialComponent->mAssetTag.mGuid.bytes().data(), guidSize);
         mCurrentFrameState->WriteDataChunk(&entityState, sizeof(entityState));
     }
 }

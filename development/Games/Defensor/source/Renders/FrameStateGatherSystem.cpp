@@ -46,14 +46,14 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(yaget::comp::Id_t id, co
             std::ranges::set_difference(newFrameRenderIds, oldFrameRenderIds, std::inserter(newIds, newIds.end())); 
             std::ranges::set_difference(oldFrameRenderIds, newFrameRenderIds, std::inserter(deletedIds, deletedIds.end())); 
 
-            auto& vts = mApplication.VTS();
+            auto& vts = mApp.VTS();
             auto& device = GetDevice();
             const auto& adapter = device.GetAdapter();
             std::ranges::for_each(newIds, [this, sceneComponent, &adapter, &vts](const auto& id)
             {
                 auto data = sceneComponent->FindState(id);
                 Guid guid(data->mAssetGuid);
-                auto assetTag = mApplication.VTS().FindTag(guid);
+                auto assetTag = mApp.VTS().FindTag(guid);
 
                 GetCS().AddComponent<RenderComponent>(id, math3d::Matrix(data->mMatrix), assetTag, vts, adapter);
             });

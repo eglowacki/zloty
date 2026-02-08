@@ -24,13 +24,13 @@
 
 namespace defensor::render
 {
-    class RenderSystem : public yaget::render::RenderSystemApp<RenderCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, RenderComponent*, SceneComponent*>
+    class RenderSystem : public yaget::render::RenderSystemApp<RenderCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, SceneComponent*>
     {
     public:
         RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet);
 
     private:
-        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, RenderComponent* renderComponent, SceneComponent* sceneComponent);
+        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent);
         void PreloadAssets();
 
         io::Watcher mWatcher;

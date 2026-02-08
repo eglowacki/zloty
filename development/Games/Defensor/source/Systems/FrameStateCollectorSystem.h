@@ -43,7 +43,7 @@ namespace defensor::game
         FrameStateCollectorSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet);
 
     private:
-        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent);
+        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent);
 
         MessagingPayload mCurrentFrameState;
     };
