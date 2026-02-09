@@ -132,7 +132,7 @@ yaget::io::Buffer defensor::render::RenderShaders::GetShader(const yaget::io::Ta
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(),
                  yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
     auto result = GetShaders(io::Tags{ tag }, shaderType);
-    return !result.empty() ? *result.begin() : yaget::io::Buffer{};
+    return !result.empty() ? *result.begin() : io::Buffer{};
 }
 
 

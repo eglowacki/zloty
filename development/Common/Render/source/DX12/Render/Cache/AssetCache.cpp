@@ -44,7 +44,7 @@ yaget::io::VirtualTransportSystem::Section yaget::render::AssetCache::operator[]
     {
         return it->second;
     }
-    YLOG_ERROR("DEVI", "There is no asset section associated with AssetCacheType: '%d'", typeFlag);
+    YLOG_ERROR("DEVI", "There is no asset section associated with AssetCacheType: '%s'", std::string(internal::CacheTypeToString(typeFlag)).c_str());
     return {};
 }
 

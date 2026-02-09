@@ -30,8 +30,20 @@ namespace defensor::render
         RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet);
 
     private:
+        using AssetCacheType = yaget::render::AssetCacheType;
+
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent);
         void PreloadAssets();
+
+        // This structure is used to keep track of what assets are used for rendering particular entity. 
+        // It is used to track changes in assets and update them accordingly.
+        struct RenderState
+        {
+            Guid mSignatureGuid;
+            Guid mPipelineGuid;
+            Guid mVertexShaderGuid;
+            Guid mPixelShaderGuid;
+        };
 
         io::Watcher mWatcher;
         mt::JobPool mAssetPoolThread;
@@ -43,6 +55,8 @@ namespace defensor::render
         RenderShaders mRenderShaders;
 
         std::atomic_bool mAssetsPreloaded{false};
+
+        RenderState mCurrentRenderState;
     };
 
 }

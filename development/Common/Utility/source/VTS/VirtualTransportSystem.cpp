@@ -609,7 +609,7 @@ size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>
                 // asset already exist, return this
                 loadedAssets.push_back(asset);
             }
-            else
+            else if (tag.IsValid())
             {
                 auto converter = [this, tag, blobAssetCallback, tagsCounter = tagsCounter](auto&& param) 
                 {
@@ -618,6 +618,13 @@ size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>
 
                 fileNames.push_back(util::ExpendEnv(tag.mVTSName, nullptr));
                 convertors.push_back(converter);
+            }
+            else
+            {
+                if (tagsCounter)
+                {
+                    (void)(*tagsCounter)--;
+                }
             }
         }
 

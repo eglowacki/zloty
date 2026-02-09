@@ -98,6 +98,9 @@ namespace yaget::render
         DSVFormatBlah5   = 1ULL << 48,
         DSVFormatBlah6   = 1ULL << 49,
         DSVFormatBlah7   = 1ULL << 50,
+
+
+        Empty            = 1ULL << 63,
     };
 
 

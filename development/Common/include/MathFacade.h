@@ -51,7 +51,6 @@ namespace math3d
     //---------------------------------------------------------------------------------
     inline void GetMatrixAsFloats(const math3d::Matrix& matrix, float* floatArray)
     {
-        //std::array<float, 16> floatArray;
         DirectX::XMStoreFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(floatArray), matrix);
     }
 

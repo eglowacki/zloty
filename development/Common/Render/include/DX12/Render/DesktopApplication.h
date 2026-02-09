@@ -55,12 +55,12 @@ namespace yaget::render
     class RenderSystemApp : public comp::gs::GameSystem<CS, EndMarker, M, Comp...>
     {
     protected:
-        RenderSystemApp(const char* niceName, M& messaging, Application& app, yaget::comp::gs::GameSystem<CS, EndMarker, M, Comp...>::UpdateFunctor updateFunctor, CS& coordinatorSet)
-            : yaget::comp::gs::GameSystem<CS, yaget::comp::gs::GenerateEndMarker, M, Comp...>(niceName, messaging, app, updateFunctor, coordinatorSet)
-            , mDevice(static_cast<yaget::render::DesktopApplication&>(app).Device())
+        RenderSystemApp(const char* niceName, M& messaging, Application& app, comp::gs::GameSystem<CS, EndMarker, M, Comp...>::UpdateFunctor updateFunctor, CS& coordinatorSet)
+            : comp::gs::GameSystem<CS, EndMarker, M, Comp...>(niceName, messaging, app, updateFunctor, coordinatorSet)
+            , mDevice(static_cast<DesktopApplication&>(app).Device())
         {}
 
-        yaget::render::DeviceB& GetDevice() const
+        DeviceB& GetDevice() const
         {
             return mDevice;
         }

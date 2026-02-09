@@ -35,6 +35,7 @@ namespace defensor::render
     // and then consume it in render thread. We will need to fill this in with actual data and logic to serialize/deserialize
     inline size_t Serialize(const EntityState& entityState, io::BufferView& buffer)
     {
+        memcpy(io::cast_data<char>(buffer), &entityState.mId, sizeof(entityState.mId));
         entityState;
         buffer;
 

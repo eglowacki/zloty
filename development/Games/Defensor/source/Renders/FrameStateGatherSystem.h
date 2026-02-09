@@ -22,7 +22,7 @@
 namespace defensor::render
 {
     // this should be first system in Coordinator setup
-    class FrameStateGatherSystem : public yaget::render::RenderSystemApp<RenderCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, SceneComponent*>
+    class FrameStateGatherSystem : public yaget::render::RenderSystemApp<RenderCoordinatorSet, comp::gs::NoEndMarker, Messaging, SceneComponent*>
     {
     public:
         FrameStateGatherSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet);
@@ -33,7 +33,7 @@ namespace defensor::render
 
 
     // this should be last system in Coordinator setup
-    class FrameStateClearSystem : public comp::gs::GameSystem<RenderCoordinatorSet, comp::gs::GenerateEndMarker, defensor::game::Messaging, SceneComponent*>
+    class FrameStateClearSystem : public comp::gs::GameSystem<RenderCoordinatorSet, comp::gs::NoEndMarker, defensor::game::Messaging, SceneComponent*>
     {
     public:
         FrameStateClearSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet);

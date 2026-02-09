@@ -1,6 +1,6 @@
 #include "Renders/RenderSystem.h"
-#include "Render/Device.h"
 #include "Render/DesktopApplication.h"
+#include "Render/Device.h"
 #include "Render/Platform/Adapter.h"
 
 
@@ -17,7 +17,6 @@ namespace
 
         return tag;
     }
-
 }
 
 
@@ -74,10 +73,35 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         commandList->SetGraphicsRootSignature(rootSig);
         commandList->SetPipelineState(pipe);
 
-        coordinator.ForEach<RenderEntity>([commandList](comp::Id_t /*id*/, const auto& row)
+        coordinator.ForEach<RenderEntity>([commandList, &vts, this](comp::Id_t /*id*/, const auto& row)
         {
             auto renderComponent = std::get<RenderComponent*>(row);
             const auto location = renderComponent->mMatrix;
+
+            auto& material = renderComponent->mRenderMaterial;
+
+            //auto vsTag = TypeToTag(material.mVertexShader, vts);
+            //auto psTag = TypeToTag(material.mPixelShader, vts);
+            //auto vsBuffer = mRenderShaders.GetShader(vsTag, RenderShaders::ShaderType::Vertex);
+            //auto psBuffer = mRenderShaders.GetShader(psTag, RenderShaders::ShaderType::Pixel);
+
+            //auto sigType = material.mVertexShader | material.mPixelShader | AssetCacheType::SigConstMatrix;
+            //auto sigTag = TypeToTag(sigType, vts);
+
+            //    AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
+
+            //static AssetCacheType BasicPipeline = BasicVertex | BasicPixel | AssetCacheType::SigConstMatrix |
+            //AssetCacheType::RasterizerStateCounterClockwise |
+            //AssetCacheType::BlendModeOpaque | AssetCacheType::DepthStateNone |
+            //AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
+
+            auto psoType = material.mVertexShader | material.mPixelShader | AssetCacheType::SigConstMatrix | material.mRasterizerState | material.mDepthState | material.mBlendMode |
+                AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
+            auto psoTag = TypeToTag(psoType, vts);
+            DependencyNode* psoNode = mDependencyGraph.Find(psoTag.mGuid, nullptr);
+            psoNode;
+
+            //auto pso = mRenderSignatures.GetSignature(psoTag);
 
             float matrix[16];
             math3d::GetMatrixAsFloats(location, matrix);
@@ -93,12 +117,18 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     {
         const auto& newFrameRenderIds = sceneComponent->GetIds();
 
-        coordinator.ForEach<RenderEntity>(newFrameRenderIds, [sceneComponent](comp::Id_t id, const auto& row)
+        coordinator.ForEach<RenderEntity>(newFrameRenderIds, [sceneComponent, &vts = mApp.VTS()](comp::Id_t id, const auto& row)
         {
             if (auto data = sceneComponent->FindState(id))
             {
                 auto renderComponent = std::get<RenderComponent*>(row);
                 renderComponent->mMatrix = math3d::Matrix(data->mMatrix);
+
+                if (renderComponent->mRenderMaterial.mAssetTag.mGuid != Guid(data->mAssetGuid))
+                {
+                    // we need to update material for this render component
+                    renderComponent->mRenderMaterial.ResolveAssetTag(vts.FindTag(Guid(data->mAssetGuid)));
+                }
             }
 
             return true;
@@ -121,7 +151,7 @@ void defensor::render::RenderSystem::PreloadAssets()
     mRenderShaders.GetShaders(vertexShaderTags, RenderShaders::ShaderType::Vertex);
     mRenderShaders.GetShaders(pixelShaderTags, RenderShaders::ShaderType::Pixel);
 
-    yaget::platform::Sleep(1, time::kSecondUnit);
+    platform::Sleep(1, time::kSecondUnit);
 
     mAssetsPreloaded = true;
 }

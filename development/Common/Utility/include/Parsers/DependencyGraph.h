@@ -21,19 +21,17 @@
 
 namespace yaget
 {
-    struct DependencyNode 
+    struct DependencyNode
     {
         using Section = io::VirtualTransportSystem::Section;
 
         DependencyNode() = default;
         DependencyNode(const Guid& guid);
         void Add(const Guid& guid);
-        DependencyNode* FindNode(const Guid& guid, std::vector<DependencyNode*> *pathTo) const;
+        DependencyNode *FindNode(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
 
         bool IsSingleDepth() const;
-
         void ResolveNames(const io::VirtualTransportSystem& vts);
-
         inline bool operator<(const DependencyNode& other) const { return mGuid < other.mGuid; }
 
         Guid mGuid;
@@ -41,6 +39,7 @@ namespace yaget
         bool mDirty = false;
         std::vector<DependencyNode> mDependencies;
     };
+
 
     class DependencyGraph
     {
@@ -52,7 +51,7 @@ namespace yaget
 
         void Add(const Guid& parentGuid, const Guid& childGuid);
 
-        DependencyNode* Find(const Guid& guid, std::vector<DependencyNode*> *pathTo) const;
+        DependencyNode *Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
 
     private:
         io::VirtualTransportSystem& mVTS;
@@ -71,7 +70,7 @@ struct std::hash<yaget::DependencyNode>
     typedef yaget::DependencyNode argument_type;
     typedef std::size_t result_type;
 
-    result_type operator()(argument_type const &dependencyNode) const
+    result_type operator()(argument_type const& dependencyNode) const noexcept
     {
         std::hash<yaget::Guid> hasherGuid;
         std::hash<std::string> hasherName;
