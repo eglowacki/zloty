@@ -46,15 +46,10 @@ namespace yaget::render
     class RenderMaterials : public CacheWatcher<AssetTypes>
     {
     public:
-        RenderMaterials(io::VirtualTransportSystem& vts, DependencyGraph& dependencyGraph, io::Watcher& watcher);
+        RenderMaterials(io::VirtualTransportSystem& vts);
         ~RenderMaterials();
 
         AssetTypes GetMaterial(const io::Tag& tag);
         std::vector<AssetTypes> GetMaterials(const io::Tags& tags);
-
-
-        //ID3D12PipelineState* GetPipeline(const io::Tag& tag, ID3D12RootSignature* rootSignature, io::Buffer vertexShaderBuffer, io::Buffer pixelShaderBuffer);
-
-    private:
     };
 }

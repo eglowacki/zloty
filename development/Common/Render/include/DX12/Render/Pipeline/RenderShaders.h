@@ -34,7 +34,7 @@ namespace yaget::render
     class RenderShaders : public CacheWatcher<io::Buffer>
     {
     public:
-        RenderShaders(io::VirtualTransportSystem& vts, DependencyGraph& dependencyGraph, io::Watcher& watcher);
+        RenderShaders(io::VirtualTransportSystem& vts);
         ~RenderShaders();
 
         enum class ShaderType
@@ -67,7 +67,6 @@ namespace yaget::render
 
         using DescriptionCallback = std::function<void(const RootDescResult& descResult)>;
         void CreateSignatureDescription(const io::Tag& vertexTag, const io::Tag& pixelTag, DescriptionCallback callback);
-        void CreateSignatureDescription(AssetCacheType vertexType, AssetCacheType pixelType, DescriptionCallback callback) const;
 
         static void PopulateShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
         static void SaveShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);

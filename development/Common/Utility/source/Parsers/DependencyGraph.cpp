@@ -251,11 +251,12 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::DependencyGraph::DependencyGraph(io::VirtualTransportSystem& vts, const io::VirtualTransportSystem::Section& fileName)
+yaget::DependencyGraph::DependencyGraph(io::VirtualTransportSystem& vts, const io::VirtualTransportSystem::Section& fileName, DirtyCallback dirtyCallback)
     : mVTS(vts)
     , mSection(fileName)
     , mNodes(ReadDependencyNodes(mSection, mVTS))
     , mNodesHash(calculate_map_hash(mNodes))
+    , mDirtyCallback(dirtyCallback)
 {
 }
 
@@ -263,6 +264,12 @@ yaget::DependencyGraph::DependencyGraph(io::VirtualTransportSystem& vts, const i
 //-------------------------------------------------------------------------------------------------
 yaget::DependencyGraph::~DependencyGraph()
 {
+    for (const Guid& guid : mWatchedTags)
+    {
+        std::hash<Guid> hasher;
+        mWatcher.Remove(hasher(guid));
+    }
+
     auto depNode = TransformNodes<DiskDependencyData>(mNodes, mVTS);
 
     auto nodesHash = calculate_map_hash(mNodes);
@@ -305,6 +312,9 @@ void yaget::DependencyGraph::Add(const Guid& parentGuid, const Guid& childGuid)
         auto n = mNodes.insert({ parentGuid, { parentGuid } });
         n.first->second.Add(childGuid);
     }
+
+    AddWatchFiles(parentGuid);
+    AddWatchFiles(childGuid);
 }
 
 
@@ -320,4 +330,45 @@ yaget::DependencyNode *yaget::DependencyGraph::Find(const Guid& guid, std::vecto
     }
 
     return nullptr;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::DependencyGraph::AddWatchFiles(const Guid& guid)
+{
+    if (!mWatchedTags.contains(guid))
+    {
+        auto tag = mVTS.FindTag(guid);
+        if (auto shaderFilePath = tag.ResolveVTS(); !shaderFilePath.empty())
+        {
+            mWatchedTags.insert(guid);
+
+            std::hash<Guid> hasher;
+            mWatcher.Add(hasher(guid), shaderFilePath, [this, tag]()
+            {
+                std::vector<yaget::DependencyNode*> pathTo;
+                if (yaget::DependencyNode* shaderNode = Find(tag.mGuid, &pathTo))
+                {
+                    std::ranges::for_each(pathTo, [](auto& node)
+                    {
+                        node->mDirty = true;
+                    });
+                }
+
+                mDirtyCallback(tag.mGuid);
+            });
+        }
+    }
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::DependencyGraph::RemoveWatchFiles(const Guid& guid)
+{
+    if (mWatchedTags.contains(guid))
+    {
+        mWatchedTags.erase(guid);
+        std::hash<Guid> hasher;
+        mWatcher.Remove(hasher(guid));
+    }
 }

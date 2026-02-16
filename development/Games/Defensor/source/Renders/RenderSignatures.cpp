@@ -10,7 +10,7 @@
 namespace
 {
    
-    yaget::render::ComPtr<ID3D12RootSignature> CreateRootSignature(const yaget::io::Tag& /*tag*/, ID3D12Device* device, yaget::io::Buffer& buffer, const yaget::render::RenderShaders::RootDescResult& /*rootDescResult*/)
+    yaget::render::ComPtr<ID3D12RootSignature> CreateRootSignature(const yaget::io::Tag& /*tag*/, ID3D12Device* device, yaget::io::Buffer& buffer, const yaget::render::RenderShaders::RootDescResult& rootSignatureDesc)
     {
         char* bufferPointer = yaget::io::cast_data<char>(buffer);
         size_t bufferSize = yaget::io::size_data(buffer);
@@ -19,17 +19,9 @@ namespace
         {
             yaget::render::ComPtr<ID3DBlob> error;
 
-            // https://asawicki.info/news_1754_direct3d_12_long_way_to_access_data
-            D3D12_ROOT_PARAMETER1 parameters[1] = {};
-            parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-            parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-            parameters[0].Constants.ShaderRegister = 3;
-            parameters[0].Constants.RegisterSpace = 0;
-            parameters[0].Constants.Num32BitValues = 16;
-            CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc(1, static_cast<const D3D12_ROOT_PARAMETER1*>(parameters), 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
+            //// https://asawicki.info/news_1754_direct3d_12_long_way_to_access_data
             yaget::render::ComPtr<ID3DBlob> signature;
-            HRESULT hr = ::D3D12SerializeVersionedRootSignature(&rootSignatureDesc, &signature, &error);
+            HRESULT hr = ::D3D12SerializeVersionedRootSignature(&rootSignatureDesc.mRootSignatureDesc, &signature, &error);
             yaget::error_handlers::ThrowOnError(hr, fmt::format("Could not serialize root signature. {}", error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
 
             bufferPointer = static_cast<char*>(signature->GetBufferPointer());
@@ -47,8 +39,8 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderSignatures::RenderSignatures(ID3D12Device* device, yaget::io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph, io::Watcher& watcher)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Signatures"), dependencyGraph, watcher)
+defensor::render::RenderSignatures::RenderSignatures(ID3D12Device* device, yaget::io::VirtualTransportSystem& vts)
+    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Signatures"))
     , mDevice(device)
 {
 }

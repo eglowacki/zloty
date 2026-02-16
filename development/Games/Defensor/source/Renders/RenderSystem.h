@@ -35,6 +35,8 @@ namespace defensor::render
 
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent);
         void PreloadAssets();
+        void RebindMaterial(const io::Tag& tag, yaget::render::AssetTypes material);
+        void HotRebindMaterial(const Guid& guid);
 
         // This structure is used to keep track of what assets are used for rendering particular entity. 
         // It is used to track changes in assets and update them accordingly.
@@ -46,9 +48,9 @@ namespace defensor::render
             Guid mPixelShaderGuid;
         };
 
-        io::Watcher mWatcher;
         mt::JobPool mAssetPoolThread;
-        math3d::Interpolator mColorInterpolator;
+        math3d::Interpolator<colors::Color> mColorInterpolator;
+        math3d::Interpolator<float> mMatrixInterpolator;
 
         DependencyGraph mDependencyGraph;
         RenderSignatures mRenderSignatures;

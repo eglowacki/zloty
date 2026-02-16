@@ -16,6 +16,7 @@
 
 #include "HashUtilities.h"
 #include "Streams/Guid.h"
+#include "Streams/Watcher.h"
 #include "VTS/VirtualTransportSystem.h"
 
 
@@ -49,7 +50,8 @@ namespace yaget
     public:
         using Section = io::VirtualTransportSystem::Section;
 
-        DependencyGraph(io::VirtualTransportSystem& vts, const Section& fileName);
+        using DirtyCallback = std::function<void(const Guid& guid)>;
+        DependencyGraph(io::VirtualTransportSystem& vts, const Section& fileName, DirtyCallback dirtyCallback);
         ~DependencyGraph();
 
         void Add(const Guid& parentGuid, const Guid& childGuid);
@@ -57,10 +59,17 @@ namespace yaget
         DependencyNode *Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
 
     private:
+        void AddWatchFiles(const Guid& guid);
+        void RemoveWatchFiles(const Guid& guid);
+
         io::VirtualTransportSystem& mVTS;
         Section mSection;
         std::map<Guid, DependencyNode> mNodes;
         size_t mNodesHash{};
+
+        io::Watcher mWatcher;
+        std::set<Guid> mWatchedTags;
+        DirtyCallback mDirtyCallback;
     };
 
 }

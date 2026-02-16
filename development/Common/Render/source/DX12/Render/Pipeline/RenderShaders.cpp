@@ -155,8 +155,8 @@ namespace yaget::render
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderShaders::RenderShaders(yaget::io::VirtualTransportSystem& vts, yaget::DependencyGraph& dependencyGraph, io::Watcher& watcher)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Shaders"), dependencyGraph, watcher)
+yaget::render::RenderShaders::RenderShaders(yaget::io::VirtualTransportSystem& vts)
+    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Shaders"))
     , mResourceCompiler(std::make_shared<ResourceCompiler>())
 {
 }
@@ -187,20 +187,6 @@ std::vector<yaget::io::Buffer> yaget::render::RenderShaders::GetShaders(const ya
     return results;
 }
 
-//
-//namespace
-//{
-//    yaget::render::ResourceReflector::RootParameters GetParameters(const auto& reflections, const yaget::io::Tag& tag)
-//    {
-//        if (auto it = reflections.find(tag); it != reflections.end())
-//        {
-//            return it->second->mRootParameters;
-//        }
-//
-//        return {};
-//    }
-//
-//}
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::RenderShaders::CreateSignatureDescription(const io::Tag& vertexTag, const io::Tag& pixelTag, DescriptionCallback callback)
@@ -232,12 +218,6 @@ void yaget::render::RenderShaders::CreateSignatureDescription(const io::Tag& ver
         conv::Convertor<io::Tag>::ToString(pixelTag).c_str());
 
     vertexReflector->MakeRootSignature(pixelReflector.get(), callback);
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void yaget::render::RenderShaders::CreateSignatureDescription(AssetCacheType /*vertexType*/, AssetCacheType /*pixelType*/, DescriptionCallback /*callback*/) const
-{
 }
 
 
