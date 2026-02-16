@@ -2,251 +2,339 @@
 #include "App/AppUtilities.h"
 #include "Fmt/format.h"
 
-#include <d3dx12.h>
 #include <d3dcompiler.h>
+#include <d3dx12.h>
 
-#include <dxcapi.h>         // Be sure to link with dxcompiler.lib.
 #include <d3d12shader.h>    // Shader reflection.
+#include <dxcapi.h>         // Be sure to link with dxcompiler.lib.
 #include <ranges>
 
 #include "StringHelpers.h"
 #include "Core/ErrorHandlers.h"
+#include "Exception/Exception.h"
 #include "Platform/Support.h"
 
 // New compiler for shaders
 // https://github.com/microsoft/DirectXShaderCompiler/wiki/Using-dxc.exe-and-dxcompiler.dll
 
+namespace
+{
+
+    const yaget::render::ResourceReflector::IndexMap MakeIndexMap(const yaget::render::ResourceReflector::RootParameters& rootParameters)
+    {
+        yaget::render::ResourceReflector::IndexMap result;
+        uint32_t slot = 0;
+        for (auto value : rootParameters)
+        {
+            result[value.mName] = slot++;
+        }
+
+        return result;
+    }
+}
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::ResourceCompiler::ResourceCompiler(io::BufferView data, const char* entryName, const char* target, bool useOldCompiler, bool debugShaders)
+const yaget::render::ResourceReflector::RootDescResult yaget::render::ResourceReflector::MakeRootSignature(const RootParameters& rootParameters)
 {
-    if (useOldCompiler == false)
+    RootDescResult rootResult;
+
+    rootResult.mRootParameters = rootParameters | std::views::transform([](const auto& element)
+        {
+            return element.mParameter;
+        }) | std::ranges::to<std::vector<D3D12_ROOT_PARAMETER1>>();
+
+    rootResult.mRootSignatureDesc =
     {
-        ComPtr<IDxcUtils> utils;
-        HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils));
-        if(FAILED(hr))
+        .Version = D3D_ROOT_SIGNATURE_VERSION_1_1,
+        .Desc_1_1
         {
-            YLOG_ERROR("COMP", fmt::format("Could not create DxcUtil object. {}", yaget::platform::LastErrorMessage()).c_str());
-            return;
+            .NumParameters = static_cast<uint32_t>(rootResult.mRootParameters.size()),
+            .pParameters = rootResult.mRootParameters.data(),
+            .NumStaticSamplers = 0u,
+            .pStaticSamplers = nullptr,
+            .Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT,
+        },
+    };
+
+    rootResult.mIndexMap = MakeIndexMap(rootParameters);
+
+    return rootResult;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::ResourceReflector::MakeRootSignature(ResourceReflector* additionalReflector, DescriptionCallback descriptionCallback)
+{
+    RootParameters rootParameters;
+    GenerateSignature(rootParameters);
+    if (additionalReflector)
+    {
+        additionalReflector->GenerateSignature(rootParameters);
+    }
+
+    const RootDescResult rootResult = ResourceReflector::MakeRootSignature(rootParameters);
+
+    descriptionCallback(rootResult);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::ResourceCompiler::ResourceCompiler()
+{
+    HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&mUtils));
+    error_handlers::ThrowOnError(hr, "Could not get DX12 DxcUtil object");
+
+    hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&mCompiler));
+    error_handlers::ThrowOnError(hr, "Could not create DxcCompiler3 object");
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::ResourceCompiler::~ResourceCompiler() = default;
+
+
+//-------------------------------------------------------------------------------------------------
+namespace
+{
+    struct ShaderParameters
+    {
+        ShaderParameters(const yaget::Strings& parameters)
+        {
+            mShaderArguments = parameters | std::views::transform([](const std::string& element)
+                {
+                    return yaget::conv::utf8_to_wide(element);
+                }) | std::ranges::to<std::vector<std::wstring>>();
+
+            mArguments = mShaderArguments | std::views::transform([](const std::wstring& element)
+                {
+                    return element.c_str();
+                }) | std::ranges::to<std::vector<LPCWSTR>>();
         }
 
-        ComPtr<IDxcCompiler3> compiler;
-        hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler));
-        if(FAILED(hr))
-        {
-            YLOG_ERROR("COMP", fmt::format("Could not create DxcCompiler3 object. {}", yaget::platform::LastErrorMessage()).c_str());
-            return;
-        }
+        std::vector<LPCWSTR> mArguments;
 
-        std::vector<std::wstring> arguments;
-        arguments.push_back(L"-E");
-        arguments.push_back(conv::utf8_to_wide(entryName));
-
-        // -T for the target profile (eg. 'ps_6_6')
-        arguments.push_back(L"-T");
-        arguments.push_back(conv::utf8_to_wide(target));
-
-        arguments.push_back(L"-encoding");
-        arguments.push_back(L"utf8");
-
-        if (debugShaders)
-        {
-            arguments.push_back(L"-Zi");
-            arguments.push_back(L"-Qembed_debug");
-            arguments.push_back(L"-Od");
-        }
-
-        arguments.push_back(L"-fdiagnostics-format=msvc");
-
-        //-rootsig-define <value> Read root signature from a #define
+    private:
+        std::vector<std::wstring> mShaderArguments;
         
-        std::vector<LPCWSTR> shaderArguments = arguments | std::views::transform([](const std::wstring& element)
-        {
-            return element.c_str();
-        }) | std::ranges::to<std::vector<LPCWSTR>>();
+    };
+}
 
-        uint32_t codePage = CP_UTF8;
-        DxcText dxBuffer{ io::cast_data<const char>(data), io::size_data(data), codePage };
-        ComPtr<IDxcResult> result;
-        hr = compiler->Compile(&dxBuffer, shaderArguments.data(), static_cast<UINT32>(shaderArguments.size()), nullptr, IID_PPV_ARGS(&result));
-        if(FAILED(hr))
-        {
-            YLOG_ERROR("COMP", "Could not execute compiler for shader. %s", yaget::platform::LastErrorMessage().c_str());
-            return;
-        }
 
-        ComPtr<IDxcBlobUtf8> errors;
-        hr = result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
-        if(FAILED(hr))
-        {
-            YLOG_ERROR("COMP", "Could not get output for shader from compiled results. %s", yaget::platform::LastErrorMessage().c_str());
-            return;
-        }
+//-------------------------------------------------------------------------------------------------
+yaget::render::ResourceCompiler::CompileResult yaget::render::ResourceCompiler::Compile(io::BufferView data, const Strings& parameters) const
+{
+    CompileResult compiledResult;
+    
+    ShaderParameters shaderParameters(parameters);
 
-        if (errors && errors->GetStringLength())
-        {
-            YLOG_ERROR("COMP", fmt::format("Could not compile shader. {}", errors->GetStringPointer()).c_str());
-            return;
-        }
+    constexpr uint32_t codePage = CP_UTF8;
+    DxcText dxBuffer{ io::cast_data<const char>(data), io::size_data(data), codePage };
+    ComPtr<IDxcResult> result;
+    HRESULT hr = mCompiler->Compile(&dxBuffer, shaderParameters.mArguments.data(), static_cast<UINT32>(shaderParameters.mArguments.size()), nullptr, IID_PPV_ARGS(&result));
+    error_handlers::ThrowOnError(hr, fmt::format("Could not execute compiler for shader with params: '{}'", conv::Combine(parameters, ", ")));
 
-        ComPtr<IDxcBlob> shaderBin;
-        hr = result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBin), nullptr);
-        if(FAILED(hr))
-        {
-            YLOG_ERROR("COMP", "Could not get bin shader from compiled results");
-            return;
-        }
+    ComPtr<IDxcBlobUtf8> errors;
+    hr = result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
+    error_handlers::ThrowOnError(hr, "Could not get output for shader from compiled results.");
 
-#if 0
-        ComPtr<IDxcBlob> reflectionBlob{};
-        hr = result->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&reflectionBlob), nullptr);
-        if (SUCCEEDED(hr))
+    if (errors && errors->GetStringLength())
+    {
+        error_handlers::ThrowOnError(hr, fmt::format("Did not compile shader. {}", errors->GetStringPointer()));
+    }
+
+    ComPtr<IDxcBlob> shaderBin;
+    hr = result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBin), nullptr);
+    error_handlers::ThrowOnError(hr, "Could not get bin shader from compiled results.");
+
+    const auto bufferSize = shaderBin->GetBufferSize();
+    compiledResult.first = io::CreateBuffer(static_cast<const char*>(shaderBin->GetBufferPointer()), bufferSize);
+
+    try
+    {
+        compiledResult.second = std::make_shared<ResourceReflector>(mUtils.Get(), io::cast_to_view(compiledResult.first));
+    }
+    catch (const yaget::ex::bad_init& ex)
+    {
+        YLOG_ERROR("COMP", "Did not get reflection from shader. Error: %s", ex.what());
+    }
+
+    return compiledResult;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::ResourceReflector::Ptr yaget::render::ResourceCompiler::Decompile(io::BufferView data) const
+{
+    auto reflector = std::make_shared<ResourceReflector>(mUtils.Get(), data);
+    return reflector;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::ResourceReflector::ResourceReflector(IDxcUtils* utils, io::BufferView buffer)
+{
+    void* bufferPtr = io::cast_data<void>(buffer);
+    auto bufferSize = io::size_data(buffer);
+
+    const DxcBuffer reflectionBuffer{ .Ptr = bufferPtr, .Size = bufferSize, .Encoding = 0, };
+    HRESULT hr = utils->CreateReflection(&reflectionBuffer, IID_PPV_ARGS(&mShaderReflection));
+    error_handlers::ThrowOnError(hr, "Could not get Shader Reflection from compiled shader.");
+}
+
+
+//-------------------------------------------------------------------------------------------------
+D3D12_SHADER_VISIBILITY yaget::render::ResourceReflector::GeneratePins(uint32_t shaderType, const D3D12_SHADER_DESC& shaderDesc)
+{
+    using namespace yaget;
+    D3D12_SHADER_VISIBILITY returnValue = D3D12_SHADER_VISIBILITY_ALL;
+
+    //---------------------------------------
+    // process shaders first (for now we only deal with vertex or pixel ones.
+    switch (shaderType)
+    {
+    case D3D12_SHVER_VERTEX_SHADER:
+    case D3D12_SHVER_PIXEL_SHADER:
         {
-            const DxcBuffer reflectionBuffer
+            auto& shaderInputs = mShaderInputs = {};
+            auto& shaderOutputs = mShaderOutputs = {};
+
+            auto paramDesc = [](uint32_t parameterIndex, auto descGetter)
             {
-                .Ptr = reflectionBlob->GetBufferPointer(),
-                .Size = reflectionBlob->GetBufferSize(),
-                .Encoding = 0,
+                D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
+                HRESULT hr = descGetter(parameterIndex, &signatureParameterDesc);
+                error_handlers::ThrowOnError(hr, fmt::format("Could not get input Parameter Description from compiled vertex shader. Parameter Index: {}", parameterIndex));
+
+                return signatureParameterDesc;
             };
 
-            ComPtr<ID3D12ShaderReflection> shaderReflection{};
-            hr = utils->CreateReflection(&reflectionBuffer, IID_PPV_ARGS(&shaderReflection));
-            if (SUCCEEDED(hr))
+            for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.InputParameters))
             {
-                D3D12_SHADER_DESC shaderDesc{};
-                hr = shaderReflection->GetDesc(&shaderDesc);        
-                if (SUCCEEDED(hr))
+                auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC *desc)
                 {
-                    auto shaderType = (shaderDesc.Version & 0xFFFF0000) >> 16;
-                    if (shaderType == D3D12_SHVER_VERTEX_SHADER)
-                    {
-                        //inputElementSemanticNames.reserve(shaderDesc.InputParameters);
-                        //inputElementDescs.reserve(shaderDesc.InputParameters);
-                        auto numInputParameters = shaderDesc.InputParameters;
-                        std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescs;
+                    return shaderReflection->GetInputParameterDesc(parameterIndex, desc);
+                });
 
-                        for (const uint32_t parameterIndex : std::views::iota(0u, numInputParameters))
-                        {
-                            D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
-                            hr = shaderReflection->GetInputParameterDesc(parameterIndex, &signatureParameterDesc);
-                            //if (SUCCEEDED(hr))
-
-                            // Using the semantic name provided by the signatureParameterDesc directly to the input element desc will cause the SemanticName field to have garbage values.
-                            // This is because the SemanticName filed is a const wchar_t*. I am using a separate std::vector<std::string> for simplicity.
-                            std::string semanticName = signatureParameterDesc.SemanticName;
-                            //inputElementSemanticNames.emplace_back(signatureParameterDesc.SemanticName);
-
-                            inputElementDescs.emplace_back(D3D12_INPUT_ELEMENT_DESC{
-                                        .SemanticName = semanticName.c_str(),
-                                        .SemanticIndex = signatureParameterDesc.SemanticIndex,
-                                        //.Format = maskToFormat(signatureParameterDesc.Mask),
-                                        .InputSlot = 0u,
-                                        .AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT,
-                                        .InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-                                        // There doesn't seem to be a obvious way to 
-                                        // automate this currently, which might be a issue when instanced rendering is used
-                                        .InstanceDataStepRate = 0u,
-                                });
-                        }
-
-                        //inputLayoutDesc =
-                        //{
-                        //    .pInputElementDescs = inputElementDescs.data(),
-                        //    .NumElements = static_cast<uint32_t>(inputElementDescs.size()),
-                        //};
-                    }
-                }
-
-                int z = 0;
-                z;
+                shaderInputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
             }
 
-            int z = 0;
-            z;
+            for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.OutputParameters))
+            {
+                auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC *desc)
+                {
+                    return shaderReflection->GetOutputParameterDesc(parameterIndex, desc);
+                });
+
+                shaderOutputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
+            }
+
+            returnValue = shaderType == D3D12_SHVER_VERTEX_SHADER ? D3D12_SHADER_VISIBILITY_VERTEX : D3D12_SHADER_VISIBILITY_PIXEL;
         }
-#endif // 0
-
-        const auto bufferSize = shaderBin->GetBufferSize();
-        mBinaryBlob = io::CreateBuffer(static_cast<const char*>(shaderBin->GetBufferPointer()), bufferSize);
-
-        //ResourceReflector resourceReflector(io::cast_to_view(mBinaryBlob));
+        break;
+    default:
+        YLOG_ERROR("COMP", "Unsupported shader type: '%d'", shaderType);
     }
-    else
+
+    return returnValue;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootParameters)
+{
+    D3D12_SHADER_DESC shaderDesc{};
+    HRESULT hr = mShaderReflection->GetDesc(&shaderDesc);
+    error_handlers::ThrowOnError(hr, "Could not get Shader Description from compiled shader.");
+
+    mShaderType = (shaderDesc.Version & 0xFFFF0000) >> 16;
+    mMajorVersion = (shaderDesc.Version & 0x000000F0) >> 4;
+    mMinorVersion = (shaderDesc.Version & 0x0000000F);
+
+    mShaderVisibility = GeneratePins(mShaderType, shaderDesc);
+
+    //------------------------------------------------------------------
+    // next let's go over bounded resources
+    for (const uint32_t i : std::views::iota(0u, shaderDesc.BoundResources))
     {
-#if YAGET_DEBUG_RENDER == 1
-        // Enable better shader debugging with the graphics debugging tools.
-        UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#else // YAGET_DEBUG_RENDER == 1
-        UINT compileFlags = 0;
-#endif // YAGET_DEBUG_RENDER == 1
+        D3D12_SHADER_INPUT_BIND_DESC shaderInputBindDesc{};
+        hr = mShaderReflection->GetResourceBindingDesc(i, &shaderInputBindDesc);
+        error_handlers::ThrowOnError(hr, fmt::format("Could not get Resource Binding Description from compiled vertex shader. BoundResources Index: {}", i));
 
-        ComPtr<ID3DBlob> error;
-        ComPtr<ID3DBlob> shaderBlob;
-        const HRESULT hr = ::D3DCompile(io::BufferPointer(data), io::BufferSize(data), nullptr, nullptr, nullptr, entryName, target, compileFlags, 0, &shaderBlob, &error);
-
-        YLOG_CERROR("COMP", SUCCEEDED(hr), fmt::format("Could not compile shader with entry point: '{}' and target: '{}'.\n{}", entryName, target, (error ? static_cast<const char*>(error->GetBufferPointer()) : "")).c_str());
-        if (SUCCEEDED(hr))
+        switch (shaderInputBindDesc.Type)
         {
-            mBinaryBlob = io::CreateBuffer(static_cast<const char*>(shaderBlob->GetBufferPointer()), shaderBlob->GetBufferSize());
+        case D3D_SIT_CBUFFER:
+            {
+                ID3D12ShaderReflectionConstantBuffer* shaderReflectionConstantBuffer = mShaderReflection->GetConstantBufferByIndex(i);
+
+                D3D12_SHADER_BUFFER_DESC constantBufferDesc{};
+                hr = shaderReflectionConstantBuffer->GetDesc(&constantBufferDesc);
+                error_handlers::ThrowOnError(hr, fmt::format("Could not get Constant Buffer Description from compiled vertex shader. BoundResources Index: {}", i));
+
+                // NOTE(eg) we may want to consider having path for small (one matrix?) root const buffer
+                D3D12_ROOT_PARAMETER1 rootParameter = {};
+
+                if (constantBufferDesc.Variables * constantBufferDesc.Size == sizeof(float) * 16)
+                {
+                    rootParameter = D3D12_ROOT_PARAMETER1
+                    {
+                        .ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS,
+                        .Constants
+                        {
+                            .ShaderRegister = shaderInputBindDesc.BindPoint,
+                            .RegisterSpace = shaderInputBindDesc.Space,
+                            .Num32BitValues = 16,
+                        },
+                        .ShaderVisibility = mShaderVisibility,
+                    };
+                }
+                else
+                {
+                    rootParameter = D3D12_ROOT_PARAMETER1
+                    {
+                        .ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV,
+                        .Descriptor
+                        {
+                            .ShaderRegister = shaderInputBindDesc.BindPoint,
+                            .RegisterSpace = shaderInputBindDesc.Space,
+                            .Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
+                        },
+                        .ShaderVisibility = mShaderVisibility,
+                    };
+                }
+
+                rootParameters.push_back({ .mParameter = rootParameter, .mName = shaderInputBindDesc.Name });
+            }
+            break;
+        case D3D_SIT_TEXTURE:
+            {
+                rootParameters.push_back({});
+                auto& parameter = rootParameters.back();
+                const CD3DX12_DESCRIPTOR_RANGE1 srvRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
+                    1u,
+                    shaderInputBindDesc.BindPoint,
+                    shaderInputBindDesc.Space,
+                    D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
+
+                parameter.mDescriptorRangesScratchPad.push_back(srvRange);
+                //std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptorRanges;
+                //descriptorRanges.push_back(srvRange);
+
+                const D3D12_ROOT_PARAMETER1 rootParameter
+                {
+                    .ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
+                    .DescriptorTable
+                    {
+                        .NumDescriptorRanges = 1u,
+                        .pDescriptorRanges = &parameter.mDescriptorRangesScratchPad.back(),
+                    },
+                    .ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL,
+                };
+
+                rootParameters.push_back({ .mParameter = rootParameter, .mName = shaderInputBindDesc.Name });
+            }
+            break;
+        default:
+            YLOG_ERROR("COMP", "Unsupported Bound Resources type: '%d'", shaderInputBindDesc.Type);
         }
-    }
-}
-
-
-//-------------------------------------------------------------------------------------------------
-yaget::io::Buffer yaget::render::ResourceCompiler::GetCompiled() const
-{
-    return mBinaryBlob;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-yaget::render::ResourceReflector::ResourceReflector(io::BufferView data)
-{
-    //ComPtr<ID3D12LibraryReflection> reflector;
-    //HRESULT hr = ::D3DReflectLibrary(data, size, IID_ID3D12LibraryReflection, &reflector);
-    //error_handlers::ThrowOnError(hr, "Could not get library reflection object for shader data");
-
-    //D3D12_LIBRARY_DESC desc = {};
-    //hr = mReflector->GetDesc(&desc);
-    //error_handlers::ThrowOnError(hr, "Could not get library reflection description for shader data");
-
-    //IID_ID3D12ShaderReflection
-    ComPtr<ID3D12ShaderReflection> shaderReflectior;
-    HRESULT hr = ::D3DReflect(data.first, data.second, IID_ID3D12ShaderReflection, &shaderReflectior);
-    error_handlers::ThrowOnError(hr, "Could not get shader reflection object for shader data");
-
-    //hr = shaderReflectior->QueryInterface(IID_ID3D12LibraryReflection, &reflector);
-
-    D3D12_SHADER_DESC desc = {};
-    hr = shaderReflectior->GetDesc(&desc);
-    error_handlers::ThrowOnError(hr, "Could not get shader reflection description for shader data");
-
-    YLOG_INFO("COMP", "Shader Reflection: Input Parameters = %d, Output Parameters = %d.", desc.InputParameters, desc.OutputParameters);
-
-    for (uint32_t i = 0; i < desc.InputParameters; ++i)
-    {
-        D3D12_SIGNATURE_PARAMETER_DESC paramDesc = {};
-        hr = shaderReflectior->GetInputParameterDesc(i, &paramDesc);
-        error_handlers::ThrowOnError(hr, "Could not get input param description for shader data");
-
-        ID3D12ShaderReflectionVariable* shaderVariable = shaderReflectior->GetVariableByName(paramDesc.SemanticName);
-
-        D3D12_SHADER_VARIABLE_DESC varDesc = {};
-        hr = shaderVariable->GetDesc(&varDesc);
-        //error_handlers::ThrowOnError(hr, "Could not get input shaderVariable for shader data");
-
-
-        YLOG_INFO("COMP", "Shader Reflection: Input Parameter Index: %d, Name: '%s', SemanticIndex: %d, Register: %d.", i, paramDesc.SemanticName, paramDesc.SemanticIndex, paramDesc.Register);
-    }
-
-    for (uint32_t i = 0; i < desc.OutputParameters; ++i)
-    {
-        D3D12_SIGNATURE_PARAMETER_DESC paramDesc = {};
-        hr = shaderReflectior->GetOutputParameterDesc(i, &paramDesc);
-        error_handlers::ThrowOnError(hr, "Could not get output param description for shader data");
-
-        YLOG_INFO("COMP", "Shader Reflection: Output Parameter Index: %d, Name: '%s', SemanticIndex: %d, Register: %d.", i, paramDesc.SemanticName, paramDesc.SemanticIndex, paramDesc.Register);
     }
 }

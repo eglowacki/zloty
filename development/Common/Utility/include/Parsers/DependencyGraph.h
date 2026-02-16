@@ -34,6 +34,9 @@ namespace yaget
         void ResolveNames(const io::VirtualTransportSystem& vts);
         inline bool operator<(const DependencyNode& other) const { return mGuid < other.mGuid; }
 
+        // is this or any descendant dirty
+        bool IsBranchDirty() const;
+
         Guid mGuid;
         std::string mName;
         bool mDirty = false;

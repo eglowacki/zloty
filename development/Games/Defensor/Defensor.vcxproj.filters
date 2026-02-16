@@ -97,9 +97,6 @@
     <ClCompile Include="source\Renders\RenderPipelines.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\Renders\RenderShaders.cpp">
-      <Filter>Source Files\Renders Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\Renders\RenderMaterial.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
@@ -107,9 +104,6 @@
   <ItemGroup>
     <None Include="Defensor.deployment">
       <Filter>Data Files</Filter>
-    </None>
-    <None Include="data\Shaders\Pixel\Basic.vs">
-      <Filter>Data Files\Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -136,6 +130,9 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Materials\BasicMaterial.json">
       <Filter>Data Files\Materials</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\Basic.vs">
+      <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
@@ -203,9 +200,6 @@
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Renders\RenderPipelines.h">
-      <Filter>Source Files\Renders Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\Renders\RenderShaders.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />

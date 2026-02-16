@@ -151,9 +151,10 @@
     <ClInclude Include="..\include\DX12\Render\Cache\CacheWatcher.h" />
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
     <ClInclude Include="..\include\DX12\Render\Device.h" />
+    <ClInclude Include="..\include\DX12\Render\Pipeline\RenderMaterials.h" />
+    <ClInclude Include="..\include\DX12\Render\Pipeline\RenderShaders.h" />
     <ClInclude Include="..\include\DX12\Render\Platform\Adapter.h" />
     <ClInclude Include="..\include\DX12\Render\Platform\DeviceDebugger.h" />
-    <ClInclude Include="..\include\DX12\Render\Platform\ResourceCompiler.h" />
     <ClInclude Include="..\include\DX12\Render\Polygons\RenderShape.h" />
     <ClInclude Include="..\include\DX12\Render\RenderCore.h" />
     <ClInclude Include="..\include\DX12\Render\Waiter.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="..\source\DX12\Render\Platform\CommandListPool.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\CommandQueue.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h" />
+    <ClInclude Include="..\source\DX12\Render\Platform\ResourceCompiler.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h" />
     <ClInclude Include="..\source\DX12\Render\RenderStringHelpers.h" />
     <ClInclude Include="..\source\DX12\Render\Triangle\Triangle.h" />
@@ -191,6 +193,8 @@
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Pipeline\RenderMaterials.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Pipeline\RenderShaders.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\CommandAllocators.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Commander.cpp" />

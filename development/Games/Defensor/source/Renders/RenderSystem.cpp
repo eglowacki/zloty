@@ -3,18 +3,15 @@
 #include "Render/Device.h"
 #include "Render/Platform/Adapter.h"
 
+#include <ranges>
+
 
 namespace
 {
     yaget::io::Tag TypeToTag(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
     {
         auto section = yaget::render::AssetCache::operator[](assetCacheType);
-        auto tag = vts.GetTag(section);
-        if (!tag.IsValid())
-        {
-            tag = vts.GenerateTag(section);
-        }
-
+        auto tag = vts.AssureTag(section);
         return tag;
     }
 }
@@ -29,6 +26,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph, mWatcher)
     , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), mDependencyGraph, mWatcher)
     , mRenderShaders(app.VTS(), mDependencyGraph, mWatcher)
+    , mRenderMaterials(app.VTS(), mDependencyGraph, mWatcher)
 {
     mAssetPoolThread.AddTask([this]()
     {
@@ -57,55 +55,35 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         auto framerHandle = device.GetFramerHandle(gameClock, channel, &color);
         auto commandList = framerHandle.GetCommandList();
 
-        auto signatureTag = TypeToTag(yaget::render::BasicSignature, vts);
-        auto rootSig = mRenderSignatures.GetSignature(signatureTag);
-
-        auto vertexShaderTag = TypeToTag(yaget::render::BasicVertex, vts);
-        auto pixelShaderTag = TypeToTag(yaget::render::BasicPixel, vts);
-        auto vertexShaderBuffer = mRenderShaders.GetShader(vertexShaderTag, RenderShaders::ShaderType::Vertex);
-        auto pixelShaderBuffer = mRenderShaders.GetShader(pixelShaderTag, RenderShaders::ShaderType::Pixel);
-
-        auto pipelineTag = TypeToTag(yaget::render::BasicPipeline, vts);
-        //DependencyNode* psoNode = mDependencyGraph.Find(pipelineTag.mGuid);
-
-        auto pipe = mRenderPipelines.GetPipeline(pipelineTag, rootSig, vertexShaderBuffer, pixelShaderBuffer);
-
-        commandList->SetGraphicsRootSignature(rootSig);
-        commandList->SetPipelineState(pipe);
-
-        coordinator.ForEach<RenderEntity>([commandList, &vts, this](comp::Id_t /*id*/, const auto& row)
+        coordinator.ForEach<RenderEntity>([commandList, &vts, color, this](comp::Id_t /*id*/, const auto& row)
         {
             auto renderComponent = std::get<RenderComponent*>(row);
             const auto location = renderComponent->mMatrix;
 
             auto& material = renderComponent->mRenderMaterial;
 
-            //auto vsTag = TypeToTag(material.mVertexShader, vts);
-            //auto psTag = TypeToTag(material.mPixelShader, vts);
-            //auto vsBuffer = mRenderShaders.GetShader(vsTag, RenderShaders::ShaderType::Vertex);
-            //auto psBuffer = mRenderShaders.GetShader(psTag, RenderShaders::ShaderType::Pixel);
+            if (DependencyNode* materialNode = mDependencyGraph.Find(material.mAssetTag.mGuid, nullptr))
+            {
+                if (materialNode->IsBranchDirty())
+                {
+                    YLOG_ERROR("REND", "material is dirty, we are not handling!!!");
+                    return true;
+                }
+                else
+                {
+                    auto signatureTag = TypeToTag(material.mAssetTypes.mSignature, vts);
+                    auto rootSig = mRenderSignatures.GetSignature(signatureTag);
+                    commandList->SetGraphicsRootSignature(rootSig);
 
-            //auto sigType = material.mVertexShader | material.mPixelShader | AssetCacheType::SigConstMatrix;
-            //auto sigTag = TypeToTag(sigType, vts);
-
-            //    AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
-
-            //static AssetCacheType BasicPipeline = BasicVertex | BasicPixel | AssetCacheType::SigConstMatrix |
-            //AssetCacheType::RasterizerStateCounterClockwise |
-            //AssetCacheType::BlendModeOpaque | AssetCacheType::DepthStateNone |
-            //AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
-
-            auto psoType = material.mVertexShader | material.mPixelShader | AssetCacheType::SigConstMatrix | material.mRasterizerState | material.mDepthState | material.mBlendMode |
-                AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
-            auto psoTag = TypeToTag(psoType, vts);
-            DependencyNode* psoNode = mDependencyGraph.Find(psoTag.mGuid, nullptr);
-            psoNode;
-
-            //auto pso = mRenderSignatures.GetSignature(psoTag);
+                    auto psoTag = TypeToTag(material.mAssetTypes.mPSO, vts);
+                    auto pso = mRenderPipelines.GetPipeline(psoTag);
+                    commandList->SetPipelineState(pso);
+                }
+            }
 
             float matrix[16];
             math3d::GetMatrixAsFloats(location, matrix);
-            std::ranges::fill(matrix, 0.75f);
+            std::ranges::fill(matrix, color.G());
 
             commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
             renderComponent->Render(commandList);
@@ -136,6 +114,13 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     }
 }
 
+    void AttachTransientAsset(const yaget::io::Tag& tag, yaget::io::VirtualTransportSystem& vts)
+    {
+        using namespace yaget;
+
+        std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>({}, tag, vts);
+        vts.AttachTransientBlob(newAsset);
+    }
 
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::PreloadAssets()
@@ -148,8 +133,81 @@ void defensor::render::RenderSystem::PreloadAssets()
     const io::VirtualTransportSystem::Section pixelShaderSection("PixelShaders");
     auto pixelShaderTags = vts.GetTags(pixelShaderSection);
 
-    mRenderShaders.GetShaders(vertexShaderTags, RenderShaders::ShaderType::Vertex);
-    mRenderShaders.GetShaders(pixelShaderTags, RenderShaders::ShaderType::Pixel);
+    mRenderShaders.GetShaders(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex);
+    mRenderShaders.GetShaders(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel);
+
+    const io::VirtualTransportSystem::Section materialSection("Materials");
+    auto materialTags = vts.GetTags(materialSection);
+
+    auto materials = mRenderMaterials.GetMaterials(materialTags);
+    for (const auto& [material, matTag] : std::views::zip(materials, materialTags))
+    {
+        ID3D12RootSignature* signature = nullptr;
+        auto vsTag = TypeToTag(material.mVertexShader, vts);
+        auto psTag = TypeToTag(material.mPixelShader, vts);
+
+        auto sigTag = TypeToTag(material.mSignature, vts);
+        mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &sigTag, &signature](const auto& descResult)
+        {
+            signature = mRenderSignatures.GetSignature(sigTag, descResult);
+        });
+        AttachTransientAsset(sigTag, vts);
+
+        auto psoTag = TypeToTag(material.mPSO, vts);
+        auto vsBlob = mRenderShaders.GetShader(vsTag, yaget::render::RenderShaders::ShaderType::Vertex);
+        auto psBlob = mRenderShaders.GetShader(psTag, yaget::render::RenderShaders::ShaderType::Pixel);
+
+        /*ID3D12PipelineState* pipeline =*/ mRenderPipelines.GetPipeline(psoTag, signature, vsBlob, psBlob);
+        AttachTransientAsset(psoTag, vts);
+
+        //NOTE(eg) now we need to add this dependencies data:
+        //        Material
+        //           |
+        //        Pipeline
+        //           |
+        //       Signature
+        //        |     |
+        //     Vertex Pixel
+        //     Shader Shader
+        mDependencyGraph.Add(matTag.mGuid, psoTag.mGuid);
+        mDependencyGraph.Add(psoTag.mGuid, sigTag.mGuid);
+        mDependencyGraph.Add(sigTag.mGuid, vsTag.mGuid);
+        mDependencyGraph.Add(sigTag.mGuid, psTag.mGuid);
+
+        //DependencyNode* matNode = mDependencyGraph.Find(matTag.mGuid, nullptr);
+    }
+
+
+    //for (const auto& materialTag : materialTags)
+    //{
+    //    RenderMaterial renderMaterial(materialTag, vts);
+
+    //    //auto vsTag = TypeToTag(renderMaterial.mVertexShader, vts);
+    //    ////auto vsBlob = mRenderShaders.GetShader(vsTag, yaget::render::RenderShaders::ShaderType::Vertex);
+    //    //auto psTag = TypeToTag(renderMaterial.mPixelShader, vts);
+    //    ////auto psBlob = mRenderShaders.GetShader(psTag, yaget::render::RenderShaders::ShaderType::Pixel);
+
+    //    //// having both blobs for vertex and shader allows us to extract 
+    //    //// D3D12_VERSIONED_ROOT_SIGNATURE_DESC and use that to find or create
+    //    //// root signature
+    //    auto vsTag = TypeToTag(renderMaterial.mAssetTypes.mVertexShader, vts);
+    //    auto psTag = TypeToTag(renderMaterial.mAssetTypes.mPixelShader, vts);
+    //    mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &renderMaterial, &vts](const auto& descResult)
+    //    {
+    //        auto sigTag = TypeToTag(renderMaterial.mAssetTypes.mSignature, vts);
+
+    //        ID3D12RootSignature* sig = mRenderSignatures.GetSignature(sigTag, descResult);
+
+
+    //        sig;
+
+    //        int z = 0;
+    //        z;
+    //    });
+
+    //    int z = 0;
+    //    z;
+    //}
 
     platform::Sleep(1, time::kSecondUnit);
 

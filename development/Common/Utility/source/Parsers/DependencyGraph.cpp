@@ -173,6 +173,25 @@ void yaget::DependencyNode::ResolveNames(const io::VirtualTransportSystem& vts)
 }
 
 
+bool yaget::DependencyNode::IsBranchDirty() const
+{
+    if (mDirty)
+    {
+        return true;
+    }
+
+    for (const auto & node : mDependencies)
+    {
+        if (node.IsBranchDirty())
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 namespace
 {
     template <typename T>

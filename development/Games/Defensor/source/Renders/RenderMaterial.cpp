@@ -2,11 +2,9 @@
 #include "Streams/Buffers.h"
 #include "VTS/ResolvedAssets.h"
 
-
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderMaterial::RenderMaterial(const io::Tag& assetTag, io::VirtualTransportSystem& vts)
-    : mAssetTag(assetTag)
-    , mVTS(vts)
+    : mVTS(vts)
 {
     ResolveAssetTag(assetTag);
 }
@@ -19,16 +17,27 @@ defensor::render::RenderMaterial::~RenderMaterial() = default;
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderMaterial::ResolveAssetTag(const io::Tag& assetTag)
 {
+    if (assetTag == mAssetTag)
+    {
+        YLOG_WARNING("REND", "New tag '%s' is the same as current one, ignoring.", conv::Convertor<io::VirtualTransportSystem::Section>::ToString(assetTag).c_str());
+        return;
+    }
+
     mAssetTag = assetTag;
+    mAssetTypes = {};
+
     if (auto jsonAsset = LoadJson(mVTS, mAssetTag); jsonAsset && jsonAsset->IsValid())
     {
         auto& jasonBlock = jsonAsset->root;
 
-        mVertexShader = json::GetValue(jasonBlock, "VertexShader", yaget::render::AssetCacheType::DSVFormatBlah7);
-        mPixelShader = json::GetValue(jasonBlock, "PixelShader", yaget::render::AssetCacheType::DSVFormatBlah7);
-        mRasterizerState = json::GetValue(jasonBlock, "RasterizerState", yaget::render::AssetCacheType::DSVFormatBlah7);
-        mBlendMode = json::GetValue(jasonBlock, "BlendMode", yaget::render::AssetCacheType::DSVFormatBlah7);
-        mDepthState = json::GetValue(jasonBlock, "DepthState", yaget::render::AssetCacheType::DSVFormatBlah7);
+        mAssetTypes.mVertexShader = json::GetValue(jasonBlock, "VertexShader", AssetCacheType::Empty);
+        mAssetTypes.mPixelShader = json::GetValue(jasonBlock, "PixelShader", AssetCacheType::Empty);
+        mAssetTypes.mRasterizerState = json::GetValue(jasonBlock, "RasterizerState", AssetCacheType::RasterizerStateCounterClockwise);
+        mAssetTypes.mBlendMode = json::GetValue(jasonBlock, "BlendMode", AssetCacheType::BlendModeOpaque);
+        mAssetTypes.mDepthState = json::GetValue(jasonBlock, "DepthState", AssetCacheType::DepthStateNone);
+
+        mAssetTypes.mSignature = mAssetTypes.mVertexShader | mAssetTypes.mPixelShader;
+        mAssetTypes.mPSO = mAssetTypes.mSignature | mAssetTypes.mRasterizerState | mAssetTypes.mDepthState | mAssetTypes.mBlendMode | AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
 
         //auto vertexSection = yaget::render::AssetCache::operator[](mVertexShader);
         //auto pixelSection = yaget::render::AssetCache::operator[](mPixelShader);

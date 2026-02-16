@@ -38,6 +38,7 @@ namespace defensor::render
         ~RenderPipelines();
 
         ID3D12PipelineState* GetPipeline(const io::Tag& tag, ID3D12RootSignature* rootSignature, io::Buffer vertexShaderBuffer, io::Buffer pixelShaderBuffer);
+        ID3D12PipelineState* GetPipeline(const io::Tag& tag);
 
     private:
         ID3D12Device* mDevice = {};

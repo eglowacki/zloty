@@ -28,7 +28,8 @@
 		"Graphics": {
 			"Device": "",
 			"MemoryReport": false,
-			"GPUTraceback": false
+			"GPUTraceback": false,
+			"ClearCache":  false
 		},
 		"Init": {
 			"Aliases": {

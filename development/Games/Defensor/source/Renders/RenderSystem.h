@@ -19,7 +19,8 @@
 #include "Render/DesktopApplication.h"
 #include "RenderPipelines.h"
 #include "Renders/RenderSignatures.h"
-#include "RenderShaders.h"
+#include "Render/Pipeline/RenderShaders.h"
+#include "Render/Pipeline/RenderMaterials.h"
 
 
 namespace defensor::render
@@ -52,7 +53,8 @@ namespace defensor::render
         DependencyGraph mDependencyGraph;
         RenderSignatures mRenderSignatures;
         RenderPipelines mRenderPipelines;
-        RenderShaders mRenderShaders;
+        yaget::render::RenderShaders mRenderShaders;
+        yaget::render::RenderMaterials mRenderMaterials;
 
         std::atomic_bool mAssetsPreloaded{false};
 

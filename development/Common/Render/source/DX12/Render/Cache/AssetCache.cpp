@@ -1,8 +1,4 @@
 #include "Render/Cache/AssetCache.h"
-#include "Render/Platform/ResourceCompiler.h"
-#include <VertexTypes.h>
-
-#include "HashUtilities.h"
 #include "Render/Cache/CacheWatcher.h"
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
@@ -50,14 +46,27 @@ yaget::io::VirtualTransportSystem::Section yaget::render::AssetCache::operator[]
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::AssetCache::PopulateTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+yaget::render::AssetCacheType yaget::render::AssetCache::operator[](const Section& section)
+{
+    auto it = std::ranges::find_if(TypeToSection, [&section](auto element)
+    {
+        const bool result = section == element.second;
+        return result;
+    });
+
+    return it != TypeToSection.end() ? it->first : AssetCacheType::Empty;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::AssetCache::PopulateTypeToSection(const io::VirtualTransportSystem::Section& fileName, io::VirtualTransportSystem& vts)
 {
     yaget::render::PopulateMap<TypeToSectionMap>(fileName, vts, TypeToSection);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::AssetCache::SaveTypeToSection(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+void yaget::render::AssetCache::SaveTypeToSection(const io::VirtualTransportSystem::Section& fileName, io::VirtualTransportSystem& vts)
 {
     yaget::render::SaveMap(fileName, vts, TypeToSection);
 }
@@ -83,10 +92,14 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::Virtu
             offset += sizeof(YagetFileSignature);
             if (!fileSignature->IsValid())
             {
-                YLOG_ERROR("DEVI", "Unsupported cache format version: '%d'. Expected version is <= '%d'. Cache will be ignored.", fileSignature->Version, CurrentFileVersion);
+                YLOG_ERROR("DEVI", "Unsupported cache '%s' version: '%d'. Expected version is <= '%d'. Cache will be ignored.", 
+                    conv::Convertor<io::VirtualTransportSystem::Section>::ToString(mCacheSection).c_str(), 
+                    fileSignature->Version, 
+                    CurrentFileVersion);
                 return;
             }
             
+            mCacheStatus = fileSignature->Version == CurrentFileVersion ? CacheStatus::Clean : CacheStatus::Dirty;
             if (fileSignature->Version == 1)
             {
                 auto numElements = *(reinterpret_cast<size_t*>(io::cast_data<char>(cache.mBuffer) + offset));
@@ -170,16 +183,28 @@ yaget::io::Buffer yaget::render::AssetCache::GetCachedAsset(const yaget::io::Tag
 
 
 //-------------------------------------------------------------------------------------------------
+bool yaget::render::AssetCache::IsCachedAsset(const io::Tag& tag) const
+{
+    return mCacheIndex.contains(tag.mGuid);
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::AssetCache::SaveCachedAsset(const yaget::io::Tag& tag, yaget::io::Buffer buffer)
 {
     // see if we already have this shader saved and if size matches, just overwrite
     if (auto it = mCacheIndex.find(tag.mGuid); it != mCacheIndex.end())
     {
-        const auto& location = it->second;
+        auto& location = it->second;
         if (location.mSize == io::size_data(buffer))
         {
+            // NOTE(eg) We need to still save smaller buffer, so we do not re-allocate
+            // memory unnecessary. But we need to update
+            // mCacheIndex[tag.mGuid] = mCache.mWriteOffset, io::size_data(buffer)};
+            //location.mSize = io::size_data(buffer);
             io::CopyBuffer(buffer, mCache.mBuffer, location.mOffset);
             mCacheStatus = ored(mCacheStatus, CacheStatus::Dirty);
+
             return;
         }
         std::memset(io::cast_data<char>(mCache.mBuffer) + location.mOffset, 0, location.mSize);

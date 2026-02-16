@@ -270,7 +270,7 @@ yaget::render::info::Adapter yaget::render::info::SelectAdapter(const Adapters& 
                 Adapter selectedAdapter = adapter;
 
                 selectedAdapter.mOutputs = { output };
-                (*selectedAdapter.mOutputs.begin()).mResolutions = { resolution };
+                selectedAdapter.mOutputs.begin()->mResolutions = { resolution };
 
                 return selectedAdapter;
             }
@@ -402,6 +402,8 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
     optionsText += "    Background Processing: " + conv::Convertor<bool>::ToString(backgroundSupported);
 
     YLOG_INFO("DEVI", "D3D Features:\n%s", optionsText.c_str());
+
+    error_handlers::ThrowOnCheck(signatureVersion >= D3D_ROOT_SIGNATURE_VERSION_1_1, fmt::format("Minimum Root Signature version needed: '1.1', current version: '{}'", conv::Convertor<D3D_ROOT_SIGNATURE_VERSION>::ToString(signatureVersion)));
 
     return { hardwareDevice, hardwareAdapter, factory };
 }

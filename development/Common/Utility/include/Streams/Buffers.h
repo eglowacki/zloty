@@ -77,8 +77,10 @@ namespace yaget::io
     }
 
 
-    inline BufferView cast_to_view(const Buffer& buffer, size_t offset = 0)
+    inline BufferView cast_to_view(const Buffer& buffer, size_t offset = 0, size_t range = 0)
     {
+        YAGET_ASSERT(range == 0, "range for buffer view is not implemented yet!!!");
+
         return { cast_data<const char>(buffer) + offset, size_data(buffer) - offset };
     }
 
@@ -137,6 +139,9 @@ namespace yaget::io
         return dataBuffer;
     }
 
+
+    template< typename T>
+    Buffer CreateBuffer(const T& dataStruct) { return CreateBuffer(reinterpret_cast<const uint8_t*>(&dataStruct), sizeof(T)); }
 
     inline Buffer CreateBuffer(const char* data, size_t size) { return CreateBuffer(reinterpret_cast<const uint8_t*>(data), size); }
 

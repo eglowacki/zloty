@@ -28,8 +28,8 @@ namespace
 
         psoDesc.InputLayout = T::InputLayout;
         psoDesc.pRootSignature = rootSignature;
-        psoDesc.VS = CD3DX12_SHADER_BYTECODE(io::cast_data<const char*>(vertexShaderBuffer), io::size_data(vertexShaderBuffer));
-        psoDesc.PS = CD3DX12_SHADER_BYTECODE(io::cast_data<const char*>(pixelShaderBuffer), io::size_data(pixelShaderBuffer));
+        psoDesc.VS = CD3DX12_SHADER_BYTECODE(io::cast_data<const char>(vertexShaderBuffer), io::size_data(vertexShaderBuffer));
+        psoDesc.PS = CD3DX12_SHADER_BYTECODE(io::cast_data<const char>(pixelShaderBuffer), io::size_data(pixelShaderBuffer));
         psoDesc.RasterizerState = DirectX::CommonStates::CullCounterClockwise;
         psoDesc.BlendState = DirectX::CommonStates::Opaque;
         psoDesc.DepthStencilState = DirectX::CommonStates::DepthNone;
@@ -84,4 +84,11 @@ ID3D12PipelineState* defensor::render::RenderPipelines::GetPipeline(const yaget:
     });
 
     return result.Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+ID3D12PipelineState* defensor::render::RenderPipelines::GetPipeline(const io::Tag& tag)
+{
+    return GetPipeline(tag, nullptr, {}, {});
 }

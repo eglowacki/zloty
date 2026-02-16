@@ -8,11 +8,11 @@
         "PixelShaders@Basic"
     ],
     [
-        "VertexPosition | VertexColor | PixelColor | SigConstMatrix",
+        "VertexPosition | VertexColor | PixelColor",
         "Transient@BasicSig"
     ],
     [
-        "VertexPosition | VertexColor | PixelColor | SigConstMatrix | RasterizerStateCounterClockwise | BlendModeOpaque | DepthStateNone | TopologyStateTriangle | RTVFormatRGBA8",
+        "VertexPosition | VertexColor | PixelColor | RasterizerStateCounterClockwise | BlendModeOpaque | DepthStateNone | TopologyStateTriangle | RTVFormatRGBA8",
         "Transient@BasicPipe"
     ]
 ]

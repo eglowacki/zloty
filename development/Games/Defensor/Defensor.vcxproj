@@ -152,7 +152,6 @@
     <ClCompile Include="source\Renders\RenderComponent.cpp" />
     <ClCompile Include="source\Renders\RenderMaterial.cpp" />
     <ClCompile Include="source\Renders\RenderPipelines.cpp" />
-    <ClCompile Include="source\Renders\RenderShaders.cpp" />
     <ClCompile Include="source\Renders\RenderSignatures.cpp" />
     <ClCompile Include="source\Renders\RenderSystem.cpp" />
     <ClCompile Include="source\Renders\SceneComponent.cpp" />
@@ -214,7 +213,13 @@
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Materials</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Materials</DestinationFolders>
     </CopyFileToFolders>
-    <None Include="data\Shaders\Pixel\Basic.vs" />
+    <CopyFileToFolders Include="data\Shaders\Pixel\Basic.vs">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+    </CopyFileToFolders>
     <None Include="Defensor.deployment" />
   </ItemGroup>
   <ItemGroup>
@@ -233,7 +238,6 @@
     <ClInclude Include="source\Renders\RenderComponent.h" />
     <ClInclude Include="source\Renders\RenderMaterial.h" />
     <ClInclude Include="source\Renders\RenderPipelines.h" />
-    <ClInclude Include="source\Renders\RenderShaders.h" />
     <ClInclude Include="source\Renders\RenderSignatures.h" />
     <ClInclude Include="source\Renders\RenderSystem.h" />
     <ClInclude Include="source\Renders\SceneComponent.h" />

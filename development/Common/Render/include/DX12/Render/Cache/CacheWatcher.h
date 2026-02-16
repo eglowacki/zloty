@@ -24,7 +24,7 @@
 namespace yaget::render
 {
     template<typename T>
-    void PopulateMap(yaget::io::VirtualTransportSystem::Section fileName, yaget::io::VirtualTransportSystem& vts, T& currentMap)
+    void PopulateMap(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts, T& currentMap)
     {
         T newMap = yaget::io::LoadBlob<T>(vts, fileName);
         if (!newMap.empty() && newMap != currentMap)
@@ -34,7 +34,7 @@ namespace yaget::render
     }
 
     template<typename T>
-    void SaveMap(yaget::io::VirtualTransportSystem::Section fileName, yaget::io::VirtualTransportSystem& vts, T& currentMap)
+    void SaveMap(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts, T& currentMap)
     {
         using namespace yaget;
 
@@ -78,6 +78,18 @@ namespace yaget::render
             {
                 mWatcher.Remove(tag.Hash());
             });
+        }
+
+        bool IsAsset(const io::Tag& tag) const
+        {
+            std::lock_guard mutexLocker(mMutex);
+            return mAssets.contains(tag);
+        }
+
+        bool IsCached(const io::Tag& tag) const
+        {
+            std::lock_guard mutexLocker(mMutex);
+            return mCache.IsCachedAsset(tag);
         }
 
     protected:
@@ -131,13 +143,13 @@ namespace yaget::render
         std::set<io::Tag> mWatchedTags;
         std::map<io::Tag, A> mAssets;
 
-        std::mutex mMutex;
+        mutable std::mutex mMutex;
 
     private:
         // will add to watch file changes if the file is not already watched
         void AssureTagWatch(const yaget::io::Tag& tag)
         {
-            if (auto node = mDependencyGraph.Find(tag.mGuid, nullptr); node->mDirty)
+            if (auto node = mDependencyGraph.Find(tag.mGuid, nullptr); node && node->mDirty)
             {
                 node->mDirty = false;
                 mAssets.erase(tag);

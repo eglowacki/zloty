@@ -53,6 +53,41 @@ namespace yaget
 
     constexpr uint32_t InvalidId = static_cast<uint32_t>(-1);
 
+    class NoCopy
+    {
+    public:
+        // delete the copy operations
+        NoCopy(const NoCopy&) = delete;
+        NoCopy& operator=(const NoCopy&) = delete;
+
+        // (default) implemented move operations
+        NoCopy(NoCopy&&) = default;
+        NoCopy& operator=(NoCopy&&) = default;
+
+    protected:
+        NoCopy() = default;
+        ~NoCopy() = default;
+    };
+
+    //template <typename T>
+    //class NoMove
+    //{
+    //public:
+    //    // (default) implemented copy operations
+    //    NoMove(const NoMove&) = default;
+    //    NoMove& operator=(const NoMove&) = default;
+
+    //    // deleted move operations
+    //    NoMove(NoMove&&) = delete;
+    //    T& operator=(T&&) = delete;
+
+    //protected:
+    //    NoMove() = default;
+    //    // Destructor (optional, can be defaulted or defined)
+    //    //~NoMove() = default;
+    //};
+
+
     // disable copy on classes
     template <typename T>
     class Noncopyable
