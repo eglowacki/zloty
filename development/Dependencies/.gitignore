@@ -1,4 +1,9 @@
 # Ignore patterns for yaget dependencies
 builds/
-YagetTools/DBBrowser/
+!*.exe
+!*.pdb
+!*.dll
+!*.lib
+
+
 
