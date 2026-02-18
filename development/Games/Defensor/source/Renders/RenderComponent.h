@@ -17,6 +17,7 @@
 #include "Components/Component.h"
 #include "DefensorRenderTypes.h"
 #include "Render/Polygons/RenderShape.h"
+#include "Renders/RenderMaterial.h"
 
 
 struct ID3D12GraphicsCommandList;
@@ -35,6 +36,7 @@ namespace defensor::render
 {
     using namespace yaget;
 
+    //-------------------------------------------------------------------------------------------------
     class RenderComponent : public comp::BaseComponent<comp::DefaultPoolSize>
     {
     public:
@@ -47,6 +49,8 @@ namespace defensor::render
 
         // represents actual geometry (triangle topology)
         yaget::render::RenderShape mRenderShape;
+        // represents material (shaders, textures, render states)
+        render::RenderMaterial mRenderMaterial;
     };
 
 }

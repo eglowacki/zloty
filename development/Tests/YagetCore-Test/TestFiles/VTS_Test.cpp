@@ -97,69 +97,69 @@ TEST_F(VTS, Section)
     using Section = io::VirtualTransportSystem::Section;
 
     Section section("TestSource@Attach/foo.txt");
-    EXPECT_EQ(section.Name, "TestSource");
-    EXPECT_EQ(section.Filter, "Attach/foo.txt");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Like);
+    EXPECT_EQ(section.mName, "TestSource");
+    EXPECT_EQ(section.mFilter, "Attach/foo.txt");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Like);
     EXPECT_EQ("TestSource@Attach/foo.txt", section.ToString());
 
     section = Section("=TestSource@Attach/foo.txt");
-    EXPECT_EQ(section.Name, "TestSource");
-    EXPECT_EQ(section.Filter, "Attach/foo.txt");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Exact);
+    EXPECT_EQ(section.mName, "TestSource");
+    EXPECT_EQ(section.mFilter, "Attach/foo.txt");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Exact);
     EXPECT_EQ("=TestSource@Attach/foo.txt", section.ToString());
 
     section = Section(">TestSource@Attach/foo.txt");
-    EXPECT_EQ(section.Name, "TestSource");
-    EXPECT_EQ(section.Filter, "Attach/foo.txt");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Override);
+    EXPECT_EQ(section.mName, "TestSource");
+    EXPECT_EQ(section.mFilter, "Attach/foo.txt");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Override);
     EXPECT_EQ(">TestSource@Attach/foo.txt", section.ToString());
 
     section = Section("TestSource@");
-    EXPECT_EQ(section.Name, "TestSource");
-    EXPECT_EQ(section.Filter, "");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Like);
+    EXPECT_EQ(section.mName, "TestSource");
+    EXPECT_EQ(section.mFilter, "");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Like);
     EXPECT_EQ("TestSource", section.ToString());
 
     section = Section(">TestSource@");
-    EXPECT_EQ(section.Name, "TestSource");
-    EXPECT_EQ(section.Filter, "");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Like);
+    EXPECT_EQ(section.mName, "TestSource");
+    EXPECT_EQ(section.mFilter, "");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Like);
     EXPECT_EQ("TestSource", section.ToString());
 
     section = Section("TestSource");
-    EXPECT_EQ(section.Name, "TestSource");
-    EXPECT_EQ(section.Filter, "");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Like);
+    EXPECT_EQ(section.mName, "TestSource");
+    EXPECT_EQ(section.mFilter, "");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Like);
     EXPECT_EQ("TestSource", section.ToString());
 
     section = Section(">TestSource");
-    EXPECT_EQ(section.Name, "TestSource");
-    EXPECT_EQ(section.Filter, "");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Like);
+    EXPECT_EQ(section.mName, "TestSource");
+    EXPECT_EQ(section.mFilter, "");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Like);
     EXPECT_EQ("TestSource", section.ToString());
 
     section = Section("@TestSource");
-    EXPECT_EQ(section.Name, "");
-    EXPECT_EQ(section.Filter, "");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Like);
+    EXPECT_EQ(section.mName, "");
+    EXPECT_EQ(section.mFilter, "");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Like);
     EXPECT_EQ("", section.ToString());
 
     section = Section(">@TestSource");
-    EXPECT_EQ(section.Name, "");
-    EXPECT_EQ(section.Filter, "");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Like);
+    EXPECT_EQ(section.mName, "");
+    EXPECT_EQ(section.mFilter, "");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Like);
     EXPECT_EQ("", section.ToString());
 
     section = Section("");
-    EXPECT_EQ(section.Name, "");
-    EXPECT_EQ(section.Filter, "");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Like);
+    EXPECT_EQ(section.mName, "");
+    EXPECT_EQ(section.mFilter, "");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Like);
     EXPECT_EQ("", section.ToString());
 
     section = Section(">");
-    EXPECT_EQ(section.Name, "");
-    EXPECT_EQ(section.Filter, "");
-    EXPECT_TRUE(section.Match == Section::FilterMatch::Like);
+    EXPECT_EQ(section.mName, "");
+    EXPECT_EQ(section.mFilter, "");
+    EXPECT_TRUE(section.mMatch == Section::FilterMatch::Like);
     EXPECT_EQ("", section.ToString());
 
     Section initialSection = Section(">TestSource@Attach/foo.txt");
@@ -189,8 +189,8 @@ TEST_F(VTS, TransportSystem)
     const Section blobFile("SourceDocs@Attach/foo.txt");
     const Section sourceSection("SourceDocs@Attach");
     const Section targetSection("TargetDocs@Clones");
-    const std::string flatCopy = targetSection.Filter + "/foo.txt";
-    const std::string exactCopy = targetSection.Filter + "/" + blobFile.Filter;
+    const std::string flatCopy = targetSection.mFilter + "/foo.txt";
+    const std::string exactCopy = targetSection.mFilter + "/" + blobFile.mFilter;
     const std::string message = "Hello World";
     io::Tag newTag;
     io::Tag flatTag, exactTag;
@@ -261,10 +261,10 @@ TEST_F(VTS, TransportSystem)
     {
         metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 3");
 
-        io::BLobLoader<TestAsset> flatLoader(vts, Section(targetSection.Name + "@" + flatCopy));
+        io::BLobLoader<TestAsset> flatLoader(vts, Section(targetSection.mName + "@" + flatCopy));
         EXPECT_TRUE(!flatLoader.Assets().empty() && (*flatLoader.Assets().begin())->mTag.mGuid == flatTag.mGuid);
 
-        io::BLobLoader<TestAsset> exactLoader(vts, Section(targetSection.Name + "@" + exactCopy));
+        io::BLobLoader<TestAsset> exactLoader(vts, Section(targetSection.mName + "@" + exactCopy));
         EXPECT_TRUE(exactLoader.Assets().empty() == false && (*exactLoader.Assets().begin())->mTag.mGuid == exactTag.mGuid);
 
         EXPECT_TRUE(vts.DeleteBlob({ sourceSection, targetSection }));

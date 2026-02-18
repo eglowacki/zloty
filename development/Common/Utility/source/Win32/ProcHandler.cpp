@@ -8,6 +8,8 @@
 
 #include <shellscalingapi.h>
 
+#include "App/WindowApplication.h"
+
 
 namespace
 {
@@ -347,6 +349,9 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
     wc.hInstance = ::GetModuleHandle(nullptr);
     wc.hCursor = ::LoadCursor(nullptr, IDC_ARROW);
     wc.lpszClassName = WinName;
+
+    wc.hIcon = LoadIcon(::GetModuleHandle(nullptr), MAKEINTRESOURCE(WindowApplication::IconId)); // Large icon
+    wc.hIconSm = LoadIcon(::GetModuleHandle(nullptr), MAKEINTRESOURCE(WindowApplication::IconId)); // Small icon
 
     const auto result = ::RegisterClassEx(&wc) != 0;
     error_handlers::ThrowOnError(result, "Did not RegisterClassEx");

@@ -4,16 +4,16 @@
 
 //-------------------------------------------------------------------------------------------------
 defensor::game::FrameStateCollectorSystem::FrameStateCollectorSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-    : GameSystem("FrameStateCollectorSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+    : GameSystem("FrameStateCollectorSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet)
     , mCurrentFrameState(messaging.CreatePayload(/*sizeof(EntityState)*/))
 {
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::game::FrameStateCollectorSystem::OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, comp::LocationComponent3* locationComponent)
+void defensor::game::FrameStateCollectorSystem::OnUpdate(comp::Id_t id, const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/,
+                                                         const comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent)
 {
-    gameClock; channel; locationComponent;
     constexpr size_t entitySize = sizeof(render::EntityState);
 
     if (id == comp::END_ID_MARKER)
@@ -33,18 +33,17 @@ void defensor::game::FrameStateCollectorSystem::OnUpdate(yaget::comp::Id_t id, c
         mCurrentFrameState->AssureWriteSize(entitySize);
         const auto location = locationComponent->Matrix();
 
-        render::EntityState entityState{ comp::StripQualifiers(id) };
+        YAGET_ASSERT(comp::IsIdPersistent(id), "We only support Persistent id's!!!");
+        render::EntityState entityState{ .mId = comp::StripQualifiers(id) };
+        math3d::GetMatrixAsFloats(location, entityState.mMatrix);
 
-        const auto kMatrixSize = 4;
-        for (auto r = 0; r < kMatrixSize; ++r)
+        if (!materialComponent->mAssetTag.IsValid())
         {
-            for (auto c = 0; c < kMatrixSize; ++c)
-            {
-                entityState.mMatrix[r * kMatrixSize + c] = location(r, c);
-            }
+            materialComponent->mAssetTag = mApp.VTS().GetTag(materialComponent->GetValue<comp::db_material::Section>());
         }
 
+        constexpr auto guidSize = sizeof(Guid::DataBuffer);
+        memcpy(entityState.mAssetGuid, materialComponent->mAssetTag.mGuid.bytes().data(), guidSize);
         mCurrentFrameState->WriteDataChunk(&entityState, sizeof(entityState));
     }
 }
-

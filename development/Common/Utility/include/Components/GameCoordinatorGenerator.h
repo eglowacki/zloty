@@ -206,18 +206,18 @@ namespace yaget::comp::db
 
             auto lines = GenerateSystemsCoordinator2<T, Strings>([](auto results, auto tableName, auto columnNames, auto typeNames)
             {
-                std::string logLine = fmt::format("====: '{}'\n\t{} id", tableName, ResolveName<comp::Id_t>());
+                std::string logLine = fmt::format("====: '{}'\n\t\t\t{} id", tableName, ResolveName<comp::Id_t>());
 
                 auto cn_it = columnNames.begin();
                 auto tn_it = typeNames.begin();
                 for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
                 {
-                    logLine += fmt::format(",\n\t '{}' {}", *tn_it, *cn_it);
+                    logLine += fmt::format(",\n\t\t\t'{}' {}", *tn_it, *cn_it);
                 }
 
                 if (!columnNames.empty())
                 {
-                    logLine += "\n";
+                    //logLine += "\n";
                 }
             
                 results.emplace_back(logLine);
@@ -227,7 +227,7 @@ namespace yaget::comp::db
 
             auto systemNames = fmt::format("=== Game System Hierarchy:\n\tTop Coordinator: '{}' with registered systems:\n", ResolveName<T>());
             systemNames += "\t\t" + conv::Combine(GetPolicyRowNames<typename T::Systems>(), "\n\t\t");
-            //systemNames += conv::Combine(lines, nullptr);//"\n\t");
+            systemNames += "\n\tOperating on components:\n\t\t" + conv::Combine(lines, "\n\t\t");
 
             return systemNames;
 

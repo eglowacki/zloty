@@ -96,6 +96,9 @@
     <Filter Include="Debugging Files\Magic Enum Files">
       <UniqueIdentifier>{9fafe32b-33bb-4254-9c47-0e01dbc60fc8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Script Files">
+      <UniqueIdentifier>{e50d528c-d573-4027-b4e2-d17040512fb3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
@@ -331,6 +334,9 @@
     </ClCompile>
     <ClCompile Include="..\source\Parsers\DependencyGraph.cpp">
       <Filter>Parsers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\MaterialComponent.cpp">
+      <Filter>Component Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -691,6 +697,12 @@
     </ClInclude>
     <ClInclude Include="..\include\magic_enum\magic_enum_utility.hpp">
       <Filter>Debugging Files\Magic Enum Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Script\luacpp.h">
+      <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\MaterialComponent.h">
+      <Filter>Component Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

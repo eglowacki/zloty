@@ -381,17 +381,17 @@ size_t yaget::io::VirtualTransportSystem::GetNumTags(const Sections& sections) c
     {
         for (const auto& section : sections)
         {
-            std::string operation = section.FilterMatchCh[static_cast<int>(section.Match)];
-            std::string command = fmt::format("SELECT Path FROM Sections WHERE Name = '{}'", section.Name);
+            std::string operation = section.FilterMatchCh[static_cast<int>(section.mMatch)];
+            std::string command = fmt::format("SELECT Path FROM Sections WHERE Name = '{}'", section.mName);
             Strings sectionPath = GetCell<Strings>(dHandle->DB(), command);
             if (!sectionPath.empty())
             {
                 for (auto it = sectionPath.rbegin(); it != sectionPath.rend(); ++it)
                 {
-                    std::string vtsName = *it + "/" + section.Filter;
-                    command = io::db::TagRecordQuery(Section(operation + section.Name + "@" + vtsName), "COUNT(*)");
+                    std::string vtsName = *it + "/" + section.mFilter;
+                    command = io::db::TagRecordQuery(Section(operation + section.mName + "@" + vtsName), "COUNT(*)");
                     size_t nextResults = GetCell<size_t>(dHandle->DB(), command);
-                    if (section.Match == Section::FilterMatch::Override)
+                    if (section.mMatch == Section::FilterMatch::Override)
                     {
                         if (nextResults == 1)
                         {
@@ -418,7 +418,7 @@ bool yaget::io::VirtualTransportSystem::IsSectionValid(const Sections& sections)
     {
         for (const auto& section : sections)
         {
-            std::string query = fmt::format("SELECT Name FROM Sections WHERE Name = '{}'", section.Name);
+            std::string query = fmt::format("SELECT Name FROM Sections WHERE Name = '{}'", section.mName);
             std::string sectionName = GetCell<std::string>(dHandle->DB(), query);
             if (sectionName.empty())
             {
@@ -439,9 +439,9 @@ std::vector<yaget::io::Tag> yaget::io::VirtualTransportSystem::GetTags(const Sec
     {
         for (const auto& section : sections)
         {
-            std::string operation = section.FilterMatchCh[static_cast<int>(section.Match)];
+            std::string operation = section.FilterMatchCh[static_cast<int>(section.mMatch)];
 
-            std::string query = fmt::format("SELECT Path FROM Sections WHERE Name = '{}'", section.Name);
+            std::string query = fmt::format("SELECT Path FROM Sections WHERE Name = '{}'", section.mName);
             Strings sectionPath = GetCell<Strings>(dHandle->DB(), query);
             if (!sectionPath.empty())
             {
@@ -449,14 +449,14 @@ std::vector<yaget::io::Tag> yaget::io::VirtualTransportSystem::GetTags(const Sec
                 {
                     using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
 
-                    std::string vtsName = *it + "/" + section.Filter;
-                    query = io::db::TagRecordQuery(Section(operation + section.Name + "@" + vtsName));
+                    std::string vtsName = *it + "/" + section.mFilter;
+                    query = io::db::TagRecordQuery(Section(operation + section.mName + "@" + vtsName));
                     std::vector<io::Tag> nextResults = dHandle->DB().GetRowsTuple<io::Tag, TagRecordTuple>(query, [](const TagRecordTuple& record)
                     {
                         return io::Tag{std::get<1>(record), std::get<0>(record), std::get<2>(record), std::get<3>(record) };
                     });
 
-                    if (section.Match == Section::FilterMatch::Override)
+                    if (section.mMatch == Section::FilterMatch::Override)
                     {
                         if (nextResults.size() == 1)
                         {
@@ -516,7 +516,7 @@ yaget::io::Tag yaget::io::VirtualTransportSystem::GenerateTag(const Section& sec
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
         SQLite& database = databaseHandle->DB();
-        std::string command = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly FROM Sections WHERE Name = '{}'", section.Name);
+        std::string command = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly FROM Sections WHERE Name = '{}'", section.mName);
 
         bool result = true;
         TargetSection targetSection = database.GetRowTuple<TargetSection>(command, &result);
@@ -526,7 +526,7 @@ yaget::io::Tag yaget::io::VirtualTransportSystem::GenerateTag(const Section& sec
             return {};
         }
 
-        fs::path filePath = *std::get<1>(targetSection).begin() + "/" + section.Filter;
+        fs::path filePath = *std::get<1>(targetSection).begin() + "/" + section.mFilter;
 
         newTag.mName = filePath.filename().stem().string();
         newTag.mVTSName = filePath.generic_string();
@@ -547,7 +547,7 @@ yaget::io::Tag yaget::io::VirtualTransportSystem::GenerateTag(const Section& sec
                 newTag.mVTSName = vtsNamePath.replace_extension(extPath).generic_string();
             }
         }
-        newTag.mSectionName = section.Name;
+        newTag.mSectionName = section.mName;
 
         command = fmt::format("SELECT Guid FROM Deleted WHERE VTS = '{}';", newTag.mVTSName);
         Guid recoveredGuid = GetCell<Guid>(database, command);
@@ -609,7 +609,7 @@ size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>
                 // asset already exist, return this
                 loadedAssets.push_back(asset);
             }
-            else
+            else if (tag.IsValid())
             {
                 auto converter = [this, tag, blobAssetCallback, tagsCounter = tagsCounter](auto&& param) 
                 {
@@ -618,6 +618,13 @@ size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>
 
                 fileNames.push_back(util::ExpendEnv(tag.mVTSName, nullptr));
                 convertors.push_back(converter);
+            }
+            else
+            {
+                if (tagsCounter)
+                {
+                    (void)(*tagsCounter)--;
+                }
             }
         }
 

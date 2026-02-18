@@ -15,6 +15,8 @@
 
 #include "Render/RenderCore.h"
 #include "Render/Cache/CacheWatcher.h"
+#include "Render/Pipeline/RenderShaders.h"
+
 
 namespace yaget
 {
@@ -32,9 +34,10 @@ namespace defensor::render
     class RenderSignatures : public yaget::render::CacheWatcher<yaget::render::ComPtr<ID3D12RootSignature>>
     {
     public:
-        RenderSignatures(ID3D12Device* device, io::VirtualTransportSystem& vts, DependencyGraph& dependencyGraph);
+        RenderSignatures(ID3D12Device* device, io::VirtualTransportSystem& vts);
         ~RenderSignatures();
 
+        ID3D12RootSignature* GetSignature(const yaget::io::Tag& tag, const yaget::render::RenderShaders::RootDescResult& rootDescResult);
         ID3D12RootSignature* GetSignature(const yaget::io::Tag& tag);
 
     private:

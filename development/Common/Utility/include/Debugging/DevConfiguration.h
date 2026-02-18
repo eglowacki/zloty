@@ -179,6 +179,13 @@ namespace yaget
             };
             Graphics mGraphics;
 
+            struct DataLoaders
+            {
+                bool mSkipDependencyGraph = false;
+                bool mClearCache = false;
+            };
+            DataLoaders mDataLoaders;
+
             using GuiColors = std::map<std::string, math3d::Color>;
             GuiColors mGuiColors{ 
                 { "SectionText", { math3d::Color{ 0.0f, 0.7f, 1.0f, 1.0f }} },

@@ -14,29 +14,81 @@
 #pragma once
 
 #include "AssetCache.h"
-#include "Parsers/DependencyGraph.h"
 #include "Streams/Buffers.h"
-#include "Streams/Watcher.h"
+#include "VTS/ResolvedAssets.h"
 #include "VTS/VirtualTransportSystem.h"
 
 
-namespace yaget
-{
-    class DependencyGraph;
-}
-
 namespace yaget::render
 {
+    template<typename T>
+    void PopulateMap(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts, T& currentMap)
+    {
+        T newMap = yaget::io::LoadBlob<T>(vts, fileName);
+        if (!newMap.empty() && newMap != currentMap)
+        {
+            currentMap = newMap;
+        }
+    }
+
+    template<typename T>
+    void SaveMap(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts, T& currentMap)
+    {
+        using namespace yaget;
+
+        nlohmann::json jsonBlock = currentMap;
+        auto textBlock = json::PrettyPrint(jsonBlock);
+        io::Buffer buffer = io::CreateBuffer(textBlock);
+        if (auto saveFileTag = vts.GetTag(fileName); saveFileTag.IsValid())
+        {
+            auto oldMap = io::LoadBlob<T>(vts, saveFileTag);
+            if (oldMap.empty() || oldMap != currentMap)
+            {
+                io::SingleBLobLoader<io::JsonAsset> cacheLoader(vts, saveFileTag);
+                auto asset = cacheLoader.GetAsset();
+                asset->mBuffer = buffer;
+                vts.UpdateAssetData(asset, io::VirtualTransportSystem::Request::UpdateOnly);
+            }
+        }
+        else
+        {
+            auto newTag = vts.GenerateTag(fileName);
+            std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::JsonAsset>(buffer, newTag, vts);
+            vts.UpdateAssetData(newAsset, io::VirtualTransportSystem::Request::Add);
+        }
+    }
+
     //-------------------------------------------------------------------------------------------------
     template <typename A>
     class CacheWatcher
     {
     public:
-        CacheWatcher(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, DependencyGraph& dependencyGraph)
+        CacheWatcher(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
             : mVTS(vts)
             , mCache(mVTS, fileName)
-            , mDependencyGraph(dependencyGraph)
         {
+        }
+        ~CacheWatcher() = default;
+
+        bool IsAsset(const io::Tag& tag) const
+        {
+            std::lock_guard mutexLocker(mMutex);
+            return mAssets.contains(tag);
+        }
+
+        bool IsCached(const io::Tag& tag) const
+        {
+            std::lock_guard mutexLocker(mMutex);
+            return mCache.IsCachedAsset(tag);
+        }
+
+        void ClearCache(const io::Tag& tag)
+        {
+            std::lock_guard mutexLocker(mMutex);
+
+            mVTS.ClearAsset(tag);
+            mCache.ClearCachedAsset(tag);
+            mAssets.erase(tag);
         }
 
     protected:
@@ -63,8 +115,6 @@ namespace yaget::render
 
         A GetAsset(const io::Tag& tag)
         {
-            AssureTagWatch(tag);
-
             if (auto it = mAssets.find(tag); it != mAssets.end())
             {
                 return it->second;
@@ -73,64 +123,11 @@ namespace yaget::render
             return {};
         }
 
-        void ClearTagWatch(const yaget::io::Tag& tag)
-        {
-            std::lock_guard mutexLocker(mMutex);
-
-            if (mWatchedTags.contains(tag))
-            {
-                mWatchedTags.erase(tag);
-                mWatcher.Remove(tag.Hash());
-            }
-        }
-
         io::VirtualTransportSystem& mVTS;
         yaget::render::AssetCache mCache;
-        io::Watcher mWatcher;
-        std::set<io::Tag> mWatchedTags;
         std::map<io::Tag, A> mAssets;
 
-        std::mutex mMutex;
-
-    private:
-        // will add to watch file changes if the file is not already watched
-        void AssureTagWatch(const yaget::io::Tag& tag)
-        {
-            if (auto node = mDependencyGraph.Find(tag.mGuid, nullptr))
-            {
-                if (node->mDirty)
-                {
-                    node->mDirty = false;
-                    mAssets.erase(tag);
-                    mCache.ClearCachedAsset(tag);
-                    mVTS.ClearAsset(tag);
-                }
-            }
-
-            if (!mWatchedTags.contains(tag))
-            {
-                if (auto shaderFilePath = tag.ResolveVTS(); !shaderFilePath.empty())
-                {
-                    mWatchedTags.insert(tag);
-
-                    mWatcher.Add(tag.Hash(), shaderFilePath, [this, tag]()
-                    {
-                        std::lock_guard mutexLocker(mMutex);
-
-                        std::vector<yaget::DependencyNode*> pathTo;
-                        if (yaget::DependencyNode* shaderNode = mDependencyGraph.Find(tag.mGuid, &pathTo))
-                        {
-                            for (auto node : pathTo)
-                            {
-                                node->mDirty = true;
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        DependencyGraph& mDependencyGraph;
+        mutable std::mutex mMutex;
     };
 
 }

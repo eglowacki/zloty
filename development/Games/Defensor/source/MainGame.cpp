@@ -10,6 +10,9 @@
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 #include "Render/AdapterInfo.h"
+#include "Script/luacpp.h"
+#include "../resource.h"
+#include "Render/Pipeline/RenderShaders.h"
 
 
 namespace yaget::app
@@ -45,17 +48,100 @@ namespace yaget::app
 
 namespace 
 {
-    yaget::io::Tag AttachTransientAsset(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
+    //yaget::io::Tag AttachTransientAsset(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
+    //{
+    //    using namespace yaget;
+
+    //    auto sigSection = render::AssetCache::operator[](assetCacheType);
+    //    auto tag = vts.GenerateTag(sigSection);
+    //    std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>({}, tag, vts);
+    //    vts.AttachTransientBlob(newAsset);
+
+    //    return tag;
+    //}
+
+#if 0
+    static int l_log(lua_State* L) 
     {
-        using namespace yaget;
-
-        auto sigSection = render::AssetCache::operator[](assetCacheType);
-        auto tag = vts.GenerateTag(sigSection);
-        std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>({}, tag, vts);
-        vts.AttachTransientBlob(newAsset);
-
-        return tag;
+        const char* msg = luaL_checkstring(L, 1);
+        YLOG_INFO("DEF", "%s\n", msg);
+        return 0; // Number of results
     }
+#endif
+
+    struct MappingPopulator
+    {
+        std::function<void(const yaget::io::VirtualTransportSystem::Section& sectionName, yaget::io::VirtualTransportSystem& vts)> mPopulator;
+        std::function<void(const yaget::io::VirtualTransportSystem::Section& sectionName, yaget::io::VirtualTransportSystem& vts)> mSaver;
+        std::string mSectionName;
+    };
+
+    std::vector<MappingPopulator> MappingPopulators = 
+    {
+        {&yaget::render::AssetCache::PopulateTypeToSection, &yaget::render::AssetCache::SaveTypeToSection, "Manifest@TypeToSection"},
+        {&yaget::render::RenderShaders::PopulateShaderMappings, &yaget::render::RenderShaders::SaveShaderMappings, "Manifest@ShaderCompileOptions"},
+    };
+
+    struct Mappers
+    {
+        Mappers(yaget::io::VirtualTransportSystem& vts)
+            : mVTS(vts)
+        {
+            //AttachTransientAsset(yaget::render::BasicSignature, mVTS);
+            //AttachTransientAsset(yaget::render::BasicPipeline, mVTS);
+
+            for (const auto mapping : MappingPopulators)
+            {
+                mapping.mPopulator(mapping.mSectionName, mVTS);
+            }
+        }
+
+        ~Mappers()
+        {
+            for (const auto mapping : MappingPopulators)
+            {
+                yaget::io::VirtualTransportSystem::Section populatorName = mapping.mSectionName;
+                yaget::io::VirtualTransportSystem::Section saverName = populatorName.mName + "Write@" + populatorName.mFilter;
+                mapping.mSaver(saverName, mVTS);
+            }
+        }
+
+        yaget::io::VirtualTransportSystem& mVTS;
+    };
+
+
+    class Foo : public yaget::NoCopy
+    {
+    public:
+        //// Explicitly delete the copy constructor
+        //Foo(const Foo&) = default;
+
+        //// Explicitly delete the copy assignment operator
+        //Foo& operator=(const Foo&) = default;
+
+        //Foo(Foo&&) = delete;
+        //Foo& operator=(Foo&&) = delete;
+
+        //// Destructor (optional, can be defaulted or defined)
+        //~Foo() = default;
+
+
+        // Other constructors and methods can be defined as needed
+        Foo()
+            : z(42)
+        {
+            
+        }
+
+        void Print() { printf("Hello World!"); };
+
+    protected:
+
+    private:
+
+        int z;
+    };
+
     
 }
 
@@ -64,12 +150,36 @@ int defensor::Run(const yaget::args::Options& options)
 {
     using namespace yaget;
 
+    Foo foo;
+    foo.Print();
+
+    Foo foo2 = std::move(foo);
+    foo2.Print();
+
+
+#if 0
+    lua_State* L = luaL_newstate(); // Create new Lua state
+    luaL_openlibs(L);               // Load Lua libraries
+
+    lua_pushcfunction(L, l_log);
+    lua_setglobal(L, "log");
+
+    // Execute Lua script
+    if (luaL_dostring(L, "log('Hello from Lua!')")) 
+    {
+        printf("Error: %s\n", lua_tostring(L, -1));
+    }
+
+    lua_close(L); // Close Lua state
+#endif
+
     if (options.find<bool>("vts_fix", false))
     {
         yaget::io::diag::VirtualTransportSystem vtsFixer(false, "$(DatabaseFolder)/vts.sqlite");
     }
 
-    const auto msgTextLine = comp::db::GenerateSystemsCoordinator<game::DefensorSystemsCoordinator, comp::db::GenerateCoordinator::Log>();
+    auto msgTextLine = comp::db::GenerateSystemsCoordinator<game::DefensorSystemsCoordinator, comp::db::GenerateCoordinator::Log>() +"\n\t";
+    msgTextLine += comp::db::GenerateSystemsCoordinator<render::DefensorSystemsCoordinator, comp::db::GenerateCoordinator::Log>();
     YLOG_INFO("DEF", msgTextLine.c_str());
 
     const io::VirtualTransportSystem::AssetResolvers resolvers = {
@@ -86,13 +196,13 @@ int defensor::Run(const yaget::args::Options& options)
     const items::Director::RuntimeMode directorMode = options.find<bool>("director_fix", false) ? items::Director::RuntimeMode::Reset : items::Director::RuntimeMode::Default;
     items::DefaultDirector<game::DefensorSystemsCoordinator> director("Director", directorMode);
 
+    yaget::render::DesktopApplication::IconId = IDI_ICON2;
     const auto selectedAdapter = yaget::render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
     yaget::render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
 
     game::Messaging messaging{};
+    Mappers mappers(app.VTS());
 
-    AttachTransientAsset(yaget::render::BasicSignature, app.VTS());
-    AttachTransientAsset(yaget::render::BasicPipeline, app.VTS());
-
-    return comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app);
+    auto returnResult = comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app);
+    return returnResult;
 }

@@ -1,0 +1,44 @@
+[
+    [
+        "Vertex",
+        {
+            "EntryPoint": "VSMain",
+            "Target": "vs_6_5"
+        }
+    ],
+    [
+        "Pixel",
+        {
+            "EntryPoint": "PSMain",
+            "Target": "ps_6_5"
+        }
+    ],
+    [
+        "Geometry",
+        {
+            "EntryPoint": "GSMain",
+            "Target": "gs_6_5"
+        }
+    ],
+    [
+        "Compute",
+        {
+            "EntryPoint": "CSMain",
+            "Target": "cs_6_5"
+        }
+    ],
+    [
+        "Hull",
+        {
+            "EntryPoint": "HSMain",
+            "Target": "hs_6_5"
+        }
+    ],
+    [
+        "Domain",
+        {
+            "EntryPoint": "DSMain",
+            "Target": "ds_6_5"
+        }
+    ]
+]

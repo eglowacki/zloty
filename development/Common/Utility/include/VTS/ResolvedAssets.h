@@ -153,15 +153,15 @@ namespace yaget::io
     class ImageAsset : public Asset
     {
     public:
-        ImageAsset(const io::Tag& tag, const io::Buffer& buffer, const io::VirtualTransportSystem& vts)
+        ImageAsset(const Tag& tag, const Buffer& buffer, const VirtualTransportSystem& vts)
             : Asset(tag, buffer, vts) 
             , mHeader{ image::Header::PixelType::None, image::Header::DataType::RT }
-            , mPixels(buffer.second ? image::Process(mBuffer, &mHeader) : io::CreateBuffer(0))
+            , mPixels(buffer.second ? image::Process(mBuffer, &mHeader) : CreateBuffer(0))
         {
         }
 
         image::Header mHeader;
-        io::Buffer mPixels;
+        Buffer mPixels;
     };
 
     //-------------------------------------------------------------------------------------------------------------------------------
@@ -169,7 +169,7 @@ namespace yaget::io
     class BinAsset : public Asset
     {
     public:
-        BinAsset(const io::Tag& tag, const io::Buffer& buffer, const io::VirtualTransportSystem& vts)
+        BinAsset(const Tag& tag, const Buffer& buffer, const VirtualTransportSystem& vts)
             : Asset(tag, buffer, vts)
         {}
     };
@@ -178,7 +178,7 @@ namespace yaget::io
     class StringsAsset : public Asset
     {
     public:
-        StringsAsset(const io::Tag& tag, const io::Buffer& buffer, const io::VirtualTransportSystem& vts)
+        StringsAsset(const Tag& tag, const Buffer& buffer, const VirtualTransportSystem& vts)
             : Asset(tag, buffer, vts)
         {
             file::imemstream memStream(BufferPointer(mBuffer), BufferSize(mBuffer));
@@ -201,7 +201,7 @@ namespace yaget::io
     //-------------------------------------------------------------------------------------------------------------------------------
     template<typename T>  //Asset
     requires std::is_base_of_v<Asset, T> && (!std::same_as<Asset, T>)
-    inline std::shared_ptr<Asset> ResolveAsset(const Buffer& dataBuffer, const io::Tag& requestedTag, const io::VirtualTransportSystem& vts)
+    inline std::shared_ptr<Asset> ResolveAsset(const Buffer& dataBuffer, const Tag& requestedTag, const VirtualTransportSystem& vts)
     {
         auto asset = std::make_shared<T>(requestedTag, dataBuffer, vts);
         return asset->IsValid() ? asset : nullptr;
@@ -211,17 +211,24 @@ namespace yaget::io
     // This will load asset (blocking call) and will convert json data to T.
     // It checks for null asset, but it silently ignores.
     template <typename T>
-    T LoadBlob(io::VirtualTransportSystem& vts, const io::VirtualTransportSystem::Section& section)
+    T LoadBlob(VirtualTransportSystem& vts, const VirtualTransportSystem::Section& section)
     {
-        io::SingleBLobLoader<io::JsonAsset> loader(vts, section);
+        SingleBLobLoader<JsonAsset> loader(vts, section);
         
-        T result = loader.GetAsset<T>([](auto asset)
+        T result = loader.GetAsset<T>([&section](auto asset)
         {
             T result{};
             if (asset)
             {
-                const auto& jsonBlock = asset->root;
-                from_json(jsonBlock, result);
+                try
+                {
+                    const auto& jsonBlock = asset->root;
+                    from_json(jsonBlock, result);
+                }
+                catch (nlohmann::json::exception& ex)
+                {
+                    YLOG_ERROR("ASET", "Could not convert json: '%s' to: '%s'. %s", section.ToString().c_str(), meta::type_name_v<T>().c_str(), ex.what());
+                }
             }
 
             return result;
@@ -232,9 +239,17 @@ namespace yaget::io
 
     //-------------------------------------------------------------------------------------------------------------------------------
     // Helper function to just return json object
-    inline std::shared_ptr<io::JsonAsset> LoadJson(io::VirtualTransportSystem& vts, const io::VirtualTransportSystem::Section& section)
+    inline std::shared_ptr<JsonAsset> LoadJson(VirtualTransportSystem& vts, const VirtualTransportSystem::Section& section)
     {
-        io::SingleBLobLoader<io::JsonAsset> loader(vts, section);
+        SingleBLobLoader<JsonAsset> loader(vts, section);
+        return loader.GetAsset();
+    }
+
+    //-------------------------------------------------------------------------------------------------------------------------------
+    // Helper function to just return json object
+    inline std::shared_ptr<JsonAsset> LoadJson(VirtualTransportSystem& vts, const io::Tag& tag)
+    {
+        SingleBLobLoader<JsonAsset> loader(vts, tag);
         return loader.GetAsset();
     }
 

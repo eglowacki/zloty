@@ -21,18 +21,38 @@ namespace DirectX::SimpleMath   // this is aliased as math3d
 {
     using namespace yaget;
 
+    template<typename T>
+    struct LerpTrait
+    {
+        static T lerp(const T& startValue, const T& endValue, float t)
+        {
+            return std::lerp(startValue, endValue, t);
+        }
+    };
+
+    template<>
+    struct LerpTrait<colors::Color>
+    {
+        static colors::Color lerp(const colors::Color& startValue, const colors::Color& endValue, float t)
+        {
+            return colors::Color::Lerp(startValue, endValue, t);
+        }
+    };
+
+
+    template<typename T, typename LT = LerpTrait<T>>
     class Interpolator
     {
     public:
-        Interpolator(const colors::Color& startColor, const colors::Color& endColor)
-            : mStartColor{ startColor }
-            , mEndColor{ endColor }
+        Interpolator(const T& startValue, const T& endValue)
+            : mStartValue{ startValue }
+            , mEndValue{ endValue }
         {
         }
 
-        colors::Color GetColor(const time::GameClock& gameClock)
+        T GetValue(const time::GameClock& gameClock)
         {
-            const colors::Color adjustedColor = colors::Color::Lerp(mStartColor, mEndColor, mCurrentColorT);
+            T adjustedColor = LT::lerp(mStartValue, mEndValue, mCurrentColorT);
             mCurrentColorT += (gameClock.GetDeltaTimeSecond() * mColorTDirection) * 0.75f;
             if (mCurrentColorT > 1.0f)
             {
@@ -47,74 +67,9 @@ namespace DirectX::SimpleMath   // this is aliased as math3d
         }
 
     private:
-        const colors::Color mStartColor = colors::White;
-        const colors::Color mEndColor = colors::Black;
+        const T mStartValue = {};
+        const T mEndValue = {};
         float mCurrentColorT = 0.0f;
         float mColorTDirection = 1.0f;
     };
 }
-
-
-
-
-#if 0
-namespace yaget::math
-{
-    enum class InterpolatorDirection { Up, Down, Both };
-
-    template<typename T, InterpolatorDirection D = InterpolatorDirection::Up>
-    struct Interpolator
-    {
-        Interpolator(T startValue, T endValue)
-            : mStartValue{ startValue }
-            , mEndValue{ endValue }
-            , mCurrentValue{ mStartValue }
-        {}
-
-        const T& Update(float dt)
-        {
-            mCurrentT += dt * mDirection;
-
-            if (D == InterpolatorDirection::Both)
-            {
-                if (mDirection > 0.0f && mCurrentT > 1.0f)
-                {
-                    mDirection = -1.0f;
-                    mCurrentT = 1.0f - (mCurrentT - 1.0f);
-                }
-                else if (mDirection < 0.0f && mCurrentT < 0.0f)
-                {
-                    mDirection = 1.0f;
-                    mCurrentT = mCurrentT * -1.0f;
-                }
-            }
-            mCurrentValue = std::lerp(mStartValue, mEndValue, mCurrentT);
-
-            if (D != InterpolatorDirection::Both)
-            {
-                if (mStartValue <= mEndValue)
-                {
-                    mCurrentValue = std::clamp(mCurrentValue, mStartValue, mEndValue);
-                }
-                else
-                {
-                    mCurrentValue = std::clamp(mCurrentValue, mEndValue, mStartValue);
-                }
-            }
-
-            return mCurrentValue;
-        }
-
-        const T& Value() const { return mCurrentValue; }
-
-    private:
-        const T mStartValue;
-        const T mEndValue;
-        T mCurrentValue;
-        float mCurrentT = D == InterpolatorDirection::Down ? 1.0f : 0.0f;
-        float mDirection = D != InterpolatorDirection::Both ? (D == InterpolatorDirection::Up ? 1.0f : -1.0f) : 1.0f;
-    };
-
-} // namespace yaget::math
-
-#endif // #if 0

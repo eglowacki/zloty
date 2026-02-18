@@ -13,7 +13,8 @@
 //////////////////////////////////////////////////////////////////////
 //! \file
 
-#ifndef SCRIPT_LUA_CPP_H
+#pragma once
+
 #define LUA_CPP_H
 #pragma once
 
@@ -23,7 +24,3 @@ extern "C"
     #include "lualib.h"
     #include "lauxlib.h"
 }
-
-
-#endif // SCRIPT_LUA_CPP_H
-

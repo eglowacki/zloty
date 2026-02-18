@@ -23,13 +23,27 @@ namespace defensor::render
 
     //--------------------------------------------------------------------------
     // used in entity scene composition for renderer. This is filled in
-    // from game thread and comsumed by render thread
+    // from game thread and consumed by render thread
     struct EntityState
     {
-        yaget::comp::Id_t mId = comp::INVALID_ID;
-        float mMatrix[16] = {};
-        io::Tag mAsset;
+        comp::Id_t mId;
+        float mMatrix[16];
+        unsigned char mAssetGuid[16];
     };  
+
+    // NOTE(edgar): This is just a placeholder to show that we can serialize data from game thread into buffer 
+    // and then consume it in render thread. We will need to fill this in with actual data and logic to serialize/deserialize
+    inline size_t Serialize(const EntityState& entityState, io::BufferView& buffer)
+    {
+        memcpy(io::cast_data<char>(buffer), &entityState.mId, sizeof(entityState.mId));
+        entityState;
+        buffer;
+
+        int z =0;
+        z;
+
+        return 0;
+    }
     //--------------------------------------------------------------------------
 
 }

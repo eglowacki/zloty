@@ -1,0 +1,18 @@
+[
+    [
+        "VertexPosition | VertexColor",
+        "VeretexShaders@Basic"
+    ],
+    [
+        "PixelColor",
+        "PixelShaders@Basic"
+    ],
+    [
+        "VertexPosition | VertexColor | PixelColor",
+        "Transient@BasicSig"
+    ],
+    [
+        "VertexPosition | VertexColor | PixelColor | RasterizerStateCounterClockwise | BlendModeOpaque | DepthStateNone | TopologyStateTriangle | RTVFormatRGBA8",
+        "Transient@BasicPipe"
+    ]
+]

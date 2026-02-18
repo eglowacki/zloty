@@ -150,8 +150,8 @@
     <ClCompile Include="source\MainGame.cpp" />
     <ClCompile Include="source\Renders\FrameStateGatherSystem.cpp" />
     <ClCompile Include="source\Renders\RenderComponent.cpp" />
-    <ClCompile Include="source\Renders\RenderPipeline.cpp" />
-    <ClCompile Include="source\Renders\RenderShader.cpp" />
+    <ClCompile Include="source\Renders\RenderMaterial.cpp" />
+    <ClCompile Include="source\Renders\RenderPipelines.cpp" />
     <ClCompile Include="source\Renders\RenderSignatures.cpp" />
     <ClCompile Include="source\Renders\RenderSystem.cpp" />
     <ClCompile Include="source\Renders\SceneComponent.cpp" />
@@ -185,13 +185,6 @@
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Pixel</DestinationFolders>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Shaders\Vertex\Basic.vs">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="data\Manifest\RenderDependencies.json">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
@@ -199,9 +192,38 @@
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Manifest</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Manifest</DestinationFolders>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\TypeToSection.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Manifest</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Manifest</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\ShaderCompileOptions.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Manifest</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Manifest</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\BasicMaterial.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Materials</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Materials</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\Basic.vs">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+    </CopyFileToFolders>
     <None Include="Defensor.deployment" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="source\Components\InputComponent.h" />
     <ClInclude Include="source\Components\LocationComponent.h" />
     <ClInclude Include="source\Components\MenuComponent.h" />
@@ -214,8 +236,8 @@
     <ClInclude Include="source\MainGame.h" />
     <ClInclude Include="source\Renders\FrameStateGatherSystem.h" />
     <ClInclude Include="source\Renders\RenderComponent.h" />
-    <ClInclude Include="source\Renders\RenderPipeline.h" />
-    <ClInclude Include="source\Renders\RenderShader.h" />
+    <ClInclude Include="source\Renders\RenderMaterial.h" />
+    <ClInclude Include="source\Renders\RenderPipelines.h" />
     <ClInclude Include="source\Renders\RenderSignatures.h" />
     <ClInclude Include="source\Renders\RenderSystem.h" />
     <ClInclude Include="source\Renders\SceneComponent.h" />
@@ -230,6 +252,12 @@
     <ProjectReference Include="..\..\Common\Render\build\YagetRender12.vcxproj">
       <Project>{62c78a26-d56a-46c0-b205-8e1456749b02}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Defensor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\Images\Icons\MainApp.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -56,6 +56,7 @@ namespace yaget::json
     {
         if (const auto it = block.find(key); it != block.end())
         {
+            //if (it->is_number_float())
             return it->get<T>();
         }
 

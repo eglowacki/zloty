@@ -16,25 +16,27 @@
 
 #include "HashUtilities.h"
 #include "Streams/Guid.h"
+#include "Streams/Watcher.h"
 #include "VTS/VirtualTransportSystem.h"
 
 
 namespace yaget
 {
-    struct DependencyNode 
+    struct DependencyNode
     {
         using Section = io::VirtualTransportSystem::Section;
 
         DependencyNode() = default;
         DependencyNode(const Guid& guid);
         void Add(const Guid& guid);
-        DependencyNode* FindNode(const Guid& guid, std::vector<DependencyNode*> *pathTo) const;
+        DependencyNode *FindNode(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
 
         bool IsSingleDepth() const;
-
         void ResolveNames(const io::VirtualTransportSystem& vts);
-
         inline bool operator<(const DependencyNode& other) const { return mGuid < other.mGuid; }
+
+        // is this or any descendant dirty
+        bool IsBranchDirty() const;
 
         Guid mGuid;
         std::string mName;
@@ -42,23 +44,32 @@ namespace yaget
         std::vector<DependencyNode> mDependencies;
     };
 
+
     class DependencyGraph
     {
     public:
         using Section = io::VirtualTransportSystem::Section;
 
-        DependencyGraph(io::VirtualTransportSystem& vts, const Section& fileName);
+        using DirtyCallback = std::function<void(const Guid& guid)>;
+        DependencyGraph(io::VirtualTransportSystem& vts, const Section& fileName, DirtyCallback dirtyCallback);
         ~DependencyGraph();
 
         void Add(const Guid& parentGuid, const Guid& childGuid);
 
-        DependencyNode* Find(const Guid& guid, std::vector<DependencyNode*> *pathTo) const;
+        DependencyNode *Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
 
     private:
+        void AddWatchFiles(const Guid& guid);
+        void RemoveWatchFiles(const Guid& guid);
+
         io::VirtualTransportSystem& mVTS;
         Section mSection;
         std::map<Guid, DependencyNode> mNodes;
         size_t mNodesHash{};
+
+        io::Watcher mWatcher;
+        std::set<Guid> mWatchedTags;
+        DirtyCallback mDirtyCallback;
     };
 
 }
@@ -71,7 +82,7 @@ struct std::hash<yaget::DependencyNode>
     typedef yaget::DependencyNode argument_type;
     typedef std::size_t result_type;
 
-    result_type operator()(argument_type const &dependencyNode) const
+    result_type operator()(argument_type const& dependencyNode) const noexcept
     {
         std::hash<yaget::Guid> hasherGuid;
         std::hash<std::string> hasherName;

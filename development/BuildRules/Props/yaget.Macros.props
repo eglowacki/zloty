@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets">
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
-    <YAGET_ROOT_FOLDER>c:\EdgarDev\yaget\zloty\development</YAGET_ROOT_FOLDER>
+    <YAGET_ROOT_FOLDER>c:\Development\zloty\development</YAGET_ROOT_FOLDER>
     <YAGET_RUN_FOLDER>$(YAGET_ROOT_FOLDER)\bin\$(ProjectName)\$(Platform).$(Configuration)\</YAGET_RUN_FOLDER>
     <YAGET_DEPENDENCIES_FOLDER>$(YAGET_ROOT_FOLDER)\Dependencies</YAGET_DEPENDENCIES_FOLDER>
   </PropertyGroup>

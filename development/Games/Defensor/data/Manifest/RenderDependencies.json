@@ -1,10 +1,19 @@
 {
-    "Transient@BasicPipe": {
+    "Materials@BasicMaterial": {
         "dependencies": [
-            "Transient@BasicSig",
-            "VeretexShaders@Basic",
-            "PixelShaders@Basic"
+            {
+                "dependencies": [
+                    {
+                        "dependencies": [
+                            "VeretexShaders@Basic",
+                            "PixelShaders@Basic"
+                        ],
+                        "name": "Transient@BasicSig"
+                    }
+                ],
+                "name": "Transient@BasicPipe"
+            }
         ],
-        "name": "Transient@BasicPipe"
+        "name": "Materials@BasicMaterial"
     }
 }

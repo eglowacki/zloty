@@ -17,31 +17,50 @@
 #include "Math/Interpolators.h"
 #include "Parsers/DependencyGraph.h"
 #include "Render/DesktopApplication.h"
-#include "RenderPipeline.h"
+#include "RenderPipelines.h"
 #include "Renders/RenderSignatures.h"
-#include "RenderShader.h"
+#include "Render/Pipeline/RenderShaders.h"
+#include "Render/Pipeline/RenderMaterials.h"
 
 
 namespace defensor::render
 {
-    class RenderSystem : public yaget::render::RenderSystemApp<RenderCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, RenderComponent*, SceneComponent*>
+    class RenderSystem : public yaget::render::RenderSystemApp<RenderCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, SceneComponent*>
     {
     public:
         RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet);
 
     private:
-        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, RenderComponent* renderComponent, SceneComponent* sceneComponent);
+        using AssetCacheType = yaget::render::AssetCacheType;
+
+        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent);
         void PreloadAssets();
+        void RebindMaterial(const io::Tag& tag, yaget::render::AssetTypes material);
+        void HotRebindMaterial(const Guid& guid);
+
+        // This structure is used to keep track of what assets are used for rendering particular entity. 
+        // It is used to track changes in assets and update them accordingly.
+        struct RenderState
+        {
+            Guid mSignatureGuid;
+            Guid mPipelineGuid;
+            Guid mVertexShaderGuid;
+            Guid mPixelShaderGuid;
+        };
 
         mt::JobPool mAssetPoolThread;
-        math3d::Interpolator mColorInterpolator;
+        math3d::Interpolator<colors::Color> mColorInterpolator;
+        math3d::Interpolator<float> mMatrixInterpolator;
 
         DependencyGraph mDependencyGraph;
         RenderSignatures mRenderSignatures;
-        RenderPipeline mRenderPipeline;
-        RenderShader mRenderShader;
+        RenderPipelines mRenderPipelines;
+        yaget::render::RenderShaders mRenderShaders;
+        yaget::render::RenderMaterials mRenderMaterials;
 
         std::atomic_bool mAssetsPreloaded{false};
+
+        RenderState mCurrentRenderState;
     };
 
 }

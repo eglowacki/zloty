@@ -156,7 +156,7 @@ yaget::io::Tag yaget::io::tool::VirtualTransportSystem::CopyTag(const io::Tag& s
     using TargetSection = std::tuple<std::string /*Name*/, Strings /*Path*/, Strings /*Filters*/, std::string /*Converters*/, bool /*ReadOnly*/>;
 
     std::string commandSourceSection = fmt::format("SELECT Sections.Name, Sections.Path FROM Tags INNER JOIN Sections ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", sourceTag.mGuid.str());
-    std::string commandTargetSection = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly FROM Sections WHERE Name = '{}'", toSection.Name);
+    std::string commandTargetSection = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly FROM Sections WHERE Name = '{}'", toSection.mName);
 
     SourceSection sourceSection{};
     TargetSection targetSection{};
@@ -175,7 +175,7 @@ yaget::io::Tag yaget::io::tool::VirtualTransportSystem::CopyTag(const io::Tag& s
         targetSection = database.GetRowTuple<TargetSection>(commandTargetSection, &result);
         if (!result)
         {
-            YLOG_ERROR("VTS", "Did not find target '%s' section. %s", toSection.Name.c_str(), ParseErrors(database).c_str());
+            YLOG_ERROR("VTS", "Did not find target '%s' section. %s", toSection.mName.c_str(), ParseErrors(database).c_str());
             return {};
         }
     }
@@ -191,7 +191,7 @@ yaget::io::Tag yaget::io::tool::VirtualTransportSystem::CopyTag(const io::Tag& s
             {
                 std::string suffixFile = flat == Options::Flat ? fs::path(sourceTag.mVTSName).filename().string() : sourceTag.mVTSName.substr(path.size() + 1);
                 suffixFile = fs::path(suffixFile).replace_extension(targetExtension).generic_string();
-                Section testSection(toSection.Name + "@" + toSection.Filter + "/" + suffixFile);
+                Section testSection(toSection.mName + "@" + toSection.mFilter + "/" + suffixFile);
                 newTag = GenerateTag(testSection);
 
                 break;
@@ -200,7 +200,7 @@ yaget::io::Tag yaget::io::tool::VirtualTransportSystem::CopyTag(const io::Tag& s
     }
     else
     {
-        YLOG_WARNING("VTS", "Requested tag copy: '%s' to section '%s' can not be done due to read only flag.", sourceTag.mVTSName.c_str(), toSection.Name.c_str());
+        YLOG_WARNING("VTS", "Requested tag copy: '%s' to section '%s' can not be done due to read only flag.", sourceTag.mVTSName.c_str(), toSection.mName.c_str());
     }
 
     return newTag;

@@ -91,6 +91,9 @@ namespace yaget::io::file
     FileOpResult SetFileAtrribute(const std::string& fileName, Attributes attribute);
     bool IsFileAtrribute(const std::string& fileName, Attributes attribute);
 
+    enum class FileDateType { LastWriteTime, CreationTime };
+    std::filesystem::file_time_type GetFileDate(const std::string& fileName, FileDateType fileDateType = FileDateType::LastWriteTime);
+
     //! Makes sure that all folders exist on the drive
     //! pathName is valid path name. If the final component of the path is a directory, not a file name, 
     //! the string must end with a backslash character.

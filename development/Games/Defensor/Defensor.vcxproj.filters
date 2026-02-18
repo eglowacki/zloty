@@ -29,6 +29,9 @@
     <Filter Include="Data Files\Manifest">
       <UniqueIdentifier>{ea385ff2-e892-4d46-b391-7d82459be62b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\Materials">
+      <UniqueIdentifier>{44bb02cd-2f1d-483a-86a2-3e2f19959e77}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -91,10 +94,10 @@
     <ClCompile Include="source\Renders\RenderComponent.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\Renders\RenderPipeline.cpp">
+    <ClCompile Include="source\Renders\RenderPipelines.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\Renders\RenderShader.cpp">
+    <ClCompile Include="source\Renders\RenderMaterial.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,11 +119,20 @@
     <CopyFileToFolders Include="data\Shaders\Pixel\Basic.ps">
       <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Shaders\Vertex\Basic.vs">
-      <Filter>Data Files\Shaders</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="data\Manifest\RenderDependencies.json">
       <Filter>Data Files\Manifest</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\TypeToSection.json">
+      <Filter>Data Files\Manifest</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\ShaderCompileOptions.json">
+      <Filter>Data Files\Manifest</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\BasicMaterial.json">
+      <Filter>Data Files\Materials</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\Basic.vs">
+      <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
@@ -187,11 +199,18 @@
     <ClInclude Include="source\Renders\RenderSignatures.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Renders\RenderPipeline.h">
+    <ClInclude Include="source\Renders\RenderPipelines.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Renders\RenderShader.h">
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="source\Renders\RenderMaterial.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Defensor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\Images\Icons\MainApp.ico" />
   </ItemGroup>
 </Project>

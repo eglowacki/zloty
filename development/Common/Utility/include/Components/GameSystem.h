@@ -18,7 +18,6 @@
 #pragma once
 
 #include "Components/ComponentTypes.h"
-#include "Components/Coordinator.h"
 #include "Metrics/Concurrency.h"
 #include <functional>
 
@@ -74,7 +73,7 @@ namespace yaget::comp::gs
         const CoordinatorSet& GetCS() const { return mCoordinatorSet; }
 
         Messaging& mMessaging;
-
+        Application& mApp;
     private:
         void Update(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const Row& row);
 

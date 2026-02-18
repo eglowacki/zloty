@@ -1,58 +1,137 @@
 #include "Render/Cache/AssetCache.h"
-#include "Render/Platform/ResourceCompiler.h"
-#include <VertexTypes.h>
+#include "Render/Cache/CacheWatcher.h"
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
 
 
 //-------------------------------------------------------------------------------------------------
-std::map<yaget::render::AssetCacheType, yaget::io::VirtualTransportSystem::Section>
-yaget::render::AssetCache::TypeToSection =
+namespace
 {
-    {BasicVertex, yaget::io::VirtualTransportSystem::Section("VeretexShaders@Basic")},
-    {BasicPixel, yaget::io::VirtualTransportSystem::Section("PixelShaders@Basic")},
-    {BasicSignature, yaget::io::VirtualTransportSystem::Section("Transient@BasicSig")},
-    {BasicPipeline, yaget::io::VirtualTransportSystem::Section("Transient@BasicPipe")},
+    constexpr size_t CurrentFileVersion = 1;
+
+    struct YagetFileSignature
+    {
+        const char Signature[4] = { 'G', 'L', 'O', 'W' };
+        size_t Version = 0;
+
+        bool IsValid() const
+        {
+            return std::memcmp(Signature, "GLOW", 4) == 0 && Version <= CurrentFileVersion;
+        }
+    };
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::AssetCache::TypeToSectionMap yaget::render::AssetCache::TypeToSection =
+{
+    {BasicVertex, Section("VeretexShaders@Basic")},
+    {BasicPixel, Section("PixelShaders@Basic")},
+    {BasicSignature, Section("Transient@BasicSig")},
+    {BasicPipeline, Section("Transient@BasicPipe")},
 };
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::io::VirtualTransportSystem::Section yaget::render::AssetCache::operator[](AssetCacheType typeFlag)
+yaget::render::AssetCache::Section yaget::render::AssetCache::operator[](AssetCacheType typeFlag)
 {
     if (auto it = TypeToSection.find(typeFlag); it != TypeToSection.end())
     {
         return it->second;
     }
-    YLOG_ERROR("DEVI", "There is no asset section associated with AssetCacheType: '%d'", typeFlag);
+    YLOG_ERROR("DEVI", "There is no asset section associated with AssetCacheType: '%s'", std::string(internal::CacheTypeToString(typeFlag)).c_str());
     return {};
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
-    : mVTS(vts)
-      , mCacheSection(fileName)
+yaget::render::AssetCacheType yaget::render::AssetCache::operator[](const Section& section)
 {
-    io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
-    if (auto asset = cacheLoader.GetAsset())
-    {
-        io::MessagingBuffer cache;
-        cache.mBuffer = asset->mBuffer;
-        cache.mWriteOffset = io::size_data(asset->mBuffer);
-        auto numElements = *(reinterpret_cast<size_t*>(io::cast_data<char>(cache.mBuffer)));
-        size_t offset = sizeof(numElements);
-        for (size_t i = 0; i < numElements; ++i)
+    auto it = std::ranges::find_if(TypeToSection, [&section](auto element)
         {
-            Guid *guid = reinterpret_cast<Guid*>(io::cast_data<char>(cache.mBuffer) + offset);
-            offset += sizeof(Guid);
-            Location *location = reinterpret_cast<Location*>(io::cast_data<char>(cache.mBuffer) + offset);
-            offset += sizeof(Location);
-            mCacheIndex.insert({*guid, *location});
+            const bool result = section == element.second;
+            return result;
+        });
+
+    return it != TypeToSection.end() ? it->first : AssetCacheType::Empty;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::AssetCache::PopulateTypeToSection(const Section& fileName, io::VirtualTransportSystem& vts)
+{
+    yaget::render::PopulateMap<TypeToSectionMap>(fileName, vts, TypeToSection);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::AssetCache::SaveTypeToSection(const Section& fileName, io::VirtualTransportSystem& vts)
+{
+    SaveMap(fileName, vts, TypeToSection);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section fileName)
+    : mVTS(vts)
+    , mCacheSection(std::move(fileName))
+{
+    const auto& configBlock = dev::CurrentConfiguration().mDataLoaders;
+    if (!configBlock.mClearCache)
+    {
+        const auto cacheFileTag = mVTS.GetTag(mCacheSection);
+        const auto cacheFilePath = cacheFileTag.ResolveVTS();
+        const auto cacheFileTimeStamp = io::file::GetFileDate(cacheFilePath);
+
+        io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
+        if (auto asset = cacheLoader.GetAsset())
+        {
+            io::MessagingBuffer cache;
+            cache.mBuffer = asset->mBuffer;
+            cache.mWriteOffset = io::size_data(asset->mBuffer);
+            size_t offset = 0;
+
+            auto fileSignature = reinterpret_cast<YagetFileSignature*>(io::cast_data<char>(cache.mBuffer) + offset);
+            offset += sizeof(YagetFileSignature);
+            if (!fileSignature->IsValid())
+            {
+                YLOG_ERROR("DEVI", "Unsupported cache '%s' version: '%d'. Expected version is <= '%d'. Cache will be ignored.",
+                    conv::Convertor<Section>::ToString(mCacheSection).c_str(),
+                    fileSignature->Version,
+                    CurrentFileVersion);
+                return;
+            }
+
+            mCacheStatus = fileSignature->Version == CurrentFileVersion ? CacheStatus::Clean : CacheStatus::Dirty;
+            if (fileSignature->Version == 1)
+            {
+                auto numElements = *(reinterpret_cast<size_t*>(io::cast_data<char>(cache.mBuffer) + offset));
+                offset += sizeof(numElements);
+                for (size_t i = 0; i < numElements; ++i)
+                {
+                    auto guid = reinterpret_cast<Guid*>(io::cast_data<char>(cache.mBuffer) + offset);
+                    offset += sizeof(Guid);
+                    auto location = reinterpret_cast<Location*>(io::cast_data<char>(cache.mBuffer) + offset);
+                    offset += sizeof(Location);
+
+                    auto tag = mVTS.FindTag(*guid);
+                    const auto filePath = tag.ResolveVTS();
+                    const auto fileTimeStamp = io::file::GetFileDate(filePath);
+                    if (fileTimeStamp > cacheFileTimeStamp)
+                    {
+                        // skip getting cache data for this file since it's newer then cache file
+                        YLOG_INFO("DEVI", std::format("File '{} ({})' is newer then cache '{} ({})', will update.", filePath, fileTimeStamp, cacheFilePath, cacheFileTimeStamp).c_str());
+                        continue;
+                    }
+
+                    mCacheIndex.insert({ *guid, *location });
+                }
+                mCache = io::MessagingBuffer(io::size_data(cache.mBuffer) - offset);
+                mCache.mWriteOffset = io::size_data(mCache.mBuffer);
+                memcpy(io::cast_data<char>(mCache.mBuffer), io::cast_data<char>(cache.mBuffer) + offset,
+                    io::size_data(mCache.mBuffer));
+            }
         }
-        mCache = io::MessagingBuffer(io::size_data(cache.mBuffer) - offset);
-        mCache.mWriteOffset = io::size_data(mCache.mBuffer);
-        memcpy(io::cast_data<char>(mCache.mBuffer), io::cast_data<char>(cache.mBuffer) + offset,
-               io::size_data(mCache.mBuffer));
     }
 }
 
@@ -63,9 +142,18 @@ yaget::render::AssetCache::~AssetCache()
     if (mCacheStatus != CacheStatus::Clean)
     {
         // we need to serialize mCacheIndex and mCache into a single buffer and save it back to VTS
-        io::Buffer indexBuffer = io::CreateBuffer(sizeof(size_t) + mCacheIndex.size() * (sizeof(Guid) + sizeof(Location)));
+        // format of the buffer is [YagetFileSignature][numElements][{guid}{location}...][cacheData]
+        io::Buffer indexBuffer = io::CreateBuffer(sizeof(YagetFileSignature) + sizeof(size_t) + mCacheIndex.size() * (sizeof(Guid) + sizeof(Location)));
+
+        YagetFileSignature fileSignature;
+        fileSignature.Version = CurrentFileVersion;
+
         auto dataPointer = io::cast_data<char>(indexBuffer);
         size_t offset = 0;
+
+        std::memcpy(dataPointer + offset, &fileSignature, sizeof(fileSignature));
+        offset += sizeof(fileSignature);
+
         auto numElements = mCacheIndex.size();
         std::memcpy(dataPointer + offset, &numElements, sizeof(numElements));
         offset += sizeof(numElements);
@@ -96,7 +184,7 @@ yaget::render::AssetCache::~AssetCache()
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::io::Buffer yaget::render::AssetCache::GetCachedAsset(const yaget::io::Tag& tag) const
+yaget::io::Buffer yaget::render::AssetCache::GetCachedAsset(const io::Tag& tag) const
 {
     if (auto it = mCacheIndex.find(tag.mGuid); it != mCacheIndex.end())
     {
@@ -109,22 +197,34 @@ yaget::io::Buffer yaget::render::AssetCache::GetCachedAsset(const yaget::io::Tag
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::AssetCache::SaveCachedAsset(const yaget::io::Tag& tag, yaget::io::Buffer buffer)
+bool yaget::render::AssetCache::IsCachedAsset(const io::Tag& tag) const
+{
+    return mCacheIndex.contains(tag.mGuid);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::AssetCache::SaveCachedAsset(const io::Tag& tag, io::Buffer buffer)
 {
     // see if we already have this shader saved and if size matches, just overwrite
     if (auto it = mCacheIndex.find(tag.mGuid); it != mCacheIndex.end())
     {
-        const auto& location = it->second;
+        auto& location = it->second;
         if (location.mSize == io::size_data(buffer))
         {
+            // NOTE(eg) We need to still save smaller buffer, so we do not re-allocate
+            // memory unnecessary. But we need to update
+            // mCacheIndex[tag.mGuid] = mCache.mWriteOffset, io::size_data(buffer)};
+            //location.mSize = io::size_data(buffer);
             io::CopyBuffer(buffer, mCache.mBuffer, location.mOffset);
             mCacheStatus = ored(mCacheStatus, CacheStatus::Dirty);
+
             return;
         }
         std::memset(io::cast_data<char>(mCache.mBuffer) + location.mOffset, 0, location.mSize);
         mCacheIndex.erase(it);
     }
-    mCacheIndex.insert({tag.mGuid, {mCache.mWriteOffset, io::size_data(buffer)}});
+    mCacheIndex.insert({ tag.mGuid, {mCache.mWriteOffset, io::size_data(buffer)} });
     mCache.AssureWriteSize(io::size_data(buffer));
     mCache.WriteDataChunk(buffer);
     mCacheStatus = ored(mCacheStatus, CacheStatus::Holes);

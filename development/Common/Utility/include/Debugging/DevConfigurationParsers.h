@@ -422,6 +422,20 @@ namespace yaget::dev
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
+    inline void to_json(nlohmann::json& j, const dev::Configuration::DataLoaders& dataLoaders)
+    {
+        j["SkipDependencyGraph"] = dataLoaders.mSkipDependencyGraph;
+        j["ClearCache"] = dataLoaders.mClearCache;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
+    inline void from_json(const nlohmann::json& j, dev::Configuration::DataLoaders& dataLoaders)
+    {
+        dataLoaders.mSkipDependencyGraph = json::GetValue(j, "SkipDependencyGraph",  dataLoaders.mSkipDependencyGraph);
+        dataLoaders.mClearCache = json::GetValue(j, "ClearCache", dataLoaders.mClearCache);
+    }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
     inline void to_json(nlohmann::json& j, const dev::Configuration::Graphics& graphics)
     {
         j["Device"] = graphics.mDevice;
@@ -444,6 +458,7 @@ namespace yaget::dev
         j["Init"] = configuration.mInit;
         j["Runtime"] = configuration.mRuntime;
         j["Graphics"] = configuration.mGraphics;
+        j["DataLoaders"] = configuration.mDataLoaders;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -464,6 +479,10 @@ namespace yaget::dev
         if (yaget::json::IsSectionValid(j, "Graphics", ""))
         {
             from_json(j["Graphics"], configuration.mGraphics);
+        }
+        if (yaget::json::IsSectionValid(j, "DataLoaders", ""))
+        {
+            from_json(j["DataLoaders"], configuration.mDataLoaders);
         }
     }
 

@@ -1,133 +1,155 @@
 {
-	"Configuration" : {
-		"Debug": {
-			"Logging": {
-				"Filters": [ "INPT", "WIND", "MULT", "POOL", "WIN", "APP", "METR", "GSYS", "WATC" ],
-				"Level": "INFO",
-				"Outputs": {
-					"ylog::OutputDebug": {
-						"split_lines": "true"																											
-					},
-					"ylog::OutputFile": {
-						"max_startup_size": "0",
-						"filename": "$(LogFolder)/$(AppName).log"
-					}
-				},
-				"PrintThreadName": true,
-				"TruncateFunctionName": true,
-				"MaxFunctionNameLen": 40
-			},
-			"Metrics": {
-				"AllowFallbackToFile": false,
-				"AllowSocketConnection": false,
-				"SocketConnectionTimeout": 100,
-				"TraceFileName": "$(Temp)/Traces/$(AppName)_trace.json",
-				"TraceOn": true
-			}
-		},
-		"Graphics": {																				   
-			"Device": "",
-			"MemoryReport": false,
-			"GPUTraceback": false
-		},
-		"Init": {
-			"Aliases": {
-				"$(AssetsFolder)": {
-					"Path": "$(UserDataFolder)/Assets",
-					"ReadOnly": true
-				},
-				"$(DatabaseFolder)": {
-					"Path": "$(UserDataFolder)/Database",
-					"ReadOnly": true
-				}
-			},
-			"VTS": [
-				{
-					"Settings": {
-						"Converters": "JSON",
-						"Filters": [ "*.json" ],
-						"Path": [ "$(DataFolder)/Data", "$(AppFolder)" ],
-						"ReadOnly": true,
-						"Recursive": false
-					}
-				},
-				{
-					"Persistance": {
-						"Converters": "PERS",
-						"Filters": [ "*.pers" ],
-						"Path": [ "$(AppFolder)" ],
-						"ReadOnly": true,
-						"Recursive": false
-					}
-				},
-				{
-					"UserOptions": {
-						"Converters": "JSON",
-						"Filters": [ "*.json" ],
-						"Path": [ "$(UserDataFolder)/UserOptions" ],
-						"ReadOnly": false,
-						"Recursive": false
-					}
-				},
-				{
-					"VeretexShaders": {
-						"Converters": "COMP",
-						"Filters": [ "*.vs" ],
-						"Path": [ "$(DataFolder)/Data/Shaders/Vertex" ],
-						"ReadOnly": true,
-						"Recursive": false
-					}
-				},
-				{
-					"PixelShaders": {
-						"Converters": "COMP",
-						"Filters": [ "*.ps" ],
-						"Path": [ "$(DataFolder)/Data/Shaders/Pixel" ],
-						"ReadOnly": true,
-						"Recursive": false
-					}
-				},
-				{
-					"Caches": {
-						"Converters": "BIN",
-						"Filters": [ "*.cache" ],
-						"Path": [ "$(AppDataFolder)/Caches" ],
-						"ReadOnly": false,
-						"Recursive": false
-					}
-				},
-				{
-					"Transient": {
-						"Converters": "BIN",
-						"Filters": [ "*.tran" ],
-						"Path": [ "$(AppDataFolder)/Transient" ],
-						"ReadOnly": false,
-						"Recursive": false
-					}
-				},
-				{
-					"Manifest": {
-						"Converters": "JSON",
-						"Filters": [ "*.json" ],
-						"Path": [ "$(DataFolder)/Data/Manifest" ],
-						"ReadOnly": true,
-						"Recursive": false
-					}
-				},
-				{
-					"ManifestWrite": {
-						"Converters": "JSON",
-						"Filters": [ "*.json" ],
-						"Path": [ "$(DataFolder)../../../../Games/Defensor/data/Manifest" ],
-						"ReadOnly": false,
-						"Recursive": false
-					}
-				}
-			],
-			"WindowOptions": "UserOptions@WindowConfiguration",
-			"VSync": false,
-			"StartingStage": "Boot",
-			"ItemsFile": ""
-		}
-	}
+    "Configuration": {
+        "Debug": {
+            "Logging": {
+                "Filters": [ "INPT", "WIND", "MULT", "POOL", "WIN", "APP", "METR", "GSYS", "WATC" ],
+                "Level": "INFO",
+                "Outputs": {
+                    "ylog::OutputDebug": {
+                        "split_lines": "true"
+                    },
+                    "ylog::OutputFile": {
+                        "max_startup_size": "0",
+                        "filename": "$(LogFolder)/$(AppName).log"
+                    }
+                },
+                "PrintThreadName": true,
+                "TruncateFunctionName": true,
+                "MaxFunctionNameLen": 40
+            },
+            "Metrics": {
+                "AllowFallbackToFile": false,
+                "AllowSocketConnection": false,
+                "SocketConnectionTimeout": 100,
+                "TraceFileName": "$(Temp)/Traces/$(AppName)_trace.json",
+                "TraceOn": true
+            }
+        },
+        "Graphics": {
+            "Device": "",
+            "MemoryReport": false,
+            "GPUTraceback": false
+        },
+        "DataLoaders": {
+            "SkipDependencyGraph": true,
+            "ClearCache": false
+        },
+        "Init": {
+            "Aliases": {
+                "$(AssetsFolder)": {
+                    "Path": "$(UserDataFolder)/Assets",
+                    "ReadOnly": true
+                },
+                "$(DatabaseFolder)": {
+                    "Path": "$(UserDataFolder)/Database",
+                    "ReadOnly": true
+                }
+            },
+            "VTS": [
+                {
+                    "Settings": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(DataFolder)/Data", "$(AppFolder)" ],
+                        "ReadOnly": true,
+                        "Recursive": false
+                    }
+                },
+                {
+                    "Persistance": {
+                        "Converters": "PERS",
+                        "Filters": [ "*.pers" ],
+                        "Path": [ "$(AppFolder)" ],
+                        "ReadOnly": true,
+                        "Recursive": false
+                    }
+                },
+                {
+                    "UserOptions": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(UserDataFolder)/UserOptions" ],
+                        "ReadOnly": false,
+                        "Recursive": false
+                    }
+                },
+                {
+                    "VeretexShaders": {
+                        "Converters": "COMP",
+                        "Filters": [ "*.vs" ],
+                        "Path": [ "$(DataFolder)/Data/Shaders/Vertex" ],
+                        "ReadOnly": true,
+                        "Recursive": false
+                    }
+                },
+                {
+                    "PixelShaders": {
+                        "Converters": "COMP",
+                        "Filters": [ "*.ps" ],
+                        "Path": [ "$(DataFolder)/Data/Shaders/Pixel" ],
+                        "ReadOnly": true,
+                        "Recursive": false
+                    }
+                },
+                {
+                    "Caches": {
+                        "Converters": "BIN",
+                        "Filters": [ "*.cache" ],
+                        "Path": [ "$(AppDataFolder)/Caches" ],
+                        "ReadOnly": false,
+                        "Recursive": false
+                    }
+                },
+                {
+                    "Transient": {
+                        "Converters": "BIN",
+                        "Filters": [ "*.tran" ],
+                        "Path": [ "$(AppDataFolder)/Transient" ],
+                        "ReadOnly": false,
+                        "Recursive": false
+                    }
+                },
+                {
+                    "Manifest": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(DataFolder)/Data/Manifest" ],
+                        "ReadOnly": true,
+                        "Recursive": false
+                    }
+                },
+                {
+                    "ManifestWrite": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(DataFolder)../../../../Games/Defensor/data/Manifest" ],
+                        "ReadOnly": false,
+                        "Recursive": false
+                    }
+                },
+                {
+                    "Materials": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(DataFolder)/Data/Materials" ],
+                        "ReadOnly": true,
+                        "Recursive": false
+                    }
+                },
+                {
+                    "MaterialsWrite": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(DataFolder)../../../../Games/Defensor/data/Materials" ],
+                        "ReadOnly": false,
+                        "Recursive": false
+                    }
+                }
+            ],
+            "WindowOptions": "UserOptions@WindowConfiguration",
+            "VSync": false,
+            "StartingStage": "Boot",
+            "ItemsFile": ""
+        }
+    }
 }

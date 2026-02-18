@@ -25,9 +25,11 @@
 #include "Components/SystemsCoordinator.h"
 #include "Components/UnitComponent.h"
 #include "Components/VelocityComponent.h"
+#include "Components/MaterialComponent.h"
 #include "Items/StageComponent.h"
 #include "Renders/RenderComponent.h"
 #include "Renders/SceneComponent.h"
+#include "Streams/Buffers.h"
 
 
 namespace defensor::game
@@ -40,7 +42,7 @@ namespace defensor::game
     struct StateCollectorComponent { static constexpr int Capacity = 64; };
 
     using GlobalEntity = comp::GlobalRowPolicy<comp::MenuComponent*, items::StageComponent*, StateCollectorComponent*>;
-    using Entity = comp::RowPolicy<comp::LocationComponent3*, comp::InputComponent*, comp::UnitComponent*, comp::ScriptComponent*, comp::NameComponent*, comp::VelocityComponent*>;
+    using Entity = comp::RowPolicy<comp::LocationComponent3*, comp::InputComponent*, comp::UnitComponent*, comp::ScriptComponent*, comp::NameComponent*, comp::VelocityComponent*, comp::MaterialComponent*>;
 
     using GlobalCoordinator = comp::Coordinator<GlobalEntity>;
     using EntityCoordinator = comp::Coordinator<Entity>;
