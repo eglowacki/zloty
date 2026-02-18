@@ -40,22 +40,22 @@ namespace yaget
     {
         if (p.mDependencies.empty())
         {
-            j = nlohmann::json{ { "name", p.mName } };
+            j = nlohmann::json{ {"name", p.mName} };
         }
         else
         {
             if (p.IsSingleDepth())
             {
                 Strings dependencies = p.mDependencies | std::views::transform([](const DependencyNode& node)
-                {
-                    return node.mName;
-                }) | std::ranges::to<Strings>();
+                    {
+                        return node.mName;
+                    }) | std::ranges::to<Strings>();
 
-                j = nlohmann::json{ { "name", p.mName }, { "dependencies", dependencies } };
+                j = nlohmann::json{ {"name", p.mName}, {"dependencies", dependencies} };
             }
             else
             {
-                j = nlohmann::json{ { "name", p.mName }, { "dependencies", p.mDependencies } };
+                j = nlohmann::json{ {"name", p.mName}, {"dependencies", p.mDependencies} };
             }
         }
     }
@@ -65,17 +65,20 @@ namespace yaget
     {
         p.mName = json::GetValue(j, "name", std::string{});
 
-        if (auto dependencies = json::GetValue(j, "dependencies", Strings{}); !dependencies.empty())
+        if (j.is_object())
         {
-            for (const auto& dependency : dependencies)
-            {
-                p.mDependencies.push_back(DependencyNode{});
-                p.mDependencies.back().mName = dependency;
-            }
+            p.mDependencies = json::GetValue(j, "dependencies", std::vector<DependencyNode>{});
         }
         else
         {
-            p.mDependencies = json::GetValue(j, "dependencies", std::vector<DependencyNode>{});
+            if (auto dependencies = json::GetValue(j, "dependencies", Strings{}); !dependencies.empty())
+            {
+                for (const auto& dependency : dependencies)
+                {
+                    p.mDependencies.push_back(DependencyNode{});
+                    p.mDependencies.back().mName = dependency;
+                }
+            }
         }
     }
 
@@ -85,7 +88,7 @@ namespace yaget
         for (auto it = j.begin(); it != j.end(); ++it)
         {
             auto key = it.key();
-            yaget::conv::Trim(key);
+            conv::Trim(key);
             auto value = it.value();
             from_json(value, environment[key]);
         }
@@ -94,14 +97,14 @@ namespace yaget
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::DependencyNode::DependencyNode(const yaget::Guid& guid)
+yaget::DependencyNode::DependencyNode(const Guid& guid)
     : mGuid(guid)
 {
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::DependencyNode::Add(const yaget::Guid& guid)
+void yaget::DependencyNode::Add(const Guid& guid)
 {
     if (!FindNode(guid, nullptr))
     {
@@ -111,7 +114,7 @@ void yaget::DependencyNode::Add(const yaget::Guid& guid)
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::DependencyNode *yaget::DependencyNode::FindNode(const Guid& guid, std::vector<DependencyNode*>* pathTo) const
+yaget::DependencyNode* yaget::DependencyNode::FindNode(const Guid& guid, std::vector<DependencyNode*>* pathTo) const
 {
     if (mGuid == guid)
     {
@@ -147,7 +150,7 @@ yaget::DependencyNode *yaget::DependencyNode::FindNode(const Guid& guid, std::ve
 bool yaget::DependencyNode::IsSingleDepth() const
 {
     size_t depth = std::accumulate(mDependencies.begin(), mDependencies.end(), static_cast<size_t>(0),
-                                   [](size_t sum, const DependencyNode& p) { return sum + p.mDependencies.size(); });
+        [](size_t sum, const DependencyNode& p) { return sum + p.mDependencies.size(); });
 
     return depth == 0;
 }
@@ -180,7 +183,7 @@ bool yaget::DependencyNode::IsBranchDirty() const
         return true;
     }
 
-    for (const auto & node : mDependencies)
+    for (const auto& node : mDependencies)
     {
         if (node.IsBranchDirty())
         {
@@ -204,44 +207,47 @@ namespace
         }
 
         T nodes = dependencyData | std::views::transform([](const auto& node)
-        {
-            if constexpr (std::is_same_v<typename T::key_type, yaget::Guid>)
             {
-                return typename T::value_type{ node.second.mGuid, node.second };
-            }
-            else
-            {
-                return typename T::value_type{ node.second.mName, node.second };
-            }
-        }) | std::ranges::to<std::map>();
+                if constexpr (std::is_same_v<typename T::key_type, yaget::Guid>)
+                {
+                    return typename T::value_type{ node.second.mGuid, node.second };
+                }
+                else
+                {
+                    return typename T::value_type{ node.second.mName, node.second };
+                }
+            }) | std::ranges::to<std::map>();
 
         return nodes;
     }
 
 
     std::map<yaget::Guid, yaget::DependencyNode> ReadDependencyNodes(const yaget::io::VirtualTransportSystem::Section& section,
-                                                                     yaget::io::VirtualTransportSystem& vts)
+        yaget::io::VirtualTransportSystem& vts)
     {
         using namespace yaget;
 
         std::map<Guid, DependencyNode> depNodes;
 
-        yaget::io::SingleBLobLoader<io::JsonAsset> cacheLoader(vts, section);
-        if (auto asset = cacheLoader.GetAsset())
+        const auto& configBlock = dev::CurrentConfiguration().mDataLoaders;
+        if (!configBlock.mSkipDependencyGraph)
         {
-            auto& root = asset->root;
+            if (auto asset = io::LoadJson(vts, section))
+            {
+                const auto& root = asset->root;
 
-            try
-            {
-                DiskDependencyData depData = root;
-                depNodes = TransformNodes<std::map<Guid, DependencyNode>>(depData, vts);
-                YLOG_CINFO("ASET", depNodes.empty(), "Loaded Dependency Nodes from: '%s:%s'.",
-                           conv::Convertor<io::VirtualTransportSystem::Section>::ToString(section).c_str(), asset->mTag.ResolveVTS().c_str());
-            }
-            catch (nlohmann::json::exception& ex)
-            {
-                YLOG_ERROR("ASET", "Exception during loading of Dependency Nodes from: '%s:%s'.\n\t%s",
-                           conv::Convertor<io::VirtualTransportSystem::Section>::ToString(section).c_str(), asset->mTag.ResolveVTS().c_str(), ex.what());
+                try
+                {
+                    DiskDependencyData depData = root;
+                    depNodes = TransformNodes<std::map<Guid, DependencyNode>>(depData, vts);
+                    YLOG_CINFO("ASET", depNodes.empty(), "Loaded Dependency Nodes from: '%s:%s'.",
+                        conv::Convertor<io::VirtualTransportSystem::Section>::ToString(section).c_str(), asset->mTag.ResolveVTS().c_str());
+                }
+                catch (nlohmann::json::exception& ex)
+                {
+                    YLOG_ERROR("ASET", "Exception during loading of Dependency Nodes from: '%s:%s'.\n\t%s",
+                        conv::Convertor<io::VirtualTransportSystem::Section>::ToString(section).c_str(), asset->mTag.ResolveVTS().c_str(), ex.what());
+                }
             }
         }
 
@@ -295,7 +301,7 @@ yaget::DependencyGraph::~DependencyGraph()
         }
 
         YLOG_INFO("ASET", "Loaded Dependency Nodes saved to : '%s:%s'.", conv::Convertor<io::VirtualTransportSystem::Section>::ToString(saveSection).c_str(),
-                  saveFileTag.ResolveVTS().c_str());
+            saveFileTag.ResolveVTS().c_str());
     }
 }
 
@@ -309,7 +315,7 @@ void yaget::DependencyGraph::Add(const Guid& parentGuid, const Guid& childGuid)
     }
     else
     {
-        auto n = mNodes.insert({ parentGuid, { parentGuid } });
+        auto n = mNodes.insert({ parentGuid, {parentGuid} });
         n.first->second.Add(childGuid);
     }
 
@@ -319,7 +325,7 @@ void yaget::DependencyGraph::Add(const Guid& parentGuid, const Guid& childGuid)
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::DependencyNode *yaget::DependencyGraph::Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const
+yaget::DependencyNode* yaget::DependencyGraph::Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const
 {
     for (auto& val : mNodes | std::views::values)
     {
@@ -345,18 +351,18 @@ void yaget::DependencyGraph::AddWatchFiles(const Guid& guid)
 
             std::hash<Guid> hasher;
             mWatcher.Add(hasher(guid), shaderFilePath, [this, tag]()
-            {
-                std::vector<yaget::DependencyNode*> pathTo;
-                if (yaget::DependencyNode* shaderNode = Find(tag.mGuid, &pathTo))
                 {
-                    std::ranges::for_each(pathTo, [](auto& node)
+                    std::vector<DependencyNode*> pathTo;
+                    if (DependencyNode* shaderNode = Find(tag.mGuid, &pathTo))
                     {
-                        node->mDirty = true;
-                    });
-                }
+                        std::ranges::for_each(pathTo, [](auto& node)
+                            {
+                                node->mDirty = true;
+                            });
+                    }
 
-                mDirtyCallback(tag.mGuid);
-            });
+                    mDirtyCallback(tag.mGuid);
+                });
         }
     }
 }

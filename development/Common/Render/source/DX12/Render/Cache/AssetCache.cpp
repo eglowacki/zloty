@@ -77,7 +77,7 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, io::Virtu
     : mVTS(vts)
     , mCacheSection(std::move(fileName))
 {
-    const auto& configBlock = dev::CurrentConfiguration().mGraphics;
+    const auto& configBlock = dev::CurrentConfiguration().mDataLoaders;
     if (!configBlock.mClearCache)
     {
         io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);

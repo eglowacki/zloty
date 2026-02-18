@@ -62,7 +62,7 @@ namespace yaget::render
         {
             std::vector<D3D12_ROOT_PARAMETER1> mRootParameters;
             IndexMap mIndexMap;
-            D3D12_VERSIONED_ROOT_SIGNATURE_DESC mRootSignatureDesc;
+            D3D12_VERSIONED_ROOT_SIGNATURE_DESC mRootSignatureDesc{};
         };
 
         using DescriptionCallback = std::function<void(const RootDescResult& descResult)>;

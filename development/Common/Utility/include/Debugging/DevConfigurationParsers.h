@@ -154,8 +154,7 @@ namespace yaget::dev
     {
         return lhs.mDevice == rhs.mDevice &&
                lhs.mMemoryReport == rhs.mMemoryReport && 
-               lhs.mGPUTraceback == rhs.mGPUTraceback &&
-               lhs.mClearCache == rhs.mClearCache;
+               lhs.mGPUTraceback == rhs.mGPUTraceback;
     }
 
     inline bool operator==(const Configuration& lhs, const Configuration& rhs)
@@ -423,12 +422,25 @@ namespace yaget::dev
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
+    inline void to_json(nlohmann::json& j, const dev::Configuration::DataLoaders& dataLoaders)
+    {
+        j["SkipDependencyGraph"] = dataLoaders.mSkipDependencyGraph;
+        j["ClearCache"] = dataLoaders.mClearCache;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
+    inline void from_json(const nlohmann::json& j, dev::Configuration::DataLoaders& dataLoaders)
+    {
+        dataLoaders.mSkipDependencyGraph = json::GetValue(j, "SkipDependencyGraph",  dataLoaders.mSkipDependencyGraph);
+        dataLoaders.mClearCache = json::GetValue(j, "ClearCache", dataLoaders.mClearCache);
+    }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------
     inline void to_json(nlohmann::json& j, const dev::Configuration::Graphics& graphics)
     {
         j["Device"] = graphics.mDevice;
         j["MemoryReport"] = graphics.mMemoryReport;
         j["GPUTraceback"] = graphics.mGPUTraceback;
-        j["ClearCache"] = graphics.mClearCache;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -437,7 +449,6 @@ namespace yaget::dev
         graphics.mDevice = json::GetValue(j, "Device", graphics.mDevice);
         graphics.mMemoryReport = json::GetValue(j, "MemoryReport", graphics.mMemoryReport);
         graphics.mGPUTraceback = json::GetValue(j, "GPUTraceback", graphics.mGPUTraceback);
-        graphics.mClearCache = json::GetValue(j, "ClearCache", graphics.mClearCache);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -447,6 +458,7 @@ namespace yaget::dev
         j["Init"] = configuration.mInit;
         j["Runtime"] = configuration.mRuntime;
         j["Graphics"] = configuration.mGraphics;
+        j["DataLoaders"] = configuration.mDataLoaders;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -467,6 +479,10 @@ namespace yaget::dev
         if (yaget::json::IsSectionValid(j, "Graphics", ""))
         {
             from_json(j["Graphics"], configuration.mGraphics);
+        }
+        if (yaget::json::IsSectionValid(j, "DataLoaders", ""))
+        {
+            from_json(j["DataLoaders"], configuration.mDataLoaders);
         }
     }
 
