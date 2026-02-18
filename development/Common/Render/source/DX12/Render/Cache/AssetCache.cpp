@@ -119,7 +119,7 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
                     const auto fileTimeStamp = io::file::GetFileDate(filePath);
                     if (fileTimeStamp > cacheFileTimeStamp)
                     {
-                        // skip getting cache data for this file since 
+                        // skip getting cache data for this file since it's newer then cache file
                         YLOG_INFO("DEVI", std::format("File '{} ({})' is newer then cache '{} ({})', will update.", filePath, fileTimeStamp, cacheFilePath, cacheFileTimeStamp).c_str());
                         continue;
                     }
