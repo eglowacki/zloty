@@ -344,6 +344,38 @@ bool yaget::io::file::IsFileAtrribute(const std::string& fileName, Attributes at
 
 
 //---------------------------------------------------------------------------------------------------------------------------------
+std::filesystem::file_time_type yaget::io::file::GetFileDate(const std::string& fileName, FileDateType fileDateType)
+{
+    if (fileName.empty())
+    {
+        return {};
+    }
+
+    const fs::path p(fileName);
+    fs::file_time_type result;
+
+    std::error_code ec;
+    if (fileDateType == FileDateType::LastWriteTime)
+    {
+        result = fs::last_write_time(p, ec);
+    }
+    else if (fileDateType == FileDateType::CreationTime)
+    {
+        YAGET_ASSERT(false, "File CreationTime is not implemented yet!!!");
+        result = fs::last_write_time(p, ec);
+    }
+    const auto errorCode = ec.value();
+    if (ec && (errorCode != static_cast<int>(std::errc::no_such_file_or_directory) && errorCode != 3))  // 3 = The system cannot find the path specified.
+    {
+        auto ecText = fmt::format("value = '{}'\ncategory = '{}'\nmessage = '{}'.", ec.value(), ec.category().name(), ec.message());
+        YLOG_ERROR("FILE", "Could not get last write time for file: '%s'.\n%s.", fileName.c_str(), ecText.c_str());
+    }
+
+    return result;
+}
+
+
+//---------------------------------------------------------------------------------------------------------------------------------
 yaget::io::file::FileOpResult yaget::io::file::AssureDirectories(const std::string& pathName)
 {
     std::string canonicalPath = fs::path(util::ExpendEnv(pathName, nullptr)).make_preferred().string();
