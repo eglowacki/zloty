@@ -146,7 +146,7 @@ namespace yaget::io
     inline Buffer CreateBuffer(const char* data, size_t size) { return CreateBuffer(reinterpret_cast<const uint8_t*>(data), size); }
 
 
-    inline Buffer CreateBuffer(const std::string& message) { return CreateBuffer(reinterpret_cast<const uint8_t*>(message.data()), message.size()); }
+    inline Buffer CreateBuffer(const std::string& message) { return CreateBuffer(reinterpret_cast<const uint8_t*>(message.data()), message.size()+1); }
 
 
     //! Helper to clone Buffer and it's content into new object

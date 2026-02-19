@@ -16,7 +16,7 @@ namespace
     public:
         TestAsset(const yaget::io::Tag& tag, const yaget::io::Buffer& buffer, const yaget::io::VirtualTransportSystem& vts)
             : Asset(tag, buffer, vts) 
-            , mMessage(reinterpret_cast<const char*>(buffer.first.get()), buffer.second)
+            , mMessage(yaget::io::cast_data<char>(buffer))
         {
         }
 
