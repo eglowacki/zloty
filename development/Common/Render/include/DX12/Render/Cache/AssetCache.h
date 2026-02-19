@@ -87,8 +87,8 @@ namespace yaget::render
         // describe pipeline state depth stencil, uses MaskDepthState
         DepthStateNone    = 1ULL << 40,
         DepthStateOn      = 1ULL << 41,
-        DepthStateStencil = 1ULL << 42,
-        //DepthState...   = 1ULL << 43,
+        DepthStateRead    = 1ULL << 42,
+        DepthStateStencil = 1ULL << 43,
         //DepthState...   = 1ULL << 44,
 
         // describe pipeline state primitive topology

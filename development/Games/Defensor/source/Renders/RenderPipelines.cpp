@@ -12,11 +12,119 @@
 
 namespace
 {
- 
+    D3D12_BLEND_DESC GetBlendState(yaget::render::AssetCacheType assetType)
+    {
+        D3D12_BLEND_DESC blendState = DirectX::CommonStates::Opaque;
+        if (static_cast<bool>(assetType & yaget::render::AssetCacheType::BlendModeAlpha))
+        {
+            blendState = DirectX::CommonStates::AlphaBlend;
+        }
+        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::BlendModeAdditive))
+        {
+            blendState = DirectX::CommonStates::Additive;
+        }
+        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::BlendModeNonPremultiplied))
+        {
+            blendState = DirectX::CommonStates::NonPremultiplied;
+        }
+        return blendState;
+    }
+
+    D3D12_RASTERIZER_DESC GetRasterizeState(yaget::render::AssetCacheType assetType)
+    {
+        D3D12_RASTERIZER_DESC rasterizerState = DirectX::CommonStates::CullNone;
+        if (static_cast<bool>(assetType & yaget::render::AssetCacheType::RasterizerStateClockwise))
+        {
+            rasterizerState = DirectX::CommonStates::CullClockwise;
+        }
+        if (static_cast<bool>(assetType & yaget::render::AssetCacheType::RasterizerStateCounterClockwise))
+        {
+            rasterizerState = DirectX::CommonStates::CullCounterClockwise;
+        }
+        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::RasterizerStateWireframe))
+        {
+            rasterizerState = DirectX::CommonStates::Wireframe;
+        }
+        return rasterizerState;
+    }
+
+    D3D12_DEPTH_STENCIL_DESC GetDepthState(yaget::render::AssetCacheType assetType)
+    {
+        D3D12_DEPTH_STENCIL_DESC depthStencilState = DirectX::CommonStates::DepthNone;
+        if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DepthStateOn))
+        {
+            depthStencilState = DirectX::CommonStates::DepthDefault;
+        }
+        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DepthStateRead))
+        {
+            depthStencilState = DirectX::CommonStates::DepthRead;
+        }
+        return depthStencilState;
+    }
+
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE GetPrimitiveTopologyType(yaget::render::AssetCacheType assetType)
+    {
+        D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+        if (static_cast<bool>(assetType & yaget::render::AssetCacheType::TopologyStatePoint))
+        {
+            topologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+        }
+        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::TopologyStateLine))
+        {
+            topologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+        }
+        return topologyType;
+    }
+
+    DXGI_FORMAT GetRenderTargetFormat(yaget::render::AssetCacheType assetType)
+    {
+        DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        if (static_cast<bool>(assetType & yaget::render::AssetCacheType::RTVFormatRGBA16F))
+        {
+            format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        }
+        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::RTVFormatRGBA32F))
+        {
+            format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        }
+        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DSVFormatD24S8))
+        {
+            format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        }
+        return format;
+    }
+
+    uint32_t GetNumRenderTargets(yaget::render::AssetCacheType assetType)
+    {
+        uint32_t numRenderTargets = 1;
+        if (static_cast<bool>(assetType & yaget::render::AssetCacheType::NumRTVTargetsTwo))
+        {
+            numRenderTargets = 2;
+        }
+        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::NumRTVTargetsThree))
+        {
+            numRenderTargets = 3;
+        }
+        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::NumRTVTargetsFour))
+        {
+            numRenderTargets = 4;
+        }
+        return numRenderTargets;
+    }
+
     template<typename T>
-    yaget::render::ComPtr<ID3D12PipelineState> CreatePipeline(ID3D12Device* device, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer, yaget::io::Buffer& dataBlob)
+    yaget::render::ComPtr<ID3D12PipelineState> CreatePipeline(const yaget::io::Tag& tag, ID3D12Device* device, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer, yaget::io::Buffer& dataBlob)
     {
         using namespace yaget;
+
+        auto assetType = render::AssetCache::operator[](tag);
+
+        D3D12_BLEND_DESC blendState = GetBlendState(assetType);
+        D3D12_RASTERIZER_DESC rasterizerState = GetRasterizeState(assetType);
+        D3D12_DEPTH_STENCIL_DESC depthState = GetDepthState(assetType);
+        D3D12_PRIMITIVE_TOPOLOGY_TYPE primitiveTopology = GetPrimitiveTopologyType(assetType);
+        DXGI_FORMAT colorFormat = GetRenderTargetFormat(assetType);
+        uint32_t numTargets = GetNumRenderTargets(assetType);
 
         // Describe and create the graphics pipeline state object (PSO).
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
@@ -30,13 +138,16 @@ namespace
         psoDesc.pRootSignature = rootSignature;
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(io::cast_data<const char>(vertexShaderBuffer), io::size_data(vertexShaderBuffer));
         psoDesc.PS = CD3DX12_SHADER_BYTECODE(io::cast_data<const char>(pixelShaderBuffer), io::size_data(pixelShaderBuffer));
-        psoDesc.RasterizerState = DirectX::CommonStates::CullCounterClockwise;
-        psoDesc.BlendState = DirectX::CommonStates::Opaque;
-        psoDesc.DepthStencilState = DirectX::CommonStates::DepthNone;
+        psoDesc.RasterizerState = rasterizerState;
+        psoDesc.BlendState = blendState;
+        psoDesc.DepthStencilState = depthState;
         psoDesc.SampleMask = UINT_MAX;
-        psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        psoDesc.NumRenderTargets = 1;
-        psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+        psoDesc.PrimitiveTopologyType = primitiveTopology;
+        psoDesc.NumRenderTargets = numTargets;
+        for (uint32_t i = 0; i < numTargets; ++i)
+        {
+            psoDesc.RTVFormats[i] = colorFormat;
+        }
         psoDesc.SampleDesc.Count = 1;
 
         yaget::render::ComPtr<ID3D12PipelineState> pipelineState;
@@ -80,7 +191,7 @@ ID3D12PipelineState* defensor::render::RenderPipelines::GetPipeline(const yaget:
 
     auto result = GetAsset(tag, [this, rootSignature, vertexShaderBuffer, pixelShaderBuffer](auto tag, auto& cachedData)
     {
-        return CreatePipeline<DirectX::VertexPositionColor>(mDevice, rootSignature, vertexShaderBuffer, pixelShaderBuffer, cachedData);
+        return CreatePipeline<DirectX::VertexPositionColor>(tag, mDevice, rootSignature, vertexShaderBuffer, pixelShaderBuffer, cachedData);
     });
 
     return result.Get();

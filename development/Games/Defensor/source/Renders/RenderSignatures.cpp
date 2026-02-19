@@ -1,37 +1,38 @@
-#include "Renders/RenderSignatures.h"
-//#include <d3d12.h>
-#include <d3dx12.h>
-#include <Fmt/format.h>
-
 #include "Core/ErrorHandlers.h"
 #include "Parsers/DependencyGraph.h"
+#include "Renders/RenderSignatures.h"
+
+#include <d3dx12.h>
+#include <Fmt/format.h>
 
 
 namespace
 {
    
-    yaget::render::ComPtr<ID3D12RootSignature> CreateRootSignature(const yaget::io::Tag& /*tag*/, ID3D12Device* device, yaget::io::Buffer& buffer, const yaget::render::RenderShaders::RootDescResult& rootSignatureDesc)
+    yaget::render::ComPtr<ID3D12RootSignature> CreateRootSignature(const yaget::io::Tag& tag, ID3D12Device* device, yaget::io::Buffer& buffer, const yaget::render::RenderShaders::RootDescResult& rootSignatureDesc)
     {
-        char* bufferPointer = yaget::io::cast_data<char>(buffer);
-        size_t bufferSize = yaget::io::size_data(buffer);
+        using namespace yaget;
+
+        char* bufferPointer = io::cast_data<char>(buffer);
+        size_t bufferSize = io::size_data(buffer);
 
         if (!bufferSize)
         {
-            yaget::render::ComPtr<ID3DBlob> error;
+            render::ComPtr<ID3DBlob> error;
 
             //// https://asawicki.info/news_1754_direct3d_12_long_way_to_access_data
-            yaget::render::ComPtr<ID3DBlob> signature;
+            render::ComPtr<ID3DBlob> signature;
             HRESULT hr = ::D3D12SerializeVersionedRootSignature(&rootSignatureDesc.mRootSignatureDesc, &signature, &error);
-            yaget::error_handlers::ThrowOnError(hr, fmt::format("Could not serialize root signature. {}", error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
+            yaget::error_handlers::ThrowOnError(hr, fmt::format("Could not serialize root signature: '{}'. Error: {}", conv::Convertor<io::Tag>::ToString(tag), error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
 
             bufferPointer = static_cast<char*>(signature->GetBufferPointer());
             bufferSize = signature->GetBufferSize();
-            buffer = yaget::io::CreateBuffer(bufferPointer, bufferSize);
+            buffer = io::CreateBuffer(bufferPointer, bufferSize);
         }
 
         yaget::render::ComPtr<ID3D12RootSignature> rootSignature;
         HRESULT hr = device->CreateRootSignature(0, bufferPointer, bufferSize, IID_PPV_ARGS(&rootSignature));
-        yaget::error_handlers::ThrowOnError(hr, "Could not create root signature.");
+        yaget::error_handlers::ThrowOnError(hr, std::format("Could not create root signature: '{}'.", conv::Convertor<io::Tag>::ToString(tag)));
 
         return rootSignature;
     }
