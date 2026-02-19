@@ -50,6 +50,8 @@ namespace yaget::render
         io::Buffer GetShader(const io::Tag& tag, ShaderType shaderType);
         std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType);
 
+        void ClearCache(const io::Tag& tag);
+
         struct ShaderPin
         {
             std::string mName;

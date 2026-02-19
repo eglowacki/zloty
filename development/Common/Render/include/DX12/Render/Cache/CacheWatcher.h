@@ -70,18 +70,6 @@ namespace yaget::render
         }
         ~CacheWatcher() = default;
 
-        bool IsAsset(const io::Tag& tag) const
-        {
-            std::lock_guard mutexLocker(mMutex);
-            return mAssets.contains(tag);
-        }
-
-        bool IsCached(const io::Tag& tag) const
-        {
-            std::lock_guard mutexLocker(mMutex);
-            return mCache.IsCachedAsset(tag);
-        }
-
         void ClearCache(const io::Tag& tag)
         {
             std::lock_guard mutexLocker(mMutex);

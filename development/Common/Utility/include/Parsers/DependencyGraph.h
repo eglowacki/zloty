@@ -15,9 +15,11 @@
 #pragma once
 
 #include "HashUtilities.h"
+
 #include "Streams/Guid.h"
 #include "Streams/Watcher.h"
 #include "VTS/VirtualTransportSystem.h"
+#include <shared_mutex>
 
 
 namespace yaget
@@ -37,6 +39,7 @@ namespace yaget
 
         // is this or any descendant dirty
         bool IsBranchDirty() const;
+        void ClearDirty();
 
         Guid mGuid;
         std::string mName;
@@ -48,6 +51,22 @@ namespace yaget
     class DependencyGraph
     {
     public:
+        // NOTE(eg) I don't like this approach to locking. This is way too heavy-handed
+        template <typename T>
+        struct Locker
+        {
+            Locker(const DependencyGraph& graph)
+                : mGraph(graph)
+                , mLocker(mGraph.mSharedMutex)
+            {
+            }
+
+            const DependencyGraph& mGraph;
+            T mLocker;
+        };
+        using WriteLock = Locker<std::unique_lock<std::shared_mutex>>;
+        using ReadLock = Locker<std::shared_lock<std::shared_mutex>>;
+
         using Section = io::VirtualTransportSystem::Section;
 
         using DirtyCallback = std::function<void(const Guid& guid)>;
@@ -57,6 +76,7 @@ namespace yaget
         void Add(const Guid& parentGuid, const Guid& childGuid);
 
         DependencyNode *Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
+        void ClearDirty(const Guid& guid);
 
     private:
         void AddWatchFiles(const Guid& guid);
@@ -70,8 +90,9 @@ namespace yaget
         io::Watcher mWatcher;
         std::set<Guid> mWatchedTags;
         DirtyCallback mDirtyCallback;
-    };
 
+        mutable std::shared_mutex mSharedMutex;
+    };
 }
 
 

@@ -176,6 +176,7 @@ void yaget::DependencyNode::ResolveNames(const io::VirtualTransportSystem& vts)
 }
 
 
+//-------------------------------------------------------------------------------------------------
 bool yaget::DependencyNode::IsBranchDirty() const
 {
     if (mDirty)
@@ -192,6 +193,17 @@ bool yaget::DependencyNode::IsBranchDirty() const
     }
 
     return false;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::DependencyNode::ClearDirty()
+{
+    mDirty = false;
+    for (auto& node : mDependencies)
+    {
+        node.ClearDirty();
+    }
 }
 
 
@@ -311,14 +323,17 @@ void yaget::DependencyGraph::Add(const Guid& parentGuid, const Guid& childGuid)
 {
     if (auto node = Find(parentGuid, nullptr))
     {
+        DependencyGraph::WriteLock writeLocker(*this);
         node->Add(childGuid);
     }
     else
     {
+        DependencyGraph::WriteLock writeLocker(*this);
         auto n = mNodes.insert({ parentGuid, {parentGuid} });
         n.first->second.Add(childGuid);
     }
 
+    DependencyGraph::WriteLock writeLocker(*this);
     AddWatchFiles(parentGuid);
     AddWatchFiles(childGuid);
 }
@@ -327,6 +342,7 @@ void yaget::DependencyGraph::Add(const Guid& parentGuid, const Guid& childGuid)
 //-------------------------------------------------------------------------------------------------
 yaget::DependencyNode* yaget::DependencyGraph::Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const
 {
+    DependencyGraph::ReadLock readLocker(*this);
     for (auto& val : mNodes | std::views::values)
     {
         if (auto foundNode = val.FindNode(guid, pathTo); foundNode != nullptr)
@@ -336,6 +352,17 @@ yaget::DependencyNode* yaget::DependencyGraph::Find(const Guid& guid, std::vecto
     }
 
     return nullptr;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::DependencyGraph::ClearDirty(const Guid& guid)
+{
+    DependencyGraph::WriteLock writeLocker(*this);
+    if (auto node = Find(guid, nullptr))
+    {
+        node->ClearDirty();
+    }
 }
 
 
@@ -350,19 +377,20 @@ void yaget::DependencyGraph::AddWatchFiles(const Guid& guid)
             mWatchedTags.insert(guid);
 
             std::hash<Guid> hasher;
-            mWatcher.Add(hasher(guid), shaderFilePath, [this, tag]()
+            mWatcher.Add(hasher(guid), shaderFilePath, [this, This = this, tag]()
+            {
+                std::vector<DependencyNode*> pathTo;
+                if (DependencyNode* shaderNode = Find(tag.mGuid, &pathTo))
                 {
-                    std::vector<DependencyNode*> pathTo;
-                    if (DependencyNode* shaderNode = Find(tag.mGuid, &pathTo))
+                    DependencyGraph::WriteLock writeLocker(*This);
+                    std::ranges::for_each(pathTo, [](auto& node)
                     {
-                        std::ranges::for_each(pathTo, [](auto& node)
-                            {
-                                node->mDirty = true;
-                            });
-                    }
+                        node->mDirty = true;
+                    });
+                }
 
-                    mDirtyCallback(tag.mGuid);
-                });
+                mDirtyCallback(tag.mGuid);
+            });
         }
     }
 }

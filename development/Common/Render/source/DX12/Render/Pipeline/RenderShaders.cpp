@@ -39,7 +39,7 @@ namespace
     constexpr size_t length(std::string_view sv)
     {
         return sv.size();
-    }    
+    }
     const std::size_t buildInShaderSourceLen = length(buildInShaderSource);;
 
     // let's have a table of mapping between shader type to (entry point and target)
@@ -170,7 +170,7 @@ yaget::render::RenderShaders::~RenderShaders() = default;
 yaget::io::Buffer yaget::render::RenderShaders::GetShader(const yaget::io::Tag& tag, ShaderType shaderType)
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(),
-                 yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
+        yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
     auto result = GetShaders(io::Tags{ tag }, shaderType);
     return !result.empty() ? *result.begin() : io::Buffer{};
 }
@@ -189,31 +189,43 @@ std::vector<yaget::io::Buffer> yaget::render::RenderShaders::GetShaders(const ya
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::render::RenderShaders::ClearCache(const io::Tag& tag)
+{
+    {
+        std::lock_guard mutexLocker(mMutex);
+        mReflections.erase(tag);
+    }
+
+    CacheWatcher<io::Buffer>::ClearCache(tag);
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::RenderShaders::CreateSignatureDescription(const io::Tag& vertexTag, const io::Tag& pixelTag, DescriptionCallback callback)
 {
     auto getReflection = [this](io::Tag tag)
-    {
-        ResourceReflector::Ptr reflector;
-
-        if (!mReflections.contains(tag))
         {
-            auto asset = GetAsset(tag);
-            reflector = mResourceCompiler->Decompile(io::cast_to_view(asset));
-            mReflections.insert({ tag, reflector });
-        }
-        else
-        {
-            reflector = mReflections.find(tag)->second; 
-        }
+            ResourceReflector::Ptr reflector;
 
-        return reflector;
-    };
+            if (!mReflections.contains(tag))
+            {
+                auto asset = GetAsset(tag);
+                reflector = mResourceCompiler->Decompile(io::cast_to_view(asset));
+                mReflections.insert({ tag, reflector });
+            }
+            else
+            {
+                reflector = mReflections.find(tag)->second;
+            }
+
+            return reflector;
+        };
 
     std::lock_guard mutexLocker(mMutex);
     ResourceReflector::Ptr vertexReflector = getReflection(vertexTag);
     ResourceReflector::Ptr pixelReflector = getReflection(pixelTag);
 
-    YAGET_ASSERT(vertexReflector && pixelReflector, "There is no reflection record for vertex '%s' and/or pixel '%s' shaders.", 
+    YAGET_ASSERT(vertexReflector && pixelReflector, "There is no reflection record for vertex '%s' and/or pixel '%s' shaders.",
         conv::Convertor<io::Tag>::ToString(vertexTag).c_str(),
         conv::Convertor<io::Tag>::ToString(pixelTag).c_str());
 
@@ -224,14 +236,14 @@ void yaget::render::RenderShaders::CreateSignatureDescription(const io::Tag& ver
 //-------------------------------------------------------------------------------------------------
 void yaget::render::RenderShaders::PopulateShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
-    yaget::render::PopulateMap(fileName, vts, ShaderOptionsMappings);
+    PopulateMap(fileName, vts, ShaderOptionsMappings);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::RenderShaders::SaveShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
-    yaget::render::SaveMap(fileName, vts, ShaderOptionsMappings);
+    SaveMap(fileName, vts, ShaderOptionsMappings);
 }
 
 
@@ -263,7 +275,7 @@ yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const yaget::i
     {
         YLOG_ERROR("COMP",
             fmt::format("Could not get compiled {} shader for tag: '{}\n{}:'. Using built-in shader as s fallback.", magic_enum::enum_name(shaderType),
-            yaget::conv::Convertor<yaget::io::Tag>::ToString(tag), tag.ResolveVTS()).c_str());
+                yaget::conv::Convertor<yaget::io::Tag>::ToString(tag), tag.ResolveVTS()).c_str());
 
         arguments = GetCommandParameters(shaderType, false);;
 
@@ -273,7 +285,7 @@ yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const yaget::i
 
         error_handlers::ThrowOnError(io::size_data(buffer) > 0,
             fmt::format("Could not compile built-in shader type: '%s'. Source:\n'%s'", magic_enum::enum_name(shaderType),
-            buildInShaderSource));
+                buildInShaderSource));
     }
 
     mAssets.insert({ tag, buffer });
