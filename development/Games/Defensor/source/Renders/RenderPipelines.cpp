@@ -193,6 +193,7 @@ namespace
             dataBlob = io::CreateBuffer(static_cast<const char*>(pipeBlob->GetBufferPointer()), pipeBlob->GetBufferSize());
         }
 
+        YLOG_INFO("COMP", "Created pipeline state for: '%s'", yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
         return pipelineState;
     }
 

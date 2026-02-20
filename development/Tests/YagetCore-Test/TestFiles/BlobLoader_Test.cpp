@@ -104,7 +104,7 @@ TEST_F(BlobLoader, LoadConvert)
         EXPECT_NO_THROW(blobLoader.AddTask(filesToTest, [&counter](const auto& fileData)
         {
             ++counter;
-            platform::BusySleep(20, time::kMilisecondUnit);
+            platform::BusySleep(120, time::kMilisecondUnit);
         }));
     }
 
@@ -119,7 +119,7 @@ TEST_F(BlobLoader, LoadConvert)
         blobLoader.AddTask(filesToTest, [&counter](const auto& fileData)
         {
             ++counter;
-            platform::BusySleep(100, time::kMilisecondUnit);
+            platform::BusySleep(120, time::kMilisecondUnit);
         });
     }
     EXPECT_LT(counter, kMaxNumFiles);

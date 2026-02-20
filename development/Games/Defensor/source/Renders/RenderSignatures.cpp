@@ -33,6 +33,7 @@ namespace
         yaget::render::ComPtr<ID3D12RootSignature> rootSignature;
         HRESULT hr = device->CreateRootSignature(0, bufferPointer, bufferSize, IID_PPV_ARGS(&rootSignature));
         yaget::error_handlers::ThrowOnError(hr, std::format("Could not create root signature: '{}'.", conv::Convertor<io::Tag>::ToString(tag)));
+        YLOG_INFO("REND", "Created Root Signature for: '%s'", conv::Convertor<io::Tag>::ToString(tag).c_str());
 
         return rootSignature;
     }

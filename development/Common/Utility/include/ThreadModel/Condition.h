@@ -19,6 +19,7 @@
 
 #include <mutex>
 #include <chrono>
+#include <shared_mutex>
 
 namespace yaget::mt
 {
@@ -26,7 +27,7 @@ namespace yaget::mt
     //! Usage:
     //!     Waiting thread:     Condition.Wait();
     //!     Triggering thread:  Condition.Trigger();
-    class Condition : public yaget::Noncopyable<Condition>
+    class Condition : public NoCopy
     {
     public:
         void Trigger()
@@ -73,6 +74,20 @@ namespace yaget::mt
         std::condition_variable mCondition;
         bool mRelease = false;
     };
+
+    template <typename T>
+    struct Locker
+    {
+        Locker(std::shared_mutex& mutex)
+            : mLocker(mutex)
+        {
+        }
+
+        T mLocker;
+    };
+    using WriteLock = Locker<std::unique_lock<std::shared_mutex>>;
+    using ReadLock = Locker<std::shared_lock<std::shared_mutex>>;
+
 
 } // namespace yaget::mt
 

@@ -16,7 +16,7 @@ namespace
     public:
         TestAsset(const yaget::io::Tag& tag, const yaget::io::Buffer& buffer, const yaget::io::VirtualTransportSystem& vts)
             : Asset(tag, buffer, vts) 
-            , mMessage(yaget::io::cast_data<char>(buffer))
+            , mMessage(yaget::io::cast_data<char>(buffer), yaget::io::size_data(buffer))
         {
         }
 
@@ -210,7 +210,8 @@ TEST_F(VTS, TransportSystem)
         EXPECT_TRUE(newTag.mGuid.IsValid());
 
         std::shared_ptr<TestAsset> testAsset = std::make_shared<TestAsset>(newTag, io::CreateBuffer(message), vts);
-        EXPECT_EQ(testAsset->mMessage, message);
+        const std::string testMessage = testAsset->mMessage;
+        EXPECT_EQ(testMessage, message);
 
         EXPECT_TRUE(vts.AttachBlob(testAsset));
 
@@ -464,16 +465,17 @@ TEST_F(VTS, TransportSystem)
         io::BLobLoader<TestAsset> settingLoader(vts, settingsFile);
         EXPECT_EQ(settingLoader.Assets().size(), 1);
         auto settingAsset = *settingLoader.Assets().begin();
-        EXPECT_EQ(settingAsset->mMessage, "Sound Options");
+        EXPECT_STREQ(settingAsset->mMessage.c_str(), "Sound Options");
 
         const Section settingsFiles("TestSettings@Bindings");
 
         io::BLobLoader<TestAsset> settingsLoader(vts, settingsFiles);
         EXPECT_EQ(settingsLoader.Assets().size(), 2);
         auto asset0 = settingsLoader.Assets()[0];
-        EXPECT_EQ(asset0->mMessage, "Exit App");
+        //const std::string testMessage3 = asset0->mMessage;
+        EXPECT_STREQ(asset0->mMessage.c_str(), "Exit App");
         auto asset1 = settingsLoader.Assets()[1];
-        EXPECT_EQ(asset1->mMessage, "Sound Options");
+        EXPECT_STREQ(asset1->mMessage.c_str(), "Sound Options");
 
         {
             std::vector<io::Tag> tags = vts.GetTags(settingsFile);
@@ -488,7 +490,7 @@ TEST_F(VTS, TransportSystem)
         io::BLobLoader<TestAsset> cachedLoader(vts, settingsFile);
         EXPECT_EQ(cachedLoader.Assets().size(), 1);
         auto cachedAsset = *cachedLoader.Assets().begin();
-        EXPECT_EQ(cachedAsset->mMessage, "Cached Sound Options");
+        EXPECT_STREQ(cachedAsset->mMessage.c_str(), "Cached Sound Options");
     }
 
     //--------------------------------------------------------------------------------------------------
