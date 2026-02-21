@@ -29,7 +29,7 @@ namespace defensor::render
     class RenderSystem : public yaget::render::RenderSystemApp<RenderCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, SceneComponent*>
     {
     public:
-        RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet, bool tickEnabled = true);
+        RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet);
 
     private:
         using AssetCacheType = yaget::render::AssetCacheType;

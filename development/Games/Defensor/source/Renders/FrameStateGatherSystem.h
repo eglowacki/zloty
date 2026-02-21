@@ -25,7 +25,7 @@ namespace defensor::render
     class FrameStateGatherSystem : public yaget::render::RenderSystemApp<RenderCoordinatorSet, comp::gs::NoEndMarker, Messaging, SceneComponent*>
     {
     public:
-        FrameStateGatherSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet, bool tickEnabled = true);
+        FrameStateGatherSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet);
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, SceneComponent* sceneComponent);
@@ -36,7 +36,7 @@ namespace defensor::render
     class FrameStateClearSystem : public comp::gs::GameSystem<RenderCoordinatorSet, comp::gs::NoEndMarker, defensor::game::Messaging, SceneComponent*>
     {
     public:
-        FrameStateClearSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet, bool tickEnabled = true);
+        FrameStateClearSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet);
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, SceneComponent* sceneComponent);

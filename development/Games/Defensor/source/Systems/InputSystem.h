@@ -30,7 +30,7 @@ namespace defensor::game
     class ProcessInputSystem : public comp::gs::GameSystem<GameCoordinatorSet, comp::gs::GenerateEndMarker, defensor::game::Messaging, comp::InputComponent*>
     {
     public:
-        ProcessInputSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet, bool tickEnabled = true);
+        ProcessInputSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet);
 
         // Constrain all incoming input to be associated with this specific context
         // If contextName empty, then it simply disables any input processing
@@ -61,7 +61,7 @@ namespace defensor::game
     class ClearInputSystem : public comp::gs::GameSystem<GameCoordinatorSet, comp::gs::NoEndMarker, defensor::game::Messaging, comp::InputComponent*>
     {
     public:
-        ClearInputSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet, bool tickEnabled = true);
+        ClearInputSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet);
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, comp::InputComponent* inputComponent);

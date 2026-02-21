@@ -2,8 +2,8 @@
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::game::PlayerSystem::PlayerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet, bool tickEnabled)
-    : GameSystem("PlayerSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, tickEnabled)
+defensor::game::PlayerSystem::PlayerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
+    : GameSystem("PlayerSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, true)
 {
 }
 

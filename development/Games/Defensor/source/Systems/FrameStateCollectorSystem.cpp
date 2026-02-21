@@ -3,8 +3,8 @@
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::game::FrameStateCollectorSystem::FrameStateCollectorSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet, bool tickEnabled)
-    : GameSystem("FrameStateCollectorSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, tickEnabled)
+defensor::game::FrameStateCollectorSystem::FrameStateCollectorSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
+    : GameSystem("FrameStateCollectorSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, true)
     , mCurrentFrameState(messaging.CreatePayload(/*sizeof(EntityState)*/))
 {
 }

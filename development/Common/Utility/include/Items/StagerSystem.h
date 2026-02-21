@@ -30,7 +30,7 @@ namespace yaget::items
     class StagerSystem : public comp::gs::GameSystem<CS, comp::gs::NoEndMarker, M, StageComponent*>
     {
     public:
-        StagerSystem(const char* niceName, M& messaging, Application& app, CS& coordinatorSet, bool tickEnabled = true)
+        StagerSystem(const char* niceName, M& messaging, Application& app, CS& coordinatorSet, bool tickEnabled)
             : comp::gs::GameSystem<CS, comp::gs::NoEndMarker, M, StageComponent*>(niceName, messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, tickEnabled)
             , mDirector(app.Director())
         {}

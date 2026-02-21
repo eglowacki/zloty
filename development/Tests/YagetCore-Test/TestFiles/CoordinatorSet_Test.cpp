@@ -51,8 +51,8 @@ namespace TestObjects
     class ABCD_EntitySystem : public yaget::comp::gs::GameSystem<EntityCoordinatorSet, yaget::comp::gs::NoEndMarker, Messaging, Acomponent*, Bcomponent*, Ccomponent*, Dcomponent*>
     {
     public:
-        ABCD_EntitySystem(Messaging& messaging, yaget::Application& app, EntityCoordinatorSet& coordinatorSet, bool tickEnabled = true)
-            : GameSystem("ABCD_EntitySystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, tickEnabled)
+        ABCD_EntitySystem(Messaging& messaging, yaget::Application& app, EntityCoordinatorSet& coordinatorSet)
+            : GameSystem("ABCD_EntitySystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, true)
         { }
 
         int mEntityCounter = 0;
@@ -75,8 +75,8 @@ namespace TestObjects
     class AC_EntitySystem : public yaget::comp::gs::GameSystem<EntityCoordinatorSet, yaget::comp::gs::NoEndMarker, Messaging, Acomponent*, Ccomponent*>
     {
     public:
-        AC_EntitySystem(Messaging& messaging, yaget::Application& app, EntityCoordinatorSet& coordinatorSet, bool tickEnabled = true)
-            : GameSystem("AD_EntitySystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, tickEnabled)
+        AC_EntitySystem(Messaging& messaging, yaget::Application& app, EntityCoordinatorSet& coordinatorSet)
+            : GameSystem("AD_EntitySystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, true)
         { }
 
         int mEntityCounter = 0;
@@ -97,8 +97,8 @@ namespace TestObjects
     class A_EntitySystem : public yaget::comp::gs::GameSystem<EntityCoordinatorSet, yaget::comp::gs::NoEndMarker, Messaging, Acomponent*>
     {
     public:
-        A_EntitySystem(Messaging& messaging, yaget::Application& app, EntityCoordinatorSet& coordinatorSet, bool tickEnabled = true)
-            : GameSystem("A_EntitySystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, tickEnabled)
+        A_EntitySystem(Messaging& messaging, yaget::Application& app, EntityCoordinatorSet& coordinatorSet)
+            : GameSystem("A_EntitySystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, true)
         { }
 
         int mEntityCounter = 0;

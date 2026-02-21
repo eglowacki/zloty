@@ -23,7 +23,7 @@ namespace defensor::game
     class PlayerSystem : public comp::gs::GameSystem<GameCoordinatorSet, comp::gs::NoEndMarker, defensor::game::Messaging, comp::LocationComponent3*, comp::InputComponent*>
     {
     public:
-        PlayerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet, bool tickEnabled = true);
+        PlayerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet);
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, comp::LocationComponent3* locationComponent, const comp::InputComponent* inputComponent);
