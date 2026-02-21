@@ -9,21 +9,16 @@
  * or copy at http://opensource.org/licenses/MIT)
  */
 
+#include "Debugging/DevConfiguration.h"
 #include "LoggerCpp/Log.h"
 #include "LoggerCpp/Logger.h"
 #include "LoggerCpp/Manager.h"
-#include <stdarg.h> 
-#include <cstring>
-#include <cassert>
-
-#include "STLHelper.h"
-
-#include "Debugging/DevConfiguration.h"
-
 #include "Platform/Support.h"
-
-
 #include "sqlite/SQLite.h"
+
+#include <cassert>
+#include <stdarg.h> 
+
 using namespace yaget;
 using namespace yaget::ylog;
 

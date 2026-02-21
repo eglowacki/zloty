@@ -22,5 +22,5 @@ bool yaget::CheckVersion(const Version& version, const char* compilerVersion)
 
 std::string yaget::ToString(const Version& version)
 {
-    return fmt::format("{}.{}.{}.{}", version.Major, version.Minor, version.Build, version.Change);
+    return std::format("{}.{}.{}.{}", version.Major, version.Minor, version.Build, version.Change);
 }

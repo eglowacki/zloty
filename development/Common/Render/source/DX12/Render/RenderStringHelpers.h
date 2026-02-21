@@ -19,15 +19,6 @@
 
 #include <d3dx12.h>
 
-inline auto format_as(D3D_FEATURE_LEVEL f) { return fmt::underlying(f); }
-inline auto format_as(D3D12_RESOURCE_BINDING_TIER f) { return fmt::underlying(f); }
-inline auto format_as(D3D_SHADER_MODEL f) { return fmt::underlying(f); }
-inline auto format_as(D3D_ROOT_SIGNATURE_VERSION f) { return fmt::underlying(f); }
-inline auto format_as(D3D12_RENDER_PASS_TIER f) { return fmt::underlying(f); }
-inline auto format_as(D3D12_RAYTRACING_TIER f) { return fmt::underlying(f); }
-inline auto format_as(D3D12_MESH_SHADER_TIER f) { return fmt::underlying(f); }
-inline auto format_as(D3D12_COMMAND_LIST_TYPE f) { return fmt::underlying(f); }
-
 namespace yaget::conv
 {
     //-------------------------------------------------------------------------------------------------
@@ -50,7 +41,8 @@ namespace yaget::conv
                 result = "Feature Level:         12.0";
                 break;
             default:
-                result = fmt::format("Unknown Feature Level {:#x}", value);
+                auto vi = static_cast<int>(value);
+                result = std::vformat("Unknown Feature Level {:#x}", std::make_format_args(vi));
                 YLOG_ERROR("DEVI", "Invalid D3D_FEATURE_LEVEL value: '%s' conversion to string.", result.c_str());
             }
 
@@ -85,7 +77,7 @@ namespace yaget::conv
     {
         static std::string ToString(D3D_SHADER_MODEL value)
         {
-            return std::string("Shader Model:          ") + fmt::format("{:x}", static_cast<int>(value));
+            return std::string("Shader Model:          ") + std::format("{:x}", static_cast<int>(value));
         }                      
     };
 
@@ -109,7 +101,8 @@ namespace yaget::conv
                 result = "Root Signature ver:    1.2";
                 break;   
             default:
-                result = fmt::format("Unknown Root Signature Version {:#x}", value);
+                auto vi = static_cast<int>(value);
+                result = std::vformat("Unknown Root Signature Version {:#x}", std::make_format_args(vi));
                 YLOG_ERROR("DEVI", "Invalid D3D_ROOT_SIGNATURE_VERSION value: '%s' conversion to string.", result.c_str());
             }
 
@@ -182,7 +175,8 @@ namespace yaget::conv
                 result = "Command List Type:     None";
                 break;
             default:
-                result = fmt::format("Unknown Mesh Shader Tier {:#x}", value);
+                auto vi = static_cast<int>(value);
+                result = std::vformat("Unknown Mesh Shader Tier {:#x}", std::make_format_args(vi));
                 YLOG_ERROR("DEVI", "Invalid D3D12_COMMAND_LIST_TYPE_DIRECT value: '%s' conversion to string.", result.c_str());
             }
 
@@ -210,7 +204,8 @@ namespace yaget::conv
                 result = "Command Copy";
                 break;
             default:
-                result = fmt::format("Unknown CommandQueue type {:#x}", value);
+                auto vi = static_cast<int>(value);
+                result = std::vformat("Unknown CommandQueue type {:#x}", std::make_format_args(vi));
                 YLOG_ERROR("DEVI", "Invalid CommandQueue::Type value: '%s' conversion to string.", result.c_str());
             }
 

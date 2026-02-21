@@ -686,8 +686,8 @@ void render::Scene::GuiPass()
         //ImGui::Separator();
         //ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.4f), "Camera:");
         //std::string camLoc = conv::Convertor<math3d::Vector3>::ToString(mCameraData.mPosition);
-        //ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.2f, 0.4f), fmt::format("Loc: {}", camLoc).c_str());
-        //ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.2f, 0.4f), fmt::format("Ratio: {:.3f} (w/h)", mCameraData.mViewportRatio).c_str());
+        //ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.2f, 0.4f), std::format("Loc: {}", camLoc).c_str());
+        //ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.2f, 0.4f), std::format("Ratio: {:.3f} (w/h)", mCameraData.mViewportRatio).c_str());
         //ImGui::SliderFloat("FOV", &mCameraData.mFOV, 1, 120);
         //ImGui::SliderFloat("Near", &mCameraData.mNear, 0.1f, 1000);
         //ImGui::SliderFloat("Far", &mCameraData.mFar, 0.1f, 1000);

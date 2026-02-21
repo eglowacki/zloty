@@ -106,7 +106,7 @@ yaget::render::ConstantsResource::ConstantsResource(Device& device, std::shared_
 //--------------------------------------------------------------------------------------------------
 bool yaget::render::ConstantsResource::Activate()
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     Device::ID3D11DeviceContext_t* hardwareContext = mDevice.GetDeviceContext();
 

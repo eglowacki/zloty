@@ -2,7 +2,6 @@
 #include "Components/LineComponent.h"
 #include "Exception/Exception.h"
 #include "StringHelpers.h"
-#include "Fmt/format.h"
 #include "Logger/YLog.h"
 #include "Debugging/DevConfiguration.h"
 #include "RenderMathFacade.h"

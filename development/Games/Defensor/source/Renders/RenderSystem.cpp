@@ -11,6 +11,11 @@ namespace
     yaget::io::Tag TypeToTag(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
     {
         auto section = yaget::render::AssetCache::operator[](assetCacheType);
+        if (section.mName.empty())
+        {
+            return {};
+        }
+
         auto tag = vts.AssureTag(section);
         return tag;
     }
@@ -35,10 +40,13 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     });
 }
 
+
+//-------------------------------------------------------------------------------------------------
 colors::Color lerp(const colors::Color& a, const colors::Color& b, float t) 
-    {
-        return colors::Color::Lerp(a, b, t);
-    }
+{
+    return colors::Color::Lerp(a, b, t);
+}
+
 
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent)
@@ -84,14 +92,14 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                     auto pso = mRenderPipelines.GetPipeline(psoTag);
                     commandList->SetPipelineState(pso);
                 }
+
+                float matrix[16];
+                math3d::GetMatrixAsFloats(location, matrix);
+                std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
+
+                commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
+                renderComponent->Render(commandList);
             }
-
-            float matrix[16];
-            math3d::GetMatrixAsFloats(location, matrix);
-            std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
-
-            commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
-            renderComponent->Render(commandList);
 
             return true;
         });
@@ -164,18 +172,28 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
 {
     auto& vts = mApp.VTS();
 
-    ID3D12RootSignature* signature = nullptr;
     auto vsTag = TypeToTag(material.mVertexShader, vts);
     auto psTag = TypeToTag(material.mPixelShader, vts);
-
     auto sigTag = TypeToTag(material.mSignature, vts);
+    auto psoTag = TypeToTag(material.mPSO, vts);
+    if (!vsTag.IsValid() || !psTag.IsValid() || !sigTag.IsValid() || !psoTag.IsValid())
+    {
+        YLOG_ERROR("REND", std::format("Material '{}' has invalid material tags. vsTag: '{}', psTag: '{}', sigTag: '{}', psoTag: '{}'", 
+            conv::Convertor<io::Tag>::ToString(matTag), 
+            conv::Convertor<io::Tag>::ToString(vsTag), 
+            conv::Convertor<io::Tag>::ToString(psTag), 
+            conv::Convertor<io::Tag>::ToString(sigTag), 
+            conv::Convertor<io::Tag>::ToString(psoTag)).c_str());
+        return;
+    }
+
+    ID3D12RootSignature* signature = nullptr;
     mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &sigTag, &signature](const auto& descResult)
     {
         signature = mRenderSignatures.GetSignature(sigTag, descResult);
     });
     AttachTransientAsset(sigTag, vts);
 
-    auto psoTag = TypeToTag(material.mPSO, vts);
     auto vsBlob = mRenderShaders.GetShader(vsTag, yaget::render::RenderShaders::ShaderType::Vertex);
     auto psBlob = mRenderShaders.GetShader(psTag, yaget::render::RenderShaders::ShaderType::Pixel);
 
@@ -195,6 +213,8 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     mDependencyGraph.Add(psoTag.mGuid, sigTag.mGuid);
     mDependencyGraph.Add(sigTag.mGuid, vsTag.mGuid);
     mDependencyGraph.Add(sigTag.mGuid, psTag.mGuid);
+
+    mDependencyGraph.ClearDirty(matTag.mGuid);
 }
 
 
@@ -205,6 +225,7 @@ void defensor::render::RenderSystem::HotRebindMaterial(const Guid& guid)
 
     std::vector<DependencyNode*> pathTo;
     DependencyNode *node = mDependencyGraph.Find(guid, &pathTo);
+    node;
     if (!pathTo.empty())
     {
         DependencyNode* matNode = *pathTo.begin();

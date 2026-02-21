@@ -130,7 +130,7 @@ void yaget::render::RenderTarget::SaveToFile() const
 
         static int index = 0;
         int mapSize = 1024;
-        std::string nextFileName = fmt::format("ScreenShot_{}_{}.png", index++, mapSize);
+        std::string nextFileName = std::format("ScreenShot_{}_{}.png", index++, mapSize);
 
         textureFilePath /= fs::path("Textures") / fs::path(nextFileName);
         imageFileName = textureFilePath.string();

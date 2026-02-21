@@ -200,7 +200,7 @@ void yaget::render::platform::SwapChain::UpdateRenderTargetViews()
         const HRESULT hr = mSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer));
         error_handlers::ThrowOnError(hr, "Could not get DX12 SwapChain Back Buffer");
 
-        YAGET_RENDER_SET_DEBUG_NAME(backBuffer.Get(), fmt::format("Yaget Back Buffer {}", i));
+        YAGET_RENDER_SET_DEBUG_NAME(backBuffer.Get(), std::format("Yaget Back Buffer {}", i));
 
         mDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
         mBackBuffers[i] = backBuffer;

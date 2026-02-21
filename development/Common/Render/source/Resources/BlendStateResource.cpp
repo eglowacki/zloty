@@ -21,7 +21,7 @@ namespace
 yaget::render::state::BlendStateResource::BlendStateResource(Device& device, std::shared_ptr<io::render::BlendStateAsset> asset)
     : ResourceView(device, asset->mTag, std::type_index(typeid(BlendStateResource)))
 {
-    error_handlers::ThrowOnCheck(asset->mTargetBlends.size() < kMaxBendableTargets, fmt::format("BlendStateAsset has: '{}' blend targets, but only maximum of '{}' is supported.", asset->mTargetBlends.size(), kMaxBendableTargets));
+    error_handlers::ThrowOnCheck(asset->mTargetBlends.size() < kMaxBendableTargets, std::format("BlendStateAsset has: '{}' blend targets, but only maximum of '{}' is supported.", asset->mTargetBlends.size(), kMaxBendableTargets));
 
     Device::ID3D11Device_t* hardwareDevice = mDevice.GetDevice();
 
@@ -59,7 +59,7 @@ bool yaget::render::state::BlendStateResource::Activate(const colors::Color& ble
 {
     
     
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     Device::ID3D11DeviceContext_t* deviceContext = mDevice.GetDeviceContext();
 

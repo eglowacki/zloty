@@ -14,7 +14,6 @@
 #pragma once
 
 #include "Render/RenderCore.h"
-#include <fmt/format.h>
 
 struct ID3D12Device;
 struct ID3D12CommandQueue;
@@ -45,8 +44,6 @@ namespace yaget::render::platform
         std::atomic_uint64_t mFenceValue{ 0 };
     };
     
-    inline auto format_as(CommandQueue::Type f) { return fmt::underlying(f); }
-
     //-------------------------------------------------------------------------------------------------
     // This class manages and exposes various types of Command Queues
     // This should replace the class above (CommandQueue)

@@ -100,7 +100,7 @@ yaget::render::TextureImageResource::TextureImageResource(Device& device, std::s
 //--------------------------------------------------------------------------------------------------
 bool yaget::render::TextureImageResource::Activate()
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     Device::ID3D11DeviceContext_t* d3dDeviceContext = mDevice.GetDeviceContext();
 
@@ -158,7 +158,7 @@ yaget::render::TextureMetaResource::TextureMetaResource(Device& device, std::sha
 //--------------------------------------------------------------------------------------------------
 bool yaget::render::TextureMetaResource::Activate()
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     Device::ID3D11DeviceContext_t* d3dDeviceContext = mDevice.GetDeviceContext();
 
@@ -191,7 +191,7 @@ yaget::render::TextureResource::~TextureResource()
 //--------------------------------------------------------------------------------------------------
 bool yaget::render::TextureResource::Activate()
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     mt::SmartVariable<render::TextureImageResource>::SmartType textureView = mTextureView;
     mt::SmartVariable<render::TextureMetaResource>::SmartType sampler = mSampler;

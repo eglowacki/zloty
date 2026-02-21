@@ -41,7 +41,7 @@ yaget::render::state::DepthStencilStateResource::DepthStencilStateResource(Devic
 
 bool yaget::render::state::DepthStencilStateResource::Activate()
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     Device::ID3D11DeviceContext_t* deviceContext = mDevice.GetDeviceContext();
 

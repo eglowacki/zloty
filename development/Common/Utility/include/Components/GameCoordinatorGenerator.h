@@ -170,13 +170,13 @@ namespace yaget::comp::db
         {
             return GenerateSystemsCoordinator2<T, Strings>([](auto results, auto tableName, auto columnNames, auto typeNames)
             {
-                std::string sqlCommand = fmt::format("CREATE TABLE '{}' ('Id' {} CHECK(Id != 0) UNIQUE", tableName, internal::ResolveDatabaseType<comp::Id_t>());
+                std::string sqlCommand = std::format("CREATE TABLE '{}' ('Id' {} CHECK(Id != 0) UNIQUE", tableName, internal::ResolveDatabaseType<comp::Id_t>());
 
                 auto cn_it = columnNames.begin();
                 auto tn_it = typeNames.begin();
                 for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
                 {
-                    sqlCommand += fmt::format(", '{}' {}", *cn_it, *tn_it);
+                    sqlCommand += std::format(", '{}' {}", *cn_it, *tn_it);
                 }
             
                 sqlCommand += ", PRIMARY KEY('Id'));";
@@ -206,13 +206,13 @@ namespace yaget::comp::db
 
             auto lines = GenerateSystemsCoordinator2<T, Strings>([](auto results, auto tableName, auto columnNames, auto typeNames)
             {
-                std::string logLine = fmt::format("====: '{}'\n\t\t\t{} id", tableName, ResolveName<comp::Id_t>());
+                std::string logLine = std::format("====: '{}'\n\t\t\t{} id", tableName, ResolveName<comp::Id_t>());
 
                 auto cn_it = columnNames.begin();
                 auto tn_it = typeNames.begin();
                 for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
                 {
-                    logLine += fmt::format(",\n\t\t\t'{}' {}", *tn_it, *cn_it);
+                    logLine += std::format(",\n\t\t\t'{}' {}", *tn_it, *cn_it);
                 }
 
                 if (!columnNames.empty())
@@ -225,16 +225,16 @@ namespace yaget::comp::db
                 return results;
             });
 
-            auto systemNames = fmt::format("=== Game System Hierarchy:\n\tTop Coordinator: '{}' with registered systems:\n", ResolveName<T>());
+            auto systemNames = std::format("=== Game System Hierarchy:\n\tTop Coordinator: '{}' with registered systems:\n", ResolveName<T>());
             systemNames += "\t\t" + conv::Combine(GetPolicyRowNames<typename T::Systems>(), "\n\t\t");
             systemNames += "\n\tOperating on components:\n\t\t" + conv::Combine(lines, "\n\t\t");
 
             return systemNames;
 
 
-            //lines.insert(lines.begin(), fmt::format("Root Coordinator: {}\n", ResolveName<T>()));
+            //lines.insert(lines.begin(), std::format("Root Coordinator: {}\n", ResolveName<T>()));
             //auto systemNames = conv::Combine(GetPolicyRowNames<typename T::Systems>(), "\n");
-            //systemNames.insert(systemNames.begin(), fmt::format("Root Coordinator: {}\n", ResolveName<T>()));
+            //systemNames.insert(systemNames.begin(), std::format("Root Coordinator: {}\n", ResolveName<T>()));
             //systemNames.insert(systemNames.end(), lines.begin(), lines.end());
 
 

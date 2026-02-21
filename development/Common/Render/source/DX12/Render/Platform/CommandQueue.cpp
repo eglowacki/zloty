@@ -3,7 +3,6 @@
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/RenderStringHelpers.h"
 #include "Render/EnumConversion.h"
-#include "fmt/format.h"
 
 #include <type_traits>
 #include <d3d12.h>
@@ -25,9 +24,9 @@ namespace
 
         render::ComPtr<ID3D12CommandQueue> commandQueue;
         const HRESULT hr = device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue));
-        error_handlers::ThrowOnError(hr, fmt::format("Could not create DX12 Command Queue for type: {}.", conv::Convertor<render::platform::CommandQueue::Type>::ToString(cqType)));
+        error_handlers::ThrowOnError(hr, std::format("Could not create DX12 Command Queue for type: {}.", conv::Convertor<render::platform::CommandQueue::Type>::ToString(cqType)));
 
-        YAGET_RENDER_SET_DEBUG_NAME(commandQueue.Get(), fmt::format("Yaget CommandQueue-{}", conv::Convertor<render::platform::CommandQueue::Type>::ToString(cqType)));
+        YAGET_RENDER_SET_DEBUG_NAME(commandQueue.Get(), std::format("Yaget CommandQueue-{}", conv::Convertor<render::platform::CommandQueue::Type>::ToString(cqType)));
 
         return commandQueue;
     }

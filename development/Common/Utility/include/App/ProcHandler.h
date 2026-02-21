@@ -16,10 +16,11 @@
 
 #include "YagetCore.h"
 #include "Json/JsonHelpers.h"
-#include "Streams/Buffers.h"
 #include "Platform/WindowsLean.h"
 #include "Debugging/DevConfiguration.h"
 #include <functional>
+
+#include <magic_enum/magic_enum.hpp>
 
 
 namespace yaget::io { class VirtualTransportSystem; }
@@ -28,14 +29,10 @@ namespace yaget::app
 {
     enum class Appearance { Fullscreen, Window, Borderless };
 
-    inline auto format_as(Appearance f) { return fmt::underlying(f); }
-
-    NLOHMANN_JSON_SERIALIZE_ENUM(Appearance, {
-        { Appearance::Fullscreen, "Fullscreen" },
-        { Appearance::Window, "Window" },
-        { Appearance::Borderless, "Borderless" }
-        });
-
+    inline auto magic_enum_define_range_adl(Appearance)
+    {
+        return magic_enum::customize::adl_info().minmax<0, 2>(); // the min max search range
+    }
     //--------------------------------------------------------------------------------------------------
     // data representation of json file window settings
     struct WindowAppearance
@@ -64,6 +61,24 @@ namespace yaget::app
         int FrameWidth() const { return mRight - mLeft; }
         int FrameHeight() const { return mBottom - mTop; }
     };
+
+    inline void to_json(nlohmann::json& j, const Appearance& appearance)
+    {
+        j = magic_enum::enum_name(appearance);
+    }
+
+    inline void from_json(const nlohmann::json& j, Appearance& appearance)
+    {
+        std::string source;
+        j.get_to(source);
+
+        auto enumValue = magic_enum::enum_cast<Appearance>(source);
+        if (enumValue.has_value())
+        {
+            appearance = enumValue.value();
+        }
+    }
+
 
     inline void to_json(nlohmann::json& j, const WindowAppearance& appearance)
     {

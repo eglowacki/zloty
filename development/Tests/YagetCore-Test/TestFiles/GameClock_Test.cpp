@@ -101,13 +101,13 @@ TEST_F(Time, Sleep)
     accumulatedError = 0;
 
     //-------------------------------
-    std::string loadsMessage = fmt::format("Accumulated errors after '{}' iterations:", BusySkeepIterations);
+    std::string loadsMessage = std::format("Accumulated errors after '{}' iterations:", BusySkeepIterations);
     for (const auto& elem : timings)
     {
-        loadsMessage += fmt::format("\n\t{} = {} {}.", elem.first, conv::ToThousandsSep(elem.second), metrics::UnitName(time::kMicrosecondUnit));
+        loadsMessage += std::format("\n\t{} = {} {}.", elem.first, conv::ToThousandsSep(elem.second), metrics::UnitName(time::kMicrosecondUnit));
     }
 
-    loadsMessage += fmt::format("\n\tBusySleep: {} {}, Sleep: {} {}.", 
+    loadsMessage += std::format("\n\tBusySleep: {} {}, Sleep: {} {}.", 
                                     conv::ToThousandsSep(BusySleepDuration), metrics::UnitName(time::kMicrosecondUnit),
                                     conv::ToThousandsSep(SleepDuration), metrics::UnitName(time::kMicrosecondUnit));
 

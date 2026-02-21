@@ -6,7 +6,6 @@
 #include "Debugging/DevConfiguration.h"
 #include "App/Args.h"
 #include "App/AppUtilities.h"
-#include "Fmt/ostream.h"
 #include "Exception/Exception.h"
 #include "LoggerCpp/Manager.h"
 #include "LoggerCpp/OutputDebug.h"

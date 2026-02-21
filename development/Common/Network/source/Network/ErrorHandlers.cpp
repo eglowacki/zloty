@@ -3,7 +3,6 @@
 #include "Platform/Support.h"
 
 #include <boost/system/error_code.hpp>
-#include <fmt/format.h>
 
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -11,8 +10,8 @@ void yaget::error_handlers::ThrowOnError(const boost::system::error_code& ec, co
 {
     if (ec)
     {
-        const auto& userMessage = !message.empty() ? fmt::format("{}. ", message) : "";
-        const auto textError = fmt::format("{}{}", userMessage, ec.message());
+        const auto& userMessage = !message.empty() ? std::format("{}. ", message) : "";
+        const auto textError = std::format("{}{}", userMessage, ec.message());
         Throw(textError, location);
     }
 }

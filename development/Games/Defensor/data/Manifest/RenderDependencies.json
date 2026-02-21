@@ -11,7 +11,7 @@
                         "name": "Transient@BasicSig"
                     }
                 ],
-                "name": "Transient@BasicPipe"
+                "name": "Transient@BasicPipe_Wire"
             }
         ],
         "name": "Materials@BasicMaterial"

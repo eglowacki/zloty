@@ -2,7 +2,6 @@
 #include "Device.h"
 #include "Debugging/Assert.h"
 #include "RenderHelpers.h"
-#include "Fmt/format.h"
 #include "RenderMathFacade.h"
 #include "Exception/Exception.h"
 #include <memory>
@@ -35,7 +34,7 @@ void render::GridComponent::OnReset()
     }
     catch (const std::exception& e)
     {
-        const auto& textError = fmt::format("Did not initialize GridComponent '{}'. Error: {}", static_cast<comp::Id_t>(Id()), e.what());
+        const auto& textError = std::format("Did not initialize GridComponent '{}'. Error: {}", static_cast<comp::Id_t>(Id()), e.what());
         error_handlers::Throw("REND", textError);
     }
 

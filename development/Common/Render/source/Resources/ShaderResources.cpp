@@ -68,7 +68,7 @@ yaget::render::VertexShaderResource::VertexShaderResource(Device& device, std::s
 //--------------------------------------------------------------------------------------------------
 bool yaget::render::VertexShaderResource::Activate()
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     Device::ID3D11DeviceContext_t* deviceContext = mDevice.GetDeviceContext();
 
@@ -98,7 +98,7 @@ yaget::render::PixelShaderResource::PixelShaderResource(Device& device, std::sha
 //--------------------------------------------------------------------------------------------------
 bool yaget::render::PixelShaderResource::Activate()
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     Device::ID3D11DeviceContext_t* deviceContext = mDevice.GetDeviceContext();
 
@@ -184,7 +184,7 @@ yaget::render::InputLayoutResource::InputLayoutResource(Device& device, std::sha
 //--------------------------------------------------------------------------------------------------
 bool yaget::render::InputLayoutResource::Activate()
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     Device::ID3D11DeviceContext_t* deviceContext = mDevice.GetDeviceContext();
 

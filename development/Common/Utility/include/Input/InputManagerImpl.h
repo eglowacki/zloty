@@ -19,7 +19,6 @@
 #ifndef YAGET_INPUT_MANAGER_INCLUDE_IMPLEMENTATION
 #error "Do not include this file explicitly."
 #endif // YAGET_INPUT_MANAGER_INCLUDE_IMPLEMENTATION
-#include "fmt/format.h"
 
 namespace yaget
 {

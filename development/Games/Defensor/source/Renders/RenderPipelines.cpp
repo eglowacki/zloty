@@ -3,7 +3,6 @@
 #include "RenderPipelines.h"
 #include <CommonStates.h>
 #include <d3dx12.h>
-#include <Fmt/format.h>
 #include <VertexTypes.h>
 
 #include "Parsers/DependencyGraph.h"
@@ -182,13 +181,13 @@ namespace
         yaget::render::ComPtr<ID3D12PipelineState> pipelineState;
         HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState));
         error_handlers::ThrowOnError(hr, "Could not create Pipeline State.");
-        YAGET_RENDER_SET_DEBUG_NAME(pipelineState.Get(), fmt::format("Pipeline State"));
+        YAGET_RENDER_SET_DEBUG_NAME(pipelineState.Get(), std::format("Pipeline State"));
 
         if (!io::size_data(dataBlob))
         {
             yaget::render::ComPtr<ID3DBlob> pipeBlob;
             hr = pipelineState->GetCachedBlob(&pipeBlob);
-            error_handlers::ThrowOnError(hr, fmt::format("Could not get ID3D12PipelineState as a blob to save it"));
+            error_handlers::ThrowOnError(hr, std::format("Could not get ID3D12PipelineState '{}' as a blob to save it", conv::Convertor<io::Tag>::ToString(tag)));
 
             dataBlob = io::CreateBuffer(static_cast<const char*>(pipeBlob->GetBufferPointer()), pipeBlob->GetBufferSize());
         }

@@ -235,7 +235,7 @@ void yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::Tick(const time::GameCl
     // possibly run each system on own thread, taking Policy (usage) into account
     meta::for_each(mSystems, [this, &gameClock, &channel](auto& gameSystem)
     {
-        const auto& message = fmt::format("System Tick {}", gameSystem->NiceName());
+        const auto& message = std::format("System Tick {}", gameSystem->NiceName());
         metrics::Channel systemChannel(message);
 
         gameSystem->Tick(gameClock, channel);

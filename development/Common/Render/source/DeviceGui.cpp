@@ -105,7 +105,7 @@ void yaget::render::Device::Gui_UpdateWatcher()
     //        highlightedIndex = *highlights.begin();
 
     //        typeFilter = mFrameResources[highlightedIndex].mHighlightType ? mFrameResources[highlightedIndex].mResource->GetNameType() : "";
-    //        hashFilter = mFrameResources[highlightedIndex].mHighlightHash ? fmt::format("{}", mFrameResources[highlightedIndex].mResource->GetStateHash()) : "";
+    //        hashFilter = mFrameResources[highlightedIndex].mHighlightHash ? std::format("{}", mFrameResources[highlightedIndex].mResource->GetStateHash()) : "";
     //        nameFilter = mFrameResources[highlightedIndex].mHighlightName ? Section(mFrameResources[highlightedIndex].mResource->mAssetTag).ToString() : "";
     //    }
 
@@ -120,7 +120,7 @@ void yaget::render::Device::Gui_UpdateWatcher()
     //        {
     //            if (debuggerAttached)
     //            {
-    //                if (ImGui::Button(fmt::format("Debug##{}", index).c_str()))
+    //                if (ImGui::Button(std::format("Debug##{}", index).c_str()))
     //                {
     //                    mResourceBreakOn = index;
     //                }
@@ -130,15 +130,15 @@ void yaget::render::Device::Gui_UpdateWatcher()
 
     //            yaget::gui::MakeDisabled(highlightedIndex != -1 && highlightedIndex != index, [&]()
     //            {
-    //                ImGui::Checkbox(fmt::format("T##{}", index).c_str(), &resource.mHighlightType);
+    //                ImGui::Checkbox(std::format("T##{}", index).c_str(), &resource.mHighlightType);
     //                yaget::gui::SetTooltip("Highlight resources with same types.");
     //                ImGui::SameLine();
 
-    //                ImGui::Checkbox(fmt::format("H##{}", index).c_str(), &resource.mHighlightHash);
+    //                ImGui::Checkbox(std::format("H##{}", index).c_str(), &resource.mHighlightHash);
     //                yaget::gui::SetTooltip("Highlight resources with same hash.");
     //                ImGui::SameLine();
 
-    //                ImGui::Checkbox(fmt::format("N##{}", index).c_str(), &resource.mHighlightName);
+    //                ImGui::Checkbox(std::format("N##{}", index).c_str(), &resource.mHighlightName);
     //                yaget::gui::SetTooltip("Highlight resources with same names");
     //                ImGui::SameLine();
     //            });
@@ -146,15 +146,15 @@ void yaget::render::Device::Gui_UpdateWatcher()
     //            std::string userText = resource.mUserText.empty() ? "" : " (" + resource.mUserText + ")";
 
     //            float alphaAdjuster = defaultAlphaAdjuster;
-    //            if (typeFilter == resource.mResource->GetNameType() || hashFilter == fmt::format("{}", resource.mResource->GetStateHash()) || nameFilter == Section(resource.mResource->mAssetTag).ToString())
+    //            if (typeFilter == resource.mResource->GetNameType() || hashFilter == std::format("{}", resource.mResource->GetStateHash()) || nameFilter == Section(resource.mResource->mAssetTag).ToString())
     //            {
     //                alphaAdjuster = 1.0f;
     //            }
 
     //            yaget::gui::TextColors(
-    //                keyColor * alphaAdjuster, fmt::format("{:3} - Type:", index),
-    //                valueColor * alphaAdjuster, fmt::format(ValueFormater, resource.mResource->GetNameType()),
-    //                infoColor * alphaAdjuster, fmt::format(UserFormater, userText),
+    //                keyColor * alphaAdjuster, std::format("{:3} - Type:", index),
+    //                valueColor * alphaAdjuster, std::format(ValueFormater, resource.mResource->GetNameType()),
+    //                infoColor * alphaAdjuster, std::format(UserFormater, userText),
     //                valueColor * alphaAdjuster, ",",
     //                keyColor * alphaAdjuster, "Name:",
     //                sectionColor * alphaAdjuster, Section(resource.mResource->mAssetTag).ToString());

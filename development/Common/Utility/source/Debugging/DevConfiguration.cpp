@@ -9,15 +9,12 @@
 #include "LoggerCpp/OutputConsole.h"
 #include "LoggerCpp/OutputFile.h"
 #include "Platform/Support.h"
-#include "fmt/format.h"
 #include "Metrics/Gather.h"
 #include "Debugging/DevConfigurationParsers.h"
 
 #include <filesystem>
 #include <fstream>
 #include "Core/ErrorHandlers.h"
-
-#include "Script/luacpp.h"
 
 namespace fs = std::filesystem;
 
@@ -64,7 +61,7 @@ namespace
                 {
                     if (!includeTracker.insert(includePathName).second)
                     {
-                        platform::DebuggerOutput(fmt::format("[WARN:CONF] Include path: '{}' in configuration file: '{}' already previously included, resulting in circular inclusion, skipping.", includePathName, configPath.generic_string()));
+                        platform::DebuggerOutput(std::format("[WARN:CONF] Include path: '{}' in configuration file: '{}' already previously included, resulting in circular inclusion, skipping.", includePathName, configPath.generic_string()));
                         continue;
                     }
                     else
@@ -111,13 +108,13 @@ namespace
                 // there ia some data in json, but it does not has 'Configuration' section
                 // What do we do here, we don't want to emit error to log, since they are not setup yet
                 // do we throw exception and is this the right level of error handling
-                std::string textError = fmt::format("Non-empty and valid config file data does not contain 'Configuration' section.\n{}", json::PrettyPrint(root));
+                std::string textError = std::format("Non-empty and valid config file data does not contain 'Configuration' section.\n{}", json::PrettyPrint(root));
                 throw std::exception(textError.c_str());
             }
         }
         catch (const std::exception& e)
         {
-            std::string textError = fmt::format("Did not finished init configuration bindings from:\n{}.\nError: {}", configPath.generic_string(), e.what());
+            std::string textError = std::format("Did not finished init configuration bindings from:\n{}.\nError: {}", configPath.generic_string(), e.what());
             error_handlers::Throw("INIT", textError);
         }
     }

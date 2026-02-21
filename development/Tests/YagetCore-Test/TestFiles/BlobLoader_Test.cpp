@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "VTS/BlobLoader.h"
-#include "Fmt/format.h"
 #include "StringHelpers.h"
 #include "App/FileUtilities.h"
 #include "TestHelpers/TestHelpers.h"
@@ -40,19 +39,19 @@ namespace
         using namespace yaget;
 
         constexpr size_t fileSize = 1024 * 1024 * 10;
-        metrics::Channel channel(fmt::format("CleanupAndSetup '{}' files", maxNumFiles));
+        metrics::Channel channel(std::format("CleanupAndSetup '{}' files", maxNumFiles));
 
         CleanTestFiles();
 
         const fs::path destFolder = util::ExpendEnv("$(Temp)", nullptr);
-        const std::string fileNumber = fmt::format("blob_file-{{:0{}}}.bin", GetNumDigits(maxNumFiles));
+        const std::string fileNumber = std::format("blob_file-{{:0{}}}.bin", GetNumDigits(maxNumFiles));
 
         const auto dataBuffer = io::CreateBuffer(fileSize);
 
         Strings filesToTest;
         for (int i = 0; i < maxNumFiles; ++i)
         {
-            const fs::path blobFile = destFolder / fmt::vformat(fileNumber, fmt::make_format_args(i));
+            const fs::path blobFile = destFolder / std::vformat(fileNumber, std::make_format_args(i));
             filesToTest.emplace_back(blobFile.generic_string());
             io::file::SaveFile(filesToTest.back(), dataBuffer);
         }

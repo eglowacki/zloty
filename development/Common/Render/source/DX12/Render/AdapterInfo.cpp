@@ -403,7 +403,7 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
 
     YLOG_INFO("DEVI", "D3D Features:\n%s", optionsText.c_str());
 
-    error_handlers::ThrowOnCheck(signatureVersion >= D3D_ROOT_SIGNATURE_VERSION_1_1, fmt::format("Minimum Root Signature version needed: '1.1', current version: '{}'", conv::Convertor<D3D_ROOT_SIGNATURE_VERSION>::ToString(signatureVersion)));
+    error_handlers::ThrowOnCheck(signatureVersion >= D3D_ROOT_SIGNATURE_VERSION_1_1, std::format("Minimum Root Signature version needed: '1.1', current version: '{}'", conv::Convertor<D3D_ROOT_SIGNATURE_VERSION>::ToString(signatureVersion)));
 
     return { hardwareDevice, hardwareAdapter, factory };
 }

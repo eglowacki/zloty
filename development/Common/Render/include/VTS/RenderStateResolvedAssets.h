@@ -18,12 +18,6 @@
 #include "YagetCore.h"
 #include "VTS/RenderResolvedAssets.h"
 
-inline auto format_as(D3D11_DEPTH_WRITE_MASK f) { return fmt::underlying(f); }
-inline auto format_as(D3D11_COMPARISON_FUNC f) { return fmt::underlying(f); }
-inline auto format_as(D3D11_FILL_MODE f) { return fmt::underlying(f); }
-inline auto format_as(D3D11_CULL_MODE f) { return fmt::underlying(f); }
-inline auto format_as(D3D11_BLEND f) { return fmt::underlying(f); }
-inline auto format_as(D3D11_BLEND_OP f) { return fmt::underlying(f); }
 
 namespace yaget
 {
@@ -203,7 +197,7 @@ namespace yaget::conv
     {
         static std::string ToString(const D3D11_DEPTH_WRITE_MASK& value)
         {
-            return fmt::format("D3D11_DEPTH_WRITE_MASK: '{}'", value);
+            return std::format("D3D11_DEPTH_WRITE_MASK: '{}'", value);
         }
     };
 
@@ -213,7 +207,7 @@ namespace yaget::conv
     {
         static std::string ToString(const D3D11_COMPARISON_FUNC& value)
         {
-            return fmt::format("D3D11_COMPARISON_FUNC: '{}'", value);
+            return std::format("D3D11_COMPARISON_FUNC: '{}'", value);
         }
     };
 
@@ -223,7 +217,7 @@ namespace yaget::conv
     {
         static std::string ToString(const D3D11_FILL_MODE& value)
         {
-            return fmt::format("D3D11_FILL_MODE: '{}'", value);
+            return std::format("D3D11_FILL_MODE: '{}'", value);
         }
     };
 
@@ -233,7 +227,7 @@ namespace yaget::conv
     {
         static std::string ToString(const D3D11_CULL_MODE& value)
         {
-            return fmt::format("D3D11_CULL_MODE: '{}'", value);
+            return std::format("D3D11_CULL_MODE: '{}'", value);
         }
     };
 
@@ -243,7 +237,7 @@ namespace yaget::conv
     {
         static std::string ToString(const D3D11_BLEND& value)
         {
-            return fmt::format("D3D11_BLEND: '{}'", value);
+            return std::format("D3D11_BLEND: '{}'", value);
         }
     };
 
@@ -253,7 +247,7 @@ namespace yaget::conv
     {
         static std::string ToString(const D3D11_BLEND_OP& value)
         {
-            return fmt::format("D3D11_BLEND_OP: '{}'", value);
+            return std::format("D3D11_BLEND_OP: '{}'", value);
         }
     };
 
@@ -266,8 +260,8 @@ namespace yaget::conv
             std::string results;
             for (const auto& it : value)
             {
-                std::string blendvalues = fmt::vformat("{ BlendEnable: '{}', SrcBlend: '{}', DestBlend: '{}', BlendOp: '{}', SrcBlendAlpha: '{}', DestBlendAlpha: '{}', BlendOpAlpha: '{}', mRenderTargetWriteMask: '{}' }",
-                    fmt::make_format_args(it.mBlendEnable, it.mSrcBlend, it.mDestBlend, it.mBlendOp, it.mSrcBlendAlpha, it.mDestBlendAlpha, it.mBlendOpAlpha, it.mRenderTargetWriteMask));
+                std::string blendvalues = std::vformat("{ BlendEnable: '{}', SrcBlend: '{}', DestBlend: '{}', BlendOp: '{}', SrcBlendAlpha: '{}', DestBlendAlpha: '{}', BlendOpAlpha: '{}', mRenderTargetWriteMask: '{}' }",
+                    std::make_format_args(it.mBlendEnable, it.mSrcBlend, it.mDestBlend, it.mBlendOp, it.mSrcBlendAlpha, it.mDestBlendAlpha, it.mBlendOpAlpha, it.mRenderTargetWriteMask));
 
                 results += blendvalues;
             }
@@ -284,7 +278,7 @@ namespace DirectX::SimpleMath
 
     inline void to_json(nlohmann::json& j, const math3d::Color& color)
     {
-        j = fmt::format("{}, {}, {}, {}", color.R(), color.G(), color.B(), color.A());
+        j = std::format("{}, {}, {}, {}", color.R(), color.G(), color.B(), color.A());
     }
 
     inline void from_json(const nlohmann::json& j, math3d::Color& color)
