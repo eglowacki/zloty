@@ -55,8 +55,8 @@ namespace yaget::render
     class RenderSystemApp : public comp::gs::GameSystem<CS, EndMarker, M, Comp...>
     {
     protected:
-        RenderSystemApp(const char* niceName, M& messaging, Application& app, comp::gs::GameSystem<CS, EndMarker, M, Comp...>::UpdateFunctor updateFunctor, CS& coordinatorSet)
-            : comp::gs::GameSystem<CS, EndMarker, M, Comp...>(niceName, messaging, app, updateFunctor, coordinatorSet)
+        RenderSystemApp(const char* niceName, M& messaging, Application& app, comp::gs::GameSystem<CS, EndMarker, M, Comp...>::UpdateFunctor updateFunctor, CS& coordinatorSet, bool tickEnabled = true)
+            : comp::gs::GameSystem<CS, EndMarker, M, Comp...>(niceName, messaging, app, updateFunctor, coordinatorSet, tickEnabled)
             , mDevice(static_cast<DesktopApplication&>(app).Device())
         {}
 

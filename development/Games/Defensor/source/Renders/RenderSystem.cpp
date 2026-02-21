@@ -23,8 +23,8 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
-    : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet)
+defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet, bool /*tickEnabled*/)
+    : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, false)
     , mAssetPoolThread("PreloadRenderAssets", 1)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
     , mMatrixInterpolator(0.0f, 1.0f)
@@ -51,11 +51,6 @@ colors::Color lerp(const colors::Color& a, const colors::Color& b, float t)
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent)
 {
-    if (!mAssetsPreloaded)
-    {
-        return;
-    }
-
     using RenderEntity = comp::RowPolicy<RenderComponent*>;
     auto& coordinator = GetCS().GetCoordinator<RenderEntity>();
 
@@ -163,7 +158,7 @@ void defensor::render::RenderSystem::PreloadAssets()
 
     platform::Sleep(1, time::kSecondUnit);
 
-    mAssetsPreloaded = true;
+    SetTickEnabled(true);
 }
 
 

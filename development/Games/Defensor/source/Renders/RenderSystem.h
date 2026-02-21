@@ -29,7 +29,7 @@ namespace defensor::render
     class RenderSystem : public yaget::render::RenderSystemApp<RenderCoordinatorSet, comp::gs::GenerateEndMarker, Messaging, SceneComponent*>
     {
     public:
-        RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet);
+        RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet, bool tickEnabled = true);
 
     private:
         using AssetCacheType = yaget::render::AssetCacheType;
@@ -58,8 +58,6 @@ namespace defensor::render
         RenderPipelines mRenderPipelines;
         yaget::render::RenderShaders mRenderShaders;
         yaget::render::RenderMaterials mRenderMaterials;
-
-        std::atomic_bool mAssetsPreloaded{false};
 
         RenderState mCurrentRenderState;
     };

@@ -24,7 +24,7 @@ namespace defensor::game
     class SquadronSystem : public comp::gs::GameSystem<GameCoordinatorSet, comp::gs::NoEndMarker, defensor::game::Messaging, comp::LocationComponent3*, comp::UnitComponent*>
     {
     public:
-        SquadronSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet);
+        SquadronSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet, bool tickEnabled = true);
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, comp::LocationComponent3* locationComponent, comp::UnitComponent* unitComponent);
