@@ -529,8 +529,8 @@ void render::Device::Resize(std::function<void()> callback)
     catch (const ex::standard& e)
     {
         YLOG_ERROR("DEVV", "ResetDevice of render device failed. %s", e.what());
-        std::string message = fmt::format("ResetDevice of render device failed.\nExamine log at: '{}'\n{}", util::ExpendEnv("$(LogFolder)", nullptr), e.what());
-        std::string errorTitle = fmt::format("{} Device Reset Error", util::ExpendEnv("$(AppName)", nullptr));
+        std::string message = std::format("ResetDevice of render device failed.\nExamine log at: '{}'\n{}", util::ExpendEnv("$(LogFolder)", nullptr), e.what());
+        std::string errorTitle = std::format("{} Device Reset Error", util::ExpendEnv("$(AppName)", nullptr));
         util::DisplayDialog(errorTitle.c_str(), message.c_str());
     }
 }

@@ -130,7 +130,7 @@ void yaget::render::platform::SetDebugName(ID3D12Object* object, const std::stri
 {
     namespace fs = std::filesystem;
 
-    const auto message = fmt::format("{}-{}({})", name, fs::path(file).filename().generic_string(), line);
+    const auto message = std::format("{}-{}({})", name, fs::path(file).filename().generic_string(), line);
     const auto text = conv::utf8_to_wide(message);
     object->SetName(text.c_str());
 }

@@ -87,7 +87,7 @@ yaget::image::Header yaget::image::GetHeader(const io::Buffer& /*buffer*/)
             break;
 
         default:
-            error_handlers::ThrowOnCheck(false, fmt::format("Image Colortype: '{}' does not supported format: '{}'.", static_cast<int>(header.mColorType), static_cast<int>(metadata.format)));
+            error_handlers::ThrowOnCheck(false, std::format("Image Colortype: '{}' does not supported format: '{}'.", static_cast<int>(header.mColorType), static_cast<int>(metadata.format)));
         }
     }
     else if (IsPNG(buffer))

@@ -18,7 +18,7 @@ yaget::io::tool::VirtualTransportSystem::VirtualTransportSystem(dev::Configurati
     if (YLOG_IS_TAG_VISIBLE("VTS"))
     {
         using SectionRecord = std::tuple<std::string /*Name*/, std::string /*Path*/, std::string /*Filters*/, bool /*ReadOnly*/, bool /*Recursive*/>;
-        const std::string command = fmt::format("SELECT Name, Path, Filters, ReadOnly, Recursive FROM Sections;");
+        const std::string command = std::format("SELECT Name, Path, Filters, ReadOnly, Recursive FROM Sections;");
 
         DatabaseHandle dbLocker = LockDatabaseAccess();
         std::vector<SectionRecord> sections = dbLocker->DB().GetRowsTuple<SectionRecord>(command);
@@ -28,13 +28,13 @@ yaget::io::tool::VirtualTransportSystem::VirtualTransportSystem(dev::Configurati
         {
             --numSections;
 
-            logMessage += fmt::format("Section: '{}', Path: '[{}]', Filters: '[{}]', ReadOnly: '{}', Recursive: '{}'\n", std::get<0>(section), std::get<1>(section), std::get<2>(section), pp::log(std::get<3>(section)), pp::log(std::get<4>(section)));
+            logMessage += std::format("Section: '{}', Path: '[{}]', Filters: '[{}]', ReadOnly: '{}', Recursive: '{}'\n", std::get<0>(section), std::get<1>(section), std::get<2>(section), pp::log(std::get<3>(section)), pp::log(std::get<4>(section)));
             auto resolvedPaths = conv::Split(std::get<1>(section), ",");
             auto numPaths = resolvedPaths.size();
             for (const auto& it : resolvedPaths)
             {
-                logMessage += fmt::format("    Expended Path: '{}'", util::ExpendEnv(it, nullptr));
-                //logMessage += fmt::format("    file:///{}", util::ExpendEnv(it, nullptr));
+                logMessage += std::format("    Expended Path: '{}'", util::ExpendEnv(it, nullptr));
+                //logMessage += std::format("    file:///{}", util::ExpendEnv(it, nullptr));
 
                 if (--numPaths || numSections)
                 {
@@ -58,7 +58,7 @@ bool yaget::io::tool::VirtualTransportSystem::AttachBlob(const std::vector<std::
         SQLite& database = databaseHandle->DB();
 
         using SectionRecord = std::tuple<std::string /*Name*/, Strings /*Path*/, std::string /*Filters*/, bool /*ReadOnly*/, bool /*Recursive*/>;
-        const std::string command = fmt::format("SELECT Name, Path, Filters, ReadOnly, Recursive FROM Sections;");
+        const std::string command = std::format("SELECT Name, Path, Filters, ReadOnly, Recursive FROM Sections;");
         std::vector<SectionRecord> sections = database.GetRowsTuple<SectionRecord>(command);
 
         yaget::db::Transaction transaction(database);
@@ -70,14 +70,14 @@ bool yaget::io::tool::VirtualTransportSystem::AttachBlob(const std::vector<std::
         {
             const io::Tag& tag = it->mTag;
             TagRecordTuple tagRecord(tag.mGuid, tag.mName, tag.mVTSName, tag.mSectionName);
-            std::string dirtyCommand = fmt::format("INSERT INTO 'DirtyTags' VALUES('{}');", tag.mGuid.str());
+            std::string dirtyCommand = std::format("INSERT INTO 'DirtyTags' VALUES('{}');", tag.mGuid.str());
 
             if (!database.ExecuteStatementTuple("TagInsert", "Tags", tagRecord, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Insert) ||
                 !database.ExecuteStatement(dirtyCommand, nullptr))
             {
                 transaction.Rollback();
 
-                std::string message = fmt::format("Attaching blob '{}' to Section: '{}' as VTS: '{}' failed. {}.", tag.mName, tag.mSectionName, tag.mVTSName, ParseErrors(database));
+                std::string message = std::format("Attaching blob '{}' to Section: '{}' as VTS: '{}' failed. {}.", tag.mName, tag.mSectionName, tag.mVTSName, ParseErrors(database));
                 YLOG_WARNING("VTS", message.c_str());
 
                 return false;
@@ -110,7 +110,7 @@ bool yaget::io::tool::VirtualTransportSystem::AttachBlob(const std::vector<std::
                         dupTag.mGuid = NewGuid();
                         dupTag.mSectionName = std::get<0>(s);
 
-                        const std::string dupCommand = fmt::format("SELECT Sections.Converters FROM Sections INNER JOIN Tags ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", tag.mGuid.str());
+                        const std::string dupCommand = std::format("SELECT Sections.Converters FROM Sections INNER JOIN Tags ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", tag.mGuid.str());
                         auto converterType = GetCell<std::string>(database, dupCommand);
                         if (auto converter = FindAssetConverter(converterType))
                         {
@@ -122,7 +122,7 @@ bool yaget::io::tool::VirtualTransportSystem::AttachBlob(const std::vector<std::
                                 {
                                     transaction.Rollback();
 
-                                    std::string message = fmt::format("Attaching blob '{}' to Section: '{}' as VTS: '{}' failed. {}.", dupTag.mName, dupTag.mSectionName, dupTag.mVTSName, ParseErrors(database));
+                                    std::string message = std::format("Attaching blob '{}' to Section: '{}' as VTS: '{}' failed. {}.", dupTag.mName, dupTag.mSectionName, dupTag.mVTSName, ParseErrors(database));
                                     YLOG_WARNING("VTS", message.c_str());
 
                                     return false;
@@ -155,8 +155,8 @@ yaget::io::Tag yaget::io::tool::VirtualTransportSystem::CopyTag(const io::Tag& s
     using SourceSection = std::tuple<std::string /*Name*/, Strings /*Path*/>;
     using TargetSection = std::tuple<std::string /*Name*/, Strings /*Path*/, Strings /*Filters*/, std::string /*Converters*/, bool /*ReadOnly*/>;
 
-    std::string commandSourceSection = fmt::format("SELECT Sections.Name, Sections.Path FROM Tags INNER JOIN Sections ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", sourceTag.mGuid.str());
-    std::string commandTargetSection = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly FROM Sections WHERE Name = '{}'", toSection.mName);
+    std::string commandSourceSection = std::format("SELECT Sections.Name, Sections.Path FROM Tags INNER JOIN Sections ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", sourceTag.mGuid.str());
+    std::string commandTargetSection = std::format("SELECT Name, Path, Filters, Converters, ReadOnly FROM Sections WHERE Name = '{}'", toSection.mName);
 
     SourceSection sourceSection{};
     TargetSection targetSection{};
@@ -223,8 +223,8 @@ bool yaget::io::tool::VirtualTransportSystem::DeleteBlob(const Sections& section
             TagRecordTuple deletedTag(tag.mGuid, tag.mName, tag.mVTSName, tag.mSectionName);
 
             // first, let's remove it from Tags table, then from this.collection and then from disk
-            const auto& dirtyCommand = fmt::format("DELETE FROM DirtyTags WHERE Guid = '{}'", tag.mGuid.str());
-            const auto& deleteCommand = fmt::format("DELETE FROM Tags WHERE Guid = '{}'", tag.mGuid.str());
+            const auto& dirtyCommand = std::format("DELETE FROM DirtyTags WHERE Guid = '{}'", tag.mGuid.str());
+            const auto& deleteCommand = std::format("DELETE FROM Tags WHERE Guid = '{}'", tag.mGuid.str());
 
             if (database.ExecuteStatement(dirtyCommand, nullptr) &&
                 database.ExecuteStatement(deleteCommand, nullptr) &&

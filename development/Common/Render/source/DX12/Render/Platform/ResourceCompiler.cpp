@@ -1,6 +1,5 @@
 #include "Render/Platform/ResourceCompiler.h"
 #include "App/AppUtilities.h"
-#include "Fmt/format.h"
 
 #include <d3dcompiler.h>
 #include <d3dx12.h>
@@ -132,7 +131,7 @@ yaget::render::ResourceCompiler::CompileResult yaget::render::ResourceCompiler::
     DxcText dxBuffer{ io::cast_data<const char>(data), io::size_data(data), codePage };
     ComPtr<IDxcResult> result;
     HRESULT hr = mCompiler->Compile(&dxBuffer, shaderParameters.mArguments.data(), static_cast<UINT32>(shaderParameters.mArguments.size()), nullptr, IID_PPV_ARGS(&result));
-    error_handlers::ThrowOnError(hr, fmt::format("Could not execute compiler for shader with params: '{}'", conv::Combine(parameters, ", ")));
+    error_handlers::ThrowOnError(hr, std::format("Could not execute compiler for shader with params: '{}'", conv::Combine(parameters, ", ")));
 
     ComPtr<IDxcBlobUtf8> errors;
     hr = result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
@@ -140,7 +139,7 @@ yaget::render::ResourceCompiler::CompileResult yaget::render::ResourceCompiler::
 
     if (errors && errors->GetStringLength())
     {
-        error_handlers::ThrowOnError(hr, fmt::format("Did not compile shader. {}", errors->GetStringPointer()));
+        error_handlers::ThrowOnError(hr, std::format("Did not compile shader. {}", errors->GetStringPointer()));
     }
 
     ComPtr<IDxcBlob> shaderBin;
@@ -203,7 +202,7 @@ D3D12_SHADER_VISIBILITY yaget::render::ResourceReflector::GeneratePins(uint32_t 
             {
                 D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
                 HRESULT hr = descGetter(parameterIndex, &signatureParameterDesc);
-                error_handlers::ThrowOnError(hr, fmt::format("Could not get input Parameter Description from compiled vertex shader. Parameter Index: {}", parameterIndex));
+                error_handlers::ThrowOnError(hr, std::format("Could not get input Parameter Description from compiled vertex shader. Parameter Index: {}", parameterIndex));
 
                 return signatureParameterDesc;
             };
@@ -258,7 +257,7 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
     {
         D3D12_SHADER_INPUT_BIND_DESC shaderInputBindDesc{};
         hr = mShaderReflection->GetResourceBindingDesc(i, &shaderInputBindDesc);
-        error_handlers::ThrowOnError(hr, fmt::format("Could not get Resource Binding Description from compiled vertex shader. BoundResources Index: {}", i));
+        error_handlers::ThrowOnError(hr, std::format("Could not get Resource Binding Description from compiled vertex shader. BoundResources Index: {}", i));
 
         switch (shaderInputBindDesc.Type)
         {
@@ -268,7 +267,7 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
 
                 D3D12_SHADER_BUFFER_DESC constantBufferDesc{};
                 hr = shaderReflectionConstantBuffer->GetDesc(&constantBufferDesc);
-                error_handlers::ThrowOnError(hr, fmt::format("Could not get Constant Buffer Description from compiled vertex shader. BoundResources Index: {}", i));
+                error_handlers::ThrowOnError(hr, std::format("Could not get Constant Buffer Description from compiled vertex shader. BoundResources Index: {}", i));
 
                 // NOTE(eg) we may want to consider having path for small (one matrix?) root const buffer
                 D3D12_ROOT_PARAMETER1 rootParameter = {};

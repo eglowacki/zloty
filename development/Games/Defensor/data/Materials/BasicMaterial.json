@@ -1,7 +1,7 @@
 {
-  "BlendMode": "BlendModeOpaque",
-  "DepthState": "DepthStateNone",
-  "PixelShader": "PixelColor",
-  "RasterizerState": "RasterizerStateCounterClockwise",
-  "VertexShader": "VertexPosition | VertexColor"
+    "BlendMode": "BlendModeOpaque",
+    "DepthState": "DepthStateNone",
+    "PixelShader": "PixelColor",
+    "RasterizerState": "RasterizerStateWireframe",
+    "VertexShader": "VertexPosition | VertexColor"
 }

@@ -2,24 +2,10 @@
 #include "YagetCore.h"
 #include "TestHelpers/TestHelpers.h"
 #include "Components/Coordinator.h"
-
 #include "IdGameCache.h"
-
-//#include "Components/GameCoordinator.h"
 #include "Components/GameSystem.h"
 #include "Components/LocationComponent.h"
 #include "Components/PhysicsComponent.h"
-
-//#include "Components/Coordinator.h"
-//#include "Components/LocationComponent.h"
-//#include "Components/PhysicsComponent.h"
-//#include "Components/GameSystem.h"
-//#include "Components/GameCoordinator.h"
-//#include "IdGameCache.h"
-//#include "Fmt/format.h"
-//#include "Metrics/Gather.h"
-//#include "Metrics/Concurrency.h"
-//#include <tuple>
 
 
 //CHECK_EQUAL(expected, actual);
@@ -314,7 +300,7 @@ TEST_F(Coordinator, Runtime)
         pointerList.reserve(kNumComponents);
 
         {
-            std::string message = fmt::format("Allocate {} Components", kNumComponents);
+            std::string message = std::format("Allocate {} Components", kNumComponents);
             metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str());
             for (int i = 0; i < kNumComponents; ++i)
             {
@@ -324,7 +310,7 @@ TEST_F(Coordinator, Runtime)
         }
 
         {
-            std::string message = fmt::format("Free {} Components", kNumComponents);
+            std::string message = std::format("Free {} Components", kNumComponents);
             metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str());
             std::for_each(pointerList.begin(), pointerList.end(), [&lcAllocator](comp::LocationComponent* element)
             {
@@ -334,7 +320,7 @@ TEST_F(Coordinator, Runtime)
     }
 
     {
-        std::string message = fmt::format("Add {} Components", kNumComponents);
+        std::string message = std::format("Add {} Components", kNumComponents);
         metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str());
         for (int i = 0; i < kNumComponents; ++i)
         {
@@ -356,7 +342,7 @@ TEST_F(Coordinator, Runtime)
     EXPECT_TRUE(coordinator.FindItem(itemId_10) == ItemCoordinator::FullRow());
 
     {
-        std::string message = fmt::format("Remove {} Components", kNumComponents);
+        std::string message = std::format("Remove {} Components", kNumComponents);
         metrics::TimeScoper<time::kMicrosecondUnit> timeScoper(message.c_str());
         for (int i = 0; i < kNumComponents; ++i)
         {

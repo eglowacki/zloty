@@ -69,8 +69,8 @@ namespace yaget::app::helpers
                 platform::DebuggerBreak();
             }
 
-            const std::string message = fmt::format("Yaget Engine runtime error\nExamine log at: '{}'\n{}", util::ExpendEnv("$(LogFolder)", nullptr), e.what());
-            const std::string errorTitle = fmt::format("{} Runtime Error", util::ExpendEnv("$(AppName)", nullptr));
+            const std::string message = std::format("Yaget Engine runtime error\nExamine log at: '{}'\n{}", util::ExpendEnv("$(LogFolder)", nullptr), e.what());
+            const std::string errorTitle = std::format("{} Runtime Error", util::ExpendEnv("$(AppName)", nullptr));
             util::DisplayDialog(errorTitle.c_str(), message.c_str());
 
             return 1;

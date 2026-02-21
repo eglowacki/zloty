@@ -10,7 +10,7 @@ namespace
     //--------------------------------------------------------------------------------------------------
     std::string ConvertMonitorString(const yaget::render::Device::Resolutions& monitor)
     {
-        return fmt::format("{} - {}x{}", monitor.MonitorName, monitor.Width, monitor.Height);
+        return std::format("{} - {}x{}", monitor.MonitorName, monitor.Width, monitor.Height);
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ namespace
     //--------------------------------------------------------------------------------------------------
     std::string ConvertResolutionString(const yaget::render::Device::Resolutions::Description& mode)
     {
-        return fmt::format("{} by {} - {} Hz", mode.Width, mode.Height, mode.RefreshRate);
+        return std::format("{} by {} - {} Hz", mode.Width, mode.Height, mode.RefreshRate);
     }
 
     //--------------------------------------------------------------------------------------------------

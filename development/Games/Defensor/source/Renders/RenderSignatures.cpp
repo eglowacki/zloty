@@ -3,7 +3,6 @@
 #include "Renders/RenderSignatures.h"
 
 #include <d3dx12.h>
-#include <Fmt/format.h>
 
 
 namespace
@@ -23,7 +22,7 @@ namespace
             //// https://asawicki.info/news_1754_direct3d_12_long_way_to_access_data
             render::ComPtr<ID3DBlob> signature;
             HRESULT hr = ::D3D12SerializeVersionedRootSignature(&rootSignatureDesc.mRootSignatureDesc, &signature, &error);
-            yaget::error_handlers::ThrowOnError(hr, fmt::format("Could not serialize root signature: '{}'. Error: {}", conv::Convertor<io::Tag>::ToString(tag), error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
+            yaget::error_handlers::ThrowOnError(hr, std::format("Could not serialize root signature: '{}'. Error: {}", conv::Convertor<io::Tag>::ToString(tag), error ? static_cast<const char*>(error->GetBufferPointer()) : ""));
 
             bufferPointer = static_cast<char*>(signature->GetBufferPointer());
             bufferSize = signature->GetBufferSize();

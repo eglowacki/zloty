@@ -1,14 +1,12 @@
 #include "Input/InputDevice.h"
 #include "Logger/YLog.h"
 #include "Debugging/Assert.h"
-#include "fmt/format.h"
 #include "StringHelpers.h"
 #include "App/AppUtilities.h"
 #include "VTS/VirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
 #include "Metrics/Concurrency.h"
 
-#include <filesystem>
 #include <fstream>
 #include <algorithm>
 
@@ -237,7 +235,7 @@ std::string input::InputDevice::Record::ToString() const
     }
 
     // we want to convert all numbers into readable strings
-    return fmt::format("Flags: {}, Time: {}", flagsText, mTimeStamp);
+    return std::format("Flags: {}, Time: {}", flagsText, mTimeStamp);
 }
 
 
@@ -265,7 +263,7 @@ std::string input::InputDevice::Mouse::ToString() const
     {
         buttonsText += (!buttonsText.empty() ? "|" : "") + std::string("Mouse5");
     }
-    return fmt::format("Buttons: {}, Mouse: x:{}, y:{}, wheel: {}, {}", buttonsText, mPos.x, mPos.y, mZDelta, Record::ToString());
+    return std::format("Buttons: {}, Mouse: x:{}, y:{}, wheel: {}, {}", buttonsText, mPos.x, mPos.y, mZDelta, Record::ToString());
 }
 
 
@@ -282,7 +280,7 @@ std::string input::InputDevice::Key::ToString() const
         }
     }
 
-    return fmt::format("Key: {}, {}", keyText, Record::ToString());
+    return std::format("Key: {}, {}", keyText, Record::ToString());
 }
 
 
@@ -548,7 +546,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
 void input::InputDevice::TriggerAction(const std::string& actionName, int32_t mouseX, int32_t mouseY, time::Microsecond_t timeStamp /*= platform::GetRealTime(time::kMicroSecondUnit)*/)
 {
     //std::unique_lock<std::mutex> locker(mActionMapMutex);
-    metrics::UniqueLock locker(mActionMapMutex, fmt::format("TriggerAction-{}", actionName).c_str());
+    metrics::UniqueLock locker(mActionMapMutex, std::format("TriggerAction-{}", actionName).c_str());
 
     std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
 

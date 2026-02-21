@@ -231,8 +231,7 @@ T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
     meta::bits_t currentBits = GetValidBits(row);
     const meta::bits_t newBit = MakeBit<T>();
 
-    error_handlers::ThrowOnCheck((currentBits & newBit) != newBit, fmt::format("Requested new component of type: '%s' for Item: '%d' already exist in Coordinator.", typeid(T).name(), id).c_str());
-    //YAGET_ASSERT((currentBits & newBit) != newBit, "Reqested new component of type: '%s' for Item: '%d' already exist in Coordinator.", typeid(T).name(), id);
+    error_handlers::ThrowOnCheck((currentBits & newBit) != newBit, std::format("Requested new component of type: '%s' for Item: '%d' already exist in Coordinator.", typeid(T).name(), id).c_str());
 
     if (currentBits)
     {

@@ -323,17 +323,17 @@ void yaget::DependencyGraph::Add(const Guid& parentGuid, const Guid& childGuid)
 {
     if (auto node = Find(parentGuid, nullptr))
     {
-        DependencyGraph::WriteLock writeLocker(*this);
+        mt::WriteLock writeLocker(mSharedMutex);
         node->Add(childGuid);
     }
     else
     {
-        DependencyGraph::WriteLock writeLocker(*this);
+        mt::WriteLock writeLocker(mSharedMutex);
         auto n = mNodes.insert({ parentGuid, {parentGuid} });
         n.first->second.Add(childGuid);
     }
 
-    DependencyGraph::WriteLock writeLocker(*this);
+    mt::WriteLock writeLocker(mSharedMutex);
     AddWatchFiles(parentGuid);
     AddWatchFiles(childGuid);
 }
@@ -342,7 +342,7 @@ void yaget::DependencyGraph::Add(const Guid& parentGuid, const Guid& childGuid)
 //-------------------------------------------------------------------------------------------------
 yaget::DependencyNode* yaget::DependencyGraph::Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const
 {
-    DependencyGraph::ReadLock readLocker(*this);
+    mt::ReadLock readLocker(mSharedMutex);
     for (auto& val : mNodes | std::views::values)
     {
         if (auto foundNode = val.FindNode(guid, pathTo); foundNode != nullptr)
@@ -358,9 +358,9 @@ yaget::DependencyNode* yaget::DependencyGraph::Find(const Guid& guid, std::vecto
 //-------------------------------------------------------------------------------------------------
 void yaget::DependencyGraph::ClearDirty(const Guid& guid)
 {
-    DependencyGraph::WriteLock writeLocker(*this);
     if (auto node = Find(guid, nullptr))
     {
+        mt::WriteLock writeLocker(mSharedMutex);
         node->ClearDirty();
     }
 }
@@ -382,7 +382,7 @@ void yaget::DependencyGraph::AddWatchFiles(const Guid& guid)
                 std::vector<DependencyNode*> pathTo;
                 if (DependencyNode* shaderNode = Find(tag.mGuid, &pathTo))
                 {
-                    DependencyGraph::WriteLock writeLocker(*This);
+                    mt::WriteLock writeLocker(mSharedMutex);
                     std::ranges::for_each(pathTo, [](auto& node)
                     {
                         node->mDirty = true;

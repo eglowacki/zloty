@@ -92,7 +92,6 @@ TEST(FromToTimeConversion)
 //#include "App/Args.h"
 //#include "App/AppUtilities.h"
 //#include "LoggerCpp/OutputDebug.h"
-//#include "Fmt/ostream.h"
 //#include "Exception/Exception.h"
 //#include "Logger/YLog.h"
 //#include "Platform/WindowsLean.h"
@@ -167,7 +166,7 @@ TEST(FromToTimeConversion)
 ////    std::string errroMessage;
 ////    if (!platform::ParseArgs(commandLine, options, &errroMessage))
 ////    {
-////        std::string message = fmt::format("{}\nOriginal command: '{}'\n\n{}", errroMessage, commandLine, options.help());
+////        std::string message = std::format("{}\nOriginal command: '{}'\n\n{}", errroMessage, commandLine, options.help());
 ////        util::DisplayDialog("Yaget Command Line Options Error", message.c_str());
 ////        return false;
 ////    }

@@ -4,7 +4,6 @@
 #include "Debugging/Assert.h"
 #include "Exception/Exception.h"
 #include "RenderHelpers.h"
-#include "Fmt/format.h"
 #include "VertexTypes.h"
 #include "CommonStates.h"
 #include "Effects.h"
@@ -39,7 +38,7 @@ void render::LineComponent::OnReset()
     }
     catch (const std::exception& e)
     {
-        const auto& textError = fmt::format("Did not initialize LineComponent '{}'. Error: {}", static_cast<comp::Id_t>(Id()), e.what());
+        const auto& textError = std::format("Did not initialize LineComponent '{}'. Error: {}", static_cast<comp::Id_t>(Id()), e.what());
         error_handlers::Throw("REND", textError);
     }
 

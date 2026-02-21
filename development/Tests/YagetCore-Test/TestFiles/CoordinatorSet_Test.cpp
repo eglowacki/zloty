@@ -311,7 +311,7 @@ TEST_F(CoordinatorSet, ComponentCapacity)
         auto& idGameCache = testerFramework.Ids();
         auto& entityCoordinator = entitySystemsCoordinator;//.GetCoordinator<TestObjects::Entity>();
 
-        const auto& message = fmt::format("Creating '{}' entities", conv::ToThousandsSep(TestObjects::kMaxItems));
+        const auto& message = std::format("Creating '{}' entities", conv::ToThousandsSep(TestObjects::kMaxItems));
         metrics::TimeScoper<ScoperUnit> intTimer("TEST", message.c_str());
 
         for (auto i = 0; i < TestObjects::kMaxItems; ++i)
@@ -335,7 +335,7 @@ TEST_F(CoordinatorSet, ComponentCapacity)
 
         for (int i = 0; i < kNumTicks; ++i)
         {
-            const auto& message = fmt::format("Tick {}: Ticking '{}' entities", i, conv::ToThousandsSep(TestObjects::kMaxItems));
+            const auto& message = std::format("Tick {}: Ticking '{}' entities", i, conv::ToThousandsSep(TestObjects::kMaxItems));
             metrics::TimeScoper<ScoperUnit> intTimer("TEST", message.c_str());
             intTimer.SetAccumulator(&accumulator);
 
@@ -357,11 +357,11 @@ TEST_F(CoordinatorSet, ComponentCapacity)
 
     //    for (int i = 0; i < kNumTicks; ++i)
     //    {
-    //        metrics::Channel channel(fmt::format("Iterator pass '{}'", i));
+    //        metrics::Channel channel(std::format("Iterator pass '{}'", i));
 
     //        for (const auto& it : allocator)
     //        {
-    //            //const auto& message = fmt::format("Processing '{}' entity", it.mDummy);
+    //            //const auto& message = std::format("Processing '{}' entity", it.mDummy);
     //            //metrics::Channel systemChannel(message, YAGET_METRICS_CHANNEL_FILE_LINE);
 
     //            counter += it.mDummy;
@@ -381,7 +381,7 @@ TEST_F(CoordinatorSet, ComponentCapacity)
 
         for (int t = 0; t < kNumTicks; ++t)
         {
-            metrics::Channel channelTick(fmt::format("For loop pass '{}'", t));
+            metrics::Channel channelTick(std::format("For loop pass '{}'", t));
 
             for (size_t i = 0; i < TestObjects::kMaxItems; ++i)
             {
@@ -389,7 +389,7 @@ TEST_F(CoordinatorSet, ComponentCapacity)
 
                 counter += element.mDummy;
 
-                //metrics::Channel channelFor(fmt::format("Processing '{}' element", element.mDummy), YAGET_METRICS_CHANNEL_FILE_LINE);
+                //metrics::Channel channelFor(std::format("Processing '{}' element", element.mDummy), YAGET_METRICS_CHANNEL_FILE_LINE);
             }
         }
     }

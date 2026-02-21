@@ -112,7 +112,7 @@ namespace yaget::io
                     std::string message;
                     //io::render::internal::yaget_print(mFields, message);
 
-                    catchMessage = fmt::format("Unable to assign to mFields from json meta stream : '{}'.Fields : [{}].Error : {}.", tag.ResolveVTS().c_str(), message.c_str(), ex.what());
+                    catchMessage = std::format("Unable to assign to mFields from json meta stream : '{}'.Fields : [{}].Error : {}.", tag.ResolveVTS().c_str(), message.c_str(), ex.what());
                     mValidSection = false;
                 }
             }

@@ -3,7 +3,6 @@
 #include "App/AppUtilities.h"
 #include "Streams/GeometryStream.h"
 #include "Debugging/Assert.h"
-#include "Fmt/format.h"
 #include "StringHelpers.h"
 #include "Exception/Exception.h"
 #include <assimp/scene.h>           // Output data structure
@@ -135,7 +134,7 @@ void render::GeometryConvertor::Parse(const char* textureFileName)
     }
     else
     {
-        std::string textError = mLoaderScene ? fmt::format("No geometry associated with asset data stream") : mImporter.GetErrorString();
+        std::string textError = mLoaderScene ? std::format("No geometry associated with asset data stream") : mImporter.GetErrorString();
         error_handlers::Throw("GEOM", textError);
     }
 }

@@ -1,15 +1,8 @@
 #include "pch.h" 
-#include "ThreadModel/JobPool.h" 
-#include "fmt/format.h" 
-
-#include "LoggerCpp/OutputDebug.h"
-#include "LoggerCpp/OutputFile.h"
-
-
-#include "Metrics/Gather.h" 
 #include "Metrics/Concurrency.h"
-
+#include "Metrics/Gather.h" 
 #include "TestHelpers/TestHelpers.h"
+#include "ThreadModel/JobPool.h" 
 
 namespace yaget::ylog
 {
@@ -42,8 +35,8 @@ TEST_F(Threads, JobPool)
     const int MaxThreads = 4;
     std::map<uint32_t, std::atomic_int> WorkLoads;
 
-    const auto& message = fmt::format("Running '{}' tasks with '{}' threads", conv::ToThousandsSep(Iterations), MaxThreads);
-    const auto& message2 = fmt::format("Adding '{}' tasks", conv::ToThousandsSep(Iterations));
+    const auto& message = std::format("Running '{}' tasks with '{}' threads", conv::ToThousandsSep(Iterations), MaxThreads);
+    const auto& message2 = std::format("Adding '{}' tasks", conv::ToThousandsSep(Iterations));
 
     metrics::TimeScoper<time::kMilisecondUnit> cleanupTimer("TEST", message.c_str());
     std::atomic_int counter{ Iterations };
@@ -71,10 +64,10 @@ TEST_F(Threads, JobPool)
         pool.Join();
     }
 
-    std::string loadsMessage = fmt::format("{} tasks processed, threads load:", conv::ToThousandsSep(Iterations));
+    std::string loadsMessage = std::format("{} tasks processed, threads load:", conv::ToThousandsSep(Iterations));
     for (const auto& elem : WorkLoads)
     {
-        loadsMessage += fmt::format("\n\tThreadId: {} = {}", metrics::MarkGetThreadName(elem.first), conv::ToThousandsSep(elem.second.load()));
+        loadsMessage += std::format("\n\tThreadId: {} = {}", metrics::MarkGetThreadName(elem.first), conv::ToThousandsSep(elem.second.load()));
     }
     YLOG_INFO("TEST", loadsMessage.c_str());
     EXPECT_EQ(counter, 0);

@@ -44,7 +44,7 @@ namespace yaget::render
             break;
 
         default:
-            error_handlers::Throw("DEVI", fmt::format("Invalid Command Type Queue: {}.", conv::Convertor<CommandQueue::Type>::ToString(cqType)));
+            error_handlers::Throw("DEVI", std::format("Invalid Command Type Queue: {}.", conv::Convertor<CommandQueue::Type>::ToString(cqType)));
         }
 
         return type;

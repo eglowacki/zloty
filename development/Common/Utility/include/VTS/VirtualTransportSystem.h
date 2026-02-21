@@ -254,8 +254,8 @@ namespace yaget
                     endWild = ".%";
                 }
 
-                std::string vtsText = section.mFilter.empty() ? ";" : fmt::format(" AND VTS LIKE '{}{}{}' ORDER BY VTS;", frontWild, section.mFilter, endWild);
-                std::string command = fmt::format("SELECT {} FROM Tags WHERE Section = '{}'{}", columnsText, section.mName, vtsText);
+                std::string vtsText = section.mFilter.empty() ? ";" : std::format(" AND VTS LIKE '{}{}{}' ORDER BY VTS;", frontWild, section.mFilter, endWild);
+                std::string command = std::format("SELECT {} FROM Tags WHERE Section = '{}'{}", columnsText, section.mName, vtsText);
                 return command;
             }
 

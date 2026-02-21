@@ -93,7 +93,7 @@ namespace
 				if (!mDatabase.DB().ExecuteStatement("DELETE FROM 'Logs';", nullptr))
 				{
 					transaction.Rollback();
-					std::string message = fmt::format("Did not delete table 'Logs'. DB Error: ", ParseErrors(mDatabase.DB()));
+					std::string message = std::format("Did not delete table 'Logs'. DB Error: ", ParseErrors(mDatabase.DB()));
 					error_handlers::Throw("VTS", message);
 				}
 
@@ -102,7 +102,7 @@ namespace
 				if (int numDirtyBlobs = GetCell<int>(mDatabase.DB(), "SELECT COUNT(*) FROM 'DirtyTags';"))
 				{
 					transaction.Rollback();
-					std::string message = fmt::format("There are '{}' blobs left in DirtyTags table.", numDirtyBlobs);
+					std::string message = std::format("There are '{}' blobs left in DirtyTags table.", numDirtyBlobs);
 					error_handlers::Throw("VTS", message);
 				}
 
@@ -116,7 +116,7 @@ namespace
 					dev::Configuration::Init::VTSConfigList invalidConfigList;
 					std::set_difference(originalConfigList.begin(), originalConfigList.end(), configList.begin(), configList.end(), std::inserter(invalidConfigList, invalidConfigList.begin()));
 
-					std::string message = fmt::format("VTS Sections '{}' are not valid. Fix VTS section in configuration file.", conv::Combine(invalidConfigList, ", "));
+					std::string message = std::format("VTS Sections '{}' are not valid. Fix VTS section in configuration file.", conv::Combine(invalidConfigList, ", "));
 					error_handlers::Throw("VTS", message);
 				}
 
@@ -126,7 +126,7 @@ namespace
 					return runningTotal + vtsConfig.Path.size();
 				});
 
-				std::string command = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly, Recursive FROM Sections ORDER BY Name;");
+				std::string command = std::format("SELECT Name, Path, Filters, Converters, ReadOnly, Recursive FROM Sections ORDER BY Name;");
 				VTS::VTSConfigList sectionRecords = mDatabase.DB().GetRowsTuple<VTS::VTS, SectionRecord, VTS::VTSConfigList>(command, [](const SectionRecord& record)
 				{
 					return VTS::VTS{ std::get<0>(record), std::get<1>(record), std::get<2>(record), std::get<3>(record), std::get<4>(record), std::get<5>(record) };
@@ -143,26 +143,26 @@ namespace
 					if (!mDatabase.DB().ExecuteStatementTuple("SectionInsert", "Sections", section, { "Name", "Path", "Filters", "Converters", "ReadOnly", "Recursive" }, SQLite::Behaviour::Insert))
 					{
 						transaction.Rollback();
-						std::string message = fmt::format("SectionInsert: '{}' for vts failed. {}.", it.Name, ParseErrors(mDatabase.DB()));
+						std::string message = std::format("SectionInsert: '{}' for vts failed. {}.", it.Name, ParseErrors(mDatabase.DB()));
 						error_handlers::Throw("VTS", message.c_str());
 					}
 				}
 
 				for (const auto& it : deletedSections)
 				{
-					command = fmt::format("DELETE FROM Tags WHERE Section = '{}';", it.Name);
+					command = std::format("DELETE FROM Tags WHERE Section = '{}';", it.Name);
 					if (!mDatabase.DB().ExecuteStatement(command.c_str(), nullptr))
 					{
 						transaction.Rollback();
-						std::string message = fmt::format("Did not delete tags with section: '{}'. {}.", it.Name, ParseErrors(mDatabase.DB()));
+						std::string message = std::format("Did not delete tags with section: '{}'. {}.", it.Name, ParseErrors(mDatabase.DB()));
 						error_handlers::Throw("VTS", message.c_str());
 					}
 
-					command = fmt::format("DELETE FROM Sections WHERE Name = '{}';", it.Name);
+					command = std::format("DELETE FROM Sections WHERE Name = '{}';", it.Name);
 					if (!mDatabase.DB().ExecuteStatement(command.c_str(), nullptr))
 					{
 						transaction.Rollback();
-						std::string message = fmt::format("Did not delete section: '{}'. {}.", it.Name, ParseErrors(mDatabase.DB()));
+						std::string message = std::format("Did not delete section: '{}'. {}.", it.Name, ParseErrors(mDatabase.DB()));
 						error_handlers::Throw("VTS", message.c_str());
 					}
 				}
@@ -177,14 +177,14 @@ namespace
 						if (!mDatabase.DB().ExecuteStatementTuple("SectionInsert", "Sections", section, { "Name", "Path", "Filters", "Converters", "ReadOnly", "Recursive" }, SQLite::Behaviour::Update))
 						{
 							transaction.Rollback();
-							std::string message = fmt::format("SectionInsert: '{}' for vts failed. {}.", it.Name, ParseErrors(mDatabase.DB()));
+							std::string message = std::format("SectionInsert: '{}' for vts failed. {}.", it.Name, ParseErrors(mDatabase.DB()));
 							error_handlers::Throw("VTS", message.c_str());
 						}
 					}
 				}
 			}
 
-			mDatabase.Log("INFO", fmt::format("VTS Update Sections - New: {}, Deleted: {}, Changed: {}.", newSection.size(), deletedSections.size(), numChanged));
+			mDatabase.Log("INFO", std::format("VTS Update Sections - New: {}, Deleted: {}, Changed: {}.", newSection.size(), deletedSections.size(), numChanged));
 
 			if (mCounter == 0)
 			{
@@ -212,7 +212,7 @@ namespace
 					{
 						for (auto&& p : vtsEntry.Path)
 						{
-							metrics::Channel channel(fmt::format("Indexing Section: {}", vtsEntry.Name).c_str());
+							metrics::Channel channel(std::format("Indexing Section: {}", vtsEntry.Name).c_str());
 							fs::path proposedPath = util::ExpendEnv(p, nullptr);
 
 							YAGET_ASSERT(fs::is_directory(proposedPath) || fs::is_regular_file(proposedPath), "Proposed path: '%s' expended from '%s' used in Section: '%s' is not a directory or a file.", proposedPath.generic_string().c_str(), p.c_str(), vtsEntry.Name.c_str());
@@ -277,7 +277,7 @@ namespace
 			using namespace yaget;
 
 			{
-				metrics::Channel channel(fmt::format("Updated Section with {} files.", entryList.size()).c_str());
+				metrics::Channel channel(std::format("Updated Section with {} files.", entryList.size()).c_str());
 
 				std::unique_lock<std::mutex> locker(mSectionMutex);
 				SectionKey key = std::make_pair(sectionName, proposedPath);
@@ -337,7 +337,7 @@ namespace
 					if (deletedRowCount < 1000)
 					{
 						// load entire table into memory, since it's a small one, otherwise just query db for each one
-						command = fmt::format("SELECT Guid, Name, VTS, Section FROM Deleted;");
+						command = std::format("SELECT Guid, Name, VTS, Section FROM Deleted;");
 						deletedBlobs = mDatabase.DB().GetRowsTuple<TagRecordTuple>(command);
 					}
 
@@ -348,7 +348,7 @@ namespace
 						{
 							if (deletedBlobs.empty())
 							{
-								command = fmt::format("SELECT Guid FROM Deleted WHERE VTS = '{}';", vtsName);
+								command = std::format("SELECT Guid FROM Deleted WHERE VTS = '{}';", vtsName);
 								recoveredGuid = GetCell<Guid>(mDatabase.DB(), command);
 							}
 							else
@@ -368,11 +368,11 @@ namespace
 
 						if (recoveredGuid.IsValid())
 						{
-							command = fmt::format("DELETE FROM Deleted WHERE Guid = '{}';", recoveredGuid.str());
+							command = std::format("DELETE FROM Deleted WHERE Guid = '{}';", recoveredGuid.str());
 							if (!mDatabase.DB().ExecuteStatement(command.c_str(), nullptr))
 							{
 								transaction.Rollback();
-								std::string message = fmt::format("Did not deleted: '{}' from Deleted table. {}", vtsName, ParseErrors(mDatabase.DB()));
+								std::string message = std::format("Did not deleted: '{}' from Deleted table. {}", vtsName, ParseErrors(mDatabase.DB()));
 								error_handlers::Throw("VTS", message.c_str());
 							}
 						}
@@ -387,7 +387,7 @@ namespace
 						if (!mDatabase.DB().ExecuteStatementTuple("TagInsert", "Tags", tag, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Insert))
 						{
 							transaction.Rollback();
-							std::string message = fmt::format("TagInsert: '{}' for vts section: {} failed. {}.", vtsName, nameSection, ParseErrors(mDatabase.DB()));
+							std::string message = std::format("TagInsert: '{}' for vts section: {} failed. {}.", vtsName, nameSection, ParseErrors(mDatabase.DB()));
 							error_handlers::Throw("VTS", message.c_str());
 						}
 
@@ -404,22 +404,22 @@ namespace
 						if (!result)
 						{
 							transaction.Rollback();
-							std::string message = fmt::format("VTS: '{}' does not exist in Tags table. {}.", it, ParseErrors(mDatabase.DB()));
+							std::string message = std::format("VTS: '{}' does not exist in Tags table. {}.", it, ParseErrors(mDatabase.DB()));
 							error_handlers::Throw("VTS", message.c_str());
 						}
 
-						command = fmt::format("DELETE FROM Tags WHERE Guid = '{}';", std::get<0>(existingTag).str());
+						command = std::format("DELETE FROM Tags WHERE Guid = '{}';", std::get<0>(existingTag).str());
 						if (!mDatabase.DB().ExecuteStatement(command.c_str(), nullptr))
 						{
 							transaction.Rollback();
-							std::string message = fmt::format("Did not delete tag: '{}' with section: {}. {}.", it, nameSection, ParseErrors(mDatabase.DB()));
+							std::string message = std::format("Did not delete tag: '{}' with section: {}. {}.", it, nameSection, ParseErrors(mDatabase.DB()));
 							error_handlers::Throw("VTS", message.c_str());
 						}
 
 						if (!mDatabase.DB().ExecuteStatementTuple("DeletedInsert", "Deleted", existingTag, { "Guid", "Name", "VTS", "Section" }, SQLite::Behaviour::Update))
 						{
 							transaction.Rollback();
-							std::string message = fmt::format("DeletedInsert: '{}' for vts 'Deleted' failed with section: {}. {}.", it, nameSection, ParseErrors(mDatabase.DB()));
+							std::string message = std::format("DeletedInsert: '{}' for vts 'Deleted' failed with section: {}. {}.", it, nameSection, ParseErrors(mDatabase.DB()));
 							error_handlers::Throw("VTS", message.c_str());
 						}
 
@@ -428,7 +428,7 @@ namespace
 				}
 			}
 
-			mDatabase.Log("INFO", fmt::format("VTS Update Tags - New: {}, Deleted: {}.", numNewTags, numDeletedTags));
+			mDatabase.Log("INFO", std::format("VTS Update Tags - New: {}, Deleted: {}.", numNewTags, numDeletedTags));
 
 			// fire callback on separate thread from here, since recipient of this message will delete us
 			std::thread notifier = std::thread([](DoneCallback doneCallback)
@@ -467,7 +467,7 @@ namespace
 			const auto& [result, errorMessage] = yaget::io::file::RemoveFile(fileName);
 			if (!result)
 			{
-				const std::string message = fmt::format("Delete database file '{}' from disk failed with error: '{}'.", fileName, errorMessage);
+				const std::string message = std::format("Delete database file '{}' from disk failed with error: '{}'.", fileName, errorMessage);
 				yaget::error_handlers::Throw("VTS", message);
 			}
 		}

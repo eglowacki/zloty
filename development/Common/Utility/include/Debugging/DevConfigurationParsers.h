@@ -39,7 +39,7 @@ namespace DirectX::SimpleMath
 
     inline void to_json(nlohmann::json& j, const math3d::Color& color)
     {
-        j = fmt::format("{}, {}, {}, {}", color.R(), color.G(), color.B(), color.A());
+        j = std::format("{}, {}, {}, {}", color.R(), color.G(), color.B(), color.A());
     }
 
     inline void from_json(const nlohmann::json& j, math3d::Color& color)

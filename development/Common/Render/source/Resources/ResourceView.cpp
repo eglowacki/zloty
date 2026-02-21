@@ -14,7 +14,7 @@ void yaget::render::gui::UpdateSectionText(const std::string& /*nodeText*/, cons
     //ImGui::PopStyleColor();
 
     //ImGui::SameLine();
-    //yaget::gui::Text(fmt::format("'{}'", Section(resourceView->mAssetTag).ToString()), textColor);
+    //yaget::gui::Text(std::format("'{}'", Section(resourceView->mAssetTag).ToString()), textColor);
 
     //if (visible)
     //{

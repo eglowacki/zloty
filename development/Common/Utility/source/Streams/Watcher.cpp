@@ -42,7 +42,7 @@ yaget::io::Watcher::~Watcher()
         if (auto fileNames = GetWatchedFiles(); !fileNames.empty())
         {
             auto flatNames = conv::Combine(fileNames, ", ");
-            auto message = fmt::format("Cleaning '{}' left over file watches: '{}'", fileNames.size(), flatNames);
+            auto message = std::format("Cleaning '{}' left over file watches: '{}'", fileNames.size(), flatNames);
             metrics::TimeScoper<time::kMilisecondUnit> cleanupTimer(message.c_str());
             auto endTime = platform::GetRealTime(time::kMilisecondUnit) + DefaultCleanupWait;
             platform::Sleep([this, endTime]()
@@ -115,7 +115,7 @@ void yaget::io::Watcher::Observe()
                     {
                         if (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory))
                         {
-                            auto ecText = fmt::format("value = '{}'\ncategory = '{}'\nmessage = '{}'.", ec.value(), ec.category().name(), ec.message());
+                            auto ecText = std::format("value = '{}'\ncategory = '{}'\nmessage = '{}'.", ec.value(), ec.category().name(), ec.message());
                             YLOG_ERROR("WATC", "Could not get last write time for watched file: '%s'.\n%s.", it.mFileName.c_str(), ecText.c_str());
                         }
 

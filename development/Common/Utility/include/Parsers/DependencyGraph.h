@@ -24,7 +24,7 @@
 
 namespace yaget
 {
-    struct DependencyNode
+    struct DependencyNode// : public NoCopy
     {
         using Section = io::VirtualTransportSystem::Section;
 
@@ -45,27 +45,28 @@ namespace yaget
         std::string mName;
         bool mDirty = false;
         std::vector<DependencyNode> mDependencies;
+        //std::vector<std::shared_ptr<DependencyNode>> mDependencies;
     };
 
 
     class DependencyGraph
     {
     public:
-        // NOTE(eg) I don't like this approach to locking. This is way too heavy-handed
-        template <typename T>
-        struct Locker
-        {
-            Locker(const DependencyGraph& graph)
-                : mGraph(graph)
-                , mLocker(mGraph.mSharedMutex)
-            {
-            }
+        //// NOTE(eg) I don't like this approach to locking. This is way too heavy-handed
+        //template <typename T>
+        //struct Locker
+        //{
+        //    Locker(const DependencyGraph& graph)
+        //        : mGraph(graph)
+        //        , mLocker(mGraph.mSharedMutex)
+        //    {
+        //    }
 
-            const DependencyGraph& mGraph;
-            T mLocker;
-        };
-        using WriteLock = Locker<std::unique_lock<std::shared_mutex>>;
-        using ReadLock = Locker<std::shared_lock<std::shared_mutex>>;
+        //    const DependencyGraph& mGraph;
+        //    T mLocker;
+        //};
+        //using WriteLock = Locker<std::unique_lock<std::shared_mutex>>;
+        //using ReadLock = Locker<std::shared_lock<std::shared_mutex>>;
 
         using Section = io::VirtualTransportSystem::Section;
 

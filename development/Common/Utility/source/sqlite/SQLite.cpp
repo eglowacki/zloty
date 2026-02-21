@@ -2,7 +2,6 @@
 #include "sqlite/sqlite3.h"
 #include "App/AppUtilities.h"
 #include "App/FileUtilities.h"
-#include "Fmt/format.h"
 #include "Logger/YLog.h"
 #include "Streams/Guid.h"
 
@@ -48,7 +47,7 @@ bool yaget::SQLite::Open(const char* fileName, DatabaseType openDatabaseAsType, 
 
         if (io::file::IsFileExists(fileName) && std::remove(fileName) != 0)
         {
-            mErrorMessage = fmt::format("Could not delete SQLite Database: '{}'.", fileName);
+            mErrorMessage = std::format("Could not delete SQLite Database: '{}'.", fileName);
             return false;
         }
     }
@@ -76,14 +75,14 @@ bool yaget::SQLite::Open(const char* fileName, DatabaseType openDatabaseAsType, 
             result = SQLITE_ERROR;
             if (mErrorMessage.empty())
             {
-                mErrorMessage = fmt::format("Could not initialize Database Schema: '{}'. {}", fileName, sqlite3_errmsg(mDatabase));
+                mErrorMessage = std::format("Could not initialize Database Schema: '{}'. {}", fileName, sqlite3_errmsg(mDatabase));
             }
             Close();
         }
     }
     else
     {
-        mErrorMessage = fmt::format("Could not open/create SQLite Database: '{}'. Error: '{}'.", fileName, sqlite3_errmsg(mDatabase));
+        mErrorMessage = std::format("Could not open/create SQLite Database: '{}'. Error: '{}'.", fileName, sqlite3_errmsg(mDatabase));
         Close();
     }
 
@@ -124,20 +123,20 @@ bool yaget::SQLite::ExecuteStatement(const std::string& command, QueryCallback *
             }
             else
             {
-                mErrorMessage = fmt::format("Last command: {}. Error: {}", command.c_str(), errorTest ? errorTest : "");
+                mErrorMessage = std::format("Last command: {}. Error: {}", command.c_str(), errorTest ? errorTest : "");
                 sqlite3_free(errorTest);
                 result = false;
             }
         }
         else
         {
-            mErrorMessage = fmt::format("Command '%s' with len: '{}' exceeded size limit. Maximum length of command is '{}'.", command.c_str(), command.size(), SQLite::MAX_COMMAND_LEN);
+            mErrorMessage = std::format("Command '%s' with len: '{}' exceeded size limit. Maximum length of command is '{}'.", command.c_str(), command.size(), SQLite::MAX_COMMAND_LEN);
             result = false;
         }
     }
     else
     {
-        mErrorMessage = fmt::format("Error executing command {}. There is no Database created.", command.c_str());
+        mErrorMessage = std::format("Error executing command {}. There is no Database created.", command.c_str());
         result = false;
     }
 
@@ -208,7 +207,7 @@ bool yaget::SQLite::ExecuteStatement(Statement* statement)
         return true;
     }
 
-    mErrorMessage = fmt::format("Execute prepared statement error: {} - {}. Statement: {}.", result, sqlite3_errmsg(mDatabase), sqlite3_expanded_sql(statement->mStm));
+    mErrorMessage = std::format("Execute prepared statement error: {} - {}. Statement: {}.", result, sqlite3_errmsg(mDatabase), sqlite3_expanded_sql(statement->mStm));
     return false;
 }
 

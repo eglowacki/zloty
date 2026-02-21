@@ -1,12 +1,9 @@
 #include "App/AppUtilities.h"
-#include "fmt/printf.h"
-#include "Exception/Exception.h"
 #include "Logger/YLog.h"
 #include "StringHelpers.h"
 #include "Platform/Support.h"
 #include "Debugging/DevConfiguration.h"
 #include "App/FileUtilities.h"
-#include "HashUtilities.h"
 #include "Platform/WindowsLean.h"
 
 #include <Shlwapi.h>
@@ -472,7 +469,7 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
 
         //const auto attrib = env.second.ReadOnly ? "R- " : "RW ";
         //message += "\n   Alias: '" + env.first + "'" + spacing + attrib + linkable;
-        message += fmt::format("\n   Alias: '{}'{} = {}{}", env.first, spacing, (env.second.ReadOnly ? "R- " : "RW "), linkable);
+        message += std::format("\n   Alias: '{}'{} = {}{}", env.first, spacing, (env.second.ReadOnly ? "R- " : "RW "), linkable);
     }
 
     const dev::Configuration& configuration = dev::CurrentConfiguration();
@@ -481,7 +478,7 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
     message += "\n=== VTS Sections:";
     for (const auto& section : configuration.mInit.mVTSConfig)
     {
-        message += fmt::format("\n  Section: '{}' [{}] -{}- ReadOnly: {}, Recursive: {}", section.Name, conv::Combine(section.Filters, ", "), section.Converters, to_string(section.ReadOnly), to_string(section.Recursive));
+        message += std::format("\n  Section: '{}' [{}] -{}- ReadOnly: {}, Recursive: {}", section.Name, conv::Combine(section.Filters, ", "), section.Converters, to_string(section.ReadOnly), to_string(section.Recursive));
         for (const auto& pathName : section.Path)
         {
             std::string potentialPath = util::ExpendEnv(pathName, nullptr);
@@ -491,12 +488,12 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
 
     const auto& logging = configuration.mDebug.mLogging;
     message += "\n=== Log:";
-    message += fmt::format("\n   Level: '{}'", logging.Level);
-    message += fmt::format("\n   Filters: '{}'", conv::Combine(logging.Filters, ", "));
+    message += std::format("\n   Level: '{}'", logging.Level);
+    message += std::format("\n   Filters: '{}'", conv::Combine(logging.Filters, ", "));
 
     std::vector<std::string> keys;
-    std::transform(std::begin(logging.Outputs), std::end(logging.Outputs), std::back_inserter(keys), [](auto const& pair) { return pair.first; });
-    message += fmt::format("\n   Outputs: '{}'", conv::Combine(keys, ", "));
+    std::ranges::transform(logging.Outputs, std::back_inserter(keys), [](auto const& pair) { return pair.first; });
+    message += std::format("\n   Outputs: '{}'", conv::Combine(keys, ", "));
 
     return message;
 }
@@ -612,7 +609,7 @@ bool yaget::util::FileCycler(const std::string& folder, const std::string& fileN
 
     const int maxNameDigits = MaxLogFileNameDigits;
 
-    const std::string digitFilter = fmt::format("-{:?<{}}", "", maxNameDigits);
+    const std::string digitFilter = std::format("-{:?<{}}", "", maxNameDigits);
     if (io::file::IsFileExists(filePathName))
     {
         int lastFileIndex = 0;
@@ -642,13 +639,13 @@ bool yaget::util::FileCycler(const std::string& folder, const std::string& fileN
 
             for (const auto& name : leftNames)
             {
-                const std::string newName = fs::path(ExpendEnv(partialName + fmt::format("-{:0{}}", ++lastFileIndex, maxNameDigits), extension.c_str())).generic_string();
+                const std::string newName = fs::path(ExpendEnv(partialName + std::format("-{:0{}}", ++lastFileIndex, maxNameDigits), extension.c_str())).generic_string();
                 const auto& [result, errorMessage] = io::file::RenameFile(name, newName);
             }
         }
 
         std::string partialName = fs::path(fs::path(folder) / fs::path(fileName)).generic_string();
-        partialName += fmt::format("-{:0{}}", lastFileIndex + 1, maxNameDigits);
+        partialName += std::format("-{:0{}}", lastFileIndex + 1, maxNameDigits);
 
         const std::string newName = fs::path(ExpendEnv(partialName, extension.c_str())).generic_string();
         const auto& [result, errorMessage] = io::file::RenameFile(filePathName, newName);

@@ -24,7 +24,6 @@
 #include "App/AppUtilities.h"
 #include "Debugging/DevConfiguration.h"
 #include "StringCRC.h"
-#include "Fmt/format.h"
 #include <vector>
 #include <queue>
 #include <memory>

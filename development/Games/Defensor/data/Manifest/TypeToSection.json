@@ -14,5 +14,9 @@
     [
         "VertexPosition | VertexColor | PixelColor | RasterizerStateCounterClockwise | BlendModeOpaque | DepthStateNone | TopologyStateTriangle | RTVFormatRGBA8",
         "Transient@BasicPipe"
+    ],
+    [
+        "VertexPosition | VertexColor | PixelColor | RasterizerStateWireframe | BlendModeOpaque | DepthStateNone | TopologyStateTriangle | RTVFormatRGBA8",
+        "Transient@BasicPipe_Wire"
     ]
 ]

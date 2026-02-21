@@ -46,7 +46,7 @@ yaget::render::SkinShaderResource::~SkinShaderResource()
 //--------------------------------------------------------------------------------------------------
 bool yaget::render::SkinShaderResource::Activate()
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     mt::SmartVariable<VertexShaderResource>::SmartType vs = mVertex;
     mt::SmartVariable<PixelShaderResource>::SmartType ps = mPixel;

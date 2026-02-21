@@ -4,13 +4,12 @@
 #include "Logger/YLog.h"
 #include "Platform/Support.h"
 
-#include "fmt/format.h"
 #include <comdef.h>
 
 //---------------------------------------------------------------------------------------------------------------------
 void yaget::error_handlers::Throw(const char* tag, const std::string& message, const std::source_location& location)
 {
-    auto textError = !message.empty() ? fmt::format("{}. ", message) : "";
+    auto textError = !message.empty() ? std::format("{}. ", message) : "";
 
     if (platform::IsDebuggerAttached())
     {
@@ -19,7 +18,7 @@ void yaget::error_handlers::Throw(const char* tag, const std::string& message, c
         platform::DebuggerBreak();
     }
 
-    textError = fmt::format("{}\n{}({}) {}", textError, location.file_name(), location.line(), location.function_name());
+    textError = std::format("{}\n{}({}) {}", textError, location.file_name(), location.line(), location.function_name());
     throw ex::bad_init(textError);
 }
 
@@ -42,7 +41,7 @@ void yaget::error_handlers::ThrowOnError(long hr, const std::string& message, co
     {
         _com_error cr(HRESULT_FROM_WIN32(hr));
         const char* platformErrorMessage = cr.ErrorMessage();
-        const auto textError = fmt::format("{}. HRESULT: {:#x}, Platform error: {}", message, static_cast<unsigned long>(hr), platformErrorMessage);
+        const auto textError = std::format("{}. HRESULT: {:#x}, Platform error: {}", message, static_cast<unsigned long>(hr), platformErrorMessage);
 
         Throw(textError, location);
     }

@@ -389,7 +389,7 @@ namespace yaget::comp
         template <typename C>
         C* LoadComponent(comp::Id_t id)
         {
-            error_handlers::ThrowOnCheck(mDirector, fmt::format("Can not load component, director is nullptr"));
+            error_handlers::ThrowOnCheck(mDirector, std::format("Can not load component, director is nullptr"));
 
             C* component{};
 
@@ -425,7 +425,7 @@ namespace yaget::comp
         template <typename C>
         bool SaveComponent(const C* component)
         {
-            error_handlers::ThrowOnCheck(mDirector, fmt::format("Can not save component, director is nullptr"));
+            error_handlers::ThrowOnCheck(mDirector, "Can not save component, director is nullptr");
             const auto result = mDirector->SaveComponentState(component);
             return result;
         }

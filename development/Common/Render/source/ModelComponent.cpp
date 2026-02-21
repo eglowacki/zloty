@@ -11,7 +11,6 @@
 #include "StringHelpers.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/RenderResolvedAssets.h"
-#include "Fmt/format.h"
 #include "Exception/Exception.h"
 #include "ImageLoaders/ImageProcessor.h"
 

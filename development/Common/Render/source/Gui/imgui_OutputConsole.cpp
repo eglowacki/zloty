@@ -128,7 +128,7 @@ void OutputConsole::OnOutput(const ylog::Channel::Ptr& aChannelPtr, const ylog::
         *(reinterpret_cast<uint32_t*>(tag)) = aLog.GetTag();
     }
 
-    std::string message = fmt::format("{}  {} [{}{}{}] {}",
+    std::string message = std::format("{}  {} [{}{}{}] {}",
         time.ToString(),
         aChannelPtr->getName(),
         ylog::Log::toString(aLog.getSeverity()), tag ? ":" : "", tag,

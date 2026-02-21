@@ -3,7 +3,6 @@
 #include "Logger/YLog.h"
 #include "Platform/Support.h"
 #include "ThreadModel/Variables.h"
-#include "fmt/format.h"
 #include <algorithm>
 
 
@@ -84,7 +83,7 @@ yaget::mt::JobPool::JobPool(const char* poolName, uint32_t numThreads /*= 0*/, B
     const auto numThreadsToCreate = mDynamicThreads ? 0 : mMaxNumThreads;
     for (uint32_t i = 0; i < numThreadsToCreate; ++i)
     { 
-        std::string threadName = mMaxNumThreads > 1 ? fmt::format("{}_{}/{}", mName, i + 1, mMaxNumThreads) : mName;
+        std::string threadName = mMaxNumThreads > 1 ? std::format("{}_{}/{}", mName, i + 1, mMaxNumThreads) : mName;
         mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); }))); 
     } 
 } 
@@ -110,7 +109,7 @@ void yaget::mt::JobPool::Destroy()
         std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
         if (!mTasks.empty())
         {
-            YLOG_DEBUG("POOL", "Deleting threads for JobPool '%s'.%s", mName.c_str(), (mTasks.empty() ? "" : fmt::format(" There are '{}' unfinished tasks in queue.", mTasks.size()).c_str()));
+            YLOG_DEBUG("POOL", "Deleting threads for JobPool '%s'.%s", mName.c_str(), (mTasks.empty() ? "" : std::format(" There are '{}' unfinished tasks in queue.", mTasks.size()).c_str()));
             mTasks.clear();
         }
     }
@@ -151,7 +150,7 @@ void yaget::mt::JobPool::UpdateThreadPool(size_t numTasksLeft)
             if (allBusy)
             {
                 // spawn another thread
-                std::string threadName = mMaxNumThreads > 1 ? fmt::format("{}_{}/{}", mName, threadListSize + 1, mMaxNumThreads) : mName;
+                std::string threadName = mMaxNumThreads > 1 ? std::format("{}_{}/{}", mName, threadListSize + 1, mMaxNumThreads) : mName;
                 mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); })));
             }
 
