@@ -36,9 +36,9 @@ namespace defensor::render
         io::Tag mAssetTag;
         io::VirtualTransportSystem& mVTS;
 
-        using AssetTypes = yaget::render::AssetTypes;
+        using MaterialProperties = yaget::render::MaterialProperties;
 
-        AssetTypes mAssetTypes;
+        MaterialProperties mMaterialProperties;
     };
 
 }

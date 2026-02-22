@@ -13,8 +13,6 @@
 //! \file
 #pragma once
 
-//#include "Render/RenderCore.h"
-//#include "Streams/Buffers.h"
 #include "Render/Cache/CacheWatcher.h"
 
 namespace yaget
@@ -22,14 +20,10 @@ namespace yaget
     class DependencyGraph;
 }
 
-//struct ID3D12PipelineState;
-//struct ID3D12RootSignature;
-//struct ID3D12Device;
-
 
 namespace yaget::render
 {
-    struct AssetTypes
+    struct MaterialProperties
     {
         AssetCacheType mVertexShader = AssetCacheType::Empty;
         AssetCacheType mPixelShader = AssetCacheType::Empty;
@@ -40,16 +34,16 @@ namespace yaget::render
         AssetCacheType mSignature = AssetCacheType::Empty;
         AssetCacheType mPSO = AssetCacheType::Empty;
 
-        bool operator == (AssetTypes const&) const  = default;
+        bool operator == (MaterialProperties const&) const  = default;
     };
 
-    class RenderMaterials : public CacheWatcher<AssetTypes>
+    class RenderMaterials : public CacheWatcher<MaterialProperties>
     {
     public:
         RenderMaterials(io::VirtualTransportSystem& vts);
         ~RenderMaterials();
 
-        AssetTypes GetMaterial(const io::Tag& tag);
-        std::vector<AssetTypes> GetMaterials(const io::Tags& tags);
+        MaterialProperties GetMaterial(const io::Tag& tag);
+        std::vector<MaterialProperties> GetMaterials(const io::Tags& tags);
     };
 }

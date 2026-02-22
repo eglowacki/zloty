@@ -36,7 +36,7 @@ namespace defensor::render
 
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent);
         void PreloadAssets();
-        void RebindMaterial(const io::Tag& tag, yaget::render::AssetTypes material);
+        void RebindMaterial(const io::Tag& tag, yaget::render::MaterialProperties material);
         void HotRebindMaterial(const Guid& guid);
 
         // This structure is used to keep track of what assets are used for rendering particular entity. 

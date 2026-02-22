@@ -28,7 +28,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mAssetPoolThread("PreloadRenderAssets", 1)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
     , mMatrixInterpolator(0.0f, 1.0f)
-    , mDependencyGraph(app.VTS(), yaget::io::VirtualTransportSystem::Section("Manifest@RenderDependencies"), [this](auto guid) {HotRebindMaterial(guid);})
+    , mDependencyGraph(app.VTS(), yaget::io::VirtualTransportSystem::Section("Manifest@RenderDependencies"), [this](auto guid) {HotRebindMaterial(guid); })
     , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS())
     , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS())
     , mRenderShaders(app.VTS())
@@ -79,11 +79,11 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 }
                 else
                 {
-                    auto signatureTag = TypeToTag(material.mAssetTypes.mSignature, vts);
+                    auto signatureTag = TypeToTag(material.mMaterialProperties.mSignature, vts);
                     auto rootSig = mRenderSignatures.GetSignature(signatureTag);
                     commandList->SetGraphicsRootSignature(rootSig);
 
-                    auto psoTag = TypeToTag(material.mAssetTypes.mPSO, vts);
+                    auto psoTag = TypeToTag(material.mMaterialProperties.mPSO, vts);
                     auto pso = mRenderPipelines.GetPipeline(psoTag);
                     commandList->SetPipelineState(pso);
                 }
@@ -163,7 +163,7 @@ void defensor::render::RenderSystem::PreloadAssets()
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget::render::AssetTypes material)
+void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget::render::MaterialProperties material)
 {
     auto& vts = mApp.VTS();
 
@@ -228,10 +228,12 @@ void defensor::render::RenderSystem::HotRebindMaterial(const Guid& guid)
     }
     
     auto& vts = mApp.VTS();
-    auto tag = vts.FindTag(matGuid);
-    mRenderMaterials.ClearCache(tag);
+    auto matTag = vts.FindTag(matGuid);
+    auto oldMaterial = mRenderMaterials.GetMaterial(matTag);
 
-    auto material = mRenderMaterials.GetMaterial(tag);
+    mRenderMaterials.ClearCache(matTag);
+
+    auto material = mRenderMaterials.GetMaterial(matTag);
 
     auto vsTag = TypeToTag(material.mVertexShader, vts);
     mRenderShaders.ClearCache(vsTag);
@@ -244,5 +246,5 @@ void defensor::render::RenderSystem::HotRebindMaterial(const Guid& guid)
     auto psoTag = TypeToTag(material.mPSO, vts);
     mRenderPipelines.ClearCache(psoTag);
 
-    RebindMaterial(tag, material);
+    RebindMaterial(matTag, material);
 }
