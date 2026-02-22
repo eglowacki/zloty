@@ -176,6 +176,10 @@ namespace yaget
                 bool mMemoryReport = false;
                 // activate GPU crash report
                 bool mGPUTraceback = false;
+                // use debug shaders in release build, and release shaders in debug build.
+                // This is useful to test shader permutations and make sure they work in both builds.
+                bool mUseDebugShadersInRelease = false;
+                bool mUseReleaseShadersInDebug = false;
             };
             Graphics mGraphics;
 

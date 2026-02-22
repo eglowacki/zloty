@@ -36,6 +36,7 @@ namespace
         )";
 
 
+    //-------------------------------------------------------------------------------------------------
     constexpr size_t length(std::string_view sv)
     {
         return sv.size();
@@ -49,22 +50,26 @@ namespace
         std::string mTarget;
     };
 
+    //-------------------------------------------------------------------------------------------------
     inline bool operator==(const ShaderMapping& lhs, const ShaderMapping& rhs)
     {
         return lhs.mEntryPoint == rhs.mEntryPoint && lhs.mTarget == rhs.mTarget;
     }
 
+    //-------------------------------------------------------------------------------------------------
     inline bool operator!=(const ShaderMapping& lhs, const ShaderMapping& rhs)
     {
         return !(lhs == rhs);
     }
 
+    //-------------------------------------------------------------------------------------------------
     inline void to_json(nlohmann::json& j, const ShaderMapping shaderMapping)
     {
         j["EntryPoint"] = shaderMapping.mEntryPoint;
         j["Target"] = shaderMapping.mTarget;
     }
 
+    //-------------------------------------------------------------------------------------------------
     inline void from_json(const nlohmann::json& j, ShaderMapping& shaderMapping)
     {
         shaderMapping.mEntryPoint = yaget::json::GetValue(j, "EntryPoint", shaderMapping.mEntryPoint);
@@ -82,6 +87,7 @@ namespace
     };
 
 
+    //-------------------------------------------------------------------------------------------------
     // we pass tag only for reporting/logging features
     yaget::render::ResourceCompiler::CompileResult CompileShader(const yaget::io::Tag& tag, yaget::render::ResourceCompiler* resourceCompiler, yaget::io::BufferView data, const yaget::Strings& parameters)
     {
@@ -100,6 +106,7 @@ namespace
     }
 
 
+    //-------------------------------------------------------------------------------------------------
     yaget::Strings GetCommandParameters(yaget::render::RenderShaders::ShaderType shaderType, bool debugShader)
     {
         yaget::Strings parameters;
@@ -128,6 +135,20 @@ namespace
         return parameters;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
+    bool GetDebugShaderOption()
+    {
+        // check for option and delete cache
+        const auto& graphicsConfiguration = yaget::dev::CurrentConfiguration().mGraphics;
+#ifdef YAGET_DEBUG
+        const bool debugShader = graphicsConfiguration.mUseReleaseShadersInDebug == false;
+#else
+        const bool debugShader = graphicsConfiguration.mUseDebugShadersInRelease;
+#endif
+
+        return debugShader;
+    }
 
 }
 
@@ -181,9 +202,9 @@ std::vector<yaget::io::Buffer> yaget::render::RenderShaders::GetShaders(const ya
 {
     std::lock_guard mutexLocker(mMutex);
     std::vector<yaget::io::Buffer> results = tags | std::views::transform([this, shaderType](const auto& tag)
-    {
-        return AssureShaderNonMT(tag, shaderType);
-    }) | std::ranges::to<std::vector>();
+        {
+            return AssureShaderNonMT(tag, shaderType);
+        }) | std::ranges::to<std::vector>();
     return results;
 }
 
@@ -204,22 +225,22 @@ void yaget::render::RenderShaders::ClearCache(const io::Tag& tag)
 void yaget::render::RenderShaders::CreateSignatureDescription(const io::Tag& vertexTag, const io::Tag& pixelTag, DescriptionCallback callback)
 {
     auto getReflection = [this](io::Tag tag, ShaderType shaderType)
-    {
-        ResourceReflector::Ptr reflector;
-
-        if (!mReflections.contains(tag))
         {
-            auto asset = AssureShaderNonMT(tag, shaderType);
-            reflector = mResourceCompiler->Decompile(io::cast_to_view(asset));
-            mReflections.insert({ tag, reflector });
-        }
-        else
-        {
-            reflector = mReflections.find(tag)->second;
-        }
+            ResourceReflector::Ptr reflector;
 
-        return reflector;
-    };
+            if (!mReflections.contains(tag))
+            {
+                auto asset = AssureShaderNonMT(tag, shaderType);
+                reflector = mResourceCompiler->Decompile(io::cast_to_view(asset));
+                mReflections.insert({ tag, reflector });
+            }
+            else
+            {
+                reflector = mReflections.find(tag)->second;
+            }
+
+            return reflector;
+        };
 
     std::lock_guard mutexLocker(mMutex);
     ResourceReflector::Ptr vertexReflector = getReflection(vertexTag, ShaderType::Vertex);
@@ -268,7 +289,10 @@ yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const yaget::i
         shaderBuffer = asset->mBuffer;
     }
 
-    Strings arguments = GetCommandParameters(shaderType, true);;
+    // check for option and delete cache
+    const bool debugShader = GetDebugShaderOption();
+
+    Strings arguments = GetCommandParameters(shaderType, debugShader);;
 
     auto [buffer, reflection] = CompileShader(tag, mResourceCompiler.get(), io::cast_to_view(shaderBuffer), arguments);
     if (!io::size_data(buffer))

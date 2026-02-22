@@ -441,6 +441,8 @@ namespace yaget::dev
         j["Device"] = graphics.mDevice;
         j["MemoryReport"] = graphics.mMemoryReport;
         j["GPUTraceback"] = graphics.mGPUTraceback;
+        j["UseDebugShadersInRelease"] = graphics.mUseDebugShadersInRelease;
+        j["UseReleaseShadersInDebug"] = graphics.mUseReleaseShadersInDebug;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -449,6 +451,8 @@ namespace yaget::dev
         graphics.mDevice = json::GetValue(j, "Device", graphics.mDevice);
         graphics.mMemoryReport = json::GetValue(j, "MemoryReport", graphics.mMemoryReport);
         graphics.mGPUTraceback = json::GetValue(j, "GPUTraceback", graphics.mGPUTraceback);
+        graphics.mUseDebugShadersInRelease = json::GetValue(j, "UseDebugShadersInRelease", graphics.mUseDebugShadersInRelease);
+        graphics.mUseReleaseShadersInDebug = json::GetValue(j, "UseReleaseShadersInDebug", graphics.mUseReleaseShadersInDebug);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------

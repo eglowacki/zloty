@@ -32,7 +32,9 @@
         },
         "DataLoaders": {
             "SkipDependencyGraph": true,
-            "ClearCache": false
+            "ClearCache": false,
+            "UseDebugShadersInRelease": true,
+            "UseReleaseShadersInDebug": true
         },
         "Init": {
             "Aliases": {
