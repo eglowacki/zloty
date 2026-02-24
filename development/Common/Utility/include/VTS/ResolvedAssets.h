@@ -253,4 +253,15 @@ namespace yaget::io
         return loader.GetAsset();
     }
 
+    inline void AttachTransientAsset(const yaget::io::Tag& tag, yaget::io::VirtualTransportSystem& vts)
+    {
+        using namespace yaget;
+
+        if (!vts.FindTag(tag.mGuid).IsValid())
+        {
+            std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>({}, tag, vts);
+            vts.AttachTransientBlob(newAsset);
+        }
+    }
+
 } // namespace yaget::io

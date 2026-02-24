@@ -25,6 +25,18 @@
         <DisplayString>{{ Name={mNiceName} }}</DisplayString>
     </Type>
 
+    <Type Name="yaget::io::VirtualTransportSystem::Section">
+        <DisplayString>{{ Name={mName}@{mFilter} }}</DisplayString>
+    </Type>
+
+    <Type Name="yaget::io::Tag">
+        <DisplayString>{{ Name={mSectionName}@{mName} Guid={mGuid} }}</DisplayString>
+    </Type>
+
+    <Type Name="yaget::Guid">
+        <DisplayString>{{ Value={_bytes._Elems,[16]nvoHb} }}</DisplayString>
+    </Type>
+
 </AutoVisualizer>
 
 

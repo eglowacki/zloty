@@ -56,7 +56,7 @@ ID3D12RootSignature* defensor::render::RenderSignatures::GetSignature(const yage
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 
-    // NOTE(eg) We need to have a better way to use mutex here, less granularity, possibly add array option to get signatures
+    // NOTE(eg) We need to have a better way to use mutex here, less granularity
     std::lock_guard mutexLocker(mMutex);
 
     auto result = GetAsset(tag, [this, &rootDescResult](auto tag, auto& cachedData)
