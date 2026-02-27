@@ -17,5 +17,5 @@
     path = development/Dependencies/DirectXShaderCompiler
     url = https://github.com/microsoft/DirectXShaderCompiler.git
 [submodule "development/Dependencies/tracy"]
-    path = development/Dependencies/tracy
-    url = https://github.com/wolfpld/tracy.git
+	path = development/Dependencies/tracy
+	url = https://github.com/wolfpld/tracy.git
