@@ -169,24 +169,13 @@ size_t yaget::mt::JobPool::GetNumTasksLeft() const
 }
 
 
-void yaget::mt::JobPool::AddTask(mt::JobProcessor::Task_t task, TaskExecutionThread taskExecutionThread/* = TaskExecutionThread::Default*/) 
+void yaget::mt::JobPool::AddTask(mt::JobProcessor::Task_t task) 
 {
-    JobProcessor::Task_t selectedTask = task;
-    if (taskExecutionThread == TaskExecutionThread::Tasked)
-    {
-        auto taskRedirector = [threadId = platform::CurrentThreadId(), task]()
-        {
-            task();
-        };
-
-        selectedTask = std::move(taskRedirector);
-    }
-
     size_t numTasksLeft = 0;
     mEmptyCondition.Reset();
     {
         std::unique_lock<std::mutex> mutexLock(mPendingTasksMutex);
-        mTasks.emplace_back(std::move(selectedTask));
+        mTasks.emplace_back(std::move(task));
         numTasksLeft = mTasks.size();
     }
 
