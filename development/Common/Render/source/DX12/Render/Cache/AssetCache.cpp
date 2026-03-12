@@ -11,7 +11,7 @@ namespace
 
     struct YagetFileSignature
     {
-        constexpr char Signature[4] = { 'G', 'L', 'O', 'W' };
+        const char Signature[4] = { 'G', 'L', 'O', 'W' };
         size_t Version = 0;
 
         bool IsValid() const
