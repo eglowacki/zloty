@@ -11,7 +11,7 @@ namespace
 
     struct YagetFileSignature
     {
-        const char Signature[4] = { 'G', 'L', 'O', 'W' };
+        constexpr char Signature[4] = { 'G', 'L', 'O', 'W' };
         size_t Version = 0;
 
         bool IsValid() const
@@ -25,7 +25,7 @@ namespace
 //-------------------------------------------------------------------------------------------------
 yaget::render::AssetCache::TypeToSectionMap yaget::render::AssetCache::TypeToSection =
 {
-    {BasicVertex, Section("VeretexShaders@Basic")},
+    {BasicVertex, Section("VertexShaders@Basic")},
     {BasicPixel, Section("PixelShaders@Basic")},
     {BasicSignature, Section("Transient@BasicSig")},
     {BasicPipeline, Section("Transient@BasicPipe")},

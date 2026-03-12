@@ -260,7 +260,7 @@ yaget::io::file::FileOpResult yaget::io::file::SaveFile(const std::string& fileN
     }
 
     std::ofstream file(sourcePath.generic_string().c_str(), std::ios_base::binary);
-    file.write(io::BufferPointer(buffer), io::BufferSize(buffer));
+    file.write(cast_data<const char>(buffer), size_data(buffer));
     if (!file.good())
     {
         std::string textError = platform::LastErrorMessage();

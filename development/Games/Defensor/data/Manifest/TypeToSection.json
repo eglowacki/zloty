@@ -1,7 +1,7 @@
 [
     [
         "VertexPosition | VertexColor",
-        "VeretexShaders@Basic"
+        "VertexShaders@Basic"
     ],
     [
         "PixelColor",

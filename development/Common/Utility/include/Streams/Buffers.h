@@ -44,24 +44,6 @@ namespace yaget::io
     }
 
 
-    inline const char *BufferPointer(const Buffer& buffer)
-    {
-        return cast_data<const char>(buffer);
-    }
-
-
-    inline char *BufferPointer(Buffer& buffer)
-    {
-        return cast_data<char>(buffer);
-    }
-
-
-    inline size_t BufferSize(const Buffer& buffer)
-    {
-        return buffer.second;
-    }
-
-
     template <typename T>
     const T *cast_data(const BufferView& buffer)
     {
@@ -127,7 +109,7 @@ namespace yaget::io
 
     inline Buffer ResizeBuffer(const Buffer& buffer, size_t size)
     {
-        if (size <= BufferSize(buffer))
+        if (size <= size_data(buffer))
         {
             auto retValue = buffer;
             retValue.second = size;
@@ -135,7 +117,7 @@ namespace yaget::io
         }
 
         Buffer dataBuffer = CreateBuffer(size);
-        std::memcpy(dataBuffer.first.get(), BufferPointer(buffer), BufferSize(buffer));
+        std::memcpy(dataBuffer.first.get(), cast_data<const char>(buffer), size_data(buffer));
         return dataBuffer;
     }
 
@@ -177,7 +159,7 @@ namespace yaget::io
 
         void AssureWriteSize(size_t additionalSize)
         {
-            const auto currentCapacity = BufferSize(mBuffer);
+            const auto currentCapacity = size_data(mBuffer);
             if (mWriteOffset + additionalSize > currentCapacity)
             {
                 // standard doubling of required memory allocation
@@ -189,9 +171,9 @@ namespace yaget::io
 
         void WriteDataChunk(const auto* dataChunk, size_t dataSize)
         {
-            YAGET_ASSERT(mWriteOffset + dataSize <= io::BufferSize(mBuffer), "Messaging buffer does not have enough space to write dataChunk out.");
+            YAGET_ASSERT(mWriteOffset + dataSize <= io::size_data(mBuffer), "Messaging buffer does not have enough space to write dataChunk out.");
 
-            std::memcpy(BufferPointer(mBuffer) + mWriteOffset, dataChunk, dataSize);
+            std::memcpy(cast_data<char>(mBuffer) + mWriteOffset, dataChunk, dataSize);
             mWriteOffset += dataSize;
         }
 

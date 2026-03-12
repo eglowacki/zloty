@@ -76,7 +76,7 @@
                     }
                 },
                 {
-                    "VeretexShaders": {
+                    "VertexShaders": {
                         "Converters": "COMP",
                         "Filters": [ "*.vs" ],
                         "Path": [ "$(DataFolder)/Data/Shaders/Vertex" ],

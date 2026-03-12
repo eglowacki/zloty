@@ -181,7 +181,7 @@ namespace yaget::io
         StringsAsset(const Tag& tag, const Buffer& buffer, const VirtualTransportSystem& vts)
             : Asset(tag, buffer, vts)
         {
-            file::imemstream memStream(BufferPointer(mBuffer), BufferSize(mBuffer));
+            file::imemstream memStream(cast_data<const char>(mBuffer), size_data(mBuffer));
 
             std::string textLine;
             while (std::getline(memStream, textLine))

@@ -24,14 +24,14 @@
 
 namespace yaget
 {
-    struct DependencyNode// : public NoCopy
+    struct DependencyNode
     {
         using Section = io::VirtualTransportSystem::Section;
 
         DependencyNode() = default;
         DependencyNode(const Guid& guid);
         void Add(const Guid& guid);
-        DependencyNode *FindNode(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
+        DependencyNode* FindNode(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
 
         bool IsSingleDepth() const;
         void ResolveNames(const io::VirtualTransportSystem& vts);
@@ -41,33 +41,19 @@ namespace yaget
         bool IsBranchDirty() const;
         void ClearDirty();
 
+        std::atomic_bool& Dirty() { return *mDirtyNode; }
+        const std::atomic_bool& Dirty() const { return *mDirtyNode; }
+
         Guid mGuid;
         std::string mName;
-        bool mDirty = false;
+        std::shared_ptr<std::atomic_bool> mDirtyNode;
         std::vector<DependencyNode> mDependencies;
-        //std::vector<std::shared_ptr<DependencyNode>> mDependencies;
     };
 
 
     class DependencyGraph
     {
     public:
-        //// NOTE(eg) I don't like this approach to locking. This is way too heavy-handed
-        //template <typename T>
-        //struct Locker
-        //{
-        //    Locker(const DependencyGraph& graph)
-        //        : mGraph(graph)
-        //        , mLocker(mGraph.mSharedMutex)
-        //    {
-        //    }
-
-        //    const DependencyGraph& mGraph;
-        //    T mLocker;
-        //};
-        //using WriteLock = Locker<std::unique_lock<std::shared_mutex>>;
-        //using ReadLock = Locker<std::shared_lock<std::shared_mutex>>;
-
         using Section = io::VirtualTransportSystem::Section;
 
         using DirtyCallback = std::function<void(const Guid& guid)>;
@@ -76,12 +62,14 @@ namespace yaget
 
         void Add(const Guid& parentGuid, const Guid& childGuid);
 
-        DependencyNode *Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
+        DependencyNode* Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
         void ClearDirty(const Guid& guid);
 
     private:
         void AddWatchFiles(const Guid& guid);
         void RemoveWatchFiles(const Guid& guid);
+
+        void TriggerDirtyCallback(const Guid& guid, const std::string& filePath);
 
         io::VirtualTransportSystem& mVTS;
         Section mSection;
@@ -109,15 +97,15 @@ struct std::hash<yaget::DependencyNode>
         std::hash<yaget::Guid> hasherGuid;
         std::hash<std::string> hasherName;
         auto hasher = [&]()
-        {
-            size_t seed = 0;
-            yaget::conv::hash_combine(seed, hasherGuid(dependencyNode.mGuid), hasherName(dependencyNode.mName));
-            for (const auto& childNode : dependencyNode.mDependencies)
             {
-                yaget::conv::hash_combine(seed, operator()(childNode));
-            }
-            return seed;
-        };
+                size_t seed = 0;
+                yaget::conv::hash_combine(seed, hasherGuid(dependencyNode.mGuid), hasherName(dependencyNode.mName));
+                for (const auto& childNode : dependencyNode.mDependencies)
+                {
+                    yaget::conv::hash_combine(seed, operator()(childNode));
+                }
+                return seed;
+            };
 
         return hasher();
     }

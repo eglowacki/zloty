@@ -685,6 +685,18 @@ namespace yaget
             return Combine(indexes, delimiter);
         }
 
+        template<typename T>
+        std::string ToString(const T& value)
+        {
+            return Convertor<T>::ToString(value);
+        }
+
+        template<typename T>
+        T FromString(const char* value)
+        {
+            return Convertor<T>::FromString(value);
+        }
+
     } // namespace conv
 
     //! compare if sourceString can match filterString pattern
