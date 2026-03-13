@@ -22,3 +22,6 @@
 [submodule "development/Dependencies/assimp"]
 	path = development/Dependencies/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "development/Dependencies/stb"]
+	path = development/Dependencies/stb
+	url = https://github.com/nothings/stb.git
