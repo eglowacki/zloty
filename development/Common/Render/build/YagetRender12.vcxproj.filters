@@ -136,6 +136,9 @@
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderMaterials.h">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Pipeline\RenderTextures.h">
+      <Filter>Source Files\Pipeline Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -223,6 +226,9 @@
       <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderMaterials.cpp">
+      <Filter>Source Files\Pipeline Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Pipeline\RenderTextures.cpp">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
   </ItemGroup>

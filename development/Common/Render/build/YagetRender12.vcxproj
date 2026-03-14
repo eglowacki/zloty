@@ -153,6 +153,7 @@
     <ClInclude Include="..\include\DX12\Render\Device.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderMaterials.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderShaders.h" />
+    <ClInclude Include="..\include\DX12\Render\Pipeline\RenderTextures.h" />
     <ClInclude Include="..\include\DX12\Render\Platform\Adapter.h" />
     <ClInclude Include="..\include\DX12\Render\Platform\DeviceDebugger.h" />
     <ClInclude Include="..\include\DX12\Render\Polygons\RenderShape.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderMaterials.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderShaders.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Pipeline\RenderTextures.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\CommandAllocators.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Commander.cpp" />
