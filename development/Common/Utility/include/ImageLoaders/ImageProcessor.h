@@ -15,43 +15,39 @@
 
 #include "YagetCore.h"
 #include "Streams/Buffers.h"
+#include "VTS/VirtualTransportSystem.h"
 
 
 namespace yaget::image
 {
-    //--------------------------------------------------------------------------------------------------
     struct Header
     {
-        using Size = std::pair<uint32_t, uint32_t>;
-        enum class PixelType { None, Single, RGB, RGBA };
-        enum class DataType { None, PNG, RAW, DDS, RT };
-
-        PixelType mColorType = PixelType::None;
-        DataType mDataType = DataType::None;
-        uint32_t mBitDepth = 0;         // for now supports only 8 bits per color
-        uint32_t mNumComponents = 0;    // rgba = 4, Single = 1
-        Size mSize;
-        size_t mNumMipMaps = 0;         // number of mipmaps included in this image
-
-        uint32_t PixelSize() const { return mNumComponents; }
+        int mSizeX = 0;
+        int mSizeY = 0;
+        int mComponents = 0;    // number of components in image (rgba = 4, Single = 1)
+        size_t GetImageSize() const { return static_cast<size_t>(mSizeX * mSizeY * mComponents); }
+        int GetStride() const { return mSizeX * mComponents; }
     };
 
-    //! Return image info data
-    Header GetHeader(const io::Buffer& buffer);
+    enum class ImageType { PNG, JPG, BMP, TGA };
 
-    // returned processed imaged data in buffer into raw linear format RGBARGBA...RGBA
-    io::Buffer Process(const io::Buffer& buffer, Header* header);
+    // return pixel data converted from actual image loaded 
+    // format is:
+    // 1. Header with image info (pixel data size below is Header::GetImageSize())
+    // 2. Pixel data in format RGBARGBA...RGBA (this is based on components in header)
+    // where:
+    //  1 - grey
+    //  2 - grey, alpha
+    //  3 - red, green, blue
+    //  4 - red, green, blue, alpha
+    io::Buffer GetImage(const io::VirtualTransportSystem::Section& section, io::VirtualTransportSystem& vts);
+    io::Buffer GetImage(const io::Buffer& imageData);
+    Header GetImageInfo(const io::Buffer& imageData);
 
-    //typedef enum LodePNGColorType
-    //{
-    //    LCT_GREY = 0, /*greyscale: 1,2,4,8,16 bit*/
-    //    LCT_RGB = 2, /*RGB: 8,16 bit*/
-    //    LCT_PALETTE = 3, /*palette: 1,2,4,8 bit*/
-    //    LCT_GREY_ALPHA = 4, /*greyscale with alpha: 8,16 bit*/
-    //    LCT_RGBA = 6 /*RGB with alpha: 8,16 bit*/
-    //} LodePNGColorType;
-    using pixel_byte = unsigned char;
-    bool EncodeSave(const std::string& filename, const std::vector<pixel_byte>& in, uint32_t w, uint32_t h, int colortype = 6 /*LodePNGColorType LCT_RGBA*/, uint32_t bitdepth = 8);
+    // Convert raw pixel data into image format ready to be saved
+    // pixelData is the same format as the one returned by GetImage
+    io::Buffer SaveImage(const io::Buffer& pixelData, ImageType imageType);
+    io::Buffer SaveImage(const io::BufferView& pixels, const Header& header, ImageType imageType);
 
 } // namespace yaget::image
 
