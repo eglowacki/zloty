@@ -50,6 +50,7 @@ namespace yaget::io
         nlohmann::json root{};
     };
 
+    //-------------------------------------------------------------------------------------------------------------------------------
     template <typename... T>
     class StructDataAsset : public JsonAsset
     {
@@ -145,23 +146,20 @@ namespace yaget::io
         bool mValidSection = false;
     };
 
-
-    //PixelType mColorType = PixelType::None;
-    //DataType mDataType = DataType::None;
-
     //-------------------------------------------------------------------------------------------------------------------------------
-    class ImageAsset : public Asset
+    class TextureAsset : public Asset
     {
     public:
-        ImageAsset(const Tag& tag, const Buffer& buffer, const VirtualTransportSystem& vts)
-            : Asset(tag, buffer, vts) 
-            , mHeader{ image::Header::PixelType::None, image::Header::DataType::RT }
-            , mPixels(buffer.second ? image::Process(mBuffer, &mHeader) : CreateBuffer(0))
+        TextureAsset(const Tag& tag, const Buffer& buffer, const VirtualTransportSystem& vts)
+            : Asset(tag, image::GetImage(buffer), vts) 
+            , mHeader(*cast_data<image::Header>(mBuffer))
+            , mPixels(mHeader.GetImageSize() ? cast_to_view(mBuffer, sizeof(mHeader)) : BufferView{})
         {
+            mValid = mHeader.GetImageSize() > 0;
         }
 
         image::Header mHeader;
-        Buffer mPixels;
+        BufferView mPixels;
     };
 
     //-------------------------------------------------------------------------------------------------------------------------------

@@ -57,7 +57,7 @@ yaget::render::MaterialProperties yaget::render::RenderMaterials::GetMaterial(co
 //-------------------------------------------------------------------------------------------------
 std::vector<yaget::render::MaterialProperties> yaget::render::RenderMaterials::GetMaterials(const io::Tags& tags)
 {
-    std::vector<yaget::render::MaterialProperties> results;
+    std::vector<MaterialProperties> results;
 
     std::lock_guard mutexLocker(mMutex);
 

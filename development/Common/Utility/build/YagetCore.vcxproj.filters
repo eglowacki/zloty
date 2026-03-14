@@ -99,6 +99,9 @@
     <Filter Include="Script Files">
       <UniqueIdentifier>{e50d528c-d573-4027-b4e2-d17040512fb3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ImageLoader Files\stb">
+      <UniqueIdentifier>{0e9fad14-84bd-4ade-8766-ad20d57fa8aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
@@ -227,9 +230,6 @@
     <ClCompile Include="..\source\Metrics\Concurrency.cpp">
       <Filter>Metric Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\ImageLoaders\lodepng.cpp">
-      <Filter>ImageLoader Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\ImageLoaders\ImageProcessor.cpp">
       <Filter>ImageLoader Files</Filter>
     </ClCompile>
@@ -337,6 +337,9 @@
     </ClCompile>
     <ClCompile Include="..\source\Components\MaterialComponent.cpp">
       <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\VTS\ResolvedAssets.cpp">
+      <Filter>VTS Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -533,9 +536,6 @@
     <ClInclude Include="..\include\VTS\ResolvedAssets.h">
       <Filter>VTS Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\ImageLoaders\lodepng.h">
-      <Filter>ImageLoader Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\ImageLoaders\ImageProcessor.h">
       <Filter>ImageLoader Files</Filter>
     </ClInclude>
@@ -703,6 +703,66 @@
     </ClInclude>
     <ClInclude Include="..\include\Components\MaterialComponent.h">
       <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_voxel_render.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_truetype.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_tilemap_editor.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_textedit.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_sprintf.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_rect_pack.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_leakcheck.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_perlin.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_image_write.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_include.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_image_resize2.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_image.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_hexwave.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_herringbone_wang_tile.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_dxt.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_easy_font.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_ds.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_connected_components.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_divide.h">
+      <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ImageLoaders\stb\stb_c_lexer.h">
+      <Filter>ImageLoader Files\stb</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

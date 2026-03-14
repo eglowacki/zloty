@@ -16,7 +16,6 @@
 #include "Streams/Buffers.h"
 #include "VTS/VirtualTransportSystem.h"
 #include "Render/Cache/CacheWatcher.h"
-#include "Render/Cache/AssetCache.h"
 #include <d3d12.h>
 
 
@@ -76,7 +75,6 @@ namespace yaget::render
     private:
         io::Buffer AssureShaderNonMT(const yaget::io::Tag& tag, ShaderType shaderType);
 
-        //using Ptr = std::shared_ptr<ResourceReflector>;
         std::shared_ptr<ResourceCompiler> mResourceCompiler;
         std::map<io::Tag, std::shared_ptr<ResourceReflector>> mReflections;
     };

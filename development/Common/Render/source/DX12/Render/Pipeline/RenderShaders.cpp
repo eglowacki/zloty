@@ -298,18 +298,20 @@ yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const yaget::i
     if (!io::size_data(buffer))
     {
         YLOG_ERROR("COMP",
-            std::format("Could not get compiled {} shader for tag: '{}\n{}:'. Using built-in shader as s fallback.", magic_enum::enum_name(shaderType),
-                yaget::conv::Convertor<yaget::io::Tag>::ToString(tag), tag.ResolveVTS()).c_str());
+                   std::format("Could not get compiled {} shader for tag: '{}\n{}:'. Using built-in shader as a fallback.", 
+                   magic_enum::enum_name(shaderType),
+                   yaget::conv::ToString(tag), tag.ResolveVTS()).c_str());
 
         arguments = GetCommandParameters(shaderType, false);;
 
-        auto binaryCode = CompileShader(tag, mResourceCompiler.get(), io::BufferView(buildInShaderSource, buildInShaderSourceLen), arguments);
+        auto binaryCode = CompileShader(tag, mResourceCompiler.get(), io::BufferView(reinterpret_cast<const uint8_t*>(buildInShaderSource), buildInShaderSourceLen), arguments);
         buffer = binaryCode.first;
         reflection = binaryCode.second;
 
         error_handlers::ThrowOnError(io::size_data(buffer) > 0,
-            std::format("Could not compile built-in shader type: '%s'. Source:\n'%s'", magic_enum::enum_name(shaderType),
-                buildInShaderSource));
+                              std::format("Could not compile built-in shader type: '%s'. Source:\n'%s'", 
+                                     magic_enum::enum_name(shaderType),
+                                 buildInShaderSource));
     }
 
     mAssets.insert({ tag, buffer });

@@ -27,7 +27,7 @@ namespace yaget::io
     // .second - size of data
     using Buffer = std::pair<std::shared_ptr<uint8_t>, size_t>;
     // This represents memory with size but it does not own, thus does not delete/cleanup
-    using BufferView = std::pair<const char*, size_t>;
+    using BufferView = std::pair<const uint8_t*, size_t>;
 
 
     template <typename T>
@@ -37,10 +37,10 @@ namespace yaget::io
     }
 
 
-    template <typename T>
-    size_t size_data(const T& buffer)
+    template <typename T, typename S = size_t>
+    S size_data(const T& buffer)
     {
-        return buffer.second;
+        return static_cast<S>(buffer.second);
     }
 
 
@@ -63,19 +63,7 @@ namespace yaget::io
     {
         YAGET_ASSERT(range == 0, "range for buffer view is not implemented yet!!!");
 
-        return { cast_data<const char>(buffer) + offset, size_data(buffer) - offset };
-    }
-
-
-    inline const char *BufferPointer(const BufferView& buffer)
-    {
-        return cast_data<const char>(buffer);
-    }
-
-
-    inline size_t BufferSize(const BufferView& buffer)
-    {
-        return buffer.second;
+        return { cast_data<const uint8_t>(buffer) + offset, size_data(buffer) - offset };
     }
 
 

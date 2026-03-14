@@ -94,6 +94,15 @@
                     }
                 },
                 {
+                    "Images": {
+                        "Converters": "IMAGE",
+                        "Filters": [ "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.tga" ],
+                        "Path": [ "$(DataFolder)/Data/Images" ],
+                        "ReadOnly": true,
+                        "Recursive": true
+                    }
+                },
+                {
                     "Caches": {
                         "Converters": "BIN",
                         "Filters": [ "*.cache" ],
