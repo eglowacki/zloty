@@ -24,7 +24,7 @@
     },
     {
       "Id": "9229a652-9abf-49b2-b61c-7d22b7d148b2",
-      "Command": "--help"
+      "Command": "--vts_fix"
     },
     {
       "Id": "d3bd7ced-f130-42d6-9058-87d81b758fd2",
