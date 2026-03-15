@@ -90,12 +90,12 @@ namespace yaget
             using Row = yaget::meta::convert_as_tuple_t<IS...>;
             static constexpr size_t NumComponents = std::tuple_size_v<std::remove_reference_t<Row>>;
 
-#ifndef YAGET_RELEASE
+#if YAGET_AUTO_CLEANUP == 1
             // NOTE: EG: Not sure if I like this be a compiled define
             // This is probably more useful per to let user declare RowPolicy
             // with this option
             using AutoCleanup = bool;
-#endif // YAGET_RELEASE
+#endif
         };
 
         // Helper struct to expose Global row policy
