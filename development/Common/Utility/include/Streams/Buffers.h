@@ -31,7 +31,7 @@ namespace yaget::io
 
 
     template <typename T>
-    T *cast_data(const Buffer& buffer)
+    T* cast_data(const Buffer& buffer)
     {
         return reinterpret_cast<T*>(buffer.first.get());
     }
@@ -45,14 +45,14 @@ namespace yaget::io
 
 
     template <typename T>
-    const T *cast_data(const BufferView& buffer)
+    const T* cast_data(const BufferView& buffer)
     {
         return reinterpret_cast<const T*>(buffer.first);
     }
 
 
     template <typename T>
-    T *cast_data(BufferView& buffer)
+    T* cast_data(BufferView& buffer)
     {
         const T* result = cast_data<T>(std::as_const(buffer));
         return const_cast<T*>(result);
@@ -179,6 +179,14 @@ namespace yaget::io
 
             //std::memcpy(io::BufferPointer(mBuffer) + mWriteOffset, dataChunk, dataSize);
             //mWriteOffset += dataSize;
+        }
+
+
+        // This does not shrink actual memory, but simply set the size of the buffer
+        // to where the last write was
+        void Shrink()
+        {
+            mBuffer.second = mWriteOffset;
         }
 
 

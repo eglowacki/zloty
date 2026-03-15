@@ -173,7 +173,6 @@ namespace yaget::render
         AssetCache(io::VirtualTransportSystem& vts, Section fileName);
         ~AssetCache();
         io::Buffer GetCachedAsset(const io::Tag& tag) const;
-        bool IsCachedAsset(const io::Tag& tag) const;
         void SaveCachedAsset(const io::Tag& tag, io::Buffer buffer);
         void ClearCachedAsset(const io::Tag& tag);
         static Section operator[](AssetCacheType typeFlag);

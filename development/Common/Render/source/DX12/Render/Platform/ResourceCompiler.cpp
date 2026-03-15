@@ -115,7 +115,7 @@ namespace
 
     private:
         std::vector<std::wstring> mShaderArguments;
-        
+
     };
 }
 
@@ -124,7 +124,7 @@ namespace
 yaget::render::ResourceCompiler::CompileResult yaget::render::ResourceCompiler::Compile(io::BufferView data, const Strings& parameters) const
 {
     CompileResult compiledResult;
-    
+
     ShaderParameters shaderParameters(parameters);
 
     constexpr uint32_t codePage = CP_UTF8;
@@ -194,11 +194,11 @@ D3D12_SHADER_VISIBILITY yaget::render::ResourceReflector::GeneratePins(uint32_t 
     {
     case D3D12_SHVER_VERTEX_SHADER:
     case D3D12_SHVER_PIXEL_SHADER:
-        {
-            auto& shaderInputs = mShaderInputs = {};
-            auto& shaderOutputs = mShaderOutputs = {};
+    {
+        auto& shaderInputs = mShaderInputs = {};
+        auto& shaderOutputs = mShaderOutputs = {};
 
-            auto paramDesc = [](uint32_t parameterIndex, auto descGetter)
+        auto paramDesc = [](uint32_t parameterIndex, auto descGetter)
             {
                 D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
                 HRESULT hr = descGetter(parameterIndex, &signatureParameterDesc);
@@ -207,29 +207,29 @@ D3D12_SHADER_VISIBILITY yaget::render::ResourceReflector::GeneratePins(uint32_t 
                 return signatureParameterDesc;
             };
 
-            for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.InputParameters))
-            {
-                auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC *desc)
+        for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.InputParameters))
+        {
+            auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC* desc)
                 {
                     return shaderReflection->GetInputParameterDesc(parameterIndex, desc);
                 });
 
-                shaderInputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
-            }
+            shaderInputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
+        }
 
-            for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.OutputParameters))
-            {
-                auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC *desc)
+        for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.OutputParameters))
+        {
+            auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC* desc)
                 {
                     return shaderReflection->GetOutputParameterDesc(parameterIndex, desc);
                 });
 
-                shaderOutputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
-            }
-
-            returnValue = shaderType == D3D12_SHVER_VERTEX_SHADER ? D3D12_SHADER_VISIBILITY_VERTEX : D3D12_SHADER_VISIBILITY_PIXEL;
+            shaderOutputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
         }
-        break;
+
+        returnValue = shaderType == D3D12_SHVER_VERTEX_SHADER ? D3D12_SHADER_VISIBILITY_VERTEX : D3D12_SHADER_VISIBILITY_PIXEL;
+    }
+    break;
     default:
         YLOG_ERROR("COMP", "Unsupported shader type: '%d'", shaderType);
     }
@@ -262,76 +262,74 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
         switch (shaderInputBindDesc.Type)
         {
         case D3D_SIT_CBUFFER:
+        {
+            ID3D12ShaderReflectionConstantBuffer* shaderReflectionConstantBuffer = mShaderReflection->GetConstantBufferByIndex(i);
+
+            D3D12_SHADER_BUFFER_DESC constantBufferDesc{};
+            hr = shaderReflectionConstantBuffer->GetDesc(&constantBufferDesc);
+            error_handlers::ThrowOnError(hr, std::format("Could not get Constant Buffer Description from compiled vertex shader. BoundResources Index: {}", i));
+
+            // NOTE(eg) we may want to consider having path for small (one matrix?) root const buffer
+            D3D12_ROOT_PARAMETER1 rootParameter = {};
+
+            if (constantBufferDesc.Variables * constantBufferDesc.Size == sizeof(float) * 16)
             {
-                ID3D12ShaderReflectionConstantBuffer* shaderReflectionConstantBuffer = mShaderReflection->GetConstantBufferByIndex(i);
-
-                D3D12_SHADER_BUFFER_DESC constantBufferDesc{};
-                hr = shaderReflectionConstantBuffer->GetDesc(&constantBufferDesc);
-                error_handlers::ThrowOnError(hr, std::format("Could not get Constant Buffer Description from compiled vertex shader. BoundResources Index: {}", i));
-
-                // NOTE(eg) we may want to consider having path for small (one matrix?) root const buffer
-                D3D12_ROOT_PARAMETER1 rootParameter = {};
-
-                if (constantBufferDesc.Variables * constantBufferDesc.Size == sizeof(float) * 16)
+                rootParameter = D3D12_ROOT_PARAMETER1
                 {
-                    rootParameter = D3D12_ROOT_PARAMETER1
+                    .ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS,
+                    .Constants
                     {
-                        .ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS,
-                        .Constants
-                        {
-                            .ShaderRegister = shaderInputBindDesc.BindPoint,
-                            .RegisterSpace = shaderInputBindDesc.Space,
-                            .Num32BitValues = 16,
-                        },
-                        .ShaderVisibility = mShaderVisibility,
-                    };
-                }
-                else
-                {
-                    rootParameter = D3D12_ROOT_PARAMETER1
-                    {
-                        .ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV,
-                        .Descriptor
-                        {
-                            .ShaderRegister = shaderInputBindDesc.BindPoint,
-                            .RegisterSpace = shaderInputBindDesc.Space,
-                            .Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
-                        },
-                        .ShaderVisibility = mShaderVisibility,
-                    };
-                }
-
-                rootParameters.push_back({ .mParameter = rootParameter, .mName = shaderInputBindDesc.Name });
-            }
-            break;
-        case D3D_SIT_TEXTURE:
-            {
-                rootParameters.push_back({});
-                auto& parameter = rootParameters.back();
-                const CD3DX12_DESCRIPTOR_RANGE1 srvRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
-                    1u,
-                    shaderInputBindDesc.BindPoint,
-                    shaderInputBindDesc.Space,
-                    D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
-
-                parameter.mDescriptorRangesScratchPad.push_back(srvRange);
-                //std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptorRanges;
-                //descriptorRanges.push_back(srvRange);
-
-                const D3D12_ROOT_PARAMETER1 rootParameter
-                {
-                    .ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
-                    .DescriptorTable
-                    {
-                        .NumDescriptorRanges = 1u,
-                        .pDescriptorRanges = &parameter.mDescriptorRangesScratchPad.back(),
+                        .ShaderRegister = shaderInputBindDesc.BindPoint,
+                        .RegisterSpace = shaderInputBindDesc.Space,
+                        .Num32BitValues = 16,
                     },
-                    .ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL,
+                    .ShaderVisibility = mShaderVisibility,
                 };
-
-                rootParameters.push_back({ .mParameter = rootParameter, .mName = shaderInputBindDesc.Name });
             }
-            break;
+            else
+            {
+                rootParameter = D3D12_ROOT_PARAMETER1
+                {
+                    .ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV,
+                    .Descriptor
+                    {
+                        .ShaderRegister = shaderInputBindDesc.BindPoint,
+                        .RegisterSpace = shaderInputBindDesc.Space,
+                        .Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
+                    },
+                    .ShaderVisibility = mShaderVisibility,
+                };
+            }
+
+            rootParameters.push_back({ .mParameter = rootParameter, .mName = shaderInputBindDesc.Name });
+        }
+        break;
+        case D3D_SIT_TEXTURE:
+        {
+            rootParameters.push_back({});
+            auto& parameter = rootParameters.back();
+            const CD3DX12_DESCRIPTOR_RANGE1 srvRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
+                1u,
+                shaderInputBindDesc.BindPoint,
+                shaderInputBindDesc.Space,
+                D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
+
+            parameter.mDescriptorRangesScratchPad.push_back(srvRange);
+
+            const D3D12_ROOT_PARAMETER1 rootParameter
+            {
+                .ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
+                .DescriptorTable
+                {
+                    .NumDescriptorRanges = 1u,
+                    .pDescriptorRanges = &parameter.mDescriptorRangesScratchPad.back(),
+                },
+                .ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL,
+            };
+
+            rootParameters.push_back({ .mParameter = rootParameter, .mName = shaderInputBindDesc.Name });
+        }
+        break;
         default:
             YLOG_ERROR("COMP", "Unsupported Bound Resources type: '%d'", shaderInputBindDesc.Type);
         }

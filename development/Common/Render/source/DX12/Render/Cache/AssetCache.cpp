@@ -164,6 +164,8 @@ yaget::render::AssetCache::~AssetCache()
             std::memcpy(dataPointer + offset, &location, sizeof(location));
             offset += sizeof(location);
         }
+
+        mCache.Shrink();
         auto fullCacheData = io::CreateBuffer(io::size_data(indexBuffer) + io::size_data(mCache.mBuffer));
         io::CopyBuffer(indexBuffer, fullCacheData, 0);
         io::CopyBuffer(mCache.mBuffer, fullCacheData, io::size_data(indexBuffer));
@@ -193,13 +195,6 @@ yaget::io::Buffer yaget::render::AssetCache::GetCachedAsset(const io::Tag& tag) 
         return io::CreateBuffer(io::cast_data<const char>(mCache.mBuffer) + location.mOffset, location.mSize);
     }
     return {};
-}
-
-
-//-------------------------------------------------------------------------------------------------
-bool yaget::render::AssetCache::IsCachedAsset(const io::Tag& tag) const
-{
-    return mCacheIndex.contains(tag.mGuid);
 }
 
 
