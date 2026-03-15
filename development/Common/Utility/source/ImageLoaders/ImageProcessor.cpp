@@ -41,17 +41,20 @@ yaget::io::Buffer yaget::image::GetImage(const io::Buffer& imageData)
         int x = 0;
         int y = 0;
         int comp = 0;
-        auto imageMemory = stbi_load_from_memory(io::cast_data<const stbi_uc>(imageData), io::size_data<io::Buffer, int>(imageData), &x, &y, &comp, 0);
-        auto imagePixels = io::CreateBuffer(header.GetImageSize() + sizeof(header));
+        if (auto imageMemory = stbi_load_from_memory(io::cast_data<const stbi_uc>(imageData), io::size_data<io::Buffer, int>(imageData), &x, &y, &comp, 0))
+        {
+            header = { .mSizeX = x, .mSizeY = y, .mComponents = comp };
+            auto imagePixels = io::CreateBuffer(header.GetImageSize() + sizeof(header));
 
-        size_t writeOffset = 0;
-        std::memcpy(io::cast_data<char>(imagePixels) + writeOffset, &header, sizeof(header));
-        writeOffset += sizeof(header);
-        std::memcpy(io::cast_data<char>(imagePixels) + writeOffset, imageMemory, header.GetImageSize());
+            size_t writeOffset = 0;
+            std::memcpy(io::cast_data<char>(imagePixels) + writeOffset, &header, sizeof(header));
+            writeOffset += sizeof(header);
+            std::memcpy(io::cast_data<char>(imagePixels) + writeOffset, imageMemory, header.GetImageSize());
 
-        stbi_image_free(imageMemory);
+            stbi_image_free(imageMemory);
 
-        return imagePixels;
+            return imagePixels;
+        }
     }
 
     return {};
