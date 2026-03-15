@@ -40,8 +40,8 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderSignatures::RenderSignatures(ID3D12Device* device, yaget::io::VirtualTransportSystem& vts)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Signatures"))
+defensor::render::RenderSignatures::RenderSignatures(ID3D12Device* device, yaget::io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+    : CacheWatcher(vts, fileName)
     , mDevice(device)
 {
 }

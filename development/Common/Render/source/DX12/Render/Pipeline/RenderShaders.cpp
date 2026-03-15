@@ -176,8 +176,8 @@ namespace yaget::render
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderShaders::RenderShaders(yaget::io::VirtualTransportSystem& vts)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Shaders"))
+yaget::render::RenderShaders::RenderShaders(yaget::io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+    : CacheWatcher(vts, fileName)
     , mResourceCompiler(std::make_shared<ResourceCompiler>())
 {
 }

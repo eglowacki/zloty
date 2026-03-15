@@ -200,8 +200,8 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderPipelines::RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Pipelines"))
+defensor::render::RenderPipelines::RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+    : CacheWatcher(vts, fileName)
     , mDevice(device)
 {
 }

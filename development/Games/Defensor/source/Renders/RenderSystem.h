@@ -19,9 +19,10 @@
 #include "Render/DesktopApplication.h"
 #include "RenderPipelines.h"
 
-#include "Renders/RenderSignatures.h"
-#include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderMaterials.h"
+#include "Render/Pipeline/RenderShaders.h"
+#include "Render/Pipeline/RenderTextures.h"
+#include "Renders/RenderSignatures.h"
 
 
 namespace defensor::render
@@ -33,6 +34,7 @@ namespace defensor::render
 
     private:
         using AssetCacheType = yaget::render::AssetCacheType;
+        using Section = io::VirtualTransportSystem::Section;
 
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent);
         void PreloadAssets();
@@ -49,7 +51,6 @@ namespace defensor::render
             Guid mPixelShaderGuid;
         };
 
-        mt::JobPool mAssetPoolThread;
         math3d::Interpolator<colors::Color> mColorInterpolator;
         math3d::Interpolator<float> mMatrixInterpolator;
 
@@ -58,6 +59,7 @@ namespace defensor::render
         RenderPipelines mRenderPipelines;
         yaget::render::RenderShaders mRenderShaders;
         yaget::render::RenderMaterials mRenderMaterials;
+        yaget::render::RenderTextures mRenderTextures;
 
         RenderState mCurrentRenderState;
     };

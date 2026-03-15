@@ -40,7 +40,7 @@ namespace yaget::render
     class RenderMaterials : public CacheWatcher<MaterialProperties>
     {
     public:
-        RenderMaterials(io::VirtualTransportSystem& vts);
+        RenderMaterials(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
         ~RenderMaterials();
 
         MaterialProperties GetMaterial(const io::Tag& tag);

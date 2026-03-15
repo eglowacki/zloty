@@ -34,8 +34,8 @@ namespace
 }
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderMaterials::RenderMaterials(io::VirtualTransportSystem& vts)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Materials"))
+yaget::render::RenderMaterials::RenderMaterials(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+    : CacheWatcher(vts, fileName)
 {
 }
 

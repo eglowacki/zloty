@@ -9,8 +9,8 @@
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderTextures::RenderTextures(yaget::io::VirtualTransportSystem& vts)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Textures"))
+yaget::render::RenderTextures::RenderTextures(yaget::io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+    : CacheWatcher(vts, fileName)
 {
 }
 
@@ -46,7 +46,7 @@ std::vector<yaget::io::Buffer> yaget::render::RenderTextures::GetTextures(const 
             {
                 io::SingleBLobLoader<io::TextureAsset> loader(mVTS, tag);
                 auto textureAsset = loader.GetAsset();
-                cachedData = textureAsset ? textureAsset->mBuffer : io::Buffer{};
+                cachedData = textureAsset && textureAsset->IsValid() ? textureAsset->mBuffer : io::Buffer{};
             }
 
             return cachedData;

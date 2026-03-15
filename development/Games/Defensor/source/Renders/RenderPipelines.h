@@ -34,7 +34,7 @@ namespace defensor::render
     class RenderPipelines : public yaget::render::CacheWatcher<yaget::render::ComPtr<ID3D12PipelineState>>
     {
     public:
-        RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts);
+        RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
         ~RenderPipelines();
 
         ID3D12PipelineState* GetPipeline(const io::Tag& tag, ID3D12RootSignature* rootSignature, io::Buffer vertexShaderBuffer, io::Buffer pixelShaderBuffer);

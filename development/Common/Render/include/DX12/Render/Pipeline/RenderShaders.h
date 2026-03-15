@@ -33,7 +33,7 @@ namespace yaget::render
     class RenderShaders : public CacheWatcher<io::Buffer>
     {
     public:
-        RenderShaders(io::VirtualTransportSystem& vts);
+        RenderShaders(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
         ~RenderShaders();
 
         enum class ShaderType

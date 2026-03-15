@@ -25,7 +25,7 @@ namespace yaget::render
     class RenderTextures : public CacheWatcher<io::Buffer>
     {
     public:
-        RenderTextures(io::VirtualTransportSystem& vts);
+        RenderTextures(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
         ~RenderTextures();
 
 
@@ -34,10 +34,6 @@ namespace yaget::render
 
         static void PopulateTextureMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
         static void SaveTextureMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
-
-    private:
-        io::Buffer AssureTextureNonMT(const yaget::io::Tag& tag);
-
     };
 
 }
