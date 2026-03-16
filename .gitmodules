@@ -28,3 +28,6 @@
 [submodule "development/Dependencies/zip-utils"]
 	path = development/Dependencies/zip-utils
 	url = https://github.com/Source-Authors/zip-utils.git
+[submodule "development/Dependencies/D3D12MemoryAllocator"]
+	path = development/Dependencies/D3D12MemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git
