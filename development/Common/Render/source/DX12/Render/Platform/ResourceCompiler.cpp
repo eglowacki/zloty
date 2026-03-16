@@ -1,52 +1,132 @@
 #include "Render/Platform/ResourceCompiler.h"
 #include "App/AppUtilities.h"
-
-#include <d3dcompiler.h>
-#include <d3dx12.h>
+#include "Core/ErrorHandlers.h"
+#include "Exception/Exception.h"
+#include "magic_enum/magic_enum.hpp"
+#include "Platform/Support.h"
+#include "StringHelpers.h"
 
 #include <d3d12shader.h>    // Shader reflection.
+#include <d3dcompiler.h>
+#include <d3dx12.h>
 #include <dxcapi.h>         // Be sure to link with dxcompiler.lib.
 #include <ranges>
 
-#include "StringHelpers.h"
-#include "Core/ErrorHandlers.h"
-#include "Exception/Exception.h"
-#include "Platform/Support.h"
 
 // New compiler for shaders
 // https://github.com/microsoft/DirectXShaderCompiler/wiki/Using-dxc.exe-and-dxcompiler.dll
 
 namespace
 {
+    //-------------------------------------------------------------------------------------------------
+    struct ReflectorVariable
+    {
+        yaget::render::constant_shader_types::ConstantTypes mType;
+        yaget::render::constant_shader_types::ConstantLayout mLayout;
+    };
+
+
+    //-------------------------------------------------------------------------------------------------
+    bool operator==(const ReflectorVariable& lhs, const ReflectorVariable& rhs)
+    {
+        return lhs.mType == rhs.mType && lhs.mLayout == rhs.mLayout;
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    bool operator!=(const ReflectorVariable& lhs, const ReflectorVariable& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    void to_json(nlohmann::json& j, const ReflectorVariable& reflectorVariable)
+    {
+        j["Type"] = magic_enum::enum_name(reflectorVariable.mType);
+        j["Layout"] = magic_enum::enum_name(reflectorVariable.mLayout);
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    void from_json(const nlohmann::json& j, ReflectorVariable& reflectorVariable)
+    {
+        using namespace yaget::render;
+
+        auto typeName = yaget::json::GetValue(j, "Type", std::string{});
+        auto enumValueType = magic_enum::enum_cast<constant_shader_types::ConstantTypes>(typeName);
+        if (enumValueType.has_value())
+        {
+            reflectorVariable.mType = enumValueType.value();
+        }
+
+        auto layoutName = yaget::json::GetValue(j, "Layout", std::string{});
+        auto enumValueLayout = magic_enum::enum_cast<constant_shader_types::ConstantLayout>(layoutName);
+        if (enumValueLayout.has_value())
+        {
+            reflectorVariable.mLayout = enumValueLayout.value();
+        }
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    using ReflectorVariables = std::map<std::string, ReflectorVariable>;
+    ReflectorVariables ReflectorVariableMappings = {
+        //{ "WorldViewProjection", { yaget::render::constant_shader_types::ConstantTypes::WorldViewProjection, yaget::render::constant_shader_types::ConstantLayout::Matrix4x4 }},
+        //{ "Time", { yaget::render::constant_shader_types::ConstantTypes::Time, yaget::render::constant_shader_types::ConstantLayout::Float }}
+    };
+
+    //-------------------------------------------------------------------------------------------------
     const yaget::render::ResourceReflector::IndexMap MakeIndexMap(const yaget::render::ResourceReflector::RootParameters& rootParameters)
     {
         using namespace yaget::render;
 
         ResourceReflector::IndexMap result;
         uint32_t slot = 0;
-        for (auto value : rootParameters)
+        for (const auto& value : rootParameters)
         {
-            //D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE	= 0,
-            //D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS	= ( D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE + 1 ) ,
-            //D3D12_ROOT_PARAMETER_TYPE_CBV	= ( D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS + 1 ) ,
-            //D3D12_ROOT_PARAMETER_TYPE_SRV	= ( D3D12_ROOT_PARAMETER_TYPE_CBV + 1 ) ,
-            //D3D12_ROOT_PARAMETER_TYPE_UAV	= ( D3D12_ROOT_PARAMETER_TYPE_SRV + 1 ) 
+            if (auto it = ReflectorVariableMappings.find(value.mVariableTypeName); it != ReflectorVariableMappings.end())
+            {
+                constant_shader_types::VariableType variableType{};
 
-            constant_shader_types::VariableType variableType{};
+                variableType.mType = it->second.mType;
+                variableType.mLayout = it->second.mLayout;
+                variableType.mTypeName = value.mVariableTypeName;
+                variableType.mName = value.mName;
+                variableType.mOffset = slot++;
 
-            variableType.mType = constant_shader_types::ConstantTypes::WorldViewProjection;
-            variableType.mLayout = constant_shader_types::ConstantLayout::Matrix4x4;
+                switch (value.mParameter.ParameterType)
+                {
+                    case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
+                        variableType.mRootType = constant_shader_types::RootType::Table;
+                        break;
+                    case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
+                        variableType.mRootType = constant_shader_types::RootType::Constant;
+                        break;
+                    case D3D12_ROOT_PARAMETER_TYPE_CBV:
+                        variableType.mRootType = constant_shader_types::RootType::ConstantBufferView;
+                        break;
+                    case D3D12_ROOT_PARAMETER_TYPE_SRV:
+                        variableType.mRootType = constant_shader_types::RootType::ShaderResourceView;
+                        break;
+                    case D3D12_ROOT_PARAMETER_TYPE_UAV:
+                        variableType.mRootType = constant_shader_types::RootType::UnorderedAccessView;
+                        break;
+                }
 
-            variableType.mTypeName = value.mVariableTypeName;
-            variableType.mName = value.mName;
-            variableType.mOffset = slot++;
-
-            result[value.mName] = variableType;
+                result[value.mName] = variableType;
+            }
+            else
+            {
+                YLOG_ERROR("COMP", std::format("Variable name '{}' not found in mappings. Skipping.", value.mVariableTypeName).c_str());
+            }
         }
 
         return result;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
     std::string GetVariableTypeName(ID3D12ShaderReflectionConstantBuffer* shaderReflectionConstantBuffer, const char* variableName)
     {
         std::string result;
@@ -62,6 +142,7 @@ namespace
 
         return result;
     }
+
 }
 
 
@@ -71,9 +152,9 @@ const yaget::render::ResourceReflector::RootDescResult yaget::render::ResourceRe
     RootDescResult rootResult;
 
     rootResult.mRootParameters = rootParameters | std::views::transform([](const auto& element)
-    {
-        return element.mParameter;
-    }) | std::ranges::to<std::vector<D3D12_ROOT_PARAMETER1>>();
+        {
+            return element.mParameter;
+        }) | std::ranges::to<std::vector<D3D12_ROOT_PARAMETER1>>();
 
     rootResult.mRootSignatureDesc =
     {
@@ -111,14 +192,16 @@ void yaget::render::ResourceReflector::MakeRootSignature(ResourceReflector* addi
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::ResourceReflector::PopulateMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+void yaget::render::ResourceReflector::PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
+    PopulateMap(fileName, vts, ReflectorVariableMappings);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::ResourceReflector::SaveMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+void yaget::render::ResourceReflector::SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
+    SaveMap(fileName, vts, ReflectorVariableMappings);
 }
 
 
@@ -145,14 +228,14 @@ namespace
         ShaderParameters(const yaget::Strings& parameters)
         {
             mShaderArguments = parameters | std::views::transform([](const std::string& element)
-            {
-                return yaget::conv::utf8_to_wide(element);
-            }) | std::ranges::to<std::vector<std::wstring>>();
+                {
+                    return yaget::conv::utf8_to_wide(element);
+                }) | std::ranges::to<std::vector<std::wstring>>();
 
             mArguments = mShaderArguments | std::views::transform([](const std::wstring& element)
-            {
-                return element.c_str();
-            }) | std::ranges::to<std::vector<LPCWSTR>>();
+                {
+                    return element.c_str();
+                }) | std::ranges::to<std::vector<LPCWSTR>>();
         }
 
         std::vector<LPCWSTR> mArguments;
@@ -242,20 +325,20 @@ D3D12_SHADER_VISIBILITY yaget::render::ResourceReflector::GeneratePins(uint32_t 
             auto& shaderOutputs = mShaderOutputs = {};
 
             auto paramDesc = [](uint32_t parameterIndex, auto descGetter)
-            {
-                D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
-                HRESULT hr = descGetter(parameterIndex, &signatureParameterDesc);
-                error_handlers::ThrowOnError(hr, std::format("Could not get input Parameter Description from compiled vertex shader. Parameter Index: {}", parameterIndex));
+                {
+                    D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
+                    HRESULT hr = descGetter(parameterIndex, &signatureParameterDesc);
+                    error_handlers::ThrowOnError(hr, std::format("Could not get input Parameter Description from compiled vertex shader. Parameter Index: {}", parameterIndex));
 
-                return signatureParameterDesc;
-            };
+                    return signatureParameterDesc;
+                };
 
             for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.InputParameters))
             {
                 auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC* desc)
-                {
-                    return shaderReflection->GetInputParameterDesc(parameterIndex, desc);
-                });
+                    {
+                        return shaderReflection->GetInputParameterDesc(parameterIndex, desc);
+                    });
 
                 shaderInputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
             }
@@ -263,9 +346,9 @@ D3D12_SHADER_VISIBILITY yaget::render::ResourceReflector::GeneratePins(uint32_t 
             for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.OutputParameters))
             {
                 auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC* desc)
-                {
-                    return shaderReflection->GetOutputParameterDesc(parameterIndex, desc);
-                });
+                    {
+                        return shaderReflection->GetOutputParameterDesc(parameterIndex, desc);
+                    });
 
                 shaderOutputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
             }
@@ -355,10 +438,10 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
                 rootParameters.push_back({});
                 auto& parameter = rootParameters.back();
                 const CD3DX12_DESCRIPTOR_RANGE1 srvRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
-                                                         1u,
-                                                         shaderInputBindDesc.BindPoint,
-                                                         shaderInputBindDesc.Space,
-                                                         D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
+                    1u,
+                    shaderInputBindDesc.BindPoint,
+                    shaderInputBindDesc.Space,
+                    D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
 
                 parameter.mDescriptorRangesScratchPad.push_back(srvRange);
 

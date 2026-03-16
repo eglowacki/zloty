@@ -143,6 +143,9 @@
     <CopyFileToFolders Include="data\Images\White.tga">
       <Filter>Data Files\Images</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\ShaderReflectionOptions.json">
+      <Filter>Data Files\Manifest</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\MainGame.h">

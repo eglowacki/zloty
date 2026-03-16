@@ -218,6 +218,13 @@
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\ShaderReflectionOptions.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Manifest</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Manifest</DestinationFolders>
+    </CopyFileToFolders>
     <None Include="Defensor.deployment" />
   </ItemGroup>
   <ItemGroup>
