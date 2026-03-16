@@ -45,6 +45,9 @@ namespace yaget::render
 
         MaterialProperties GetMaterial(const io::Tag& tag);
         std::vector<MaterialProperties> GetMaterials(const io::Tags& tags);
+
+        static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
     };
 }
 

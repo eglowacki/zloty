@@ -164,6 +164,8 @@
     <ClCompile Include="..\source\Win32\AppUtilities.cpp" />
     <ClCompile Include="..\source\Win32\Platform.cpp" />
     <ClCompile Include="..\source\Win32\ProcHandler.cpp" />
+    <ClCompile Include="..\source\zip-utils\XUnzip.cpp" />
+    <ClCompile Include="..\source\zip-utils\XZip.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\Base.h" />
@@ -307,6 +309,9 @@
     <ClInclude Include="..\source\targetver.h" />
     <ClInclude Include="..\source\vld\vld.h" />
     <ClInclude Include="..\source\vld\vld_def.h" />
+    <ClInclude Include="..\source\zip-utils\XUnzip.h" />
+    <ClInclude Include="..\source\zip-utils\XZip.h" />
+    <ClInclude Include="..\source\zip-utils\XZresult.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

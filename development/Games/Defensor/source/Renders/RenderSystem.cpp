@@ -2,15 +2,13 @@
 #include "Render/DesktopApplication.h"
 #include "Render/Device.h"
 #include "Render/Platform/Adapter.h"
-#include "ImageLoaders/ImageProcessor.h"
-#include "App/FileUtilities.h"
 
 #include <ranges>
 
 
 namespace
 {
-    yaget::io::Tag TypeToTag(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
+    yaget::io::Tag TypeToTag(yaget::render::AssetCacheType assetCacheType, const yaget::io::VirtualTransportSystem& vts)
     {
         auto section = yaget::render::AssetCache::operator[](assetCacheType);
         if (section.mName.empty())
@@ -37,26 +35,25 @@ namespace
         return section;
 #endif
     }
-
 }
 
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
     : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, false)
-    , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
-    , mMatrixInterpolator(0.0f, 1.0f)
-    , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) {HotRebindMaterial(guid); })
-    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
-    , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"))
-    , mRenderShaders(app.VTS(), GetSection("Shaders"))
-    , mRenderMaterials(app.VTS(), GetSection("Materials"))
-    , mRenderTextures(app.VTS(), GetSection("Textures"))
+      , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
+      , mMatrixInterpolator(0.0f, 1.0f)
+      , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindMaterial(guid); })
+      , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
+      , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"))
+      , mRenderShaders(app.VTS(), GetSection("Shaders"))
+      , mRenderMaterials(app.VTS(), GetSection("Materials"))
+      , mRenderTextures(app.VTS(), GetSection("Textures"))
 {
     mApp.PoolThread().AddTask([this]()
-        {
-            PreloadAssets();
-        });
+    {
+        PreloadAssets();
+    });
 }
 
 
@@ -83,59 +80,62 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         auto commandList = framerHandle.GetCommandList();
 
         coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
+        {
+            auto renderComponent = std::get<RenderComponent*>(row);
+
+            auto& material = renderComponent->mRenderMaterial;
+
+            if (DependencyNode* materialNode = mDependencyGraph.Find(material.mAssetTag.mGuid, nullptr))
             {
-                auto renderComponent = std::get<RenderComponent*>(row);
-                const auto location = renderComponent->mMatrix;
-
-                auto& material = renderComponent->mRenderMaterial;
-
-                if (DependencyNode* materialNode = mDependencyGraph.Find(material.mAssetTag.mGuid, nullptr))
+                if (materialNode->IsBranchDirty())
                 {
-                    if (materialNode->IsBranchDirty())
-                    {
-                        material.ResolveAssetTag(material.mAssetTag);
-                        materialNode->ClearDirty();
-                    }
-
-                    auto signatureTag = TypeToTag(material.mMaterialProperties.mSignature, vts);
-                    auto rootSig = mRenderSignatures.GetSignature(signatureTag);
-                    commandList->SetGraphicsRootSignature(rootSig);
-
-                    auto psoTag = TypeToTag(material.mMaterialProperties.mPSO, vts);
-                    auto pso = mRenderPipelines.GetPipeline(psoTag);
-                    commandList->SetPipelineState(pso);
-
-                    float matrix[16];
-                    math3d::GetMatrixAsFloats(location, matrix);
-                    std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
-
-                    commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
-                    renderComponent->Render(commandList);
+                    return true;
+                    //material.ResolveAssetTag(material.mAssetTag);
+                    //materialNode->ClearDirty();
                 }
 
-                return true;
-            });
+                auto signatureTag = TypeToTag(material.mMaterialProperties.mSignature, vts);
+                auto rootSig = mRenderSignatures.GetSignature(signatureTag);
+                const auto& indexMap = mRenderSignatures.GetIndexMap(signatureTag);
+                indexMap;
+                commandList->SetGraphicsRootSignature(rootSig);
+
+                auto psoTag = TypeToTag(material.mMaterialProperties.mPSO, vts);
+                auto pso = mRenderPipelines.GetPipeline(psoTag);
+                commandList->SetPipelineState(pso);
+
+                const auto location = renderComponent->mMatrix;
+                float matrix[16];
+                math3d::GetMatrixAsFloats(location, matrix);
+                std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
+
+                commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
+                renderComponent->Render(commandList);
+            }
+
+            return true;
+        });
     }
     else
     {
         const auto& newFrameRenderIds = sceneComponent->GetIds();
 
         coordinator.ForEach<RenderEntity>(newFrameRenderIds, [sceneComponent, &vts = mApp.VTS()](comp::Id_t id, const auto& row)
+        {
+            if (auto data = sceneComponent->FindState(id))
             {
-                if (auto data = sceneComponent->FindState(id))
+                auto renderComponent = std::get<RenderComponent*>(row);
+                renderComponent->mMatrix = math3d::Matrix(data->mMatrix);
+
+                if (renderComponent->mRenderMaterial.mAssetTag.mGuid != Guid(data->mAssetGuid))
                 {
-                    auto renderComponent = std::get<RenderComponent*>(row);
-                    renderComponent->mMatrix = math3d::Matrix(data->mMatrix);
-
-                    if (renderComponent->mRenderMaterial.mAssetTag.mGuid != Guid(data->mAssetGuid))
-                    {
-                        // we need to update material for this render component
-                        renderComponent->mRenderMaterial.ResolveAssetTag(vts.FindTag(Guid(data->mAssetGuid)));
-                    }
+                    // we need to update material for this render component
+                    renderComponent->mRenderMaterial.ResolveAssetTag(vts.FindTag(Guid(data->mAssetGuid)));
                 }
+            }
 
-                return true;
-            });
+            return true;
+        });
     }
 }
 
@@ -201,22 +201,23 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     if (!vsTag.IsValid() || !psTag.IsValid() || !sigTag.IsValid() || !psoTag.IsValid())
     {
         YLOG_ERROR("REND", std::format("Material '{}' has invalid material tags. {}'",
-            conv::ToString(matTag),
-            conv::ToString(material)).c_str());
+                       conv::ToString(matTag),
+                       conv::ToString(material)).c_str());
         return;
     }
 
     ID3D12RootSignature* signature = nullptr;
     mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &sigTag, &signature](const auto& descResult)
-        {
-            signature = mRenderSignatures.GetSignature(sigTag, descResult);
-        });
+    {
+        signature = mRenderSignatures.GetSignature(sigTag, descResult);
+    });
     AttachTransientAsset(sigTag, vts);
 
     auto vsBlob = mRenderShaders.GetShader(vsTag, yaget::render::RenderShaders::ShaderType::Vertex);
     auto psBlob = mRenderShaders.GetShader(psTag, yaget::render::RenderShaders::ShaderType::Pixel);
 
-    /*ID3D12PipelineState* pipeline =*/ mRenderPipelines.GetPipeline(psoTag, signature, vsBlob, psBlob);
+    /*ID3D12PipelineState* pipeline =*/
+    mRenderPipelines.GetPipeline(psoTag, signature, vsBlob, psBlob);
     AttachTransientAsset(psoTag, vts);
 
     //NOTE(eg) now we need to add this dependencies data:
@@ -244,7 +245,8 @@ void defensor::render::RenderSystem::HotRebindMaterial(const Guid& guid)
     DependencyNode* matNode = nullptr;
     std::vector<DependencyNode*> pathTo;
 
-    /*DependencyNode *node =*/ mDependencyGraph.Find(guid, &pathTo);
+    /*DependencyNode *node =*/
+    mDependencyGraph.Find(guid, &pathTo);
     if (!pathTo.empty())
     {
         matNode = *pathTo.begin();

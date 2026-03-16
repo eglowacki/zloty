@@ -17,12 +17,11 @@
 #include "Math/Interpolators.h"
 #include "Parsers/DependencyGraph.h"
 #include "Render/DesktopApplication.h"
-#include "RenderPipelines.h"
-
 #include "Render/Pipeline/RenderMaterials.h"
+#include "Render/Pipeline/RenderPipelines.h"
 #include "Render/Pipeline/RenderShaders.h"
+#include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
-#include "Renders/RenderSignatures.h"
 
 
 namespace defensor::render
@@ -55,8 +54,8 @@ namespace defensor::render
         math3d::Interpolator<float> mMatrixInterpolator;
 
         DependencyGraph mDependencyGraph;
-        RenderSignatures mRenderSignatures;
-        RenderPipelines mRenderPipelines;
+        yaget::render::RenderSignatures mRenderSignatures;
+        yaget::render::RenderPipelines mRenderPipelines;
         yaget::render::RenderShaders mRenderShaders;
         yaget::render::RenderMaterials mRenderMaterials;
         yaget::render::RenderTextures mRenderTextures;

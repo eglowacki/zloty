@@ -7,12 +7,11 @@
 #include "Parsers/DependencyGraph.h"
 #include "Json/JsonHelpers.h"
 #include "Exception/Exception.h"
-#include <cstddef>
 
 
 namespace
 {
-    const char* buildInShaderSource = R"( 
+    auto buildInShaderSource = R"( 
             struct PSInput
             {
                 float4 position : SV_POSITION;
@@ -41,6 +40,7 @@ namespace
     {
         return sv.size();
     }
+
     const std::size_t buildInShaderSourceLen = length(buildInShaderSource);;
 
     // let's have a table of mapping between shader type to (entry point and target)
@@ -51,26 +51,26 @@ namespace
     };
 
     //-------------------------------------------------------------------------------------------------
-    inline bool operator==(const ShaderMapping& lhs, const ShaderMapping& rhs)
+    bool operator==(const ShaderMapping& lhs, const ShaderMapping& rhs)
     {
         return lhs.mEntryPoint == rhs.mEntryPoint && lhs.mTarget == rhs.mTarget;
     }
 
     //-------------------------------------------------------------------------------------------------
-    inline bool operator!=(const ShaderMapping& lhs, const ShaderMapping& rhs)
+    bool operator!=(const ShaderMapping& lhs, const ShaderMapping& rhs)
     {
         return !(lhs == rhs);
     }
 
     //-------------------------------------------------------------------------------------------------
-    inline void to_json(nlohmann::json& j, const ShaderMapping shaderMapping)
+    void to_json(nlohmann::json& j, const ShaderMapping shaderMapping)
     {
         j["EntryPoint"] = shaderMapping.mEntryPoint;
         j["Target"] = shaderMapping.mTarget;
     }
 
     //-------------------------------------------------------------------------------------------------
-    inline void from_json(const nlohmann::json& j, ShaderMapping& shaderMapping)
+    void from_json(const nlohmann::json& j, ShaderMapping& shaderMapping)
     {
         shaderMapping.mEntryPoint = yaget::json::GetValue(j, "EntryPoint", shaderMapping.mEntryPoint);
         shaderMapping.mTarget = yaget::json::GetValue(j, "Target", shaderMapping.mTarget);
@@ -144,12 +144,11 @@ namespace
 #ifdef YAGET_DEBUG
         const bool debugShader = graphicsConfiguration.mUseReleaseShadersInDebug == false;
 #else
-        const bool debugShader = graphicsConfiguration.mUseDebugShadersInRelease;
+        const bool debugShader = graphicsConfiguration.mUseDebugShadersInRelease == true;
 #endif
 
         return debugShader;
     }
-
 }
 
 
@@ -176,9 +175,9 @@ namespace yaget::render
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderShaders::RenderShaders(yaget::io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+yaget::render::RenderShaders::RenderShaders(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
     : CacheWatcher(vts, fileName)
-    , mResourceCompiler(std::make_shared<ResourceCompiler>())
+      , mResourceCompiler(std::make_shared<ResourceCompiler>())
 {
 }
 
@@ -188,23 +187,23 @@ yaget::render::RenderShaders::~RenderShaders() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::io::Buffer yaget::render::RenderShaders::GetShader(const yaget::io::Tag& tag, ShaderType shaderType)
+yaget::io::Buffer yaget::render::RenderShaders::GetShader(const io::Tag& tag, ShaderType shaderType)
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(),
-        yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
+                 yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
     auto result = GetShaders(io::Tags{ tag }, shaderType);
     return !result.empty() ? *result.begin() : io::Buffer{};
 }
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::io::Buffer> yaget::render::RenderShaders::GetShaders(const yaget::io::Tags& tags, ShaderType shaderType)
+std::vector<yaget::io::Buffer> yaget::render::RenderShaders::GetShaders(const io::Tags& tags, ShaderType shaderType)
 {
     std::lock_guard mutexLocker(mMutex);
-    std::vector<yaget::io::Buffer> results = tags | std::views::transform([this, shaderType](const auto& tag)
-        {
-            return AssureShaderNonMT(tag, shaderType);
-        }) | std::ranges::to<std::vector>();
+    std::vector<io::Buffer> results = tags | std::views::transform([this, shaderType](const auto& tag)
+    {
+        return AssureShaderNonMT(tag, shaderType);
+    }) | std::ranges::to<std::vector>();
     return results;
 }
 
@@ -225,64 +224,78 @@ void yaget::render::RenderShaders::ClearCache(const io::Tag& tag)
 void yaget::render::RenderShaders::CreateSignatureDescription(const io::Tag& vertexTag, const io::Tag& pixelTag, DescriptionCallback callback)
 {
     auto getReflection = [this](io::Tag tag, ShaderType shaderType)
+    {
+        ResourceReflector::Ptr reflector;
+
+        if (!mReflections.contains(tag))
         {
-            ResourceReflector::Ptr reflector;
+            auto asset = AssureShaderNonMT(tag, shaderType);
+            reflector = mResourceCompiler->Decompile(io::cast_to_view(asset));
+            mReflections.insert({ tag, reflector });
+        }
+        else
+        {
+            reflector = mReflections.find(tag)->second;
+        }
 
-            if (!mReflections.contains(tag))
-            {
-                auto asset = AssureShaderNonMT(tag, shaderType);
-                reflector = mResourceCompiler->Decompile(io::cast_to_view(asset));
-                mReflections.insert({ tag, reflector });
-            }
-            else
-            {
-                reflector = mReflections.find(tag)->second;
-            }
-
-            return reflector;
-        };
+        return reflector;
+    };
 
     std::lock_guard mutexLocker(mMutex);
     ResourceReflector::Ptr vertexReflector = getReflection(vertexTag, ShaderType::Vertex);
     ResourceReflector::Ptr pixelReflector = getReflection(pixelTag, ShaderType::Pixel);
 
     YAGET_ASSERT(vertexReflector && pixelReflector, "There is no reflection record for vertex '%s' and/or pixel '%s' shaders.",
-        conv::Convertor<io::Tag>::ToString(vertexTag).c_str(),
-        conv::Convertor<io::Tag>::ToString(pixelTag).c_str());
+                 conv::Convertor<io::Tag>::ToString(vertexTag).c_str(),
+                 conv::Convertor<io::Tag>::ToString(pixelTag).c_str());
 
     vertexReflector->MakeRootSignature(pixelReflector.get(), callback);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderShaders::PopulateShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+void yaget::render::RenderShaders::PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
     PopulateMap(fileName, vts, ShaderOptionsMappings);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderShaders::SaveShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+void yaget::render::RenderShaders::SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
     SaveMap(fileName, vts, ShaderOptionsMappings);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const yaget::io::Tag& tag, yaget::render::RenderShaders::ShaderType shaderType)
+void yaget::render::RenderShaders::PopulateReflectorMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+{
+    ResourceReflector::PopulateMappings(fileName, vts);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::RenderShaders::SaveReflectorMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+{
+    ResourceReflector::SaveMappings(fileName, vts);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const io::Tag& tag, ShaderType shaderType)
 {
     if (auto asset = GetAsset(tag); io::size_data(asset))
     {
         return asset;
     }
 
-    if (auto shader = mCache.GetCachedAsset(tag); yaget::io::size_data(shader))
+    if (auto shader = mCache.GetCachedAsset(tag); io::size_data(shader))
     {
         mAssets.insert({ tag, shader });
         return shader;
     }
 
-    yaget::io::Buffer shaderBuffer;
+    io::Buffer shaderBuffer;
     io::SingleBLobLoader<io::StringsAsset> shaderLoader(mVTS, tag);
     if (auto asset = shaderLoader.GetAsset())
     {
@@ -292,30 +305,30 @@ yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const yaget::i
     // check for option and delete cache
     const bool debugShader = GetDebugShaderOption();
 
-    Strings arguments = GetCommandParameters(shaderType, debugShader);;
+    Strings arguments = GetCommandParameters(shaderType, debugShader);
 
     auto [buffer, reflection] = CompileShader(tag, mResourceCompiler.get(), io::cast_to_view(shaderBuffer), arguments);
     if (!io::size_data(buffer))
     {
         YLOG_ERROR("COMP",
-                   std::format("Could not get compiled {} shader for tag: '{}\n{}:'. Using built-in shader as a fallback.", 
-                   magic_enum::enum_name(shaderType),
-                   yaget::conv::ToString(tag), tag.ResolveVTS()).c_str());
+                   std::format("Could not get compiled {} shader for tag: '{}\n{}:'. Using built-in shader as a fallback.",
+                       magic_enum::enum_name(shaderType),
+                       yaget::conv::ToString(tag), tag.ResolveVTS()).c_str());
 
-        arguments = GetCommandParameters(shaderType, false);;
+        arguments = GetCommandParameters(shaderType, false);
 
         auto binaryCode = CompileShader(tag, mResourceCompiler.get(), io::BufferView(reinterpret_cast<const uint8_t*>(buildInShaderSource), buildInShaderSourceLen), arguments);
         buffer = binaryCode.first;
         reflection = binaryCode.second;
 
         error_handlers::ThrowOnError(io::size_data(buffer) > 0,
-                              std::format("Could not compile built-in shader type: '%s'. Source:\n'%s'", 
-                                     magic_enum::enum_name(shaderType),
-                                 buildInShaderSource));
+                                     std::format("Could not compile built-in shader type: '%s'. Source:\n'%s'",
+                                                 magic_enum::enum_name(shaderType),
+                                                 buildInShaderSource));
     }
 
     mAssets.insert({ tag, buffer });
     mCache.SaveCachedAsset(tag, buffer);
-    mReflections.insert({ tag , reflection });
+    mReflections.insert({ tag, reflection });
     return buffer;
 }

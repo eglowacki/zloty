@@ -32,8 +32,8 @@ namespace yaget::render
         io::Buffer GetTexture(const io::Tag& tag);
         std::vector<io::Buffer> GetTextures(const io::Tags& tags);
 
-        static void PopulateTextureMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
-        static void SaveTextureMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
     };
 
 }

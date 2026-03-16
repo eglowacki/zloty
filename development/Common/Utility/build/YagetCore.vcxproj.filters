@@ -102,6 +102,9 @@
     <Filter Include="ImageLoader Files\stb">
       <UniqueIdentifier>{0e9fad14-84bd-4ade-8766-ad20d57fa8aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="zip-utils">
+      <UniqueIdentifier>{6a5d635e-ec7b-4558-b470-50bf8e8fe905}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
@@ -340,6 +343,12 @@
     </ClCompile>
     <ClCompile Include="..\source\VTS\ResolvedAssets.cpp">
       <Filter>VTS Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\zip-utils\XUnzip.cpp">
+      <Filter>zip-utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\zip-utils\XZip.cpp">
+      <Filter>zip-utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -763,6 +772,15 @@
     </ClInclude>
     <ClInclude Include="..\source\ImageLoaders\stb\stb_c_lexer.h">
       <Filter>ImageLoader Files\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\zip-utils\XUnzip.h">
+      <Filter>zip-utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\zip-utils\XZip.h">
+      <Filter>zip-utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\zip-utils\XZresult.h">
+      <Filter>zip-utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

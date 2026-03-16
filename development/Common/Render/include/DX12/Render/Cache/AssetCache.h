@@ -177,8 +177,8 @@ namespace yaget::render
         void ClearCachedAsset(const io::Tag& tag);
         static Section operator[](AssetCacheType typeFlag);
         static AssetCacheType operator[](const Section& section);
-        static void PopulateTypeToSection(const Section& fileName, io::VirtualTransportSystem& vts);
-        static void SaveTypeToSection(const Section& fileName, io::VirtualTransportSystem& vts);
+        static void PopulateMappings(const Section& fileName, io::VirtualTransportSystem& vts);
+        static void SaveMappings(const Section& fileName, io::VirtualTransportSystem& vts);
 
     private:
         io::VirtualTransportSystem& mVTS;

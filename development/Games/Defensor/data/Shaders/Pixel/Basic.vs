@@ -1,9 +1,9 @@
 // Basic vertex shader ===
-struct PerObjectConstants
+struct WorldViewProjection
 {
     float4x4 worldViewProj;
 };
-ConstantBuffer<PerObjectConstants> perObjectConstants : register(b3, space0);
+ConstantBuffer<WorldViewProjection> perObjectConstants : register(b3, space0);
 
 struct PSInput
 {

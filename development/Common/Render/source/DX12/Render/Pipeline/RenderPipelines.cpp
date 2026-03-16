@@ -1,6 +1,6 @@
 #include "Core/ErrorHandlers.h"
 #include "Render/Platform/DeviceDebugger.h"
-#include "RenderPipelines.h"
+#include "Render/Pipeline/RenderPipelines.h"
 #include <CommonStates.h>
 #include <d3dx12.h>
 #include <VertexTypes.h>
@@ -200,7 +200,7 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderPipelines::RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+yaget::render::RenderPipelines::RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
     : CacheWatcher(vts, fileName)
     , mDevice(device)
 {
@@ -208,11 +208,11 @@ defensor::render::RenderPipelines::RenderPipelines(ID3D12Device* device, io::Vir
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderPipelines::~RenderPipelines() = default;
+yaget::render::RenderPipelines::~RenderPipelines() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-ID3D12PipelineState* defensor::render::RenderPipelines::GetPipeline(const yaget::io::Tag& tag, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer)
+ID3D12PipelineState* yaget::render::RenderPipelines::GetPipeline(const yaget::io::Tag& tag, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer)
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 
@@ -228,7 +228,19 @@ ID3D12PipelineState* defensor::render::RenderPipelines::GetPipeline(const yaget:
 
 
 //-------------------------------------------------------------------------------------------------
-ID3D12PipelineState* defensor::render::RenderPipelines::GetPipeline(const io::Tag& tag)
+ID3D12PipelineState* yaget::render::RenderPipelines::GetPipeline(const io::Tag& tag)
 {
     return GetPipeline(tag, nullptr, {}, {});
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::RenderPipelines::PopulateMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::RenderPipelines::SaveMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+{
 }

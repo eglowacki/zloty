@@ -1,20 +1,25 @@
 #include "MainGame.h"
 
-#include <Debugging/DevConfiguration.h>
-#include "DefensorGameTypes.h"
+#include "../resource.h"
 #include "DefensorGameCoordinator.h"
+#include "DefensorGameTypes.h"
 #include "DefensorRenderCoordinator.h"
 #include "Items/ItemsDirector.h"
+#include "Render/AdapterInfo.h"
+#include "Render/Cache/AssetCache.h"
 #include "Render/DesktopApplication.h"
+#include "Render/Pipeline/RenderMaterials.h"
+#include "Render/Pipeline/RenderPipelines.h"
+#include "Render/Pipeline/RenderShaders.h"
+#include "Render/Pipeline/RenderSignatures.h"
+#include "Render/Pipeline/RenderTextures.h"
+#include "Script/luacpp.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
-#include "Render/AdapterInfo.h"
-#include "Script/luacpp.h"
-#include "../resource.h"
-#include "Render/Pipeline/RenderShaders.h"
+#include <Debugging/DevConfiguration.h>
 
-
+#if 0
 namespace yaget::app
 {
    
@@ -44,22 +49,10 @@ namespace yaget::app
         return comp::gs::RunGame<S>(messaging, app);
     }
 }
-
+#endif
 
 namespace 
 {
-    //yaget::io::Tag AttachTransientAsset(yaget::render::AssetCacheType assetCacheType, yaget::io::VirtualTransportSystem& vts)
-    //{
-    //    using namespace yaget;
-
-    //    auto sigSection = render::AssetCache::operator[](assetCacheType);
-    //    auto tag = vts.GenerateTag(sigSection);
-    //    std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>({}, tag, vts);
-    //    vts.AttachTransientBlob(newAsset);
-
-    //    return tag;
-    //}
-
 #if 0
     static int l_log(lua_State* L) 
     {
@@ -78,8 +71,13 @@ namespace
 
     std::vector<MappingPopulator> MappingPopulators = 
     {
-        {&yaget::render::AssetCache::PopulateTypeToSection, &yaget::render::AssetCache::SaveTypeToSection, "Manifest@TypeToSection"},
-        {&yaget::render::RenderShaders::PopulateShaderMappings, &yaget::render::RenderShaders::SaveShaderMappings, "Manifest@ShaderCompileOptions"},
+        {&yaget::render::AssetCache::PopulateMappings, &yaget::render::AssetCache::SaveMappings, "Manifest@TypeToSection"},
+        {&yaget::render::RenderSignatures::PopulateMappings, &yaget::render::RenderSignatures::SaveMappings, "Manifest@RenderSignatureOptions"},
+        {&yaget::render::RenderPipelines::PopulateMappings, &yaget::render::RenderPipelines::SaveMappings, "Manifest@RenderPipelineOptions"},
+        {&yaget::render::RenderShaders::PopulateMappings, &yaget::render::RenderShaders::SaveMappings, "Manifest@ShaderCompileOptions"},
+        {&yaget::render::RenderShaders::PopulateReflectorMappings, &yaget::render::RenderShaders::SaveReflectorMappings, "Manifest@ShaderReflectionOptions"},
+        {&yaget::render::RenderMaterials::PopulateMappings, &yaget::render::RenderMaterials::SaveMappings, "Manifest@RenderMaterialOptions"},
+        {&yaget::render::RenderTextures::PopulateMappings, &yaget::render::RenderTextures::SaveMappings, "Manifest@RenderTextureOptions"},
     };
 
     struct Mappers
@@ -87,9 +85,6 @@ namespace
         Mappers(yaget::io::VirtualTransportSystem& vts)
             : mVTS(vts)
         {
-            //AttachTransientAsset(yaget::render::BasicSignature, mVTS);
-            //AttachTransientAsset(yaget::render::BasicPipeline, mVTS);
-
             for (const auto mapping : MappingPopulators)
             {
                 mapping.mPopulator(mapping.mSectionName, mVTS);
@@ -109,53 +104,12 @@ namespace
         yaget::io::VirtualTransportSystem& mVTS;
     };
 
-
-    class Foo : public yaget::NoCopy
-    {
-    public:
-        //// Explicitly delete the copy constructor
-        //Foo(const Foo&) = default;
-
-        //// Explicitly delete the copy assignment operator
-        //Foo& operator=(const Foo&) = default;
-
-        //Foo(Foo&&) = delete;
-        //Foo& operator=(Foo&&) = delete;
-
-        //// Destructor (optional, can be defaulted or defined)
-        //~Foo() = default;
-
-
-        // Other constructors and methods can be defined as needed
-        Foo()
-            : z(42)
-        {
-            
-        }
-
-        void Print() { printf("Hello World!"); };
-
-    protected:
-
-    private:
-
-        int z;
-    };
-
-    
 }
 
 
 int defensor::Run(const yaget::args::Options& options)
 {
     using namespace yaget;
-
-    Foo foo;
-    foo.Print();
-
-    Foo foo2 = std::move(foo);
-    foo2.Print();
-
 
 #if 0
     lua_State* L = luaL_newstate(); // Create new Lua state
@@ -175,7 +129,7 @@ int defensor::Run(const yaget::args::Options& options)
 
     if (options.find<bool>("vts_fix", false))
     {
-        yaget::io::diag::VirtualTransportSystem vtsFixer(false, "$(DatabaseFolder)/vts.sqlite");
+        io::diag::VirtualTransportSystem vtsFixer(false, "$(DatabaseFolder)/vts.sqlite");
     }
 
     auto msgTextLine = comp::db::GenerateSystemsCoordinator<game::DefensorSystemsCoordinator, comp::db::GenerateCoordinator::Log>() +"\n\t";

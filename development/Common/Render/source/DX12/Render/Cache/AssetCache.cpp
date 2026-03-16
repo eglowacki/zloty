@@ -58,14 +58,14 @@ yaget::render::AssetCacheType yaget::render::AssetCache::operator[](const Sectio
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::AssetCache::PopulateTypeToSection(const Section& fileName, io::VirtualTransportSystem& vts)
+void yaget::render::AssetCache::PopulateMappings(const Section& fileName, io::VirtualTransportSystem& vts)
 {
-    yaget::render::PopulateMap<TypeToSectionMap>(fileName, vts, TypeToSection);
+    PopulateMap<TypeToSectionMap>(fileName, vts, TypeToSection);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::AssetCache::SaveTypeToSection(const Section& fileName, io::VirtualTransportSystem& vts)
+void yaget::render::AssetCache::SaveMappings(const Section& fileName, io::VirtualTransportSystem& vts)
 {
     SaveMap(fileName, vts, TypeToSection);
 }

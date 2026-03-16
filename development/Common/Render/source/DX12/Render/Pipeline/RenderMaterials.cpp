@@ -88,3 +88,15 @@ std::vector<yaget::render::MaterialProperties> yaget::render::RenderMaterials::G
 
     return results;
 }
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::RenderMaterials::PopulateMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::RenderMaterials::SaveMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+{
+}

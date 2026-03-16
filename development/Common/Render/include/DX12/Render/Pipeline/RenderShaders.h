@@ -19,15 +19,48 @@
 #include <d3d12.h>
 
 
-namespace yaget
-{
-    class DependencyGraph;
-}
-
 namespace yaget::render
 {
     class ResourceReflector;
     class ResourceCompiler;
+
+    namespace constant_shader_types
+    {
+        enum class ConstantTypes
+        {
+            WorldViewProjection,
+            Time
+        };
+
+        enum class ConstantLayout
+        {
+            Matrix4x4,
+            Float,
+            Float4,
+            Int,
+            Int4
+        };
+
+        enum class RootType
+        {
+            Table,
+            Constant,
+            ConstantBufferView,
+            ShaderResourceView,
+            UnorderedAccessView
+        };
+
+        struct VariableType
+        {
+            ConstantTypes mType;
+            ConstantLayout mLayout;
+            RootType mRootType;
+            std::string mTypeName;
+            std::string mName;
+            uint32_t mOffset;
+        };
+    }
+
 
     //-------------------------------------------------------------------------------------------------
     class RenderShaders : public CacheWatcher<io::Buffer>
@@ -56,10 +89,12 @@ namespace yaget::render
             std::string mName;
             uint32_t mIndex = 0;
         };
+
         using ShaderPins = std::vector<ShaderPin>;
 
-        using IndexMap = std::map<std::string, uint32_t>;
-        struct RootDescResult : public NoCopy
+        using IndexMap = std::map<std::string, constant_shader_types::VariableType>;
+
+        struct RootDescResult : NoCopy
         {
             std::vector<D3D12_ROOT_PARAMETER1> mRootParameters;
             IndexMap mIndexMap;
@@ -69,14 +104,16 @@ namespace yaget::render
         using DescriptionCallback = std::function<void(const RootDescResult& descResult)>;
         void CreateSignatureDescription(const io::Tag& vertexTag, const io::Tag& pixelTag, DescriptionCallback callback);
 
-        static void PopulateShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
-        static void SaveShaderMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+
+        static void PopulateReflectorMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void SaveReflectorMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
 
     private:
-        io::Buffer AssureShaderNonMT(const yaget::io::Tag& tag, ShaderType shaderType);
+        io::Buffer AssureShaderNonMT(const io::Tag& tag, ShaderType shaderType);
 
         std::shared_ptr<ResourceCompiler> mResourceCompiler;
         std::map<io::Tag, std::shared_ptr<ResourceReflector>> mReflections;
     };
-
 }

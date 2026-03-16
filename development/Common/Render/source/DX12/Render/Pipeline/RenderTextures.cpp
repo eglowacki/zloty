@@ -60,14 +60,14 @@ std::vector<yaget::io::Buffer> yaget::render::RenderTextures::GetTextures(const 
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderTextures::PopulateTextureMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+void yaget::render::RenderTextures::PopulateMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
 {
     //PopulateMap(fileName, vts, ShaderOptionsMappings);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderTextures::SaveTextureMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+void yaget::render::RenderTextures::SaveMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
 {
     //SaveMap(fileName, vts, ShaderOptionsMappings);
 }
