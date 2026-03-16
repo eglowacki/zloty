@@ -25,3 +25,6 @@
 [submodule "development/Dependencies/stb"]
 	path = development/Dependencies/stb
 	url = https://github.com/nothings/stb.git
+[submodule "development/Dependencies/zip-utils"]
+	path = development/Dependencies/zip-utils
+	url = https://github.com/Source-Authors/zip-utils.git
