@@ -1,14 +1,35 @@
 #include "Render/Platform/Adapter.h"
 #include "App/AppUtilities.h"
-#include "D3D12MemAlloc.h"
+#include "Render/Platform/D3D12MemAlloc.h"
 
 #include <d3d12.h>
 
 #include "Core/ErrorHandlers.h"
 
+namespace
+{
+    
+    static void* GraphicsAllocate(size_t size, size_t alignment, void* /*pPrivateData*/)
+    {
+        void* memory = _aligned_malloc(size, alignment);
+        YLOG_INFO("GMEM", "Allocate Size: '%llu -> %p'", size, memory);
+        return memory;
+    }
+
+    static void GraphicsFree(void* memory, void* /*pPrivateData*/)
+    {
+        if (memory)
+        {
+            YLOG_INFO("GMEM", "Free: '%p'", memory);
+            _aligned_free(memory);
+        }
+    }
+}
+
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::Adapter::Adapter([[maybe_unused]] app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo)
+    : mAllocationCallbacks(std::make_unique<D3D12MA::ALLOCATION_CALLBACKS>(&GraphicsAllocate, &GraphicsFree, nullptr))
 {
     auto [device, adapter, factory] = info::CreateDevice(adapterInfo);
     HRESULT hr = device.As(&mDevice);
@@ -25,7 +46,10 @@ yaget::render::platform::Adapter::Adapter([[maybe_unused]] app::WindowFrame wind
 #endif // YAGET_DEBUG_RENDER == 1
 
     D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
+    allocatorDesc.Flags = D3D12MA::ALLOCATOR_FLAG_NONE;
     allocatorDesc.pDevice = mDevice.Get();
+    allocatorDesc.PreferredBlockSize = 0;
+    allocatorDesc.pAllocationCallbacks = mAllocationCallbacks.get();
     allocatorDesc.pAdapter = mAdapter.Get();
 
     D3D12MA::Allocator* allocator = nullptr;

@@ -67,6 +67,7 @@ colors::Color lerp(const colors::Color& a, const colors::Color& b, float t)
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent)
 {
+    using namespace yaget::render;
     using RenderEntity = comp::RowPolicy<RenderComponent*>;
     auto& coordinator = GetCS().GetCoordinator<RenderEntity>();
 
@@ -78,6 +79,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         auto& device = GetDevice();
         auto framerHandle = device.GetFramerHandle(gameClock, channel, &color);
         auto commandList = framerHandle.GetCommandList();
+        const auto frameIndex = framerHandle.GetFrameIndex();
 
         coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
         {
@@ -104,12 +106,27 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 auto pso = mRenderPipelines.GetPipeline(psoTag);
                 commandList->SetPipelineState(pso);
 
-                const auto location = renderComponent->mMatrix;
-                float matrix[16];
-                math3d::GetMatrixAsFloats(location, matrix);
-                std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
+                for (const auto& [key, value] : indexMap)
+                {
+                    if (value.mType == constant_shader_types::ConstantTypes::WorldViewProjection && value.mLayout == constant_shader_types::ConstantLayout::Matrix4x4)
+                    {
+                        const auto location = renderComponent->mMatrix;
+                        float matrix[16];
+                        math3d::GetMatrixAsFloats(location, matrix);
+                        std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
 
-                commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
+                        if (value.mRootType == constant_shader_types::RootType::Constant)
+                        {
+                            commandList->SetGraphicsRoot32BitConstants(value.mOffset, 16, matrix, 0);
+                        }
+                        else if (value.mRootType == constant_shader_types::RootType::ConstantBufferView)
+                        {
+                            YAGET_ASSERT(false, "Not Implemented Yet!!!");
+                            //commandList->SetGraphicsRootConstantBufferView(value.mOffset, constantBufferView);
+                        }
+                    }
+                }
+
                 renderComponent->Render(commandList);
             }
 

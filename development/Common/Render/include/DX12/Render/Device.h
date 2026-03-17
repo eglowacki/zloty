@@ -83,6 +83,7 @@ namespace yaget::render
             FramerHandle(const time::GameClock& gameClock, metrics::Channel& channel, DeviceB& device, const colors::Color* color);
 
             ID3D12GraphicsCommandList* GetCommandList();
+            uint32_t GetFrameIndex() const;
             std::shared_ptr<Framer> mFramer;
         };
 

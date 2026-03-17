@@ -17,7 +17,11 @@
 #include "App/WindowFrame.h"
 #include "Render/Platform/DeviceDebugger.h"
 
-namespace D3D12MA { class Allocator; }
+namespace D3D12MA 
+{
+    struct ALLOCATION_CALLBACKS;
+    class Allocator; 
+}
 
 namespace yaget::render::platform
 {
@@ -41,6 +45,7 @@ namespace yaget::render::platform
         ComPtr<ID3D12Device> mDevice{};
 
         unique_obj<D3D12MA::Allocator> mAllocator;
+        std::unique_ptr<D3D12MA::ALLOCATION_CALLBACKS> mAllocationCallbacks;
     };
 
 } // namespace yaget::render::platform
