@@ -317,7 +317,8 @@ yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const io::Tag&
 
         arguments = GetCommandParameters(shaderType, false);
 
-        auto binaryCode = CompileShader(tag, mResourceCompiler.get(), io::BufferView(reinterpret_cast<const uint8_t*>(buildInShaderSource), buildInShaderSourceLen), arguments);
+        uint8_t* data = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(buildInShaderSource));
+        auto binaryCode = CompileShader(tag, mResourceCompiler.get(), io::BufferView(data, buildInShaderSourceLen), arguments);
         buffer = binaryCode.first;
         reflection = binaryCode.second;
 

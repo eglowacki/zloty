@@ -38,6 +38,9 @@
     <Filter Include="Source Files\Pipeline Files">
       <UniqueIdentifier>{7bab1278-53da-4f16-b987-2abad48d7705}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Logger">
+      <UniqueIdentifier>{21ca6f6f-7168-454e-bbb9-a5735979e14d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\Device.h">
@@ -145,6 +148,12 @@
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderSignatures.h">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Pipeline\ConstantBuffers.h">
+      <Filter>Source Files\Pipeline Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Logger\RenderLogTags.h">
+      <Filter>Logger</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -241,6 +250,9 @@
       <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderSignatures.cpp">
+      <Filter>Source Files\Pipeline Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Pipeline\ConstantBuffers.cpp">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -105,6 +105,9 @@
     <Filter Include="zip-utils">
       <UniqueIdentifier>{6a5d635e-ec7b-4558-b470-50bf8e8fe905}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Compression">
+      <UniqueIdentifier>{3375ddb5-c039-4636-bd22-fd2b6fea2e4a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\LoggerCpp\Config.cpp">
@@ -349,6 +352,9 @@
     </ClCompile>
     <ClCompile Include="..\source\zip-utils\XZip.cpp">
       <Filter>zip-utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Compression\Zipper.cpp">
+      <Filter>Compression</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -781,6 +787,9 @@
     </ClInclude>
     <ClInclude Include="..\source\zip-utils\XZresult.h">
       <Filter>zip-utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Compression\Zipper.h">
+      <Filter>Compression</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
