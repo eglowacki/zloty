@@ -148,7 +148,7 @@
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderSignatures.h">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\DX12\Render\Pipeline\ConstantBuffers.h">
+    <ClInclude Include="..\include\DX12\Render\Pipeline\ShaderBuffers.h">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\DX12\Render\Logger\RenderLogTags.h">
@@ -252,7 +252,7 @@
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderSignatures.cpp">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\DX12\Render\Pipeline\ConstantBuffers.cpp">
+    <ClCompile Include="..\source\DX12\Render\Pipeline\ShaderBuffers.cpp">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
   </ItemGroup>
