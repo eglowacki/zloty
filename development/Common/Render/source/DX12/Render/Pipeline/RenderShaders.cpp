@@ -114,22 +114,22 @@ namespace
         const char* entryName = ShaderOptionsMappings[shaderType].mEntryPoint.c_str();
         const char* target = ShaderOptionsMappings[shaderType].mTarget.c_str();
 
-        parameters.push_back("-E");
-        parameters.push_back(entryName);
+        parameters.emplace_back("-E");
+        parameters.emplace_back(entryName);
 
         // -T for the target profile (eg. 'ps_6_6')
-        parameters.push_back("-T");
-        parameters.push_back(target);
+        parameters.emplace_back("-T");
+        parameters.emplace_back(target);
 
-        parameters.push_back("-encoding");
-        parameters.push_back("utf8");
-        parameters.push_back("-fdiagnostics-format=msvc");
+        parameters.emplace_back("-encoding");
+        parameters.emplace_back("utf8");
+        parameters.emplace_back("-fdiagnostics-format=msvc");
 
         if (debugShader)
         {
-            parameters.push_back("-Zi");
-            parameters.push_back("-Qembed_debug");
-            parameters.push_back("-Od");
+            parameters.emplace_back("-Zi");
+            parameters.emplace_back("-Qembed_debug");
+            parameters.emplace_back("-Od");
         }
 
         return parameters;
@@ -140,11 +140,11 @@ namespace
     bool GetDebugShaderOption()
     {
         // check for option and delete cache
-        const auto& graphicsConfiguration = yaget::dev::CurrentConfiguration().mGraphics;
+        const auto& dataLoaders = yaget::dev::CurrentConfiguration().mDataLoaders;
 #ifdef YAGET_DEBUG
-        const bool debugShader = graphicsConfiguration.mUseReleaseShadersInDebug == false;
+        const bool debugShader = dataLoaders.mUseReleaseShadersInDebug == false;
 #else
-        const bool debugShader = graphicsConfiguration.mUseDebugShadersInRelease == true;
+        const bool debugShader = dataLoaders.mUseDebugShadersInRelease == true;
 #endif
 
         return debugShader;

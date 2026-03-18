@@ -426,6 +426,9 @@ namespace yaget::dev
     {
         j["SkipDependencyGraph"] = dataLoaders.mSkipDependencyGraph;
         j["ClearCache"] = dataLoaders.mClearCache;
+        j["UseDebugShadersInRelease"] = dataLoaders.mUseDebugShadersInRelease;
+        j["UseReleaseShadersInDebug"] = dataLoaders.mUseReleaseShadersInDebug;
+        j["UseZip"] = dataLoaders.mUseZip;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -433,6 +436,9 @@ namespace yaget::dev
     {
         dataLoaders.mSkipDependencyGraph = json::GetValue(j, "SkipDependencyGraph",  dataLoaders.mSkipDependencyGraph);
         dataLoaders.mClearCache = json::GetValue(j, "ClearCache", dataLoaders.mClearCache);
+        dataLoaders.mUseDebugShadersInRelease = json::GetValue(j, "UseDebugShadersInRelease", dataLoaders.mUseDebugShadersInRelease);
+        dataLoaders.mUseReleaseShadersInDebug = json::GetValue(j, "UseReleaseShadersInDebug", dataLoaders.mUseReleaseShadersInDebug);
+        dataLoaders.mUseZip = json::GetValue(j, "UseZip", dataLoaders.mUseZip);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -441,8 +447,6 @@ namespace yaget::dev
         j["Device"] = graphics.mDevice;
         j["MemoryReport"] = graphics.mMemoryReport;
         j["GPUTraceback"] = graphics.mGPUTraceback;
-        j["UseDebugShadersInRelease"] = graphics.mUseDebugShadersInRelease;
-        j["UseReleaseShadersInDebug"] = graphics.mUseReleaseShadersInDebug;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -451,8 +455,6 @@ namespace yaget::dev
         graphics.mDevice = json::GetValue(j, "Device", graphics.mDevice);
         graphics.mMemoryReport = json::GetValue(j, "MemoryReport", graphics.mMemoryReport);
         graphics.mGPUTraceback = json::GetValue(j, "GPUTraceback", graphics.mGPUTraceback);
-        graphics.mUseDebugShadersInRelease = json::GetValue(j, "UseDebugShadersInRelease", graphics.mUseDebugShadersInRelease);
-        graphics.mUseReleaseShadersInDebug = json::GetValue(j, "UseReleaseShadersInDebug", graphics.mUseReleaseShadersInDebug);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------

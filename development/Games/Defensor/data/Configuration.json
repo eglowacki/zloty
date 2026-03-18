@@ -34,7 +34,8 @@
             "SkipDependencyGraph": true,
             "ClearCache": false,
             "UseDebugShadersInRelease": true,
-            "UseReleaseShadersInDebug": true
+            "UseReleaseShadersInDebug": false,
+            "UseZip": true
         },
         "Init": {
             "Aliases": {
