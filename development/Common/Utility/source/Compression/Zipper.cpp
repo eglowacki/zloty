@@ -4,44 +4,27 @@
 #include "zip-utils/XZresult.h"
 
 
-//   HZIP hz = CreateZip(0,100000, 0);
-//   // adding a conventional file...
-//   ZipAdd(hz,"src1.txt",  "c:\\src1.txt");
-//   // adding something from memory...
-//   char buf[1000]; for (int i=0; i<1000; i++) buf[i]=(char)(i&0x7F);
-//   ZipAdd(hz,"file.dat",  buf,1000);
-//   // adding something from a pipe...
-//   HANDLE hread,hwrite; CreatePipe(&hread,&hwrite,NULL,0);
-//   HANDLE hthread = CreateThread(0,0,ThreadFunc,(void*)hwrite,0,0);
-//   ZipAdd(hz,"unz3.dat",  hread,1000);  // the '1000' is optional.
-//   WaitForSingleObject(hthread,INFINITE);
-//   CloseHandle(hthread); 
-//   CloseHandle(hread);
-//   ... meanwhile DWORD WINAPI ThreadFunc(void *dat)
-//                 { HANDLE hwrite = (HANDLE)dat;
-//                   char buf[1000]={17};
-//                   DWORD writ; WriteFile(hwrite,buf,1000,&writ,NULL);
-//                   CloseHandle(hwrite);
-//                   return 0;
-//                 }
-//   // and now that the zip is created, let's do something with it:
-//   void *zbuf; 
-//   unsigned long zlen; 
-//   ZipGetMemory(hz,&zbuf, &zlen);
-
-//----------------------------------------------------------------------------------------------
-//   HZIP hz = OpenZip(zipbuf, ziplen, 0);
-//     - unzip to a membuffer -
-//   ZIPENTRY ze; int i; FindZipItem(hz,"file.dat",true,&i,&ze);
-//   char *ibuf = new char[ze.unc_size];
-//   UnzipItem(hz,i, ibuf, ze.unc_size);
-//   delete[] ibuf;
-
-
-
 namespace
 {
     const char* ZipFileName = "file.dat";
+
+    //-------------------------------------------------------------------------------------------------
+    constexpr size_t CurrentZipVersion = 1;
+
+    struct YagetZipSignature
+    {
+        const char Signature[4] = { 'G', 'Z', 'I', 'P' };
+        size_t Version = 0;
+
+        bool IsValidZip() const
+        {
+            return std::memcmp(Signature, "GZIP", 4) == 0;
+        }
+        bool IsValid() const
+        {
+            return IsValidZip() && Version <= CurrentZipVersion;
+        }
+    };
 
 
     //-------------------------------------------------------------------------------------------------
@@ -87,7 +70,17 @@ yaget::io::Buffer yaget::compression::ZipBuffer(const io::BufferView sourceBuffe
         return {};
     }
 
-    auto compressedBuffer = io::CreateBuffer(static_cast<uint8_t*>(bufferData), bufferSize);
+    YagetZipSignature zipSignature;
+    zipSignature.Version = CurrentZipVersion;
+
+    auto compressedBuffer = io::CreateBuffer(sizeof(YagetZipSignature) + bufferSize);
+    auto dataPointer = io::cast_data<char>(compressedBuffer);
+    size_t offset = 0;
+
+    std::memcpy(dataPointer + offset, &zipSignature, sizeof(YagetZipSignature));
+    offset += sizeof(YagetZipSignature);
+    std::memcpy(dataPointer + offset, static_cast<uint8_t*>(bufferData), bufferSize);
+
     std::ignore = CloseZip(hz);
 
     return compressedBuffer;
@@ -97,8 +90,28 @@ yaget::io::Buffer yaget::compression::ZipBuffer(const io::BufferView sourceBuffe
 //-------------------------------------------------------------------------------------------------
 yaget::io::Buffer yaget::compression::UnzipBuffer(const io::BufferView sourceBuffer)
 {
-    void* zippedData = static_cast<void*>(io::cast_data<uint8_t>(sourceBuffer));
-    uint32_t zippedSize = static_cast<uint32_t>(io::size_data(sourceBuffer));
+    size_t offset = 0;
+
+    auto zipSignature = reinterpret_cast<YagetZipSignature*>(io::cast_data<char>(sourceBuffer) + offset);
+    if (!zipSignature->IsValidZip())
+    {
+        // NOTE(eg) If this buffer is not a zip, then should we return sourceBuffer?
+        YLOG_ERROR("ZIP", "Buffer is not a zip file.");
+        return {};
+    }
+
+    if (!zipSignature->IsValid())
+    {
+        YLOG_ERROR("DEVI", "Unsupported zip buffer, version: '%d'. Expected version is <= '%d'. Cache will be ignored.",
+            zipSignature->Version,
+            CurrentZipVersion);
+
+        return {};
+    }
+
+    offset += sizeof(YagetZipSignature);
+    void* zippedData = static_cast<void*>(io::cast_data<uint8_t>(sourceBuffer) + offset);
+    uint32_t zippedSize = static_cast<uint32_t>(io::size_data(sourceBuffer) - offset);
 
     HZIP hz = OpenZip(zippedData, zippedSize, nullptr);
     if (!hz)
