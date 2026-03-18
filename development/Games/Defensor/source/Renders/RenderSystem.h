@@ -22,6 +22,7 @@
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
+#include "Render/Pipeline/ConstantBuffers.h"
 
 
 namespace defensor::render
@@ -59,6 +60,7 @@ namespace defensor::render
         yaget::render::RenderShaders mRenderShaders;
         yaget::render::RenderMaterials mRenderMaterials;
         yaget::render::RenderTextures mRenderTextures;
+        yaget::render::ConstantBuffers mConstantBuffers;
 
         RenderState mCurrentRenderState;
     };

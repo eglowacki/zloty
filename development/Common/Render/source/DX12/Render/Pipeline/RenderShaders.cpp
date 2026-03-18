@@ -109,6 +109,8 @@ namespace
     //-------------------------------------------------------------------------------------------------
     yaget::Strings GetCommandParameters(yaget::render::RenderShaders::ShaderType shaderType, bool debugShader)
     {
+        yaget::error_handlers::ThrowOnError(ShaderOptionsMappings.contains(shaderType), std::format("There is no shader mapping options for '{}'", magic_enum::enum_name(shaderType)));
+
         yaget::Strings parameters;
 
         const char* entryName = ShaderOptionsMappings[shaderType].mEntryPoint.c_str();

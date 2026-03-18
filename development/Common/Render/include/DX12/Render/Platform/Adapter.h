@@ -6,7 +6,7 @@
 // NOTES:
 //      Deals with adapter which will create Device
 //
-// #include "Platform/Adapter.h"
+// #include "Render/Platform/Adapter.h"
 //
 /////////////////////////////////////////////////////////////////////////
 //! \file

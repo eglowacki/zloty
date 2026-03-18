@@ -2,6 +2,7 @@
 #include "Render/DesktopApplication.h"
 #include "Render/Device.h"
 #include "Render/Platform/Adapter.h"
+#include "Compression/Zipper.h"
 
 #include <ranges>
 
@@ -41,19 +42,20 @@ namespace
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
     : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, false)
-      , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
-      , mMatrixInterpolator(0.0f, 1.0f)
-      , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindMaterial(guid); })
-      , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
-      , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"))
-      , mRenderShaders(app.VTS(), GetSection("Shaders"))
-      , mRenderMaterials(app.VTS(), GetSection("Materials"))
-      , mRenderTextures(app.VTS(), GetSection("Textures"))
+    , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
+    , mMatrixInterpolator(0.0f, 1.0f)
+    , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindMaterial(guid); })
+    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
+    , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"))
+    , mRenderShaders(app.VTS(), GetSection("Shaders"))
+    , mRenderMaterials(app.VTS(), GetSection("Materials"))
+    , mRenderTextures(app.VTS(), GetSection("Textures"))
+    , mConstantBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
 {
     mApp.PoolThread().AddTask([this]()
-    {
-        PreloadAssets();
-    });
+        {
+            PreloadAssets();
+        });
 }
 
 
@@ -160,6 +162,18 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::PreloadAssets()
 {
+    //{
+    //    std::string testMessage = "This is some test data to be compressed and decompressed using zip library.";
+    //    auto testBuffer = io::CreateBuffer(testMessage);
+    //    auto compressedBuffer = compression::ZipBuffer(io::cast_to_view(testBuffer));
+
+    //    auto decompressedBuffer = compression::UnzipBuffer(io::cast_to_view(compressedBuffer));
+    //    std::string resultMessage(reinterpret_cast<const char*>(io::cast_data<uint8_t>(decompressedBuffer)), io::size_data(decompressedBuffer));
+
+    //    int z = 0;
+    //    z;
+    //}
+
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mApp.VTS();
     const Section vertexShaderSection("VertexShaders");
@@ -227,6 +241,7 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &sigTag, &signature](const auto& descResult)
     {
         signature = mRenderSignatures.GetSignature(sigTag, descResult);
+        mConstantBuffers.MakeBuffers(sigTag, descResult.mIndexMap);
     });
     AttachTransientAsset(sigTag, vts);
 
@@ -242,7 +257,7 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     //           |
     //        Pipeline
     //           |
-    //       Signature
+    //       Signature --> IndexMap
     //        |     |
     //     Vertex Pixel
     //     Shader Shader

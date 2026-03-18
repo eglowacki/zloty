@@ -13,16 +13,33 @@
 //! \file
 #pragma once
 
-#include "Render/RenderCore.h"
+
+#include "RenderShaders.h"
+#include "VTS/VirtualTransportSystem.h"
 
 
 namespace yaget::render
 {
+    namespace platform
+    {
+        class Adapter;
+    }
+
+    // Just a placeholder for return value from GetBuffer
+    struct ConstantData {};
+
     //--------------------------------------------------------------------------------------------------
     class ConstantBuffers
     {
     public:
-        ConstantBuffers();
+        ConstantBuffers(const platform::Adapter& adapter, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
         ~ConstantBuffers();
+
+        void MakeBuffers(const io::Tag& tag, const RenderShaders::IndexMap& indexMap);
+        ConstantData GetBuffer(const io::Tag& tag);
+
+
+    private:
+        const platform::Adapter& mAdapter;
     };
 }
