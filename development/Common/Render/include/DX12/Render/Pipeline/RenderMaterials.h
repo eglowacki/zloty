@@ -33,6 +33,7 @@ namespace yaget::render
         // this is calculated at run time after loading and reading above types
         AssetCacheType mSignature = AssetCacheType::Empty;
         AssetCacheType mPSO = AssetCacheType::Empty;
+        AssetCacheType mShaderBuffer = AssetCacheType::Empty;
 
         bool operator == (MaterialProperties const&) const  = default;
     };

@@ -92,7 +92,7 @@ namespace
                 variableType.mType = it->second.mType;
                 variableType.mLayout = it->second.mLayout;
                 variableType.mTypeName = value.mVariableTypeName;
-                variableType.mName = value.mName;
+                variableType.mVariableName = value.mName;
                 variableType.mOffset = slot++;
 
                 switch (value.mParameter.ParameterType)

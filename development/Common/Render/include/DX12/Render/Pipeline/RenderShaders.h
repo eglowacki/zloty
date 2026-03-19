@@ -56,7 +56,7 @@ namespace yaget::render
             ConstantLayout mLayout;
             RootType mRootType;
             std::string mTypeName;
-            std::string mName;
+            std::string mVariableName;
             uint32_t mOffset;
         };
     }
