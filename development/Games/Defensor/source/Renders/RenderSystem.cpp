@@ -110,17 +110,17 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 auto pso = mRenderPipelines.GetPipeline(psoTag);
                 commandList->SetPipelineState(pso);
 
-                auto constantBufferTag = TypeToTag(material.mMaterialProperties.mShaderBuffer, vts);
-                auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag);
-
                 const auto location = renderComponent->mMatrix;
                 float matrix[16];
                 math3d::GetMatrixAsFloats(location, matrix);
                 std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
 
-                constantBuffer->UpdateData(matrix, sizeof(matrix));
-                constantBuffer->Bind(commandList);
-                
+                auto constantBufferTag = TypeToTag(material.mMaterialProperties.mShaderBuffer, vts);
+                if (auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag))
+                {
+                    constantBuffer->UpdateData(matrix, sizeof(matrix));
+                    constantBuffer->Bind(commandList);
+                }
 
                 commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
 
