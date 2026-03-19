@@ -45,6 +45,11 @@ namespace
             return mCommandHandle;
         }
 
+        uint32_t GetFrameIndex() const
+        {
+            return mFrameIndex;
+        }
+
         static render::platform::CommandQueues::CQ GetCommandQueueHandle(render::DeviceB& device, uint32_t frameIndex)
         {
             auto commandQueues = device.mCommandQueues->GetCQ(render::platform::CommandQueue::Type::Direct, false /*finished*/);
@@ -154,7 +159,15 @@ yaget::render::DeviceB::FramerHandle::FramerHandle(const time::GameClock& gameCl
 }
 
 
+//-------------------------------------------------------------------------------------------------
 ID3D12GraphicsCommandList* yaget::render::DeviceB::FramerHandle::GetCommandList()
 {
     return mFramer->GetCommandList();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+uint32_t render::DeviceB::FramerHandle::GetFrameIndex() const
+{
+    return mFramer->GetFrameIndex();
 }

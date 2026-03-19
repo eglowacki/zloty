@@ -50,6 +50,7 @@ namespace yaget::io
         nlohmann::json root{};
     };
 
+    //-------------------------------------------------------------------------------------------------------------------------------
     template <typename... T>
     class StructDataAsset : public JsonAsset
     {
@@ -112,7 +113,7 @@ namespace yaget::io
                     std::string message;
                     //io::render::internal::yaget_print(mFields, message);
 
-                    catchMessage = fmt::format("Unable to assign to mFields from json meta stream : '{}'.Fields : [{}].Error : {}.", tag.ResolveVTS().c_str(), message.c_str(), ex.what());
+                    catchMessage = std::format("Unable to assign to mFields from json meta stream : '{}'.Fields : [{}].Error : {}.", tag.ResolveVTS().c_str(), message.c_str(), ex.what());
                     mValidSection = false;
                 }
             }
@@ -145,23 +146,20 @@ namespace yaget::io
         bool mValidSection = false;
     };
 
-
-    //PixelType mColorType = PixelType::None;
-    //DataType mDataType = DataType::None;
-
     //-------------------------------------------------------------------------------------------------------------------------------
-    class ImageAsset : public Asset
+    class TextureAsset : public Asset
     {
     public:
-        ImageAsset(const Tag& tag, const Buffer& buffer, const VirtualTransportSystem& vts)
-            : Asset(tag, buffer, vts) 
-            , mHeader{ image::Header::PixelType::None, image::Header::DataType::RT }
-            , mPixels(buffer.second ? image::Process(mBuffer, &mHeader) : CreateBuffer(0))
+        TextureAsset(const Tag& tag, const Buffer& buffer, const VirtualTransportSystem& vts)
+            : Asset(tag, image::GetImage(buffer), vts) 
+            , mHeader(*cast_data<image::Header>(mBuffer))
+            , mPixels(mHeader.GetImageSize() ? cast_to_view(mBuffer, sizeof(mHeader)) : BufferView{})
         {
+            mValid = mHeader.GetImageSize() > 0;
         }
 
         image::Header mHeader;
-        Buffer mPixels;
+        BufferView mPixels;
     };
 
     //-------------------------------------------------------------------------------------------------------------------------------
@@ -181,7 +179,7 @@ namespace yaget::io
         StringsAsset(const Tag& tag, const Buffer& buffer, const VirtualTransportSystem& vts)
             : Asset(tag, buffer, vts)
         {
-            file::imemstream memStream(BufferPointer(mBuffer), BufferSize(mBuffer));
+            file::imemstream memStream(cast_data<const char>(mBuffer), size_data(mBuffer));
 
             std::string textLine;
             while (std::getline(memStream, textLine))
@@ -251,6 +249,17 @@ namespace yaget::io
     {
         SingleBLobLoader<JsonAsset> loader(vts, tag);
         return loader.GetAsset();
+    }
+
+    inline void AttachTransientAsset(const yaget::io::Tag& tag, yaget::io::VirtualTransportSystem& vts)
+    {
+        using namespace yaget;
+
+        if (!vts.FindTag(tag.mGuid).IsValid())
+        {
+            std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>({}, tag, vts);
+            vts.AttachTransientBlob(newAsset);
+        }
     }
 
 } // namespace yaget::io

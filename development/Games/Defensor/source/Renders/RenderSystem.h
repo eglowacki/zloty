@@ -17,10 +17,12 @@
 #include "Math/Interpolators.h"
 #include "Parsers/DependencyGraph.h"
 #include "Render/DesktopApplication.h"
-#include "RenderPipelines.h"
-#include "Renders/RenderSignatures.h"
-#include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderMaterials.h"
+#include "Render/Pipeline/RenderPipelines.h"
+#include "Render/Pipeline/RenderShaders.h"
+#include "Render/Pipeline/RenderSignatures.h"
+#include "Render/Pipeline/RenderTextures.h"
+#include "Render/Pipeline/ShaderBuffers.h"
 
 
 namespace defensor::render
@@ -32,10 +34,11 @@ namespace defensor::render
 
     private:
         using AssetCacheType = yaget::render::AssetCacheType;
+        using Section = io::VirtualTransportSystem::Section;
 
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent);
         void PreloadAssets();
-        void RebindMaterial(const io::Tag& tag, yaget::render::AssetTypes material);
+        void RebindMaterial(const io::Tag& tag, yaget::render::MaterialProperties material);
         void HotRebindMaterial(const Guid& guid);
 
         // This structure is used to keep track of what assets are used for rendering particular entity. 
@@ -48,17 +51,16 @@ namespace defensor::render
             Guid mPixelShaderGuid;
         };
 
-        mt::JobPool mAssetPoolThread;
         math3d::Interpolator<colors::Color> mColorInterpolator;
         math3d::Interpolator<float> mMatrixInterpolator;
 
         DependencyGraph mDependencyGraph;
-        RenderSignatures mRenderSignatures;
-        RenderPipelines mRenderPipelines;
+        yaget::render::RenderSignatures mRenderSignatures;
+        yaget::render::RenderPipelines mRenderPipelines;
         yaget::render::RenderShaders mRenderShaders;
         yaget::render::RenderMaterials mRenderMaterials;
-
-        std::atomic_bool mAssetsPreloaded{false};
+        yaget::render::RenderTextures mRenderTextures;
+        yaget::render::ShaderBuffers mShaderBuffers;
 
         RenderState mCurrentRenderState;
     };

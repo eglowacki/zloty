@@ -15,9 +15,11 @@
 #pragma once
 
 #include "HashUtilities.h"
+
 #include "Streams/Guid.h"
 #include "Streams/Watcher.h"
 #include "VTS/VirtualTransportSystem.h"
+#include <shared_mutex>
 
 
 namespace yaget
@@ -29,7 +31,7 @@ namespace yaget
         DependencyNode() = default;
         DependencyNode(const Guid& guid);
         void Add(const Guid& guid);
-        DependencyNode *FindNode(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
+        DependencyNode* FindNode(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
 
         bool IsSingleDepth() const;
         void ResolveNames(const io::VirtualTransportSystem& vts);
@@ -37,10 +39,14 @@ namespace yaget
 
         // is this or any descendant dirty
         bool IsBranchDirty() const;
+        void ClearDirty();
+
+        std::atomic_bool& Dirty() { return *mDirtyNode; }
+        const std::atomic_bool& Dirty() const { return *mDirtyNode; }
 
         Guid mGuid;
         std::string mName;
-        bool mDirty = false;
+        std::shared_ptr<std::atomic_bool> mDirtyNode;
         std::vector<DependencyNode> mDependencies;
     };
 
@@ -56,11 +62,14 @@ namespace yaget
 
         void Add(const Guid& parentGuid, const Guid& childGuid);
 
-        DependencyNode *Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
+        DependencyNode* Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const;
+        void ClearDirty(const Guid& guid);
 
     private:
         void AddWatchFiles(const Guid& guid);
         void RemoveWatchFiles(const Guid& guid);
+
+        void TriggerDirtyCallback(const Guid& guid, const std::string& filePath);
 
         io::VirtualTransportSystem& mVTS;
         Section mSection;
@@ -70,8 +79,9 @@ namespace yaget
         io::Watcher mWatcher;
         std::set<Guid> mWatchedTags;
         DirtyCallback mDirtyCallback;
-    };
 
+        mutable std::shared_mutex mSharedMutex;
+    };
 }
 
 
@@ -87,15 +97,15 @@ struct std::hash<yaget::DependencyNode>
         std::hash<yaget::Guid> hasherGuid;
         std::hash<std::string> hasherName;
         auto hasher = [&]()
-        {
-            size_t seed = 0;
-            yaget::conv::hash_combine(seed, hasherGuid(dependencyNode.mGuid), hasherName(dependencyNode.mName));
-            for (const auto& childNode : dependencyNode.mDependencies)
             {
-                yaget::conv::hash_combine(seed, operator()(childNode));
-            }
-            return seed;
-        };
+                size_t seed = 0;
+                yaget::conv::hash_combine(seed, hasherGuid(dependencyNode.mGuid), hasherName(dependencyNode.mName));
+                for (const auto& childNode : dependencyNode.mDependencies)
+                {
+                    yaget::conv::hash_combine(seed, operator()(childNode));
+                }
+                return seed;
+            };
 
         return hasher();
     }

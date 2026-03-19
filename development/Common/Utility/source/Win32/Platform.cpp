@@ -233,8 +233,8 @@ namespace
             }
 
             std::string titleString = errorMessage.empty() ? "Help" : "Error";
-            std::string message = fmt::format("{}\nOriginal command: '{}'\n\n{}", errorMessage, commands, options.help());
-            std::string errorTitle = fmt::format("{} Command Line Options {}", util::ExpendEnv("$(AppName)", nullptr), titleString);
+            std::string message = std::format("{}\nOriginal command: '{}'\n\n{}", errorMessage, commands, options.help());
+            std::string errorTitle = std::format("{} Command Line Options {}", util::ExpendEnv("$(AppName)", nullptr), titleString);
 
             util::DisplayDialog(errorTitle.c_str(), message.c_str());
 
@@ -303,8 +303,8 @@ namespace
         }
         catch (const ex::bad_init& e)
         {
-            std::string message = fmt::format("Yaget Engine failed to initialize\nExamine log at: '{}'\n{}", util::ExpendEnv("$(LogFolder)", nullptr), e.what());
-            std::string errorTitle = fmt::format("{} Startup Error", util::ExpendEnv("$(AppName)", nullptr));
+            std::string message = std::format("Yaget Engine failed to initialize\nExamine log at: '{}'\n{}", util::ExpendEnv("$(LogFolder)", nullptr), e.what());
+            std::string errorTitle = std::format("{} Startup Error", util::ExpendEnv("$(AppName)", nullptr));
 
             platform::DebuggerOutput(message);
             YLOG_ERROR("CORE", "%s .Terminating application. %s", message.c_str());
@@ -630,7 +630,7 @@ std::string yaget::platform::LastErrorMessage()
     uint64_t hr = ::GetLastError();
     _com_error cr(HRESULT_FROM_WIN32(static_cast<unsigned long>(hr)));
     const char* errorMessage = cr.ErrorMessage();
-    std::string textError = fmt::format("Error code: '{}', Error message: {}", hr, errorMessage);
+    std::string textError = std::format("Error code: '{}', Error message: {}", hr, errorMessage);
 
     return textError;
 }
@@ -699,7 +699,7 @@ void system::Initialize(const args::Options& options, const char* configData, si
     metrics::Initialize(options);
 
     double appTime = time::FromTo<double>(platform::GetRealTime(time::kMicrosecondUnit), time::kMicrosecondUnit, time::kSecondUnit);
-    std::string buildNumber = dev::CurrentConfiguration().mDebug.mFlags.BuildId == -1 ? "" : fmt::format(", Build: '{}'", dev::CurrentConfiguration().mDebug.mFlags.BuildId);
+    std::string buildNumber = dev::CurrentConfiguration().mDebug.mFlags.BuildId == -1 ? "" : std::format(", Build: '{}'", dev::CurrentConfiguration().mDebug.mFlags.BuildId);
     YLOG_INFO("INIT", "YAGET Engine initialized. Application: '%s', Configuration: '%s', Version: '%s'%s at time: %f sec. Command Line: '%s'.",
         util::ExpendEnv("$(AppName)", nullptr).c_str(),
         util::ExpendEnv("$(BuildConfiguration)", nullptr).c_str(),

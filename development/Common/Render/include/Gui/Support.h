@@ -85,7 +85,7 @@ namespace yaget
             {
                 using ValueType = std::decay_t<decltype(valueToPrint)>;
 
-                yaget::gui::Text(fmt::format("{}", conv::Convertor<ValueType>::ToString(valueToPrint)), textColor);
+                yaget::gui::Text(std::format("{}", conv::Convertor<ValueType>::ToString(valueToPrint)), textColor);
                 yaget::gui::SameLine();
             });
 

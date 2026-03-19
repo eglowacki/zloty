@@ -65,6 +65,8 @@ namespace yaget
         items::Director& Director() { return mDirector; }
         const items::Director& Director() const { return mDirector; }
 
+        mt::JobPool& PoolThread() const { return *mGeneralPoolThread; }
+
         struct VideoOptions
         {
             uint32_t mMonitorId;

@@ -85,7 +85,7 @@ namespace
     {
     public:
         StagerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-            : yaget::items::StagerSystem<GameCoordinatorSet, Messaging>("TestStagerSystem", messaging, app, coordinatorSet)
+            : yaget::items::StagerSystem<GameCoordinatorSet, Messaging>("TestStagerSystem", messaging, app, coordinatorSet, true)
         {}
     };
 

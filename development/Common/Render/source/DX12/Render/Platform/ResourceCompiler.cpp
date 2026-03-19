@@ -1,36 +1,148 @@
 #include "Render/Platform/ResourceCompiler.h"
 #include "App/AppUtilities.h"
-#include "Fmt/format.h"
-
-#include <d3dcompiler.h>
-#include <d3dx12.h>
+#include "Core/ErrorHandlers.h"
+#include "Exception/Exception.h"
+#include "magic_enum/magic_enum.hpp"
+#include "Platform/Support.h"
+#include "StringHelpers.h"
 
 #include <d3d12shader.h>    // Shader reflection.
+#include <d3dcompiler.h>
+#include <d3dx12.h>
 #include <dxcapi.h>         // Be sure to link with dxcompiler.lib.
 #include <ranges>
 
-#include "StringHelpers.h"
-#include "Core/ErrorHandlers.h"
-#include "Exception/Exception.h"
-#include "Platform/Support.h"
 
 // New compiler for shaders
 // https://github.com/microsoft/DirectXShaderCompiler/wiki/Using-dxc.exe-and-dxcompiler.dll
 
 namespace
 {
+    //-------------------------------------------------------------------------------------------------
+    struct ReflectorVariable
+    {
+        yaget::render::constant_shader_types::ConstantTypes mType;
+        yaget::render::constant_shader_types::ConstantLayout mLayout;
+    };
 
+
+    //-------------------------------------------------------------------------------------------------
+    bool operator==(const ReflectorVariable& lhs, const ReflectorVariable& rhs)
+    {
+        return lhs.mType == rhs.mType && lhs.mLayout == rhs.mLayout;
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    bool operator!=(const ReflectorVariable& lhs, const ReflectorVariable& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    void to_json(nlohmann::json& j, const ReflectorVariable& reflectorVariable)
+    {
+        j["Type"] = magic_enum::enum_name(reflectorVariable.mType);
+        j["Layout"] = magic_enum::enum_name(reflectorVariable.mLayout);
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    void from_json(const nlohmann::json& j, ReflectorVariable& reflectorVariable)
+    {
+        using namespace yaget::render;
+
+        auto typeName = yaget::json::GetValue(j, "Type", std::string{});
+        auto enumValueType = magic_enum::enum_cast<constant_shader_types::ConstantTypes>(typeName);
+        if (enumValueType.has_value())
+        {
+            reflectorVariable.mType = enumValueType.value();
+        }
+
+        auto layoutName = yaget::json::GetValue(j, "Layout", std::string{});
+        auto enumValueLayout = magic_enum::enum_cast<constant_shader_types::ConstantLayout>(layoutName);
+        if (enumValueLayout.has_value())
+        {
+            reflectorVariable.mLayout = enumValueLayout.value();
+        }
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    using ReflectorVariables = std::map<std::string, ReflectorVariable>;
+    ReflectorVariables ReflectorVariableMappings = {
+        //{ "WorldViewProjection", { yaget::render::constant_shader_types::ConstantTypes::WorldViewProjection, yaget::render::constant_shader_types::ConstantLayout::Matrix4x4 }},
+        //{ "Time", { yaget::render::constant_shader_types::ConstantTypes::Time, yaget::render::constant_shader_types::ConstantLayout::Float }}
+    };
+
+    //-------------------------------------------------------------------------------------------------
     const yaget::render::ResourceReflector::IndexMap MakeIndexMap(const yaget::render::ResourceReflector::RootParameters& rootParameters)
     {
-        yaget::render::ResourceReflector::IndexMap result;
+        using namespace yaget::render;
+
+        ResourceReflector::IndexMap result;
         uint32_t slot = 0;
-        for (auto value : rootParameters)
+        for (const auto& value : rootParameters)
         {
-            result[value.mName] = slot++;
+            if (auto it = ReflectorVariableMappings.find(value.mVariableTypeName); it != ReflectorVariableMappings.end())
+            {
+                constant_shader_types::VariableType variableType{};
+
+                variableType.mType = it->second.mType;
+                variableType.mLayout = it->second.mLayout;
+                variableType.mTypeName = value.mVariableTypeName;
+                variableType.mVariableName = value.mVariableName;
+                variableType.mOffset = slot++;
+
+                switch (value.mParameter.ParameterType)
+                {
+                    case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
+                        variableType.mRootType = constant_shader_types::RootType::Table;
+                        break;
+                    case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
+                        variableType.mRootType = constant_shader_types::RootType::Constant;
+                        break;
+                    case D3D12_ROOT_PARAMETER_TYPE_CBV:
+                        variableType.mRootType = constant_shader_types::RootType::ConstantBufferView;
+                        break;
+                    case D3D12_ROOT_PARAMETER_TYPE_SRV:
+                        variableType.mRootType = constant_shader_types::RootType::ShaderResourceView;
+                        break;
+                    case D3D12_ROOT_PARAMETER_TYPE_UAV:
+                        variableType.mRootType = constant_shader_types::RootType::UnorderedAccessView;
+                        break;
+                }
+
+                result[value.mVariableName] = variableType;
+            }
+            else
+            {
+                YLOG_ERROR("COMP", std::format("Variable name '{}' not found in mappings. Skipping.", value.mVariableTypeName).c_str());
+            }
         }
 
         return result;
     }
+
+
+    //-------------------------------------------------------------------------------------------------
+    std::string GetVariableTypeName(ID3D12ShaderReflectionConstantBuffer* shaderReflectionConstantBuffer, const char* variableName)
+    {
+        std::string result;
+
+        if (auto variable = shaderReflectionConstantBuffer->GetVariableByName(variableName))
+        {
+            auto variableType = variable->GetType();
+            D3D12_SHADER_TYPE_DESC shaderTypeDesc{};
+            HRESULT hr = variableType->GetDesc(&shaderTypeDesc);
+            yaget::error_handlers::ThrowOnError(hr, std::format("Could not get Variable Type Description from ShaderReflectionVariable. VariableName: {}", variableName));
+            result = shaderTypeDesc.Name;
+        }
+
+        return result;
+    }
+
 }
 
 
@@ -73,9 +185,23 @@ void yaget::render::ResourceReflector::MakeRootSignature(ResourceReflector* addi
         additionalReflector->GenerateSignature(rootParameters);
     }
 
-    const RootDescResult rootResult = ResourceReflector::MakeRootSignature(rootParameters);
+    const RootDescResult rootResult = MakeRootSignature(rootParameters);
 
     descriptionCallback(rootResult);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::ResourceReflector::PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+{
+    PopulateMap(fileName, vts, ReflectorVariableMappings);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::ResourceReflector::SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
+{
+    SaveMap(fileName, vts, ReflectorVariableMappings);
 }
 
 
@@ -116,7 +242,6 @@ namespace
 
     private:
         std::vector<std::wstring> mShaderArguments;
-        
     };
 }
 
@@ -125,14 +250,14 @@ namespace
 yaget::render::ResourceCompiler::CompileResult yaget::render::ResourceCompiler::Compile(io::BufferView data, const Strings& parameters) const
 {
     CompileResult compiledResult;
-    
+
     ShaderParameters shaderParameters(parameters);
 
     constexpr uint32_t codePage = CP_UTF8;
     DxcText dxBuffer{ io::cast_data<const char>(data), io::size_data(data), codePage };
     ComPtr<IDxcResult> result;
     HRESULT hr = mCompiler->Compile(&dxBuffer, shaderParameters.mArguments.data(), static_cast<UINT32>(shaderParameters.mArguments.size()), nullptr, IID_PPV_ARGS(&result));
-    error_handlers::ThrowOnError(hr, fmt::format("Could not execute compiler for shader with params: '{}'", conv::Combine(parameters, ", ")));
+    error_handlers::ThrowOnError(hr, std::format("Could not execute compiler for shader with params: '{}'", conv::Combine(parameters, ", ")));
 
     ComPtr<IDxcBlobUtf8> errors;
     hr = result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
@@ -140,7 +265,7 @@ yaget::render::ResourceCompiler::CompileResult yaget::render::ResourceCompiler::
 
     if (errors && errors->GetStringLength())
     {
-        error_handlers::ThrowOnError(hr, fmt::format("Did not compile shader. {}", errors->GetStringPointer()));
+        error_handlers::ThrowOnError(hr, std::format("Did not compile shader. {}", errors->GetStringPointer()));
     }
 
     ComPtr<IDxcBlob> shaderBin;
@@ -154,7 +279,7 @@ yaget::render::ResourceCompiler::CompileResult yaget::render::ResourceCompiler::
     {
         compiledResult.second = std::make_shared<ResourceReflector>(mUtils.Get(), io::cast_to_view(compiledResult.first));
     }
-    catch (const yaget::ex::bad_init& ex)
+    catch (const ex::bad_init& ex)
     {
         YLOG_ERROR("COMP", "Did not get reflection from shader. Error: %s", ex.what());
     }
@@ -193,37 +318,37 @@ D3D12_SHADER_VISIBILITY yaget::render::ResourceReflector::GeneratePins(uint32_t 
     // process shaders first (for now we only deal with vertex or pixel ones.
     switch (shaderType)
     {
-    case D3D12_SHVER_VERTEX_SHADER:
-    case D3D12_SHVER_PIXEL_SHADER:
+        case D3D12_SHVER_VERTEX_SHADER:
+        case D3D12_SHVER_PIXEL_SHADER:
         {
             auto& shaderInputs = mShaderInputs = {};
             auto& shaderOutputs = mShaderOutputs = {};
 
             auto paramDesc = [](uint32_t parameterIndex, auto descGetter)
-            {
-                D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
-                HRESULT hr = descGetter(parameterIndex, &signatureParameterDesc);
-                error_handlers::ThrowOnError(hr, fmt::format("Could not get input Parameter Description from compiled vertex shader. Parameter Index: {}", parameterIndex));
+                {
+                    D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
+                    HRESULT hr = descGetter(parameterIndex, &signatureParameterDesc);
+                    error_handlers::ThrowOnError(hr, std::format("Could not get input Parameter Description from compiled vertex shader. Parameter Index: {}", parameterIndex));
 
-                return signatureParameterDesc;
-            };
+                    return signatureParameterDesc;
+                };
 
             for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.InputParameters))
             {
-                auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC *desc)
-                {
-                    return shaderReflection->GetInputParameterDesc(parameterIndex, desc);
-                });
+                auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC* desc)
+                    {
+                        return shaderReflection->GetInputParameterDesc(parameterIndex, desc);
+                    });
 
                 shaderInputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
             }
 
             for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.OutputParameters))
             {
-                auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC *desc)
-                {
-                    return shaderReflection->GetOutputParameterDesc(parameterIndex, desc);
-                });
+                auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC* desc)
+                    {
+                        return shaderReflection->GetOutputParameterDesc(parameterIndex, desc);
+                    });
 
                 shaderOutputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
             }
@@ -231,8 +356,8 @@ D3D12_SHADER_VISIBILITY yaget::render::ResourceReflector::GeneratePins(uint32_t 
             returnValue = shaderType == D3D12_SHVER_VERTEX_SHADER ? D3D12_SHADER_VISIBILITY_VERTEX : D3D12_SHADER_VISIBILITY_PIXEL;
         }
         break;
-    default:
-        YLOG_ERROR("COMP", "Unsupported shader type: '%d'", shaderType);
+        default:
+            YLOG_ERROR("COMP", "Unsupported shader type: '%d'", shaderType);
     }
 
     return returnValue;
@@ -246,7 +371,7 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
     HRESULT hr = mShaderReflection->GetDesc(&shaderDesc);
     error_handlers::ThrowOnError(hr, "Could not get Shader Description from compiled shader.");
 
-    mShaderType = (shaderDesc.Version & 0xFFFF0000) >> 16;
+    mShaderType = static_cast<D3D12_SHADER_VERSION_TYPE>((shaderDesc.Version & 0xFFFF0000) >> 16);
     mMajorVersion = (shaderDesc.Version & 0x000000F0) >> 4;
     mMinorVersion = (shaderDesc.Version & 0x0000000F);
 
@@ -258,17 +383,20 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
     {
         D3D12_SHADER_INPUT_BIND_DESC shaderInputBindDesc{};
         hr = mShaderReflection->GetResourceBindingDesc(i, &shaderInputBindDesc);
-        error_handlers::ThrowOnError(hr, fmt::format("Could not get Resource Binding Description from compiled vertex shader. BoundResources Index: {}", i));
+        error_handlers::ThrowOnError(hr, std::format("Could not get Resource Binding Description from compiled vertex shader. BoundResources Index: {}", i));
 
         switch (shaderInputBindDesc.Type)
         {
-        case D3D_SIT_CBUFFER:
+            case D3D_SIT_CBUFFER:
             {
                 ID3D12ShaderReflectionConstantBuffer* shaderReflectionConstantBuffer = mShaderReflection->GetConstantBufferByIndex(i);
 
                 D3D12_SHADER_BUFFER_DESC constantBufferDesc{};
                 hr = shaderReflectionConstantBuffer->GetDesc(&constantBufferDesc);
-                error_handlers::ThrowOnError(hr, fmt::format("Could not get Constant Buffer Description from compiled vertex shader. BoundResources Index: {}", i));
+                error_handlers::ThrowOnError(hr, std::format("Could not get Constant Buffer Description from compiled vertex shader. BoundResources Index: {}", i));
+
+                std::string variableTypeName = GetVariableTypeName(shaderReflectionConstantBuffer, constantBufferDesc.Name);
+                error_handlers::ThrowOnCheck(!variableTypeName.empty(), std::format("Could not get variable type name for constant buffer: '{}'", constantBufferDesc.Name));
 
                 // NOTE(eg) we may want to consider having path for small (one matrix?) root const buffer
                 D3D12_ROOT_PARAMETER1 rootParameter = {};
@@ -302,10 +430,10 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
                     };
                 }
 
-                rootParameters.push_back({ .mParameter = rootParameter, .mName = shaderInputBindDesc.Name });
+                rootParameters.push_back({ .mParameter = rootParameter, .mVariableName = shaderInputBindDesc.Name, .mVariableTypeName = variableTypeName });
             }
             break;
-        case D3D_SIT_TEXTURE:
+            case D3D_SIT_TEXTURE:
             {
                 rootParameters.push_back({});
                 auto& parameter = rootParameters.back();
@@ -316,8 +444,6 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
                     D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
 
                 parameter.mDescriptorRangesScratchPad.push_back(srvRange);
-                //std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptorRanges;
-                //descriptorRanges.push_back(srvRange);
 
                 const D3D12_ROOT_PARAMETER1 rootParameter
                 {
@@ -330,11 +456,11 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
                     .ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL,
                 };
 
-                rootParameters.push_back({ .mParameter = rootParameter, .mName = shaderInputBindDesc.Name });
+                rootParameters.push_back({ .mParameter = rootParameter, .mVariableName = shaderInputBindDesc.Name });
             }
             break;
-        default:
-            YLOG_ERROR("COMP", "Unsupported Bound Resources type: '%d'", shaderInputBindDesc.Type);
+            default:
+                YLOG_ERROR("COMP", "Unsupported Bound Resources type: '%d'", shaderInputBindDesc.Type);
         }
     }
 }

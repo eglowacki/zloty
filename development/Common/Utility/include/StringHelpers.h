@@ -17,7 +17,6 @@
 
 #include "Base.h"
 #include "MathFacade.h"
-#include "Fmt/format.h"
 #include "Streams/Buffers.h"
 #include "Streams/Guid.h"
 #include "Meta/CompilerAlgo.h"
@@ -427,7 +426,7 @@ namespace yaget
 
             static std::string ToString(float value)
             {
-                return fmt::format("{:.2f}", value);
+                return std::format("{:.2f}", value);
             }
         };
 
@@ -503,7 +502,7 @@ namespace yaget
             }
             static std::string ToString(const math3d::Vector3& value)
             {
-                return fmt::format("[x = {:.2f}, y = {:.2f}, z = {:.2f}]", value.x, value.y, value.z);
+                return std::format("[x = {:.2f}, y = {:.2f}, z = {:.2f}]", value.x, value.y, value.z);
             }
         };
 
@@ -519,7 +518,7 @@ namespace yaget
             }
             static std::string ToString(const math3d::Vector2& value)
             {
-                return fmt::format("[x = {:.2f}, y = {:.2f}]", value.x, value.y);
+                return std::format("[x = {:.2f}, y = {:.2f}]", value.x, value.y);
             }
         };
 
@@ -535,7 +534,7 @@ namespace yaget
             }
             static std::string ToString(const math3d::Quaternion& value)
             {
-                return fmt::format("[x = {:.2f}, y = {:.2f}, z = {:.2f}, w = {:.2f}]", value.x, value.y, value.z, value.w);
+                return std::format("[x = {:.2f}, y = {:.2f}, z = {:.2f}, w = {:.2f}]", value.x, value.y, value.z, value.w);
             }
         };
 
@@ -639,7 +638,7 @@ namespace yaget
             }
             static std::string ToString(const math3d::Color& value)
             {
-                return fmt::format("[r = {:.2f}, g = {:.2f}, b = {:.2f}, a = {:.2f}]", value.x, value.y, value.z, value.w);
+                return std::format("[r = {:.2f}, g = {:.2f}, b = {:.2f}, a = {:.2f}]", value.x, value.y, value.z, value.w);
             }
         };
 
@@ -684,6 +683,18 @@ namespace yaget
             }
 
             return Combine(indexes, delimiter);
+        }
+
+        template<typename T>
+        std::string ToString(const T& value)
+        {
+            return Convertor<T>::ToString(value);
+        }
+
+        template<typename T>
+        T FromString(const char* value)
+        {
+            return Convertor<T>::FromString(value);
         }
 
     } // namespace conv

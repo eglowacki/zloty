@@ -1,180 +1,123 @@
 #include "ImageLoaders/ImageProcessor.h"
 #include "VTS/ResolvedAssets.h"
-#include "Debugging/Assert.h"
-#include "lodepng.h"
 
-#include "Core/ErrorHandlers.h"
-//#include <DirectXTex.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "ImageLoaders/stb/stb_image.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "ImageLoaders/stb/stb_image_write.h"
+
 
 namespace
 {
-    //--------------------------------------------------------------------------------------------------
-    bool IsPNG(const yaget::io::Buffer& buffer)
+    void image_write_func(void* context, void* data, int size)
     {
-        uint32_t width = 0, height = 0;
-        lodepng::State imageState;
-        uint32_t result = lodepng_inspect(&width, &height, &imageState, buffer.first.get(), buffer.second);
-        return result == 0;
+        auto contextBuffer = static_cast<yaget::io::MessagingBuffer*>(context);
+        contextBuffer->AssureWriteSize(size);
+        contextBuffer->WriteDataChunk(data, size);
     }
-
-    struct DDSHeader
-    {
-        uint32_t MagicValue;
-        uint32_t Header;
-    };
-
-    bool IsDDS(const yaget::io::Buffer& buffer)
-    {
-        const DDSHeader ddsHeader{ 0x20534444, 124 };
-        const DDSHeader* bufferHeader = reinterpret_cast<const DDSHeader*>(buffer.first.get());
-
-        return ddsHeader.MagicValue == bufferHeader->MagicValue && ddsHeader.Header == bufferHeader->Header;
-    }
-
-    //--------------------------------------------------------------------------------------------------
-    LodePNGColorType ConvertFrom(yaget::image::Header::PixelType pixelType)
-    {
-        switch (pixelType)
-        {
-        case yaget::image::Header::PixelType::RGBA:
-            return LCT_RGBA;
-            break;
-
-        case yaget::image::Header::PixelType::Single:
-            return LCT_GREY;
-            break;
-        }
-
-        return LCT_RGBA;
-    }
-
-} // namespace
-
-
-//--------------------------------------------------------------------------------------------------
-yaget::image::Header yaget::image::GetHeader(const io::Buffer& /*buffer*/)
-{
-    error_handlers::Throw("REND", "DX11 DDS disabeld for now...");
-    image::Header header;
-
-#if 0 // disable this code for now to move it to renderer
-
-    if (IsDDS(buffer))
-    {
-        DirectX::TexMetadata metadata;
-        HRESULT hr = DirectX::GetMetadataFromDDSMemory(buffer.first.get(), buffer.second, 0, metadata);
-        error_handlers::ThrowOnError(hr, "Could not load DDS header/metadata.");
-
-        header.mDataType = Header::DataType::DDS;
-        header.mSize = std::make_pair(static_cast<uint32_t>(metadata.width), static_cast<uint32_t>(metadata.height));
-        header.mNumMipMaps = static_cast<uint32_t>(metadata.mipLevels);
-
-        header.mBitDepth = static_cast<uint32_t>(DirectX::BitsPerPixel(metadata.format));
-        header.mNumComponents = header.mBitDepth / static_cast<uint32_t>(DirectX::BitsPerColor(metadata.format));
-
-        switch (header.mNumComponents)
-        {
-        case 1:
-            header.mColorType = image::Header::PixelType::Single;
-            break;
-
-        case 3:
-            header.mColorType = image::Header::PixelType::RGBA;
-            break;
-
-        case 4:
-            header.mColorType = image::Header::PixelType::RGBA;
-            break;
-
-        default:
-            error_handlers::ThrowOnCheck(false, fmt::format("Image Colortype: '{}' does not supported format: '{}'.", static_cast<int>(header.mColorType), static_cast<int>(metadata.format)));
-        }
-    }
-    else if (IsPNG(buffer))
-    {
-        uint32_t width = 0, height = 0;
-
-        lodepng::State imageState;
-        uint32_t result = lodepng_inspect(&width, &height, &imageState, buffer.first.get(), buffer.second);
-        YAGET_ASSERT(!result, "Did not load header png stream. %s.", lodepng_error_text(result));
-
-        header.mDataType = Header::DataType::PNG;
-        header.mSize = std::make_pair(width, height);
-
-        switch (imageState.info_png.color.colortype)
-        {
-        case LCT_RGB:
-        case LCT_RGBA:
-            header.mColorType = image::Header::PixelType::RGBA;
-            header.mBitDepth = imageState.info_png.color.bitdepth;
-            header.mNumComponents = 4;
-            break;
-
-        case LCT_GREY:
-            header.mColorType = image::Header::PixelType::Single;
-            header.mBitDepth = imageState.info_png.color.bitdepth;
-            header.mNumComponents = 1;
-            break;
-
-        case LCT_PALETTE:
-            header.mColorType = image::Header::PixelType::RGBA;
-            header.mBitDepth = 8;
-            header.mNumComponents = 4;
-            break;
-
-        default:
-            YAGET_ASSERT(false, "Image Colortype: '%d' is not supported.", imageState.info_png.color.colortype);
-        }
-    }
-#endif
-
-    return header;
 }
 
 
-//--------------------------------------------------------------------------------------------------
-yaget::io::Buffer yaget::image::Process(const io::Buffer& buffer, Header* header)
+//-------------------------------------------------------------------------------------------------
+yaget::io::Buffer yaget::image::GetImage(const io::VirtualTransportSystem::Section& section, io::VirtualTransportSystem& vts)
 {
-    io::Buffer processedData;
-    image::Header currentHeader = image::GetHeader(buffer);
-
-    if (IsDDS(buffer))
+    io::SingleBLobLoader<io::BinAsset> loader(vts, section);
+    if (auto asset = loader.GetAsset(); asset->IsValid())
     {
-        processedData = buffer;
-    }
-    else if (IsPNG(buffer))
-    {
-        unsigned char* out = nullptr;
-        uint32_t width = 0, height = 0;
-        currentHeader.mDataType = image::Header::DataType::RAW;
-
-        uint32_t result = lodepng_decode_memory(&out, &width, &height, buffer.first.get(), buffer.second, ConvertFrom(currentHeader.mColorType), currentHeader.mBitDepth);
-        YAGET_ASSERT(!result, "Did not load processed png stream. %s.", lodepng_error_text(result));
-
-        processedData.first = std::shared_ptr<uint8_t>(out, [](uint8_t* b)
-        {
-            free(b);
-        });
-
-        processedData.second = currentHeader.mSize.first * currentHeader.mSize.second * currentHeader.mNumComponents;
+        const auto& imageBuffer = asset->mBuffer;
+        return GetImage(imageBuffer);
     }
 
-    if (header)
-    {
-        *header = currentHeader;
-    }
-
-    return processedData;
+    return {};
 }
 
-bool yaget::image::EncodeSave(const std::string& filename, const std::vector<pixel_byte>& in, uint32_t w, uint32_t h, int colortype /*= 6 LodePNGColorType LCT_RGBA*/, uint32_t bitdepth /*= 8*/)
+
+//-------------------------------------------------------------------------------------------------
+yaget::io::Buffer yaget::image::GetImage(const io::Buffer& imageData)
 {
-    if (filename.empty())
+    if (auto header = GetImageInfo(imageData); header.GetImageSize())
     {
-        return false;
+        int x = 0;
+        int y = 0;
+        int comp = 0;
+        if (auto imageMemory = stbi_load_from_memory(io::cast_data<const stbi_uc>(imageData), io::size_data<io::Buffer, int>(imageData), &x, &y, &comp, 0))
+        {
+            header = { .mSizeX = x, .mSizeY = y, .mComponents = comp };
+            auto imagePixels = io::CreateBuffer(header.GetImageSize() + sizeof(header));
+
+            size_t writeOffset = 0;
+            std::memcpy(io::cast_data<char>(imagePixels) + writeOffset, &header, sizeof(header));
+            writeOffset += sizeof(header);
+            std::memcpy(io::cast_data<char>(imagePixels) + writeOffset, imageMemory, header.GetImageSize());
+
+            stbi_image_free(imageMemory);
+
+            return imagePixels;
+        }
     }
 
-    auto result = lodepng_encode_file(filename.c_str(), in.data(), w, h, static_cast<LodePNGColorType>(colortype), bitdepth);
+    return {};
+}
 
-    return result == 0;
+
+//-------------------------------------------------------------------------------------------------
+yaget::image::Header yaget::image::GetImageInfo(const io::Buffer& imageData)
+{
+    int x = 0;
+    int y = 0;
+    int comp = 0;
+    if (stbi_info_from_memory(io::cast_data<const stbi_uc>(imageData), io::size_data<io::Buffer, int>(imageData), &x, &y, &comp))
+    {
+        return { .mSizeX = x, .mSizeY = y, .mComponents = comp };
+    }
+
+    return {};
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::io::Buffer yaget::image::SaveImage(const io::Buffer& pixelData, ImageType imageType)
+{
+    const auto header = io::cast_data<Header>(pixelData);
+    const auto pixels = io::cast_to_view(pixelData, sizeof(Header));
+    return SaveImage(pixels, *header, imageType);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::io::Buffer yaget::image::SaveImage(const io::BufferView& pixels, const Header& header, ImageType imageType)
+{
+    io::MessagingBuffer imageBuffer;
+
+    switch (imageType)
+    {
+    case ImageType::PNG:
+        {
+            stbi_write_png_to_func(&image_write_func, &imageBuffer, header.mSizeX, header.mSizeY, header.mComponents, io::cast_data<void>(pixels), header.GetStride());
+        }
+        break;
+    case ImageType::JPG:
+        {
+            stbi_write_jpg_to_func(&image_write_func, &imageBuffer, header.mSizeX, header.mSizeY, header.mComponents, io::cast_data<void>(pixels), 100);
+        }
+        break;
+    case ImageType::BMP:
+        {
+            stbi_write_bmp_to_func(&image_write_func, &imageBuffer, header.mSizeX, header.mSizeY, header.mComponents, io::cast_data<void>(pixels));
+        }
+        break;
+    case ImageType::TGA:
+        {
+            stbi_write_tga_to_func(&image_write_func, &imageBuffer, header.mSizeX, header.mSizeY, header.mComponents, io::cast_data<void>(pixels));
+        }
+        break;
+    default:
+        YLOG_ERROR("IMG", "Unsupported image type provided for saving image data.");
+        break;
+    }
+
+    auto result = imageBuffer.mBuffer;
+    result.second = imageBuffer.mWriteOffset;
+    return result;
 }

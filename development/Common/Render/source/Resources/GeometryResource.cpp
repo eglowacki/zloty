@@ -217,7 +217,7 @@ bool yaget::render::GeometryResource::Activate()
 {
     if (!mVertexData.empty())
     {
-        mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+        mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
         Device::ID3D11DeviceContext_t* deviceContext = mDevice.GetDeviceContext();
 
@@ -261,7 +261,7 @@ void yaget::render::GeometryResource::UpdateGui(comp::Component::UpdateGuiType u
     {
         for (const auto& vertexGeom : mVertexData)
         {
-            ImGui::Text(fmt::format("Num Verticies: : '{}', Num Indicies: '{}', Radius: '{}'", 
+            ImGui::Text(std::format("Num Verticies: : '{}', Num Indicies: '{}', Radius: '{}'", 
                 vertexGeom.mNumVerticies, 
                 vertexGeom.mNumIndicies, 
                 conv::Convertor<float>::ToString(vertexGeom.mBoundingBox.GetSize().Length() / 2.0f)).c_str());

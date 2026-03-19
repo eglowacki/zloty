@@ -24,31 +24,22 @@ void defensor::render::RenderMaterial::ResolveAssetTag(const io::Tag& assetTag)
     }
 
     mAssetTag = assetTag;
-    mAssetTypes = {};
+    mMaterialProperties = {};
 
     if (auto jsonAsset = LoadJson(mVTS, mAssetTag); jsonAsset && jsonAsset->IsValid())
     {
         auto& jasonBlock = jsonAsset->root;
 
-        mAssetTypes.mVertexShader = json::GetValue(jasonBlock, "VertexShader", AssetCacheType::Empty);
-        mAssetTypes.mPixelShader = json::GetValue(jasonBlock, "PixelShader", AssetCacheType::Empty);
-        mAssetTypes.mRasterizerState = json::GetValue(jasonBlock, "RasterizerState", AssetCacheType::RasterizerStateCounterClockwise);
-        mAssetTypes.mBlendMode = json::GetValue(jasonBlock, "BlendMode", AssetCacheType::BlendModeOpaque);
-        mAssetTypes.mDepthState = json::GetValue(jasonBlock, "DepthState", AssetCacheType::DepthStateNone);
+        mMaterialProperties.mVertexShader = json::GetValue(jasonBlock, "VertexShader", AssetCacheType::Empty);
+        mMaterialProperties.mPixelShader = json::GetValue(jasonBlock, "PixelShader", AssetCacheType::Empty);
+        mMaterialProperties.mRasterizerState = json::GetValue(jasonBlock, "RasterizerState", AssetCacheType::RasterizerStateCounterClockwise);
+        mMaterialProperties.mBlendMode = json::GetValue(jasonBlock, "BlendMode", AssetCacheType::BlendModeOpaque);
+        mMaterialProperties.mDepthState = json::GetValue(jasonBlock, "DepthState", AssetCacheType::DepthStateNone);
 
-        mAssetTypes.mSignature = mAssetTypes.mVertexShader | mAssetTypes.mPixelShader;
-        mAssetTypes.mPSO = mAssetTypes.mSignature | mAssetTypes.mRasterizerState | mAssetTypes.mDepthState | mAssetTypes.mBlendMode | AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
+        mMaterialProperties.mSignature = mMaterialProperties.mVertexShader | mMaterialProperties.mPixelShader;
+        mMaterialProperties.mPSO = mMaterialProperties.mSignature | mMaterialProperties.mRasterizerState | mMaterialProperties.mDepthState | mMaterialProperties.mBlendMode | AssetCacheType::TopologyStateTriangle | AssetCacheType::RTVFormatRGBA8;
 
-        //auto vertexSection = yaget::render::AssetCache::operator[](mVertexShader);
-        //auto pixelSection = yaget::render::AssetCache::operator[](mPixelShader);
-        //nlohmann::json jsonBlock;
-        //jsonBlock["VertexShader"] = mVertexShader;
-        //jsonBlock["PixelShader"] = mPixelShader;
-        //jsonBlock["RasterizerState"] = mRasterizerState;
-        //jsonBlock["BlendMode"] = mBlendMode;
-        //jsonBlock["DepthState"] = mDepthState;
-
-        //auto textBlock = json::PrettyPrint(jsonBlock);
+        YLOG_INFO("REND", "Created material for: '%s'", yaget::conv::Convertor<yaget::io::Tag>::ToString(assetTag).c_str());
     }
     else
     {

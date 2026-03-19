@@ -1,0 +1,6 @@
+{
+    "WorldViewProjection": {
+        "Layout": "Matrix4x4",
+        "Type": "WorldViewProjection"
+    }
+}

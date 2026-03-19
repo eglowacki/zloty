@@ -3,7 +3,7 @@
 
 //-------------------------------------------------------------------------------------------------
 defensor::game::MenuSystem::MenuSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-    : GameSystem("MenuSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+    : GameSystem("MenuSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, true)
 {
 }
 

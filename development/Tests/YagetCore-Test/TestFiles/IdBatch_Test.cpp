@@ -84,7 +84,7 @@ TEST_F(IdBatch, Persistent)
 	std::set<comp::ItemId> itemIds;
 
 	{
-		const auto& message = fmt::format("Getting '{}' Burnable id's.", conv::ToThousandsSep(MaxIterations));
+		const auto& message = std::format("Getting '{}' Burnable id's.", conv::ToThousandsSep(MaxIterations));
 		metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", message.c_str());
 
 		for (int i = 0; i < MaxIterations; ++i)
@@ -97,7 +97,7 @@ TEST_F(IdBatch, Persistent)
 	std::set<comp::ItemId>().swap(itemIds);
 
 	{
-		const auto& message = fmt::format("Getting '{}' Persistent id's.", conv::ToThousandsSep(MaxIterations));
+		const auto& message = std::format("Getting '{}' Persistent id's.", conv::ToThousandsSep(MaxIterations));
 		metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", message.c_str());
 		
 		for (int i = 0; i < MaxIterations; ++i)

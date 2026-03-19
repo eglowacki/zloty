@@ -1,3 +1,4 @@
+#include "Compression/Zipper.h"
 #include "Render/Cache/AssetCache.h"
 #include "Render/Cache/CacheWatcher.h"
 #include "Streams/Guid.h"
@@ -25,7 +26,7 @@ namespace
 //-------------------------------------------------------------------------------------------------
 yaget::render::AssetCache::TypeToSectionMap yaget::render::AssetCache::TypeToSection =
 {
-    {BasicVertex, Section("VeretexShaders@Basic")},
+    {BasicVertex, Section("VertexShaders@Basic")},
     {BasicPixel, Section("PixelShaders@Basic")},
     {BasicSignature, Section("Transient@BasicSig")},
     {BasicPipeline, Section("Transient@BasicPipe")},
@@ -58,14 +59,14 @@ yaget::render::AssetCacheType yaget::render::AssetCache::operator[](const Sectio
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::AssetCache::PopulateTypeToSection(const Section& fileName, io::VirtualTransportSystem& vts)
+void yaget::render::AssetCache::PopulateMappings(const Section& fileName, io::VirtualTransportSystem& vts)
 {
-    yaget::render::PopulateMap<TypeToSectionMap>(fileName, vts, TypeToSection);
+    PopulateMap<TypeToSectionMap>(fileName, vts, TypeToSection);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::AssetCache::SaveTypeToSection(const Section& fileName, io::VirtualTransportSystem& vts)
+void yaget::render::AssetCache::SaveMappings(const Section& fileName, io::VirtualTransportSystem& vts)
 {
     SaveMap(fileName, vts, TypeToSection);
 }
@@ -87,8 +88,12 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
         if (auto asset = cacheLoader.GetAsset())
         {
             io::MessagingBuffer cache;
-            cache.mBuffer = asset->mBuffer;
-            cache.mWriteOffset = io::size_data(asset->mBuffer);
+            cache.mBuffer = compression::UnzipBuffer(io::cast_to_view(asset->mBuffer));
+            if (!io::size_data(cache.mBuffer))
+            {
+                cache.mBuffer = asset->mBuffer;
+            }
+            cache.mWriteOffset = io::size_data(cache.mBuffer);
             size_t offset = 0;
 
             auto fileSignature = reinterpret_cast<YagetFileSignature*>(io::cast_data<char>(cache.mBuffer) + offset);
@@ -164,19 +169,27 @@ yaget::render::AssetCache::~AssetCache()
             std::memcpy(dataPointer + offset, &location, sizeof(location));
             offset += sizeof(location);
         }
+
+        mCache.Shrink();
         auto fullCacheData = io::CreateBuffer(io::size_data(indexBuffer) + io::size_data(mCache.mBuffer));
         io::CopyBuffer(indexBuffer, fullCacheData, 0);
         io::CopyBuffer(mCache.mBuffer, fullCacheData, io::size_data(indexBuffer));
+
+        const auto& useZip = yaget::dev::CurrentConfiguration().mDataLoaders.mUseZip;
+
+        auto compressedBuffer = useZip ? compression::ZipBuffer(io::cast_to_view(fullCacheData)) : io::Buffer{};
+        io::Buffer* bufferToSave = io::size_data(compressedBuffer) ? &compressedBuffer : &fullCacheData;
+
         io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
         if (auto asset = cacheLoader.GetAsset())
         {
-            asset->mBuffer = fullCacheData;
+            asset->mBuffer = *bufferToSave;
             mVTS.UpdateAssetData(asset, io::VirtualTransportSystem::Request::UpdateOnly);
         }
         else
         {
             auto tag = mVTS.GenerateTag(mCacheSection);
-            std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>(fullCacheData, tag, mVTS);
+            std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>(*bufferToSave, tag, mVTS);
             mVTS.UpdateAssetData(newAsset, io::VirtualTransportSystem::Request::Add);
         }
     }
@@ -193,13 +206,6 @@ yaget::io::Buffer yaget::render::AssetCache::GetCachedAsset(const io::Tag& tag) 
         return io::CreateBuffer(io::cast_data<const char>(mCache.mBuffer) + location.mOffset, location.mSize);
     }
     return {};
-}
-
-
-//-------------------------------------------------------------------------------------------------
-bool yaget::render::AssetCache::IsCachedAsset(const io::Tag& tag) const
-{
-    return mCacheIndex.contains(tag.mGuid);
 }
 
 

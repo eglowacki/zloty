@@ -85,11 +85,11 @@ namespace yaget::render
         //RasterizerState...            = 1ULL << 39,
 
         // describe pipeline state depth stencil, uses MaskDepthState
-        DepthStateNone    = 1ULL << 40,
-        DepthStateOn      = 1ULL << 41,
-        DepthStateStencil = 1ULL << 42,
-        //DepthState...   = 1ULL << 43,
-        //DepthState...   = 1ULL << 44,
+        DepthStateNone      = 1ULL << 40,
+        DepthStateOn        = 1ULL << 41,
+        DepthStateRead      = 1ULL << 42,
+        DepthStencilStateOn = 1ULL << 43,
+        //DepthState...     = 1ULL << 44,
 
         // describe pipeline state primitive topology
         TopologyStatePoint    = 1ULL << 45,
@@ -114,11 +114,10 @@ namespace yaget::render
         //DXGI_FORMAT_B5G6R5_UNORM = 59,
         //DXGI_FORMAT_B5G5R5A1_UNORM = 60,
 
-
-        Reserved60 = 1ULL << 60,
-        Reserved61 = 1ULL << 61,
-        Reserved62 = 1ULL << 62,
-        Empty      = 1ULL << 63,
+        ShaderBuffer    = 1ULL << 60,
+        Reserved61      = 1ULL << 61,
+        Reserved62      = 1ULL << 62,
+        Empty           = 1ULL << 63,
     };
 
 
@@ -173,13 +172,12 @@ namespace yaget::render
         AssetCache(io::VirtualTransportSystem& vts, Section fileName);
         ~AssetCache();
         io::Buffer GetCachedAsset(const io::Tag& tag) const;
-        bool IsCachedAsset(const io::Tag& tag) const;
         void SaveCachedAsset(const io::Tag& tag, io::Buffer buffer);
         void ClearCachedAsset(const io::Tag& tag);
         static Section operator[](AssetCacheType typeFlag);
         static AssetCacheType operator[](const Section& section);
-        static void PopulateTypeToSection(const Section& fileName, io::VirtualTransportSystem& vts);
-        static void SaveTypeToSection(const Section& fileName, io::VirtualTransportSystem& vts);
+        static void PopulateMappings(const Section& fileName, io::VirtualTransportSystem& vts);
+        static void SaveMappings(const Section& fileName, io::VirtualTransportSystem& vts);
 
     private:
         io::VirtualTransportSystem& mVTS;

@@ -39,7 +39,7 @@ namespace DirectX::SimpleMath
 
     inline void to_json(nlohmann::json& j, const math3d::Color& color)
     {
-        j = fmt::format("{}, {}, {}, {}", color.R(), color.G(), color.B(), color.A());
+        j = std::format("{}, {}, {}, {}", color.R(), color.G(), color.B(), color.A());
     }
 
     inline void from_json(const nlohmann::json& j, math3d::Color& color)
@@ -426,6 +426,9 @@ namespace yaget::dev
     {
         j["SkipDependencyGraph"] = dataLoaders.mSkipDependencyGraph;
         j["ClearCache"] = dataLoaders.mClearCache;
+        j["UseDebugShadersInRelease"] = dataLoaders.mUseDebugShadersInRelease;
+        j["UseReleaseShadersInDebug"] = dataLoaders.mUseReleaseShadersInDebug;
+        j["UseZip"] = dataLoaders.mUseZip;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -433,6 +436,9 @@ namespace yaget::dev
     {
         dataLoaders.mSkipDependencyGraph = json::GetValue(j, "SkipDependencyGraph",  dataLoaders.mSkipDependencyGraph);
         dataLoaders.mClearCache = json::GetValue(j, "ClearCache", dataLoaders.mClearCache);
+        dataLoaders.mUseDebugShadersInRelease = json::GetValue(j, "UseDebugShadersInRelease", dataLoaders.mUseDebugShadersInRelease);
+        dataLoaders.mUseReleaseShadersInDebug = json::GetValue(j, "UseReleaseShadersInDebug", dataLoaders.mUseReleaseShadersInDebug);
+        dataLoaders.mUseZip = json::GetValue(j, "UseZip", dataLoaders.mUseZip);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------

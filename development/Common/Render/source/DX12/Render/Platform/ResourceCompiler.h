@@ -44,7 +44,8 @@ namespace yaget::render
         struct RootParameter
         {
             D3D12_ROOT_PARAMETER1 mParameter;
-            std::string mName;
+            std::string mVariableName;
+            std::string mVariableTypeName;
             std::vector<CD3DX12_DESCRIPTOR_RANGE1> mDescriptorRangesScratchPad;
         };
 
@@ -56,12 +57,15 @@ namespace yaget::render
         using DescriptionCallback = RenderShaders::DescriptionCallback;
         void MakeRootSignature(ResourceReflector* additionalReflector, DescriptionCallback descriptionCallback);
 
-        uint32_t mShaderType = 0;
+        static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+
+    private:
+        D3D12_SHADER_VERSION_TYPE mShaderType = D3D12_SHVER_RESERVED0;
         uint32_t mMajorVersion = 0;
         uint32_t mMinorVersion = 0;
         D3D12_SHADER_VISIBILITY mShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    private:
         static const RootDescResult MakeRootSignature(const RootParameters& rootParameters);
 
         void GenerateSignature(RootParameters& rootParameters);

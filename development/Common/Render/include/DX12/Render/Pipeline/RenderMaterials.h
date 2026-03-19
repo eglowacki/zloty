@@ -13,8 +13,6 @@
 //! \file
 #pragma once
 
-//#include "Render/RenderCore.h"
-//#include "Streams/Buffers.h"
 #include "Render/Cache/CacheWatcher.h"
 
 namespace yaget
@@ -22,14 +20,10 @@ namespace yaget
     class DependencyGraph;
 }
 
-//struct ID3D12PipelineState;
-//struct ID3D12RootSignature;
-//struct ID3D12Device;
-
 
 namespace yaget::render
 {
-    struct AssetTypes
+    struct MaterialProperties
     {
         AssetCacheType mVertexShader = AssetCacheType::Empty;
         AssetCacheType mPixelShader = AssetCacheType::Empty;
@@ -39,17 +33,43 @@ namespace yaget::render
         // this is calculated at run time after loading and reading above types
         AssetCacheType mSignature = AssetCacheType::Empty;
         AssetCacheType mPSO = AssetCacheType::Empty;
+        AssetCacheType mShaderBuffer = AssetCacheType::Empty;
 
-        bool operator == (AssetTypes const&) const  = default;
+        bool operator == (MaterialProperties const&) const  = default;
     };
 
-    class RenderMaterials : public CacheWatcher<AssetTypes>
+    class RenderMaterials : public CacheWatcher<MaterialProperties>
     {
     public:
-        RenderMaterials(io::VirtualTransportSystem& vts);
+        RenderMaterials(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
         ~RenderMaterials();
 
-        AssetTypes GetMaterial(const io::Tag& tag);
-        std::vector<AssetTypes> GetMaterials(const io::Tags& tags);
+        MaterialProperties GetMaterial(const io::Tag& tag);
+        std::vector<MaterialProperties> GetMaterials(const io::Tags& tags);
+
+        static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+    };
+}
+
+
+
+namespace yaget::conv
+{
+    template<>
+    struct Convertor<yaget::render::MaterialProperties>
+    {
+        static std::string ToString(const yaget::render::MaterialProperties& value)
+        {
+            return std::format("Material Properties:\n\tvs:          '{}'\n\tps:          '{}'\n\tRasterizer:  '{}'\n\tBlend:       '{}'\n\tDepth:       '{}'\n\tSignature    '{}'\n\tPipeline     '{}'\n\tShaderBuffer '{}'.",
+                render::internal::CacheTypeToString(value.mVertexShader),
+                render::internal::CacheTypeToString(value.mPixelShader),
+                render::internal::CacheTypeToString(value.mRasterizerState),
+                render::internal::CacheTypeToString(value.mBlendMode),
+                render::internal::CacheTypeToString(value.mDepthState),
+                render::internal::CacheTypeToString(value.mSignature),
+                render::internal::CacheTypeToString(value.mPSO),
+                render::internal::CacheTypeToString(value.mShaderBuffer));
+        }
     };
 }

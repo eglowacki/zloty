@@ -1,6 +1,5 @@
 ﻿#include "ThreadModel/JobProcessor.h" 
 #include "Platform/Support.h" 
-#include "fmt/format.h" 
 #include "StringHelpers.h" 
 
 #include "Core/ErrorHandlers.h"
@@ -73,7 +72,7 @@ yaget::mt::JobProcessor::~JobProcessor()
         {
             ::TerminateThread(static_cast<HANDLE>(mThread.native_handle()), 1);
 
-            const auto message = fmt::format("Job '{}' killed. Task in progress exceeded time out value: '{}{}'.", mThreadName, maxSleepSleep, metrics::UnitName(units));
+            const auto message = std::format("Job '{}' killed. Task in progress exceeded time out value: '{}{}'.", mThreadName, maxSleepSleep, metrics::UnitName(units));
             error_handlers::Throw("MULT", message);
         }
     } 

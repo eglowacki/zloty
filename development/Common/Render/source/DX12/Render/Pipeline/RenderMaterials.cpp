@@ -4,38 +4,39 @@
 namespace
 {
     //-------------------------------------------------------------------------------------------------
-    yaget::render::AssetTypes ResolveAssetTag(const yaget::io::Tag& assetTag, yaget::io::VirtualTransportSystem& vts)
+    yaget::render::MaterialProperties ResolveAssetTag(const yaget::io::Tag& assetTag, yaget::io::VirtualTransportSystem& vts)
     {
         using namespace yaget;
 
-        render::AssetTypes assetTypes = {};
+        render::MaterialProperties materialProperties = {};
 
         if (auto jsonAsset = io::LoadJson(vts, assetTag); jsonAsset && jsonAsset->IsValid())
         {
             auto& jasonBlock = jsonAsset->root;
 
-            assetTypes.mVertexShader = json::GetValue(jasonBlock, "VertexShader", render::AssetCacheType::Empty);
-            assetTypes.mPixelShader = json::GetValue(jasonBlock, "PixelShader", render::AssetCacheType::Empty);
-            assetTypes.mRasterizerState = json::GetValue(jasonBlock, "RasterizerState", render::AssetCacheType::RasterizerStateCounterClockwise);
-            assetTypes.mBlendMode = json::GetValue(jasonBlock, "BlendMode", render::AssetCacheType::BlendModeOpaque);
-            assetTypes.mDepthState = json::GetValue(jasonBlock, "DepthState", render::AssetCacheType::DepthStateNone);
+            materialProperties.mVertexShader = json::GetValue(jasonBlock, "VertexShader", render::AssetCacheType::Empty);
+            materialProperties.mPixelShader = json::GetValue(jasonBlock, "PixelShader", render::AssetCacheType::Empty);
+            materialProperties.mRasterizerState = json::GetValue(jasonBlock, "RasterizerState", render::AssetCacheType::RasterizerStateCounterClockwise);
+            materialProperties.mBlendMode = json::GetValue(jasonBlock, "BlendMode", render::AssetCacheType::BlendModeOpaque);
+            materialProperties.mDepthState = json::GetValue(jasonBlock, "DepthState", render::AssetCacheType::DepthStateNone);
 
-            assetTypes.mSignature = assetTypes.mVertexShader | assetTypes.mPixelShader;
-            assetTypes.mPSO = assetTypes.mSignature | assetTypes.mRasterizerState | assetTypes.mDepthState | assetTypes.mBlendMode | render::AssetCacheType::TopologyStateTriangle | render::AssetCacheType::RTVFormatRGBA8;
+            materialProperties.mSignature = materialProperties.mVertexShader | materialProperties.mPixelShader;
+            materialProperties.mPSO = materialProperties.mSignature | materialProperties.mRasterizerState | materialProperties.mDepthState | materialProperties.mBlendMode | render::AssetCacheType::TopologyStateTriangle | render::AssetCacheType::RTVFormatRGBA8;
+            materialProperties.mShaderBuffer = render::AssetCacheType::ShaderBuffer | materialProperties.mVertexShader | materialProperties.mPixelShader;
         }
         else
         {
             YLOG_ERROR("REND", "Did not load material '%s'.", assetTag.ResolveVTS().c_str());
         }
 
-        return assetTypes;
+        return materialProperties;
     }
 
 }
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderMaterials::RenderMaterials(io::VirtualTransportSystem& vts)
-    : CacheWatcher(vts, yaget::io::VirtualTransportSystem::Section("Caches@Materials"))
+yaget::render::RenderMaterials::RenderMaterials(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+    : CacheWatcher(vts, fileName)
 {
 }
 
@@ -46,18 +47,18 @@ yaget::render::RenderMaterials::~RenderMaterials() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::AssetTypes yaget::render::RenderMaterials::GetMaterial(const io::Tag& tag)
+yaget::render::MaterialProperties yaget::render::RenderMaterials::GetMaterial(const io::Tag& tag)
 {
     auto results = GetMaterials({ tag });
 
-    return !results.empty() ? *results.begin() : AssetTypes{};
+    return !results.empty() ? *results.begin() : MaterialProperties{};
 }
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::AssetTypes> yaget::render::RenderMaterials::GetMaterials(const io::Tags& tags)
+std::vector<yaget::render::MaterialProperties> yaget::render::RenderMaterials::GetMaterials(const io::Tags& tags)
 {
-    std::vector<yaget::render::AssetTypes> results;
+    std::vector<MaterialProperties> results;
 
     std::lock_guard mutexLocker(mMutex);
 
@@ -65,26 +66,38 @@ std::vector<yaget::render::AssetTypes> yaget::render::RenderMaterials::GetMateri
     {
         auto result = GetAsset(tag, [this, &results](auto tag, auto& cachedData)
         {
-            AssetTypes* assetTypes = nullptr;
+            MaterialProperties* materialProperties = nullptr;
             if (io::size_data(cachedData))
             {
-                assetTypes = io::cast_data<AssetTypes>(cachedData);
+                materialProperties = io::cast_data<MaterialProperties>(cachedData);
             }
             else
             {
-                AssetTypes materialData = ResolveAssetTag(tag, mVTS);
+                MaterialProperties materialData = ResolveAssetTag(tag, mVTS);
                 auto matBuffer = io::CreateBuffer(reinterpret_cast<const uint8_t*>(&materialData), sizeof(materialData));
                 cachedData = io::ResizeBuffer(cachedData, sizeof(materialData));
                 io::CopyBuffer(matBuffer, cachedData, 0);
 
-                assetTypes = io::cast_data<AssetTypes>(cachedData);
+                materialProperties = io::cast_data<MaterialProperties>(cachedData);
             }
 
-            return *assetTypes;
+            return *materialProperties;
         });
         
         results.push_back(result);
     }
 
     return results;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::RenderMaterials::PopulateMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::RenderMaterials::SaveMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+{
 }

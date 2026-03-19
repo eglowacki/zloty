@@ -46,8 +46,7 @@ namespace yaget::mt
         // Default - execute this task in 'some' default way, can be Pool or Tasked
         // Pool - execute it from same thread that Pool started this task on.
         // Tasked - execute from the thread that this task was added from.
-        enum class TaskExecutionThread { Default, Pool, Tasked };
-        void AddTask(JobProcessor::Task_t task, TaskExecutionThread taskExecutionThread = TaskExecutionThread::Default);
+        void AddTask(JobProcessor::Task_t task);
         void UnpauseAll();
         
 

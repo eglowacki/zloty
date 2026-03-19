@@ -32,6 +32,9 @@
     <Filter Include="Data Files\Materials">
       <UniqueIdentifier>{44bb02cd-2f1d-483a-86a2-3e2f19959e77}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\Images">
+      <UniqueIdentifier>{4281daf4-d030-423c-8e58-7f70cdcef336}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -88,13 +91,7 @@
     <ClCompile Include="source\Renders\SceneComponent.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\Renders\RenderSignatures.cpp">
-      <Filter>Source Files\Renders Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\Renders\RenderComponent.cpp">
-      <Filter>Source Files\Renders Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Renders\RenderPipelines.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
     <ClCompile Include="source\Renders\RenderMaterial.cpp">
@@ -133,6 +130,21 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Shaders\Pixel\Basic.vs">
       <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\Blue.bmp">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\Green.jpg">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\Red.png">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\White.tga">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Manifest\ShaderReflectionOptions.json">
+      <Filter>Data Files\Manifest</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
@@ -194,12 +206,6 @@
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Renders\RenderComponent.h">
-      <Filter>Source Files\Renders Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\Renders\RenderSignatures.h">
-      <Filter>Source Files\Renders Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\Renders\RenderPipelines.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />

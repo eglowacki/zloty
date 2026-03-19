@@ -1,5 +1,4 @@
 #include "App/ProcHandler.h"
-#include "App/AppUtilities.h"
 #include "App/Display.h"
 #include "Core/ErrorHandlers.h"
 #include "Debugging/DevConfiguration.h"
@@ -320,7 +319,7 @@ namespace
     //--------------------------------------------------------------------------------------------------
     std::string CreateWindowTitle(const std::string& currentTitle, int32_t resX, int32_t resY)
     {
-        const auto winTitle = fmt::format("{} - ({}x{})", currentTitle, resX, resY);
+        const auto winTitle = std::format("{} - ({}x{})", currentTitle, resX, resY);
 
         return winTitle;
     }
@@ -414,7 +413,8 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
         //break;
 
     default:
-        error_handlers::Throw("WIN", fmt::vformat("Window Apperance Type: '{}' is not supported.", fmt::make_format_args(windowAppearance.mAppearance)));
+        auto vi = static_cast<int>(windowAppearance.mAppearance);
+        error_handlers::Throw("WIN", std::vformat("Window Appearance Type: '{}' is not supported.", std::make_format_args(vi)));
     }
 
     YLOG_INFO("WIN", "Requested surface: '%s', Resolution: (%dx%d)", AppearanceNames[static_cast<int>(mActiveAppearance)], windowAppearance.mResX, windowAppearance.mResY);

@@ -4,7 +4,7 @@
 
 //-------------------------------------------------------------------------------------------------
 defensor::game::FrameStateCollectorSystem::FrameStateCollectorSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-    : GameSystem("FrameStateCollectorSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet)
+    : GameSystem("FrameStateCollectorSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, true)
     , mCurrentFrameState(messaging.CreatePayload(/*sizeof(EntityState)*/))
 {
 }

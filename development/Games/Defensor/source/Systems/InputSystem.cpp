@@ -3,7 +3,7 @@
 
 //-------------------------------------------------------------------------------------------------
 defensor::game::ProcessInputSystem::ProcessInputSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-    : GameSystem("ProcessInputSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+    : GameSystem("ProcessInputSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, true)
 {
     app.Input().RegisterActionCallback("*", [this](const std::string& contextName, const std::string& actionName, uint64_t timeStamp, int32_t mouseX, int32_t mouseY, uint32_t flags)
     {
@@ -58,7 +58,7 @@ void defensor::game::ProcessInputSystem::SaveAction(const std::string& actionNam
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 defensor::game::ClearInputSystem::ClearInputSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-    : GameSystem("ClearInputSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+    : GameSystem("ClearInputSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, true)
 {
 }
 

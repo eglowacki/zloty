@@ -274,7 +274,7 @@ void yaget::render::DescriptionResource::UpdateGui(comp::Component::UpdateGuiTyp
     {
         int counter = 1;
 
-        bool result = ImGui::RadioButton(fmt::format("Global##{}", counter++).c_str(), mGlobalPassUsage);
+        bool result = ImGui::RadioButton(std::format("Global##{}", counter++).c_str(), mGlobalPassUsage);
         yaget::gui::SetTooltip("Use global render list for passes");
 
         ImGui::SameLine();
@@ -282,7 +282,7 @@ void yaget::render::DescriptionResource::UpdateGui(comp::Component::UpdateGuiTyp
         {
             mGlobalPassUsage = true;
         }
-        else if (ImGui::RadioButton(fmt::format("Override##{}", counter++).c_str(), !mGlobalPassUsage))
+        else if (ImGui::RadioButton(std::format("Override##{}", counter++).c_str(), !mGlobalPassUsage))
         {
             mGlobalPassUsage = false;
         }
@@ -294,12 +294,12 @@ void yaget::render::DescriptionResource::UpdateGui(comp::Component::UpdateGuiTyp
             const PassValue& value = pass.second;
 
             bool passActive = std::find(std::begin(mLastRequestedPasses), std::end(mLastRequestedPasses), pass.first) != std::end(mLastRequestedPasses);
-            bool visible = ImGui::TreeNode(fmt::format("Pass Name: ##{}", pass.first).c_str());
+            bool visible = ImGui::TreeNode(std::format("Pass Name: ##{}", pass.first).c_str());
             ImGui::SameLine();
 
             yaget::gui::MakeDisabled(mGlobalPassUsage, [&counter, &value]()
             {
-                ImGui::Checkbox(fmt::format("##{}", counter++).c_str(), &value->mActive);
+                ImGui::Checkbox(std::format("##{}", counter++).c_str(), &value->mActive);
                 ImGui::SameLine();
             });
 
@@ -315,7 +315,7 @@ void yaget::render::DescriptionResource::UpdateGui(comp::Component::UpdateGuiTyp
             }
 
             const math3d::Color passColor = passActive ? dev::CurrentConfiguration().mGuiColors.at("ActiveText") : dev::CurrentConfiguration().mGuiColors.at("InactiveText");
-            yaget::gui::Text(fmt::format("'{}'", pass.first), passColor);
+            yaget::gui::Text(std::format("'{}'", pass.first), passColor);
 
             if (visible)
             {
@@ -398,7 +398,7 @@ void yaget::render::DescriptionResource::UpdateGui(comp::Component::UpdateGuiTyp
 //};
 bool yaget::render::DescriptionResource::Activate(const Strings& passes)
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     mLastRequestedPasses = passes;
     bool result = false;
@@ -411,7 +411,7 @@ bool yaget::render::DescriptionResource::Activate(const Strings& passes)
     {
         if (const auto& it_pass = mPasses.find(passName); it_pass != mPasses.end())
         {
-            mDevice.ActivatedResource(nullptr, fmt::format("    Active Pass: {}", passName).c_str());
+            mDevice.ActivatedResource(nullptr, std::format("    Active Pass: {}", passName).c_str());
 
             const io::render::Layer& resourceLayer = mLayers.find(passName)->second;
             const auto& currenttPass = *it_pass->second.get();

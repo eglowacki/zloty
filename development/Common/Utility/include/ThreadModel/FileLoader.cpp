@@ -1,21 +1,14 @@
-#include "ThreadModel/FileLoader.h"
-
-#include <comdef.h>
-
-#include "fmt/printf.h"
-#include "App/AppUtilities.h"
 #include "App/Application.h"
-#include "Platform/WindowsLean.h"
+#include "App/FileUtilities.h"
+#include "Core/ErrorHandlers.h"
 #include "Debugging/Assert.h"
 #include "Metrics/Concurrency.h"
 #include "StringHelpers.h"
-#include "Platform/Support.h"
-#include "App/FileUtilities.h"
+#include "ThreadModel/FileLoader.h"
 
+#include <comdef.h>
 #include <filesystem>
-#include <xutility>
 
-#include "Core/ErrorHandlers.h"
 namespace fs = std::filesystem;
 
 namespace yaget::io
@@ -68,13 +61,13 @@ yaget::io::FileData::FileData(const std::string& name, HANDLE port, FileLoader::
 {
     mDataBuffer = io::CreateBuffer(fs::file_size(mName));
     mHandle = ::CreateFile(mName.c_str(), FILE_READ_DATA, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
-    error_handlers::ThrowOnError(mHandle != INVALID_HANDLE_VALUE, fmt::format("Did not open file '{}'.", mName));
+    error_handlers::ThrowOnError(mHandle != INVALID_HANDLE_VALUE, std::format("Did not open file '{}'.", mName));
 
     const HANDLE ioPort = ::CreateIoCompletionPort(mHandle, mPort, mKey, 0);
-    error_handlers::ThrowOnError(ioPort != nullptr, fmt::format("Did not create io port for file '{}'.", mName));
+    error_handlers::ThrowOnError(ioPort != nullptr, std::format("Did not create io port for file '{}'.", mName));
 
     const bool bResult = ::ReadFile(mHandle, mDataBuffer.first.get(), static_cast<DWORD>(mDataBuffer.second), nullptr, &mOverlapped) != 0;
-    error_handlers::ThrowOnError(bResult, fmt::format("ReadFile for '{}' failed.", mName));
+    error_handlers::ThrowOnError(bResult, std::format("ReadFile for '{}' failed.", mName));
 }
 
 
@@ -112,12 +105,12 @@ yaget::io::FileData::~FileData()
                 //ULONG_PTR completionKey = 0;
                 //OVERLAPPED* overlappedPointer = nullptr;
                 //const bool bResult = ::GetQueuedCompletionStatus(mPort, &bytesCopied, &completionKey, &overlappedPointer, INFINITE) != 0;
-                //error_handlers::ThrowOnError(bResult, fmt::format("FileData CancelIoEx dtor failed."));
+                //error_handlers::ThrowOnError(bResult, std::format("FileData CancelIoEx dtor failed."));
             }
         }
 
         const bool bResult = ::CloseHandle(mHandle) != 0;
-        error_handlers::ThrowOnError(bResult, fmt::format("FileData CloseHandle dtor failed."));
+        error_handlers::ThrowOnError(bResult, std::format("FileData CloseHandle dtor failed."));
     }
 }
 
@@ -190,7 +183,7 @@ void yaget::io::FileLoader::StartLoader()
                 return;
             }
 
-            error_handlers::ThrowOnError(bResult, fmt::format("Did not get queued io port for file to load assets from."));
+            error_handlers::ThrowOnError(bResult, "Did not get queued io port for file to load assets from.");
 
             if (numEntriesRemoved)
             {
@@ -207,7 +200,7 @@ void yaget::io::FileLoader::StartLoader()
                 }
 
 
-                channel.AddMessage(fmt::format("Got '{}' files.", numEntriesRemoved), metrics::MessageScope::Thread);
+                channel.AddMessage(std::format("Got '{}' files.", numEntriesRemoved), metrics::MessageScope::Thread);
             }
         }
 
@@ -232,7 +225,7 @@ void yaget::io::FileLoader::StartLoader()
 
             if (nextFile)
             {
-                metrics::Channel span(fmt::format("Processing {} b", conv::ToThousandsSep(key.second)));
+                metrics::Channel span(std::format("Processing {} b", conv::ToThousandsSep(key.second)));
 
                 // if Process returns false, no need for more processing, otherwise, do not remove it from mFilesToProcess
                 if (!nextFile->Process(key.second))
@@ -260,7 +253,7 @@ void yaget::io::FileLoader::Load(const Strings& filePathList, const std::vector<
 
     if (!doneCallbacks.empty())
     {
-        metrics::Channel channel(fmt::format("FileLoader got '{}' files", filePathList.size()));
+        metrics::Channel channel(std::format("FileLoader got '{}' files", filePathList.size()));
 
         auto callback = doneCallbacks.begin();
         const bool isOneCallback = doneCallbacks.size() != filePathList.size();

@@ -2,40 +2,15 @@
 #include "VTS/ResolvedAssets.h"
 #include "Json/JsonHelpers.h"
 
-
 namespace
 {
     using DiskDependencyData = std::map<std::string, yaget::DependencyNode>;
-
-
-    template <typename Key, typename Value>
-    std::size_t calculate_map_hash(const std::map<Key, Value>& m)
-    {
-        std::size_t seed = 0;
-        std::hash<Key> hash_key;
-        std::hash<Value> hash_value;
-
-        // Iterate through the map. std::map guarantees a consistent, sorted order.
-        for (const auto& pair : m)
-        {
-            std::size_t key_hash = hash_key(pair.first);
-            std::size_t value_hash = hash_value(pair.second);
-
-            // Combine the key and value hashes for the current pair
-            std::size_t pair_hash = key_hash;
-            yaget::conv::hash_combine(pair_hash, value_hash);
-
-            // Combine the current pair's hash into the total seed
-            yaget::conv::hash_combine(seed, pair_hash);
-        }
-
-        return seed;
-    }
 }
 
 
 namespace yaget
 {
+    //-------------------------------------------------------------------------------------------------
     void to_json(nlohmann::json& j, const DependencyNode& p)
     {
         if (p.mDependencies.empty())
@@ -61,6 +36,7 @@ namespace yaget
     }
 
 
+    //-------------------------------------------------------------------------------------------------
     void from_json(const nlohmann::json& j, DependencyNode& p)
     {
         p.mName = json::GetValue(j, "name", std::string{});
@@ -83,6 +59,7 @@ namespace yaget
     }
 
 
+    //-------------------------------------------------------------------------------------------------
     void from_json(const nlohmann::json& j, DiskDependencyData& environment)
     {
         for (auto it = j.begin(); it != j.end(); ++it)
@@ -96,9 +73,99 @@ namespace yaget
 }
 
 
+namespace
+{
+    //-------------------------------------------------------------------------------------------------
+    template <typename Key, typename Value>
+    std::size_t calculate_map_hash(const std::map<Key, Value>& m)
+    {
+        std::size_t seed = 0;
+        std::hash<Key> hash_key;
+        std::hash<Value> hash_value;
+
+        // Iterate through the map. std::map guarantees a consistent, sorted order.
+        for (const auto& pair : m)
+        {
+            std::size_t key_hash = hash_key(pair.first);
+            std::size_t value_hash = hash_value(pair.second);
+
+            // Combine the key and value hashes for the current pair
+            std::size_t pair_hash = key_hash;
+            yaget::conv::hash_combine(pair_hash, value_hash);
+
+            // Combine the current pair's hash into the total seed
+            yaget::conv::hash_combine(seed, pair_hash);
+        }
+
+        return seed;
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    template <typename T>
+    T TransformNodes(auto& dependencyData, yaget::io::VirtualTransportSystem& vts)
+    {
+        for (auto& node : dependencyData | std::views::values)
+        {
+            // disk file wil only have names, we need to resolve guids here
+            node.ResolveNames(vts);
+        }
+
+        T nodes = dependencyData | std::views::transform([](const auto& node)
+            {
+                if constexpr (std::is_same_v<typename T::key_type, yaget::Guid>)
+                {
+                    return typename T::value_type{ node.second.mGuid, node.second };
+                }
+                else
+                {
+                    return typename T::value_type{ node.second.mName, node.second };
+                }
+            }) | std::ranges::to<std::map>();
+
+        return nodes;
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    std::map<yaget::Guid, yaget::DependencyNode> ReadDependencyNodes(const yaget::io::VirtualTransportSystem::Section& section,
+        yaget::io::VirtualTransportSystem& vts)
+    {
+        using namespace yaget;
+
+        std::map<Guid, DependencyNode> depNodes;
+
+        const auto& configBlock = dev::CurrentConfiguration().mDataLoaders;
+        if (!configBlock.mSkipDependencyGraph)
+        {
+            if (auto asset = io::LoadJson(vts, section))
+            {
+                const auto& root = asset->root;
+
+                try
+                {
+                    DiskDependencyData depData = root;
+                    depNodes = TransformNodes<std::map<Guid, DependencyNode>>(depData, vts);
+                    YLOG_CINFO("ASET", depNodes.empty(), "Loaded Dependency Nodes from: '%s:%s'.",
+                        conv::Convertor<io::VirtualTransportSystem::Section>::ToString(section).c_str(), asset->mTag.ResolveVTS().c_str());
+                }
+                catch (nlohmann::json::exception& ex)
+                {
+                    YLOG_ERROR("ASET", "Exception during loading of Dependency Nodes from: '%s:%s'.\n\t%s",
+                        conv::Convertor<io::VirtualTransportSystem::Section>::ToString(section).c_str(), asset->mTag.ResolveVTS().c_str(), ex.what());
+                }
+            }
+        }
+
+        return depNodes;
+    }
+}
+
+
 //-------------------------------------------------------------------------------------------------
 yaget::DependencyNode::DependencyNode(const Guid& guid)
     : mGuid(guid)
+    , mDirtyNode(std::make_shared<std::atomic_bool>(false))
 {
 }
 
@@ -176,9 +243,10 @@ void yaget::DependencyNode::ResolveNames(const io::VirtualTransportSystem& vts)
 }
 
 
+//-------------------------------------------------------------------------------------------------
 bool yaget::DependencyNode::IsBranchDirty() const
 {
-    if (mDirty)
+    if (Dirty() == true)
     {
         return true;
     }
@@ -195,63 +263,13 @@ bool yaget::DependencyNode::IsBranchDirty() const
 }
 
 
-namespace
+//-------------------------------------------------------------------------------------------------
+void yaget::DependencyNode::ClearDirty()
 {
-    template <typename T>
-    T TransformNodes(auto& dependencyData, yaget::io::VirtualTransportSystem& vts)
+    Dirty() = false;
+    for (auto& node : mDependencies)
     {
-        for (auto& node : dependencyData | std::views::values)
-        {
-            // disk file wil only have names, we need to resolve guids here
-            node.ResolveNames(vts);
-        }
-
-        T nodes = dependencyData | std::views::transform([](const auto& node)
-            {
-                if constexpr (std::is_same_v<typename T::key_type, yaget::Guid>)
-                {
-                    return typename T::value_type{ node.second.mGuid, node.second };
-                }
-                else
-                {
-                    return typename T::value_type{ node.second.mName, node.second };
-                }
-            }) | std::ranges::to<std::map>();
-
-        return nodes;
-    }
-
-
-    std::map<yaget::Guid, yaget::DependencyNode> ReadDependencyNodes(const yaget::io::VirtualTransportSystem::Section& section,
-        yaget::io::VirtualTransportSystem& vts)
-    {
-        using namespace yaget;
-
-        std::map<Guid, DependencyNode> depNodes;
-
-        const auto& configBlock = dev::CurrentConfiguration().mDataLoaders;
-        if (!configBlock.mSkipDependencyGraph)
-        {
-            if (auto asset = io::LoadJson(vts, section))
-            {
-                const auto& root = asset->root;
-
-                try
-                {
-                    DiskDependencyData depData = root;
-                    depNodes = TransformNodes<std::map<Guid, DependencyNode>>(depData, vts);
-                    YLOG_CINFO("ASET", depNodes.empty(), "Loaded Dependency Nodes from: '%s:%s'.",
-                        conv::Convertor<io::VirtualTransportSystem::Section>::ToString(section).c_str(), asset->mTag.ResolveVTS().c_str());
-                }
-                catch (nlohmann::json::exception& ex)
-                {
-                    YLOG_ERROR("ASET", "Exception during loading of Dependency Nodes from: '%s:%s'.\n\t%s",
-                        conv::Convertor<io::VirtualTransportSystem::Section>::ToString(section).c_str(), asset->mTag.ResolveVTS().c_str(), ex.what());
-                }
-            }
-        }
-
-        return depNodes;
+        node.ClearDirty();
     }
 }
 
@@ -311,14 +329,17 @@ void yaget::DependencyGraph::Add(const Guid& parentGuid, const Guid& childGuid)
 {
     if (auto node = Find(parentGuid, nullptr))
     {
+        mt::WriteLock writeLocker(mSharedMutex);
         node->Add(childGuid);
     }
     else
     {
+        mt::WriteLock writeLocker(mSharedMutex);
         auto n = mNodes.insert({ parentGuid, {parentGuid} });
         n.first->second.Add(childGuid);
     }
 
+    mt::WriteLock writeLocker(mSharedMutex);
     AddWatchFiles(parentGuid);
     AddWatchFiles(childGuid);
 }
@@ -327,6 +348,7 @@ void yaget::DependencyGraph::Add(const Guid& parentGuid, const Guid& childGuid)
 //-------------------------------------------------------------------------------------------------
 yaget::DependencyNode* yaget::DependencyGraph::Find(const Guid& guid, std::vector<DependencyNode*>* pathTo) const
 {
+    mt::ReadLock readLocker(mSharedMutex);
     for (auto& val : mNodes | std::views::values)
     {
         if (auto foundNode = val.FindNode(guid, pathTo); foundNode != nullptr)
@@ -340,29 +362,28 @@ yaget::DependencyNode* yaget::DependencyGraph::Find(const Guid& guid, std::vecto
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::DependencyGraph::ClearDirty(const Guid& guid)
+{
+    if (auto node = Find(guid, nullptr))
+    {
+        mt::WriteLock writeLocker(mSharedMutex);
+        node->ClearDirty();
+    }
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::DependencyGraph::AddWatchFiles(const Guid& guid)
 {
     if (!mWatchedTags.contains(guid))
     {
         auto tag = mVTS.FindTag(guid);
-        if (auto shaderFilePath = tag.ResolveVTS(); !shaderFilePath.empty())
+        if (auto filePath = tag.ResolveVTS(); !filePath.empty())
         {
             mWatchedTags.insert(guid);
 
             std::hash<Guid> hasher;
-            mWatcher.Add(hasher(guid), shaderFilePath, [this, tag]()
-                {
-                    std::vector<DependencyNode*> pathTo;
-                    if (DependencyNode* shaderNode = Find(tag.mGuid, &pathTo))
-                    {
-                        std::ranges::for_each(pathTo, [](auto& node)
-                            {
-                                node->mDirty = true;
-                            });
-                    }
-
-                    mDirtyCallback(tag.mGuid);
-                });
+            mWatcher.Add(hasher(guid), filePath, [this, tag, filePath]() { TriggerDirtyCallback(tag.mGuid, filePath); });
         }
     }
 }
@@ -377,4 +398,25 @@ void yaget::DependencyGraph::RemoveWatchFiles(const Guid& guid)
         std::hash<Guid> hasher;
         mWatcher.Remove(hasher(guid));
     }
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::DependencyGraph::TriggerDirtyCallback(const Guid& guid, const std::string& filePath)
+{
+    //std::vector<DependencyNode*> pathTo;
+    YLOG_CERROR("ASET", Find(guid, nullptr) != nullptr, "Changed asset '%s' does not have dependency node. File path: '%s'.",
+        conv::Convertor<Guid>::ToString(guid).c_str(), filePath.c_str());
+    YLOG_INFO("ASET", "File: '%s:%s' changed, reloading...", conv::Convertor<Guid>::ToString(guid).c_str(), filePath.c_str());
+
+    //if (DependencyNode* shaderNode = Find(tag.mGuid, &pathTo))
+    //{
+    //    //mt::WriteLock writeLocker(mSharedMutex);
+    //    //std::ranges::for_each(pathTo, [](auto& node)
+    //    //{
+    //    //    //node->mDirty = true;
+    //    //});
+    //}
+
+    mDirtyCallback(guid);
 }

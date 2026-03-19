@@ -151,9 +151,7 @@ void yaget::Application::onLogicTask(const TickLogic& logicCallback, const TickL
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::Application::~Application()
-{
-}
+yaget::Application::~Application() = default;
 
 
 //-------------------------------------------------------------------------------------------------

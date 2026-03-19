@@ -3,7 +3,7 @@
 
 //-------------------------------------------------------------------------------------------------
 defensor::game::PlayerSystem::PlayerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-    : GameSystem("PlayerSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+    : GameSystem("PlayerSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, true)
 {
 }
 

@@ -1,7 +1,6 @@
 #include "Database/Database.h"
 #include "App/AppUtilities.h"
 #include "App/FileUtilities.h"
-#include "fmt/format.h"
 #include "Logger/YLog.h"
 #include "sqlite/SQLite.h"
 #include "sqlite/sqlite3.h"
@@ -68,14 +67,14 @@ namespace
                 auto dbVersion = GetCell<size_t>(database, "SELECT Id FROM Version;");
                 if (dbVersion != excpectedVersion)
                 {
-                    const auto& textError = fmt::format("Database '{}' has mismatched version. Expected: '{}', result: '{}'.", fileName, excpectedVersion, dbVersion);
+                    const auto& textError = std::format("Database '{}' has mismatched version. Expected: '{}', result: '{}'.", fileName, excpectedVersion, dbVersion);
                     error_handlers::Throw("DB", textError);
                 }
             }
         }
         else
         {
-            const auto& textError = fmt::format("Did not initialize database '{}'. {}.", fileName, conv::Combine(database.GetErrors(), "\n"));
+            const auto& textError = std::format("Did not initialize database '{}'. {}.", fileName, conv::Combine(database.GetErrors(), "\n"));
             error_handlers::Throw("DB", textError);
         }
     }                                                                                           

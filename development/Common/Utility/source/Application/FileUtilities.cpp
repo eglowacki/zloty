@@ -209,7 +209,7 @@ yaget::io::file::FileOpResult yaget::io::file::RemoveFile(const std::string& fil
     bool result = fs::remove(sourcePath, ec);
     if (!result && ec)
     {
-        std::string message = fmt::format("Remove file '{}' from disk failed with error: '{}: {}'.", sourcePath.generic_string(), ec.value(), ec.message());
+        std::string message = std::format("Remove file '{}' from disk failed with error: '{}: {}'.", sourcePath.generic_string(), ec.value(), ec.message());
         return { false, message };
     }
 
@@ -236,7 +236,7 @@ yaget::io::file::FileOpResult yaget::io::file::RenameFile(const std::string& old
 {
     if (const int result = std::rename(oldFileName.c_str(), newFileName.c_str()))
     {
-        std::string message = fmt::format("Rename file from: '{}' to: '{} failed. {}", oldFileName, newFileName, std::strerror(result));
+        std::string message = std::format("Rename file from: '{}' to: '{} failed. {}", oldFileName, newFileName, std::strerror(result));
         return { false, message };
     }
 
@@ -260,11 +260,11 @@ yaget::io::file::FileOpResult yaget::io::file::SaveFile(const std::string& fileN
     }
 
     std::ofstream file(sourcePath.generic_string().c_str(), std::ios_base::binary);
-    file.write(io::BufferPointer(buffer), io::BufferSize(buffer));
+    file.write(cast_data<const char>(buffer), size_data(buffer));
     if (!file.good())
     {
         std::string textError = platform::LastErrorMessage();
-        std::string errorMessage = fmt::format("Failed saving file: '{}'. {}", sourcePath.generic_string(), textError);
+        std::string errorMessage = std::format("Failed saving file: '{}'. {}", sourcePath.generic_string(), textError);
         return { false, errorMessage };
     }
 
@@ -305,19 +305,19 @@ yaget::io::file::FileOpResult yaget::io::file::SetFileAtrribute(const std::strin
             break;
 
         default:
-            return { false, fmt::format("Unsupported file '{}' attribute '{}' to set.", sourcePath, static_cast<int>(attribute)) };
+            return { false, std::format("Unsupported file '{}' attribute '{}' to set.", sourcePath, static_cast<int>(attribute)) };
         }
 
         if (!::SetFileAttributes(sourcePath.c_str(), attr))
         {
             std::string textError = platform::LastErrorMessage();
-            return { false, fmt::format("Did not set attribute '{}' on file '{}'. {}.", attr, sourcePath, textError) };
+            return { false, std::format("Did not set attribute '{}' on file '{}'. {}.", attr, sourcePath, textError) };
         }
 
         return { true, "" };
     }
 
-    return { false, fmt::format("Invalid file '{}' to get attributes from.", sourcePath) };
+    return { false, std::format("Invalid file '{}' to get attributes from.", sourcePath) };
 }
 
 
@@ -367,7 +367,7 @@ std::filesystem::file_time_type yaget::io::file::GetFileDate(const std::string& 
     const auto errorCode = ec.value();
     if (ec && (errorCode != static_cast<int>(std::errc::no_such_file_or_directory) && errorCode != 3))  // 3 = The system cannot find the path specified.
     {
-        auto ecText = fmt::format("value = '{}'\ncategory = '{}'\nmessage = '{}'.", ec.value(), ec.category().name(), ec.message());
+        auto ecText = std::format("value = '{}'\ncategory = '{}'\nmessage = '{}'.", ec.value(), ec.category().name(), ec.message());
         YLOG_ERROR("FILE", "Could not get last write time for file: '%s'.\n%s.", fileName.c_str(), ecText.c_str());
     }
 
@@ -385,7 +385,7 @@ yaget::io::file::FileOpResult yaget::io::file::AssureDirectories(const std::stri
     if (!::MakeSureDirectoryPathExists(canonicalPath.c_str()))
     {
         std::string textError = platform::LastErrorMessage();
-        return { false, fmt::format("Did not create full folder path for '{}'. {}.", fs::path(canonicalPath).parent_path().generic_string(), textError) };
+        return { false, std::format("Did not create full folder path for '{}'. {}.", fs::path(canonicalPath).parent_path().generic_string(), textError) };
     }
 
     return { true, "" };

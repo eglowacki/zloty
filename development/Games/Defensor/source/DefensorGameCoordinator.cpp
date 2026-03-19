@@ -302,9 +302,6 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
         inputSystem.SetContext("Game");
         app.Input().PushContext("Game");
     }
-
-
-
 }
 
 

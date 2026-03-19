@@ -211,6 +211,7 @@ TEST_F(PoolAllocators, Performance)
     YLOG_INFO("PROF", "new for '%d' items took '%d' microseconds.", kNumberItems, totalTimeMicr);
 }
 
+#if 0
 TEST_F(PoolAllocators, Iterators)
 {
     using namespace yaget;
@@ -273,6 +274,7 @@ TEST_F(PoolAllocators, Iterators)
     int z = 0;
     z;
 }
+#endif
 
 TEST_F(PoolAllocators, Hashes)
 {

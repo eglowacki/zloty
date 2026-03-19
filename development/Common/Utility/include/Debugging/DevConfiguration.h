@@ -183,6 +183,11 @@ namespace yaget
             {
                 bool mSkipDependencyGraph = false;
                 bool mClearCache = false;
+                // use debug shaders in release build, and release shaders in debug build.
+                // This is useful to test shader permutations and make sure they work in both builds.
+                bool mUseDebugShadersInRelease = false;
+                bool mUseReleaseShadersInDebug = false;
+                bool mUseZip = true;
             };
             DataLoaders mDataLoaders;
 

@@ -31,7 +31,7 @@ void yaget::render::TextComponent::OnReset()
     }
     catch (const std::exception& e)
     {
-        const auto& textError = fmt::format("did not initialize spritebatch. error: {}", e.what());
+        const auto& textError = std::format("did not initialize spritebatch. error: {}", e.what());
         error_handlers::Throw("REND", textError);
     }
 }

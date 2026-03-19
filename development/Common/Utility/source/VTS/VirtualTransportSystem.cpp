@@ -73,7 +73,7 @@ yaget::io::VirtualTransportSystem::~VirtualTransportSystem()
             std::string fileName = util::ExpendEnv(std::get<1>(it), nullptr);
             if (!fs::path(fileName).has_extension())
             {
-                std::string command = fmt::format("SELECT Filters FROM 'Sections' WHERE Name = '{}';", std::get<2>(it));
+                std::string command = std::format("SELECT Filters FROM 'Sections' WHERE Name = '{}';", std::get<2>(it));
                 auto filters = GetCell<Strings>(mDatabase.DB(), command);
                 if (filters.size() == 1)
                 {
@@ -125,7 +125,7 @@ yaget::io::VirtualTransportSystem::AssetResolver yaget::io::VirtualTransportSyst
 //--------------------------------------------------------------------------------------------------
 void yaget::io::VirtualTransportSystem::onBlobLoaded(const io::Buffer& dataBuffer, const io::Tag& requestedTag, BlobAssetCallback assetLoaded, std::atomic_size_t* tagsCounter)
 {
-    metrics::Channel span(fmt::format("BlobLoaded {}", requestedTag.mVTSName).c_str());
+    metrics::Channel span(std::format("BlobLoaded {}", requestedTag.mVTSName).c_str());
 
     TagCounterKeeper tagCounterKeeper(tagsCounter, requestedTag);
 
@@ -135,7 +135,7 @@ void yaget::io::VirtualTransportSystem::onBlobLoaded(const io::Buffer& dataBuffe
         if (!asset)
         {
             // incoming data blob, find converter callback for it and execute
-            const std::string command = fmt::format("SELECT Sections.Converters FROM Sections INNER JOIN Tags ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", requestedTag.mGuid.str());
+            const std::string command = std::format("SELECT Sections.Converters FROM Sections INNER JOIN Tags ON Tags.Guid = '{}' AND Sections.Name = Tags.Section;", requestedTag.mGuid.str());
             //std::string converterType;
 
             Strings convertorNames;
@@ -176,7 +176,7 @@ void yaget::io::VirtualTransportSystem::onBlobLoaded(const io::Buffer& dataBuffe
     }
     catch (const yaget::ex::standard& e)
     {
-        const std::string message = fmt::format("Blob '{}' did not get converted. '{}'.", requestedTag.mVTSName.c_str(), e.what());
+        const std::string message = std::format("Blob '{}' did not get converted. '{}'.", requestedTag.mVTSName.c_str(), e.what());
         YLOG_ERROR("VTS", message.c_str());
     }
 }
@@ -295,7 +295,7 @@ bool yaget::io::VirtualTransportSystem::AttachTransientBlobNonMT(const std::vect
         {
             transaction.Rollback();
 
-            std::string message = fmt::format("Attaching blob '{}' to Section: '{}' as VTS: '{}' failed. {}.", tag.mName, tag.mSectionName, tag.mVTSName, ParseErrors(transaction.DB()));
+            std::string message = std::format("Attaching blob '{}' to Section: '{}' as VTS: '{}' failed. {}.", tag.mName, tag.mSectionName, tag.mVTSName, ParseErrors(transaction.DB()));
             YLOG_ERROR("VTS", message.c_str());
 
             return false;
@@ -315,15 +315,15 @@ bool yaget::io::VirtualTransportSystem::UpdateAssetData(const std::shared_ptr<io
         const auto& tag = asset->mTag;
 
         // verify that we can actually write to this section, Section will be mark ReadOnly = 1
-        std::string command = fmt::format("SELECT ReadOnly FROM 'Sections' WHERE Name = '{}';", tag.mSectionName);
+        std::string command = std::format("SELECT ReadOnly FROM 'Sections' WHERE Name = '{}';", tag.mSectionName);
         if (GetCell(database, command, true))
         {
-            std::string message = fmt::format("Can not update/save asset '{}' data due to section '{}' being marked ReadOnly.", tag.mName, tag.mSectionName);
+            std::string message = std::format("Can not update/save asset '{}' data due to section '{}' being marked ReadOnly.", tag.mName, tag.mSectionName);
             YLOG_WARNING("VTS", message.c_str());
             return false;
         }
 
-        const std::string dirtyCommand = fmt::format("INSERT INTO 'DirtyTags' VALUES('{}');", tag.mGuid.str());
+        const std::string dirtyCommand = std::format("INSERT INTO 'DirtyTags' VALUES('{}');", tag.mGuid.str());
         yaget::db::Transaction transaction(database);
         using TagRecordTuple = std::tuple<Guid /*Guid*/, std::string /*Name*/, std::string /*VTS*/, std::string /*Section*/>;
 
@@ -338,7 +338,7 @@ bool yaget::io::VirtualTransportSystem::UpdateAssetData(const std::shared_ptr<io
             {
                 transaction.Rollback();
 
-                std::string message = fmt::format("UpdateAssetData for blob '{}' failed. {}.", tag.mName, ParseErrors(database));
+                std::string message = std::format("UpdateAssetData for blob '{}' failed. {}.", tag.mName, ParseErrors(database));
                 YLOG_WARNING("VTS", message.c_str());
 
                 return false;
@@ -349,7 +349,7 @@ bool yaget::io::VirtualTransportSystem::UpdateAssetData(const std::shared_ptr<io
         }
         else if (!assetData)
         {
-            std::string message = fmt::format("Can not update blob '{}' due to no entry in DB.", tag.mName);
+            std::string message = std::format("Can not update blob '{}' due to no entry in DB.", tag.mName);
             YLOG_WARNING("VTS", message.c_str());
 
             return false;
@@ -358,7 +358,7 @@ bool yaget::io::VirtualTransportSystem::UpdateAssetData(const std::shared_ptr<io
         if (!database.ExecuteStatement(dirtyCommand, nullptr))
         {
             transaction.Rollback();
-            std::string message = fmt::format("UpdateAssetData for blob '{}' failed. {}.", tag.mName, ParseErrors(database));
+            std::string message = std::format("UpdateAssetData for blob '{}' failed. {}.", tag.mName, ParseErrors(database));
             YLOG_WARNING("VTS", message.c_str());
 
             return false;
@@ -382,7 +382,7 @@ size_t yaget::io::VirtualTransportSystem::GetNumTags(const Sections& sections) c
         for (const auto& section : sections)
         {
             std::string operation = section.FilterMatchCh[static_cast<int>(section.mMatch)];
-            std::string command = fmt::format("SELECT Path FROM Sections WHERE Name = '{}'", section.mName);
+            std::string command = std::format("SELECT Path FROM Sections WHERE Name = '{}'", section.mName);
             Strings sectionPath = GetCell<Strings>(dHandle->DB(), command);
             if (!sectionPath.empty())
             {
@@ -418,7 +418,7 @@ bool yaget::io::VirtualTransportSystem::IsSectionValid(const Sections& sections)
     {
         for (const auto& section : sections)
         {
-            std::string query = fmt::format("SELECT Name FROM Sections WHERE Name = '{}'", section.mName);
+            std::string query = std::format("SELECT Name FROM Sections WHERE Name = '{}'", section.mName);
             std::string sectionName = GetCell<std::string>(dHandle->DB(), query);
             if (sectionName.empty())
             {
@@ -441,7 +441,7 @@ std::vector<yaget::io::Tag> yaget::io::VirtualTransportSystem::GetTags(const Sec
         {
             std::string operation = section.FilterMatchCh[static_cast<int>(section.mMatch)];
 
-            std::string query = fmt::format("SELECT Path FROM Sections WHERE Name = '{}'", section.mName);
+            std::string query = std::format("SELECT Path FROM Sections WHERE Name = '{}'", section.mName);
             Strings sectionPath = GetCell<Strings>(dHandle->DB(), query);
             if (!sectionPath.empty())
             {
@@ -482,7 +482,7 @@ yaget::io::Tag yaget::io::VirtualTransportSystem::FindTag(const Guid& guid) cons
 {
     if (guid.IsValid())
     {
-        std::string command = fmt::format("SELECT Name, VTS, Section FROM Tags WHERE Guid = '{}'", guid.str());
+        std::string command = std::format("SELECT Name, VTS, Section FROM Tags WHERE Guid = '{}'", guid.str());
 
         if (DatabaseHandle dHandle = LockDatabaseAccess())
         {
@@ -516,7 +516,7 @@ yaget::io::Tag yaget::io::VirtualTransportSystem::GenerateTag(const Section& sec
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
         SQLite& database = databaseHandle->DB();
-        std::string command = fmt::format("SELECT Name, Path, Filters, Converters, ReadOnly FROM Sections WHERE Name = '{}'", section.mName);
+        std::string command = std::format("SELECT Name, Path, Filters, Converters, ReadOnly FROM Sections WHERE Name = '{}'", section.mName);
 
         bool result = true;
         TargetSection targetSection = database.GetRowTuple<TargetSection>(command, &result);
@@ -549,11 +549,11 @@ yaget::io::Tag yaget::io::VirtualTransportSystem::GenerateTag(const Section& sec
         }
         newTag.mSectionName = section.mName;
 
-        command = fmt::format("SELECT Guid FROM Deleted WHERE VTS = '{}';", newTag.mVTSName);
+        command = std::format("SELECT Guid FROM Deleted WHERE VTS = '{}';", newTag.mVTSName);
         Guid recoveredGuid = GetCell<Guid>(database, command);
         if (recoveredGuid.IsValid())
         {
-            command = fmt::format("DELETE FROM Deleted WHERE Guid = '{}';", recoveredGuid.str());
+            command = std::format("DELETE FROM Deleted WHERE Guid = '{}';", recoveredGuid.str());
             if (!database.ExecuteStatement(command, nullptr))
             {
                 YLOG_ERROR("VTS", "Did not deleted: '%s' from Deleted table. %s", newTag.mVTSName.c_str(), ParseErrors(database).c_str());
@@ -651,7 +651,7 @@ size_t yaget::io::VirtualTransportSystem::RequestBlob(const std::vector<io::Tag>
                     }
                     catch (const yaget::ex::standard& e)
                     {
-                        std::string message = fmt::format("Asset '{}' did not get callbacked. '{}'.", it->mTag.mVTSName.c_str(), e.what());
+                        std::string message = std::format("Asset '{}' did not get callbacked. '{}'.", it->mTag.mVTSName.c_str(), e.what());
                         YLOG_ERROR("VTS", message.c_str());
                     }
                 }
@@ -668,7 +668,7 @@ std::string yaget::io::VirtualTransportSystem::GetResolverType(const io::Tag& ta
 {
     std::string resolverType;
 
-    std::string command = fmt::format("SELECT Sections.Converters FROM Sections INNER JOIN Tags on Tags.Guid = '{}' AND Sections.Name == Tags.Section;", tag.mGuid.str());
+    std::string command = std::format("SELECT Sections.Converters FROM Sections INNER JOIN Tags on Tags.Guid = '{}' AND Sections.Name == Tags.Section;", tag.mGuid.str());
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
         SQLite& database = databaseHandle->DB();

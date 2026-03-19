@@ -82,7 +82,7 @@ void yaget::io::BlobLoader::onDataPayload(const io::Buffer& dataBuffer, const st
         }
         catch (const yaget::ex::standard& e)
         {
-            std::string message = fmt::format("Data Stream '{}' did not get converted. '{}'.", fileName.c_str(), e.what());
+            std::string message = std::format("Data Stream '{}' did not get converted. '{}'.", fileName.c_str(), e.what());
             mErrorCallback(fileName, message);
         }
 

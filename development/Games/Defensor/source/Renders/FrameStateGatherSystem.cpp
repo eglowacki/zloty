@@ -4,9 +4,7 @@
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::FrameStateGatherSystem::FrameStateGatherSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
-    : RenderSystemApp("FrameStateGatherSystem", messaging, app,
-                                                                                                     [this](auto&&... params) { OnUpdate(params...); },
-                                                                                                     coordinatorSet)
+    : RenderSystemApp("FrameStateGatherSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, true)
 {
 }
 
@@ -64,7 +62,7 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::FrameStateClearSystem::FrameStateClearSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
-    : GameSystem("FrameStateClearSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet)
+    : GameSystem("FrameStateClearSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, true)
 {
 }
 

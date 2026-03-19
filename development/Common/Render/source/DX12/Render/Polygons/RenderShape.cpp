@@ -3,11 +3,9 @@
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/Platform/D3D12MemAlloc.h"
 #include "Streams/Buffers.h"
-#include "Math/YagetMath.h"
 #include "MathFacade.h"
 #include <d3dx12.h>
 #include <VertexTypes.h>
-#include "fmt/format.h"
 #include "VTS/VirtualTransportSystem.h"
 
 // we need following data for the geometry
@@ -94,7 +92,7 @@ yaget::render::RenderShape::RenderShape(D3D12MA::Allocator* allocator, const io:
         &allocation,
         IID_PPV_ARGS(&triangleData));
     yaget::error_handlers::ThrowOnError(hr, "Could not CreateResource from allocator.");
-    YAGET_RENDER_SET_DEBUG_NAME(triangleData.Get(), fmt::format("Yaget-Poly Triangle Data"));
+    YAGET_RENDER_SET_DEBUG_NAME(triangleData.Get(), std::format("Yaget-Poly Triangle Data"));
 
     mAllocation.reset(allocation);
     mAllocation->SetName(L"RenderShape");

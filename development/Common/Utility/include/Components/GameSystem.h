@@ -68,9 +68,10 @@ namespace yaget::comp::gs
         ~GameSystem() = default;
 
     protected:
-        GameSystem(const char* niceName, Messaging& messaging, Application& app, UpdateFunctor updateFunctor, CS& coordinatorSet);
+        GameSystem(const char* niceName, Messaging& messaging, Application& app, UpdateFunctor updateFunctor, CS& coordinatorSet, bool tickEnabled);
         CoordinatorSet& GetCS() { return mCoordinatorSet; }
         const CoordinatorSet& GetCS() const { return mCoordinatorSet; }
+        void SetTickEnabled(bool enabled) { mTickEnabled = enabled; }
 
         Messaging& mMessaging;
         Application& mApp;
@@ -80,6 +81,7 @@ namespace yaget::comp::gs
         const char* mNiceName = nullptr;
         UpdateFunctor mUpdateFunctor;
         CoordinatorSet& mCoordinatorSet;
+        std::atomic_bool mTickEnabled = true;
     };
 
 } // namespace yaget::comp::gs

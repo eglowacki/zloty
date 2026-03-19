@@ -27,50 +27,32 @@ namespace yaget::io
     // .second - size of data
     using Buffer = std::pair<std::shared_ptr<uint8_t>, size_t>;
     // This represents memory with size but it does not own, thus does not delete/cleanup
-    using BufferView = std::pair<const char*, size_t>;
+    using BufferView = std::pair<uint8_t*, size_t>;
 
 
     template <typename T>
-    T *cast_data(const Buffer& buffer)
+    T* cast_data(const Buffer& buffer)
     {
         return reinterpret_cast<T*>(buffer.first.get());
     }
 
 
-    template <typename T>
-    size_t size_data(const T& buffer)
+    template <typename T, typename S = size_t>
+    S size_data(const T& buffer)
     {
-        return buffer.second;
-    }
-
-
-    inline const char *BufferPointer(const Buffer& buffer)
-    {
-        return cast_data<const char>(buffer);
-    }
-
-
-    inline char *BufferPointer(Buffer& buffer)
-    {
-        return cast_data<char>(buffer);
-    }
-
-
-    inline size_t BufferSize(const Buffer& buffer)
-    {
-        return buffer.second;
+        return static_cast<S>(buffer.second);
     }
 
 
     template <typename T>
-    const T *cast_data(const BufferView& buffer)
+    T* cast_data(const BufferView& buffer)
     {
-        return reinterpret_cast<const T*>(buffer.first);
+        return reinterpret_cast<T*>(buffer.first);
     }
 
 
     template <typename T>
-    T *cast_data(BufferView& buffer)
+    T* cast_data(BufferView& buffer)
     {
         const T* result = cast_data<T>(std::as_const(buffer));
         return const_cast<T*>(result);
@@ -81,19 +63,7 @@ namespace yaget::io
     {
         YAGET_ASSERT(range == 0, "range for buffer view is not implemented yet!!!");
 
-        return { cast_data<const char>(buffer) + offset, size_data(buffer) - offset };
-    }
-
-
-    inline const char *BufferPointer(const BufferView& buffer)
-    {
-        return cast_data<const char>(buffer);
-    }
-
-
-    inline size_t BufferSize(const BufferView& buffer)
-    {
-        return buffer.second;
+        return { cast_data<uint8_t>(buffer) + offset, size_data(buffer) - offset };
     }
 
 
@@ -127,7 +97,7 @@ namespace yaget::io
 
     inline Buffer ResizeBuffer(const Buffer& buffer, size_t size)
     {
-        if (size <= BufferSize(buffer))
+        if (size <= size_data(buffer))
         {
             auto retValue = buffer;
             retValue.second = size;
@@ -135,19 +105,19 @@ namespace yaget::io
         }
 
         Buffer dataBuffer = CreateBuffer(size);
-        std::memcpy(dataBuffer.first.get(), BufferPointer(buffer), BufferSize(buffer));
+        std::memcpy(dataBuffer.first.get(), cast_data<const char>(buffer), size_data(buffer));
         return dataBuffer;
     }
 
 
     template< typename T>
     Buffer CreateBuffer(const T& dataStruct) { return CreateBuffer(reinterpret_cast<const uint8_t*>(&dataStruct), sizeof(T)); }
-
     inline Buffer CreateBuffer(const char* data, size_t size) { return CreateBuffer(reinterpret_cast<const uint8_t*>(data), size); }
-
-
-    inline Buffer CreateBuffer(const std::string& message) { return CreateBuffer(reinterpret_cast<const uint8_t*>(message.data()), message.size()); }
-
+    inline Buffer CreateBuffer(const std::string& message)
+    {
+        auto buffer = CreateBuffer(reinterpret_cast<const uint8_t*>(message.c_str()), message.size());
+        return buffer;
+    }
 
     //! Helper to clone Buffer and it's content into new object
     inline Buffer CloneBuffer(const Buffer& source)
@@ -177,7 +147,7 @@ namespace yaget::io
 
         void AssureWriteSize(size_t additionalSize)
         {
-            const auto currentCapacity = BufferSize(mBuffer);
+            const auto currentCapacity = size_data(mBuffer);
             if (mWriteOffset + additionalSize > currentCapacity)
             {
                 // standard doubling of required memory allocation
@@ -189,9 +159,9 @@ namespace yaget::io
 
         void WriteDataChunk(const auto* dataChunk, size_t dataSize)
         {
-            YAGET_ASSERT(mWriteOffset + dataSize <= io::BufferSize(mBuffer), "Messaging buffer does not have enough space to write dataChunk out.");
+            YAGET_ASSERT(mWriteOffset + dataSize <= io::size_data(mBuffer), "Messaging buffer does not have enough space to write dataChunk out.");
 
-            std::memcpy(BufferPointer(mBuffer) + mWriteOffset, dataChunk, dataSize);
+            std::memcpy(cast_data<char>(mBuffer) + mWriteOffset, dataChunk, dataSize);
             mWriteOffset += dataSize;
         }
 
@@ -209,6 +179,14 @@ namespace yaget::io
 
             //std::memcpy(io::BufferPointer(mBuffer) + mWriteOffset, dataChunk, dataSize);
             //mWriteOffset += dataSize;
+        }
+
+
+        // This does not shrink actual memory, but simply set the size of the buffer
+        // to where the last write was
+        void Shrink()
+        {
+            mBuffer.second = mWriteOffset;
         }
 
 

@@ -3,12 +3,10 @@
 #include "Platform/WindowsLean.h"
 #include "Platform/Support.h"
 #include "Debugging/Assert.h"
-#include "fmt/format.h"
 
-#include <cstdio>  // fprintf() and vsnprintf()
-#include <cstring>
-#include <cstdarg> // va_start() and va_end()
-#include <cstdlib> // abort()
+#include <cstdio> 
+#include <cstdarg>
+#include <cstdlib>
 
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
@@ -468,7 +466,7 @@ namespace yaget
 
                 if (yaget::platform::IsDebuggerAttached())
                 {
-                    std::string errorMessage = fmt::format("{}({}) : [DEBUG ERROR] {}", file, line, message);
+                    std::string errorMessage = std::format("{}({}) : [DEBUG ERROR] {}", file, line, message);
                     yaget::platform::DebuggerOutput(errorMessage);
                     yaget::platform::DebuggerBreak();
                 }

@@ -274,7 +274,7 @@ namespace yaget
         int numValues = std::tuple_size_v<T> - 1;
         const char* updateStr = behaviour == Behaviour::Update ? "OR REPLACE" : "";
         const auto columns = columnNames.empty() ? "" : "(" + conv::Combine(columnNames, ", ") + timeStamp + ")";
-        std::string command = fmt::format("INSERT {} INTO '{}' {} VALUES (?", updateStr, tableName, columns);
+        std::string command = std::format("INSERT {} INTO '{}' {} VALUES (?", updateStr, tableName, columns);
         while (numValues)
         {
             command += ", ?";

@@ -18,7 +18,7 @@ yaget::render::FontResource::FontResource(Device& device, std::shared_ptr<io::re
     }
     catch (const std::exception& e)
     {
-        const auto& textError = fmt::format("Did not initialize font: '{}'. Error: {}", asset->mTag.ResolveVTS(), e.what());
+        const auto& textError = std::format("Did not initialize font: '{}'. Error: {}", asset->mTag.ResolveVTS(), e.what());
         error_handlers::Throw("REND", textError);
     }
 }
@@ -34,7 +34,7 @@ bool yaget::render::FontResource::Activate()
 
 bool yaget::render::FontResource::Activate(DirectX::SpriteBatch* spriteBatch, const std::string& text, float posX, float posY, const math3d::Color& color)
 {
-    mDevice.ActivatedResource(this, fmt::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
+    mDevice.ActivatedResource(this, std::format("This: {}, Hash: {}", static_cast<void*>(this), GetStateHash()).c_str());
 
     mFont->DrawString(spriteBatch, conv::utf8_to_wide(text).c_str(), math3d::Vector2(posX + 1, posY + 1), colors::DarkGray);
     mFont->DrawString(spriteBatch, conv::utf8_to_wide(text).c_str(), math3d::Vector2(posX, posY), color);

@@ -24,7 +24,7 @@ namespace defensor::game
     {
     public:
         DefensorStagerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-            : yaget::items::StagerSystem<GameCoordinatorSet, Messaging>("DefensorStagerSystem", messaging, app, coordinatorSet)
+            : yaget::items::StagerSystem<GameCoordinatorSet, Messaging>("DefensorStagerSystem", messaging, app, coordinatorSet, true)
         {}
     };
 

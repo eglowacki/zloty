@@ -312,7 +312,6 @@ namespace eg
 
                 mStream.seekp(mMarkerPos);
                 // convert blockSize int hex representation
-                //std::string hexNumber = boost::str(boost::format(" 0x%08X") % blockSize);
                 char hexNumber[12] = {0};
                 sprintf(hexNumber, " 0x%08X", blockSize);
                 mStream.write(hexNumber, kMarkerSize);

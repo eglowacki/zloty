@@ -160,7 +160,7 @@ namespace yaget::items
         {
             transaction.Rollback();
 
-            const std::string message = fmt::format("Updating component: '{}' failed. {}.", componentName, ParseErrors(database));
+            const std::string message = std::format("Updating component: '{}' failed. {}.", componentName, ParseErrors(database));
             YLOG_WARNING("DIRE", message.c_str());
         }
 
@@ -190,7 +190,7 @@ namespace yaget::items
         const auto tableName = comp::db::ResolveName<T>();
         Parameters parameters{};
 
-        const std::string command = fmt::format("SELECT {} FROM {} WHERE Id = '{}'", conv::Combine(parameterNames, ", "), tableName, static_cast<int64_t>(id));
+        const std::string command = std::format("SELECT {} FROM {} WHERE Id = '{}'", conv::Combine(parameterNames, ", "), tableName, static_cast<int64_t>(id));
 
         const auto dbLock = LockDatabaseAccess();
         const auto& database = dbLock->DB();

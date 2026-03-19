@@ -142,7 +142,7 @@ namespace
         {
             const char* errStr = static_cast<const char*>(error->GetBufferPointer());
 
-            const auto message = fmt::format("Could not DX12 Serialize Versioned Root Signature. Additional error message: '%s'", errStr);
+            const auto message = std::format("Could not DX12 Serialize Versioned Root Signature. Additional error message: '%s'", errStr);
             error_handlers::ThrowOnError(hr, message.c_str());
         }
 
@@ -204,7 +204,7 @@ namespace
         {
             const char* errStr = errors ? static_cast<const char*>(errors->GetBufferPointer()) : nullptr;
 
-            const auto message = fmt::format("Could not compile DX12 Vertex Shader from file: '{}'{}", yaget::conv::wide_to_utf8(vertPath.c_str()), errStr ? std::string(". Additional error message : '") + errStr + "'" : "");
+            const auto message = std::format("Could not compile DX12 Vertex Shader from file: '{}'{}", yaget::conv::wide_to_utf8(vertPath.c_str()), errStr ? std::string(". Additional error message : '") + errStr + "'" : "");
             error_handlers::ThrowOnError(hr, message.c_str());
         }
 
@@ -213,7 +213,7 @@ namespace
         {
             const char* errStr = static_cast<const char*>(errors->GetBufferPointer());
 
-            const auto message = fmt::format("Could not DX12 Pixel Shader CompileFromFile. Additional error message: '%s'", errStr);
+            const auto message = std::format("Could not DX12 Pixel Shader CompileFromFile. Additional error message: '%s'", errStr);
             error_handlers::ThrowOnError(hr, message.c_str());
         }
 

@@ -22,9 +22,6 @@
 #include "Meta/CompilerAlgo.h"
 #include "Json/JsonHelpers.h"
 
-inline auto format_as(DXGI_FORMAT f) { return fmt::underlying(f); }
-inline auto format_as(D3D11_USAGE f) { return fmt::underlying(f); }
-
 namespace yaget
 {
     namespace io
@@ -148,8 +145,7 @@ namespace yaget
                             std::string message;
                             io::render::internal::yaget_print(mFields, message);
 
-                            catchMessage = fmt::format("Unable to assign to mFields from json meta stream : '{}'.Fields : [{}].Error : {}.", tag.ResolveVTS().c_str(), message.c_str(), ex.what());
-                            //YLOG_ERROR("ASET", "Unable to asign to mFields from json meta stream: '%s'. Fields: [%s]. Error: %s.", tag.ResolveVTS().c_str(), message.c_str(), ex.what());
+                            catchMessage = std::format("Unable to assign to mFields from json meta stream : '{}'.Fields : [{}].Error : {}.", tag.ResolveVTS().c_str(), message.c_str(), ex.what());
                             mValidSection = false;
                         }
                     }
@@ -433,7 +429,7 @@ namespace yaget
         {
             static std::string ToString(const DXGI_FORMAT& value)
             {
-                return fmt::format("DXGI_FORMAT: '{}'", value);
+                return std::format("DXGI_FORMAT: '{}'", value);
             }
         };
 
@@ -443,7 +439,7 @@ namespace yaget
         {
             static std::string ToString(const D3D11_USAGE& value)
             {
-                return fmt::format("D3D11_USAGE: '{}'", value);
+                return std::format("D3D11_USAGE: '{}'", value);
             }
         };
 

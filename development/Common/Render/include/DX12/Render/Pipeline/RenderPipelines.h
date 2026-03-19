@@ -7,7 +7,7 @@
 //
 //  NOTES:
 //
-//  #include "Renders/RenderPipelines.h"
+//  #include "Render/Pipeline/RenderPipelines.h"
 //
 //////////////////////////////////////////////////////////////////////
 //! \file
@@ -27,18 +27,19 @@ struct ID3D12RootSignature;
 struct ID3D12Device;
 
 
-namespace defensor::render
+namespace yaget::render
 {
-    using namespace yaget;
-
-    class RenderPipelines : public yaget::render::CacheWatcher<yaget::render::ComPtr<ID3D12PipelineState>>
+    class RenderPipelines : public CacheWatcher<ComPtr<ID3D12PipelineState>>
     {
     public:
-        RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts);
+        RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
         ~RenderPipelines();
 
         ID3D12PipelineState* GetPipeline(const io::Tag& tag, ID3D12RootSignature* rootSignature, io::Buffer vertexShaderBuffer, io::Buffer pixelShaderBuffer);
         ID3D12PipelineState* GetPipeline(const io::Tag& tag);
+
+        static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
 
     private:
         ID3D12Device* mDevice = {};

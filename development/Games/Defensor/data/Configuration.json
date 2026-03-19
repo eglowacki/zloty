@@ -32,7 +32,10 @@
         },
         "DataLoaders": {
             "SkipDependencyGraph": true,
-            "ClearCache": false
+            "ClearCache": false,
+            "UseDebugShadersInRelease": true,
+            "UseReleaseShadersInDebug": false,
+            "UseZip": true
         },
         "Init": {
             "Aliases": {
@@ -74,7 +77,7 @@
                     }
                 },
                 {
-                    "VeretexShaders": {
+                    "VertexShaders": {
                         "Converters": "COMP",
                         "Filters": [ "*.vs" ],
                         "Path": [ "$(DataFolder)/Data/Shaders/Vertex" ],
@@ -89,6 +92,15 @@
                         "Path": [ "$(DataFolder)/Data/Shaders/Pixel" ],
                         "ReadOnly": true,
                         "Recursive": false
+                    }
+                },
+                {
+                    "Images": {
+                        "Converters": "IMAGE",
+                        "Filters": [ "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.tga" ],
+                        "Path": [ "$(DataFolder)/Data/Images" ],
+                        "ReadOnly": true,
+                        "Recursive": true
                     }
                 },
                 {
