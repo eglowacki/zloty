@@ -14,8 +14,7 @@
 #pragma once
 
 #include "Render/Cache/AssetCache.h"
-#include "Render/Pipeline/RenderMaterials.h"
-#include "VTS/VirtualTransportSystem.h"
+#include "Render/Pipeline/RenderMaterialProperties.h"
 
 
 namespace defensor::render

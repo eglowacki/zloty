@@ -17,7 +17,7 @@
 #include "Math/Interpolators.h"
 #include "Parsers/DependencyGraph.h"
 #include "Render/DesktopApplication.h"
-#include "Render/Pipeline/RenderMaterials.h"
+#include "Render/Pipeline/RenderMaterialProperties.h"
 #include "Render/Pipeline/RenderPipelines.h"
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderSignatures.h"

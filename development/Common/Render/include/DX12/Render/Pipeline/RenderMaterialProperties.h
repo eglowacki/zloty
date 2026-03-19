@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////
-// RenderMaterials.h
+// RenderMaterialProperties.h
 //
 //  Copyright 02/14/2026 Edgar Glowacki.
 //
@@ -7,7 +7,7 @@
 //
 //  NOTES:
 //
-//  #include "Render/Pipeline/RenderMaterials.h"
+//  #include "Render/Pipeline/RenderMaterialProperties.h"
 //
 //////////////////////////////////////////////////////////////////////
 //! \file

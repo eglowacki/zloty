@@ -154,7 +154,7 @@
     <ClInclude Include="..\include\DX12\Render\Logger\RenderLogTags.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\ConstantBuffer.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\ShaderBuffers.h" />
-    <ClInclude Include="..\include\DX12\Render\Pipeline\RenderMaterials.h" />
+    <ClInclude Include="..\include\DX12\Render\Pipeline\RenderMaterialProperties.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderPipelines.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderShaders.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderSignatures.h" />
@@ -201,7 +201,7 @@
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\ConstantBuffer.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\ShaderBuffers.cpp" />
-    <ClCompile Include="..\source\DX12\Render\Pipeline\RenderMaterials.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Pipeline\RenderMaterialProperties.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderPipelines.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderShaders.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderSignatures.cpp" />

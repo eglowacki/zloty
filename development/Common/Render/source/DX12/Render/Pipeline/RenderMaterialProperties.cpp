@@ -1,4 +1,4 @@
-#include "Render/Pipeline/RenderMaterials.h"
+#include "Render/Pipeline/RenderMaterialProperties.h"
 
 
 namespace
