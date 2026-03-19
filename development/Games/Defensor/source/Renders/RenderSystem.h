@@ -58,7 +58,7 @@ namespace defensor::render
         yaget::render::RenderSignatures mRenderSignatures;
         yaget::render::RenderPipelines mRenderPipelines;
         yaget::render::RenderShaders mRenderShaders;
-        yaget::render::RenderMaterials mRenderMaterials;
+        yaget::render::RenderMaterialProperties mRenderMaterials;
         yaget::render::RenderTextures mRenderTextures;
         yaget::render::ShaderBuffers mShaderBuffers;
 

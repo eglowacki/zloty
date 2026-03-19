@@ -25,24 +25,24 @@ namespace yaget::render
 {
     struct MaterialProperties
     {
-        AssetCacheType mVertexShader = AssetCacheType::Empty;
-        AssetCacheType mPixelShader = AssetCacheType::Empty;
+        AssetCacheType mVertexShader    = AssetCacheType::Empty;
+        AssetCacheType mPixelShader     = AssetCacheType::Empty;
         AssetCacheType mRasterizerState = AssetCacheType::Empty;
-        AssetCacheType mBlendMode = AssetCacheType::Empty;
-        AssetCacheType mDepthState = AssetCacheType::Empty;
+        AssetCacheType mBlendMode       = AssetCacheType::Empty;
+        AssetCacheType mDepthState      = AssetCacheType::Empty;
         // this is calculated at run time after loading and reading above types
-        AssetCacheType mSignature = AssetCacheType::Empty;
-        AssetCacheType mPSO = AssetCacheType::Empty;
-        AssetCacheType mShaderBuffer = AssetCacheType::Empty;
+        AssetCacheType mSignature       = AssetCacheType::Empty;
+        AssetCacheType mPSO             = AssetCacheType::Empty;
+        AssetCacheType mShaderBuffer    = AssetCacheType::Empty;
 
         bool operator == (MaterialProperties const&) const  = default;
     };
 
-    class RenderMaterials : public CacheWatcher<MaterialProperties>
+    class RenderMaterialProperties : public CacheWatcher<MaterialProperties>
     {
     public:
-        RenderMaterials(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
-        ~RenderMaterials();
+        RenderMaterialProperties(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
+        ~RenderMaterialProperties();
 
         MaterialProperties GetMaterial(const io::Tag& tag);
         std::vector<MaterialProperties> GetMaterials(const io::Tags& tags);
