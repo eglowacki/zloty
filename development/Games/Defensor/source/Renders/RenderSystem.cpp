@@ -50,7 +50,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mRenderShaders(app.VTS(), GetSection("Shaders"))
     , mRenderMaterials(app.VTS(), GetSection("Materials"))
     , mRenderTextures(app.VTS(), GetSection("Textures"))
-    , mConstantBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
+    , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
 {
     mApp.PoolThread().AddTask([this]()
         {
@@ -100,34 +100,19 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
                 auto signatureTag = TypeToTag(material.mMaterialProperties.mSignature, vts);
                 auto rootSig = mRenderSignatures.GetSignature(signatureTag);
-                const auto& indexMap = mRenderSignatures.GetIndexMap(signatureTag);
-                indexMap;
+                //const auto& indexMap = mRenderSignatures.GetIndexMap(signatureTag);
+                //indexMap;
                 commandList->SetGraphicsRootSignature(rootSig);
 
                 auto psoTag = TypeToTag(material.mMaterialProperties.mPSO, vts);
                 auto pso = mRenderPipelines.GetPipeline(psoTag);
                 commandList->SetPipelineState(pso);
 
-                for (const auto& [key, value] : indexMap)
-                {
-                    if (value.mType == constant_shader_types::ConstantTypes::WorldViewProjection && value.mLayout == constant_shader_types::ConstantLayout::Matrix4x4)
-                    {
-                        const auto location = renderComponent->mMatrix;
-                        float matrix[16];
-                        math3d::GetMatrixAsFloats(location, matrix);
-                        std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
-
-                        if (value.mRootType == constant_shader_types::RootType::Constant)
-                        {
-                            commandList->SetGraphicsRoot32BitConstants(value.mOffset, 16, matrix, 0);
-                        }
-                        else if (value.mRootType == constant_shader_types::RootType::ConstantBufferView)
-                        {
-                            YAGET_ASSERT(false, "Not Implemented Yet!!!");
-                            //commandList->SetGraphicsRootConstantBufferView(value.mOffset, constantBufferView);
-                        }
-                    }
-                }
+                const auto location = renderComponent->mMatrix;
+                float matrix[16];
+                math3d::GetMatrixAsFloats(location, matrix);
+                std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
+                commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
 
                 renderComponent->Render(commandList);
             }
@@ -241,7 +226,7 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &sigTag, &signature](const auto& descResult)
     {
         signature = mRenderSignatures.GetSignature(sigTag, descResult);
-        mConstantBuffers.MakeBuffers(sigTag, descResult.mIndexMap);
+        mShaderBuffers.MakeBuffers(sigTag, descResult.mIndexMap);
     });
     AttachTransientAsset(sigTag, vts);
 

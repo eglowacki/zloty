@@ -154,6 +154,9 @@
     <ClInclude Include="..\include\DX12\Render\Logger\RenderLogTags.h">
       <Filter>Logger</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Pipeline\ConstantBuffer.h">
+      <Filter>Source Files\Pipeline Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -253,6 +256,9 @@
       <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Pipeline\ShaderBuffers.cpp">
+      <Filter>Source Files\Pipeline Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Pipeline\ConstantBuffer.cpp">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
   </ItemGroup>

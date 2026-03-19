@@ -46,7 +46,7 @@ yaget::render::platform::Adapter::Adapter([[maybe_unused]] app::WindowFrame wind
 #endif // YAGET_DEBUG_RENDER == 1
 
     D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
-    allocatorDesc.Flags = D3D12MA::ALLOCATOR_FLAG_NONE;
+    allocatorDesc.Flags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
     allocatorDesc.pDevice = mDevice.Get();
     allocatorDesc.PreferredBlockSize = 0;
     allocatorDesc.pAllocationCallbacks = mAllocationCallbacks.get();

@@ -349,9 +349,9 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
     hr = D3D12CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&device));
     error_handlers::ThrowOnError(hr, "Could not create DX12 Device");
 
-    ComPtr<ID3D12Device7> hardwareDevice{};
-    hr = device->QueryInterface<ID3D12Device7>(&hardwareDevice);
-    error_handlers::ThrowOnError(hr, "Could not get DX12 Device4 interface");
+    ComPtr<ID3D12Device8> hardwareDevice{};
+    hr = device->QueryInterface<ID3D12Device8>(&hardwareDevice);
+    error_handlers::ThrowOnError(hr, "Could not get DX12 Device8 interface");
 
     YAGET_RENDER_SET_DEBUG_NAME(hardwareDevice.Get(), "Yaget Device");
 

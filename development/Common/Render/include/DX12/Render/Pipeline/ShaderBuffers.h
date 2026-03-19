@@ -20,26 +20,28 @@
 
 namespace yaget::render
 {
+    class ConstantBuffer;
+
     namespace platform
     {
         class Adapter;
     }
 
-    // Just a placeholder for return value from GetBuffer
-    struct ConstantData {};
-
     //--------------------------------------------------------------------------------------------------
-    class ConstantBuffers
+    class ShaderBuffers
     {
     public:
-        ConstantBuffers(const platform::Adapter& adapter, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
-        ~ConstantBuffers();
+        ShaderBuffers(const platform::Adapter& adapter, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
+        ~ShaderBuffers();
 
         void MakeBuffers(const io::Tag& tag, const RenderShaders::IndexMap& indexMap);
-        ConstantData GetBuffer(const io::Tag& tag);
+        ConstantBuffer* GetBuffer(const io::Tag& tag);
 
 
     private:
         const platform::Adapter& mAdapter;
+
+        using BuffersMap = std::map<io::Tag, std::shared_ptr<ConstantBuffer>>;
+        BuffersMap mBuffersMap;
     };
 }
