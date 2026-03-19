@@ -92,7 +92,7 @@ namespace
                 variableType.mType = it->second.mType;
                 variableType.mLayout = it->second.mLayout;
                 variableType.mTypeName = value.mVariableTypeName;
-                variableType.mVariableName = value.mName;
+                variableType.mVariableName = value.mVariableName;
                 variableType.mOffset = slot++;
 
                 switch (value.mParameter.ParameterType)
@@ -114,7 +114,7 @@ namespace
                         break;
                 }
 
-                result[value.mName] = variableType;
+                result[value.mVariableName] = variableType;
             }
             else
             {
@@ -430,7 +430,7 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
                     };
                 }
 
-                rootParameters.push_back({ .mParameter = rootParameter, .mName = shaderInputBindDesc.Name, .mVariableTypeName = variableTypeName });
+                rootParameters.push_back({ .mParameter = rootParameter, .mVariableName = shaderInputBindDesc.Name, .mVariableTypeName = variableTypeName });
             }
             break;
             case D3D_SIT_TEXTURE:
@@ -456,7 +456,7 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
                     .ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL,
                 };
 
-                rootParameters.push_back({ .mParameter = rootParameter, .mName = shaderInputBindDesc.Name });
+                rootParameters.push_back({ .mParameter = rootParameter, .mVariableName = shaderInputBindDesc.Name });
             }
             break;
             default:

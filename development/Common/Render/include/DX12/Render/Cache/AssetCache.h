@@ -114,11 +114,10 @@ namespace yaget::render
         //DXGI_FORMAT_B5G6R5_UNORM = 59,
         //DXGI_FORMAT_B5G5R5A1_UNORM = 60,
 
-
-        Reserved60 = 1ULL << 60,
-        Reserved61 = 1ULL << 61,
-        Reserved62 = 1ULL << 62,
-        Empty      = 1ULL << 63,
+        ShaderBuffer    = 1ULL << 60,
+        Reserved61      = 1ULL << 61,
+        Reserved62      = 1ULL << 62,
+        Empty           = 1ULL << 63,
     };
 
 

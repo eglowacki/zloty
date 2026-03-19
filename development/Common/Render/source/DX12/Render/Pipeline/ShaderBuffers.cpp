@@ -25,7 +25,6 @@ yaget::render::ShaderBuffers::~ShaderBuffers()
 void yaget::render::ShaderBuffers::MakeBuffers(const io::Tag& tag, const RenderShaders::IndexMap& indexMap)
 {
     auto allocator = mAdapter.GetAllocator();
-    allocator;
 
     for (const auto& value : indexMap | std::views::values)
     {

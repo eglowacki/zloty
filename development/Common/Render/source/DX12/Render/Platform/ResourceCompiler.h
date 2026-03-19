@@ -44,7 +44,7 @@ namespace yaget::render
         struct RootParameter
         {
             D3D12_ROOT_PARAMETER1 mParameter;
-            std::string mName;
+            std::string mVariableName;
             std::string mVariableTypeName;
             std::vector<CD3DX12_DESCRIPTOR_RANGE1> mDescriptorRangesScratchPad;
         };

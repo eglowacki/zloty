@@ -33,7 +33,7 @@ namespace yaget::render
         ~ConstantBuffer();
 
         bool UpdateData(const void* data, size_t dataSize) const;
-        void SetView(ID3D12GraphicsCommandList* commandList) const;
+        void Bind(ID3D12GraphicsCommandList* commandList) const;
 
     private:
         unique_obj<D3D12MA::Allocation> mAllocation;

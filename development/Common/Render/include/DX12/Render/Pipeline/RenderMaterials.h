@@ -61,14 +61,15 @@ namespace yaget::conv
     {
         static std::string ToString(const yaget::render::MaterialProperties& value)
         {
-            return std::format("Material Properties:\n\tvs:         '{}'\n\tps:         '{}'\n\tRasterizer: '{}'\n\tBlend:      '{}'\n\tDepth:      '{}'\n\tSignature   '{}'\n\tPipeline    '{}'.",
+            return std::format("Material Properties:\n\tvs:          '{}'\n\tps:          '{}'\n\tRasterizer:  '{}'\n\tBlend:       '{}'\n\tDepth:       '{}'\n\tSignature    '{}'\n\tPipeline     '{}'\n\tShaderBuffer '{}'.",
                 render::internal::CacheTypeToString(value.mVertexShader),
                 render::internal::CacheTypeToString(value.mPixelShader),
                 render::internal::CacheTypeToString(value.mRasterizerState),
                 render::internal::CacheTypeToString(value.mBlendMode),
                 render::internal::CacheTypeToString(value.mDepthState),
                 render::internal::CacheTypeToString(value.mSignature),
-                render::internal::CacheTypeToString(value.mPSO));
+                render::internal::CacheTypeToString(value.mPSO),
+                render::internal::CacheTypeToString(value.mShaderBuffer));
         }
     };
 }

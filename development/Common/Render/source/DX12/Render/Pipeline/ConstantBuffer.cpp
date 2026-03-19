@@ -40,7 +40,7 @@ bool yaget::render::ConstantBuffer::UpdateData(const void* data, size_t dataSize
  
 
 //--------------------------------------------------------------------------------------------------
-void yaget::render::ConstantBuffer::SetView(ID3D12GraphicsCommandList* commandList) const
+void yaget::render::ConstantBuffer::Bind(ID3D12GraphicsCommandList* commandList) const
 {
     //for (const auto& [key, value] : indexMap)
     //{

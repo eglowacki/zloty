@@ -18,5 +18,9 @@
     [
         "VertexPosition | VertexColor | PixelColor | RasterizerStateWireframe | BlendModeOpaque | DepthStateNone | TopologyStateTriangle | RTVFormatRGBA8",
         "Transient@BasicPipe_Wire"
+    ],
+    [
+        "ShaderBuffer | VertexPosition | VertexColor | PixelColor",
+        "Transient@BasicConstantBuffer"
     ]
 ]

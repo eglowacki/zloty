@@ -5,6 +5,7 @@
                 "dependencies": [
                     {
                         "dependencies": [
+                            "Transient@BasicConstantBuffer",
                             "VertexShaders@Basic",
                             "PixelShaders@Basic"
                         ],

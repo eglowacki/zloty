@@ -2,6 +2,8 @@
 #include "Render/DesktopApplication.h"
 #include "Render/Device.h"
 #include "Render/Platform/Adapter.h"
+#include "Render/Pipeline/ShaderBuffers.h"
+#include "Render/Pipeline/ConstantBuffer.h"
 #include "Compression/Zipper.h"
 
 #include <ranges>
@@ -42,20 +44,20 @@ namespace
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
     : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, false)
-    , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
-    , mMatrixInterpolator(0.0f, 1.0f)
-    , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindMaterial(guid); })
-    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
-    , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"))
-    , mRenderShaders(app.VTS(), GetSection("Shaders"))
-    , mRenderMaterials(app.VTS(), GetSection("Materials"))
-    , mRenderTextures(app.VTS(), GetSection("Textures"))
-    , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
+      , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
+      , mMatrixInterpolator(0.0f, 1.0f)
+      , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindMaterial(guid); })
+      , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
+      , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"))
+      , mRenderShaders(app.VTS(), GetSection("Shaders"))
+      , mRenderMaterials(app.VTS(), GetSection("Materials"))
+      , mRenderTextures(app.VTS(), GetSection("Textures"))
+      , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
 {
     mApp.PoolThread().AddTask([this]()
-        {
-            PreloadAssets();
-        });
+    {
+        PreloadAssets();
+    });
 }
 
 
@@ -108,10 +110,18 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 auto pso = mRenderPipelines.GetPipeline(psoTag);
                 commandList->SetPipelineState(pso);
 
+                auto constantBufferTag = TypeToTag(material.mMaterialProperties.mShaderBuffer, vts);
+                auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag);
+
                 const auto location = renderComponent->mMatrix;
                 float matrix[16];
                 math3d::GetMatrixAsFloats(location, matrix);
                 std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
+
+                constantBuffer->UpdateData(matrix, sizeof(matrix));
+                constantBuffer->Bind(commandList);
+                
+
                 commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
 
                 renderComponent->Render(commandList);
@@ -124,7 +134,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     {
         const auto& newFrameRenderIds = sceneComponent->GetIds();
 
-        coordinator.ForEach<RenderEntity>(newFrameRenderIds, [sceneComponent, &vts = mApp.VTS()](comp::Id_t id, const auto& row)
+        coordinator.ForEach<RenderEntity>(newFrameRenderIds, [sceneComponent, &vts = mApp.VTS(), this](comp::Id_t id, const auto& row)
         {
             if (auto data = sceneComponent->FindState(id))
             {
@@ -133,6 +143,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
                 if (renderComponent->mRenderMaterial.mAssetTag.mGuid != Guid(data->mAssetGuid))
                 {
+                    auto material = mRenderMaterials.GetMaterial(vts.FindTag(Guid(data->mAssetGuid)));
+
                     // we need to update material for this render component
                     renderComponent->mRenderMaterial.ResolveAssetTag(vts.FindTag(Guid(data->mAssetGuid)));
                 }
@@ -214,7 +226,8 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     auto psTag = TypeToTag(material.mPixelShader, vts);
     auto sigTag = TypeToTag(material.mSignature, vts);
     auto psoTag = TypeToTag(material.mPSO, vts);
-    if (!vsTag.IsValid() || !psTag.IsValid() || !sigTag.IsValid() || !psoTag.IsValid())
+    auto shaderBufferTag = TypeToTag(material.mShaderBuffer, vts);
+    if (!vsTag.IsValid() || !psTag.IsValid() || !sigTag.IsValid() || !psoTag.IsValid() || !shaderBufferTag.IsValid())
     {
         YLOG_ERROR("REND", std::format("Material '{}' has invalid material tags. {}'",
                        conv::ToString(matTag),
@@ -223,12 +236,13 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     }
 
     ID3D12RootSignature* signature = nullptr;
-    mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &sigTag, &signature](const auto& descResult)
+    mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &sigTag, &signature, &shaderBufferTag](const auto& descResult)
     {
         signature = mRenderSignatures.GetSignature(sigTag, descResult);
-        mShaderBuffers.MakeBuffers(sigTag, descResult.mIndexMap);
+        mShaderBuffers.MakeBuffers(shaderBufferTag, descResult.mIndexMap);
     });
     AttachTransientAsset(sigTag, vts);
+    AttachTransientAsset(shaderBufferTag, vts);
 
     auto vsBlob = mRenderShaders.GetShader(vsTag, yaget::render::RenderShaders::ShaderType::Vertex);
     auto psBlob = mRenderShaders.GetShader(psTag, yaget::render::RenderShaders::ShaderType::Pixel);
@@ -243,11 +257,14 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     //        Pipeline
     //           |
     //       Signature --> IndexMap
+    //           |
+    //      ShaderBuffer
     //        |     |
     //     Vertex Pixel
     //     Shader Shader
     mDependencyGraph.Add(matTag.mGuid, psoTag.mGuid);
     mDependencyGraph.Add(psoTag.mGuid, sigTag.mGuid);
+    mDependencyGraph.Add(sigTag.mGuid, shaderBufferTag.mGuid);
     mDependencyGraph.Add(sigTag.mGuid, vsTag.mGuid);
     mDependencyGraph.Add(sigTag.mGuid, psTag.mGuid);
 

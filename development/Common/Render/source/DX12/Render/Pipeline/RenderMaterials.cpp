@@ -22,6 +22,7 @@ namespace
 
             materialProperties.mSignature = materialProperties.mVertexShader | materialProperties.mPixelShader;
             materialProperties.mPSO = materialProperties.mSignature | materialProperties.mRasterizerState | materialProperties.mDepthState | materialProperties.mBlendMode | render::AssetCacheType::TopologyStateTriangle | render::AssetCacheType::RTVFormatRGBA8;
+            materialProperties.mShaderBuffer = render::AssetCacheType::ShaderBuffer | materialProperties.mVertexShader | materialProperties.mPixelShader;
         }
         else
         {
