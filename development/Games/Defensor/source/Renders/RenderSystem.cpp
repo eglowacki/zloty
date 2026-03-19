@@ -90,6 +90,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             auto renderComponent = std::get<RenderComponent*>(row);
 
             auto& material = renderComponent->mRenderMaterial;
+            auto materialProperties = mRenderMaterials.GetMaterial(material.mAssetTag);
 
             if (DependencyNode* materialNode = mDependencyGraph.Find(material.mAssetTag.mGuid, nullptr))
             {
@@ -100,13 +101,11 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                     //materialNode->ClearDirty();
                 }
 
-                auto signatureTag = TypeToTag(material.mMaterialProperties.mSignature, vts);
+                auto signatureTag = TypeToTag(materialProperties.mSignature, vts);
                 auto rootSig = mRenderSignatures.GetSignature(signatureTag);
-                //const auto& indexMap = mRenderSignatures.GetIndexMap(signatureTag);
-                //indexMap;
                 commandList->SetGraphicsRootSignature(rootSig);
 
-                auto psoTag = TypeToTag(material.mMaterialProperties.mPSO, vts);
+                auto psoTag = TypeToTag(materialProperties.mPSO, vts);
                 auto pso = mRenderPipelines.GetPipeline(psoTag);
                 commandList->SetPipelineState(pso);
 
@@ -115,7 +114,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 math3d::GetMatrixAsFloats(location, matrix);
                 std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
 
-                auto constantBufferTag = TypeToTag(material.mMaterialProperties.mShaderBuffer, vts);
+                auto constantBufferTag = TypeToTag(materialProperties.mShaderBuffer, vts);
                 if (auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag))
                 {
                     constantBuffer->UpdateData(matrix, sizeof(matrix));
@@ -143,10 +142,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
                 if (renderComponent->mRenderMaterial.mAssetTag.mGuid != Guid(data->mAssetGuid))
                 {
-                    auto material = mRenderMaterials.GetMaterial(vts.FindTag(Guid(data->mAssetGuid)));
-
-                    // we need to update material for this render component
-                    renderComponent->mRenderMaterial.ResolveAssetTag(vts.FindTag(Guid(data->mAssetGuid)));
+                    renderComponent->mRenderMaterial.mAssetTag.mGuid = Guid(data->mAssetGuid);
                 }
             }
 

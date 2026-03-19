@@ -1,7 +1,5 @@
 ﻿#include "Renders/RenderComponent.h"
 #include "Render/Platform/Adapter.h"
-#include "VTS/VirtualTransportSystem.h"
-#include <d3d12.h>
 
 
 //-------------------------------------------------------------------------------------------------
@@ -9,7 +7,7 @@ defensor::render::RenderComponent::RenderComponent(comp::Id_t id, const math3d::
     : BaseComponent(id)
     , mMatrix(matrix)
     , mRenderShape(adapter.GetAllocator(), assetTag, vts)
-    , mRenderMaterial(assetTag, vts)
+    , mRenderMaterial(assetTag)
 {
 }
 

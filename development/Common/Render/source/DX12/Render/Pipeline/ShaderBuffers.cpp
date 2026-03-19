@@ -66,8 +66,13 @@ void yaget::render::ShaderBuffers::MakeBuffers(const io::Tag& tag, const RenderS
 
                 error_handlers::ThrowOnError(hr, std::format("Could not allocate constant buffer for tag: {}", conv::ToString(tag)));
 
-                auto constantBuffer = std::make_shared<ConstantBuffer>(allocation, resource, value.mRootType, value.mOffset);
+#if YAGET_DEBUG
+                std::string debugName = std::format("ConstantBuffer_{}", value.mVariableName);
+                allocation->SetName(conv::utf8_to_wide(debugName).c_str());
+                YAGET_RENDER_SET_DEBUG_NAME(resource.Get(), debugName);
+#endif
 
+                auto constantBuffer = std::make_shared<ConstantBuffer>(allocation, resource, value.mRootType, value.mOffset);
                 mBuffersMap.insert({ tag, constantBuffer });
 
                 ////YAGET_ASSERT(false, "Not Implemented Yet!!!");
