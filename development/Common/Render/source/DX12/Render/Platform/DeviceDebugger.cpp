@@ -134,6 +134,27 @@ void yaget::render::platform::SetDebugName(ID3D12Object* object, const std::stri
     const auto text = conv::utf8_to_wide(message);
     object->SetName(text.c_str());
 }
+
+
+//-------------------------------------------------------------------------------------------------
+std::string yaget::render::platform::GetDebugName(ID3D12Object* object)
+{
+    std::string result;
+    uint32_t dataSize = 0;
+    HRESULT hr = object->GetPrivateData(WKPDID_D3DDebugObjectNameW, &dataSize, nullptr);
+    if (SUCCEEDED(hr) && dataSize)
+    {
+        std::wstring name(dataSize, 0);
+        hr = object->GetPrivateData(WKPDID_D3DDebugObjectNameW, &dataSize, name.data());
+        if (SUCCEEDED(hr))
+        {
+            result = conv::wide_to_utf8(name.c_str());
+        }
+    }
+
+    return result;
+}
+
 #else // YAGET_DEBUG_RENDER == 1
 
 YAGET_COMPILE_GLOBAL_SETTINGS("Debug Render Module NOT Included")

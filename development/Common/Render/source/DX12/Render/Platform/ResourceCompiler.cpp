@@ -401,7 +401,7 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
                 // NOTE(eg) we may want to consider having path for small (one matrix?) root const buffer
                 D3D12_ROOT_PARAMETER1 rootParameter = {};
 
-                if (constantBufferDesc.Variables * constantBufferDesc.Size == sizeof(float) * 16)
+                if (constantBufferDesc.Variables * constantBufferDesc.Size < sizeof(float) * 4)
                 {
                     rootParameter = D3D12_ROOT_PARAMETER1
                     {
