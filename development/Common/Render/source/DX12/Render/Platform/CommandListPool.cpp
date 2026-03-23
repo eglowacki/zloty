@@ -106,6 +106,7 @@ yaget::render::platform::CommandListPool::Handle::Handle(CommandListPool& comman
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::CommandListPool::Handle::~Handle()
 {
+    YLOG_WARNING("REND", "============ Freeing mCommandList for type: '%d'", mType);
     mCommandPool->FreeUsed(mCommandList, mType);
 }
 

@@ -48,7 +48,9 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
                 auto assetTag = mApp.VTS().FindTag(guid);
                 YLOG_CERROR("REND", assetTag.IsValid(), "Render Asset '%s' does not exist.", conv::Convertor<Guid>::ToString(guid).c_str());
 
-                GetCS().AddComponent<RenderComponent>(id, math3d::Matrix(data->mMatrix), assetTag, vts, adapter);
+                auto textureTag = mApp.VTS().GetTag(io::VirtualTransportSystem::Section("Images@Green"));
+
+                GetCS().AddComponent<RenderComponent>(id, math3d::Matrix(data->mMatrix), assetTag, io::Tags{ textureTag }, vts, adapter);
             });
 
             std::ranges::for_each(deletedIds, [this](const auto& id)

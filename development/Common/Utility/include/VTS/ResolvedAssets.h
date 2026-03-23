@@ -160,6 +160,20 @@ namespace yaget::io
 
         image::Header mHeader;
         BufferView mPixels;
+
+        using TextureResult = std::pair<image::Header, BufferView>;
+        static TextureResult ParseBuffer(const Buffer& buffer)
+        {
+            if (io::size_data(buffer) > sizeof(image::Header))
+            {
+                image::Header header = *cast_data<image::Header>(buffer);
+                BufferView pixels = cast_to_view(buffer, sizeof(image::Header));
+
+                return { header, pixels };
+            }
+
+            return { {}, {} };
+        }
     };
 
     //-------------------------------------------------------------------------------------------------------------------------------

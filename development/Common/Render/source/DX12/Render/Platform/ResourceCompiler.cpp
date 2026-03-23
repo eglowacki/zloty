@@ -143,6 +143,37 @@ namespace
         return result;
     }
 
+    std::string GetTextureTypeName(D3D_SRV_DIMENSION dimension)
+    {
+        switch (dimension)
+        {
+            case D3D_SRV_DIMENSION_TEXTURE1D:
+                return "Texture1d";
+                break;
+            case D3D_SRV_DIMENSION_TEXTURE1DARRAY:
+                return "Texture1dArray";
+                break;
+            case D3D_SRV_DIMENSION_TEXTURE2D:
+                return "Texture2d";
+                break;
+            case D3D_SRV_DIMENSION_TEXTURE2DARRAY:
+                return "Texture2dArray";
+                break;
+            case D3D_SRV_DIMENSION_TEXTURE3D:
+                return "Texture3d";
+                break;
+            case D3D_SRV_DIMENSION_TEXTURECUBE:
+                return "TextureCube";
+                break;
+            case D3D_SRV_DIMENSION_TEXTURECUBEARRAY:
+                return "TextureCubeArray";
+                break;
+            default:
+                YLOG_ERROR("COMP", std::format("Unsupported TextureType: '{}'", magic_enum::enum_name(dimension)).c_str());
+                return "";
+        }
+    }
+
 }
 
 
@@ -152,9 +183,9 @@ const yaget::render::ResourceReflector::RootDescResult yaget::render::ResourceRe
     RootDescResult rootResult;
 
     rootResult.mRootParameters = rootParameters | std::views::transform([](const auto& element)
-        {
-            return element.mParameter;
-        }) | std::ranges::to<std::vector<D3D12_ROOT_PARAMETER1>>();
+    {
+        return element.mParameter;
+    }) | std::ranges::to<std::vector<D3D12_ROOT_PARAMETER1>>();
 
     rootResult.mRootSignatureDesc =
     {
@@ -165,7 +196,10 @@ const yaget::render::ResourceReflector::RootDescResult yaget::render::ResourceRe
             .pParameters = rootResult.mRootParameters.data(),
             .NumStaticSamplers = 0u,
             .pStaticSamplers = nullptr,
-            .Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT,
+            .Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+                     D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+                     D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+                     D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS,
         },
     };
 
@@ -228,14 +262,14 @@ namespace
         ShaderParameters(const yaget::Strings& parameters)
         {
             mShaderArguments = parameters | std::views::transform([](const std::string& element)
-                {
-                    return yaget::conv::utf8_to_wide(element);
-                }) | std::ranges::to<std::vector<std::wstring>>();
+            {
+                return yaget::conv::utf8_to_wide(element);
+            }) | std::ranges::to<std::vector<std::wstring>>();
 
             mArguments = mShaderArguments | std::views::transform([](const std::wstring& element)
-                {
-                    return element.c_str();
-                }) | std::ranges::to<std::vector<LPCWSTR>>();
+            {
+                return element.c_str();
+            }) | std::ranges::to<std::vector<LPCWSTR>>();
         }
 
         std::vector<LPCWSTR> mArguments;
@@ -325,20 +359,20 @@ D3D12_SHADER_VISIBILITY yaget::render::ResourceReflector::GeneratePins(uint32_t 
             auto& shaderOutputs = mShaderOutputs = {};
 
             auto paramDesc = [](uint32_t parameterIndex, auto descGetter)
-                {
-                    D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
-                    HRESULT hr = descGetter(parameterIndex, &signatureParameterDesc);
-                    error_handlers::ThrowOnError(hr, std::format("Could not get input Parameter Description from compiled vertex shader. Parameter Index: {}", parameterIndex));
+            {
+                D3D12_SIGNATURE_PARAMETER_DESC signatureParameterDesc{};
+                HRESULT hr = descGetter(parameterIndex, &signatureParameterDesc);
+                error_handlers::ThrowOnError(hr, std::format("Could not get input Parameter Description from compiled vertex shader. Parameter Index: {}", parameterIndex));
 
-                    return signatureParameterDesc;
-                };
+                return signatureParameterDesc;
+            };
 
             for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.InputParameters))
             {
                 auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC* desc)
-                    {
-                        return shaderReflection->GetInputParameterDesc(parameterIndex, desc);
-                    });
+                {
+                    return shaderReflection->GetInputParameterDesc(parameterIndex, desc);
+                });
 
                 shaderInputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
             }
@@ -346,9 +380,9 @@ D3D12_SHADER_VISIBILITY yaget::render::ResourceReflector::GeneratePins(uint32_t 
             for (const uint32_t parameterIndex : std::views::iota(0u, shaderDesc.OutputParameters))
             {
                 auto signatureParameterDesc = paramDesc(parameterIndex, [&shaderReflection = mShaderReflection](UINT parameterIndex, D3D12_SIGNATURE_PARAMETER_DESC* desc)
-                    {
-                        return shaderReflection->GetOutputParameterDesc(parameterIndex, desc);
-                    });
+                {
+                    return shaderReflection->GetOutputParameterDesc(parameterIndex, desc);
+                });
 
                 shaderOutputs.push_back({ .mName = signatureParameterDesc.SemanticName, .mIndex = signatureParameterDesc.SemanticIndex });
             }
@@ -435,17 +469,26 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
             break;
             case D3D_SIT_TEXTURE:
             {
+                //ID3D12ShaderReflectionConstantBuffer* shaderReflectionConstantBuffer = mShaderReflection->GetConstantBufferByIndex(i);
+
+                //D3D12_SHADER_BUFFER_DESC constantBufferDesc{};
+                //hr = shaderReflectionConstantBuffer->GetDesc(&constantBufferDesc);
+                //error_handlers::ThrowOnError(hr, std::format("Could not get Constant Buffer Description from compiled vertex shader. BoundResources Index: {}", i));
+
+                //std::string variableTypeName = GetVariableTypeName(shaderReflectionConstantBuffer, constantBufferDesc.Name);
+                //error_handlers::ThrowOnCheck(!variableTypeName.empty(), std::format("Could not get variable type name for constant buffer: '{}'", constantBufferDesc.Name));
+
                 rootParameters.push_back({});
                 auto& parameter = rootParameters.back();
                 const CD3DX12_DESCRIPTOR_RANGE1 srvRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
-                    1u,
-                    shaderInputBindDesc.BindPoint,
-                    shaderInputBindDesc.Space,
-                    D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
+                                                         1u,
+                                                         shaderInputBindDesc.BindPoint,
+                                                         shaderInputBindDesc.Space,
+                                                         D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
 
                 parameter.mDescriptorRangesScratchPad.push_back(srvRange);
 
-                const D3D12_ROOT_PARAMETER1 rootParameter
+                parameter.mParameter =
                 {
                     .ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
                     .DescriptorTable
@@ -456,11 +499,37 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
                     .ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL,
                 };
 
-                rootParameters.push_back({ .mParameter = rootParameter, .mVariableName = shaderInputBindDesc.Name });
+                parameter.mVariableName = shaderInputBindDesc.Name;
+                parameter.mVariableTypeName = GetTextureTypeName(shaderInputBindDesc.Dimension);
+            }
+            break;
+            case D3D_SIT_SAMPLER:
+            {
+                rootParameters.push_back({});
+                auto& parameter = rootParameters.back();
+                const CD3DX12_DESCRIPTOR_RANGE1 srvRange(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER,
+                                                         1u,
+                                                         shaderInputBindDesc.BindPoint,
+                                                         shaderInputBindDesc.Space);
+
+                parameter.mDescriptorRangesScratchPad.push_back(srvRange);
+                parameter.mParameter =
+                {
+                    .ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
+                    .DescriptorTable
+                    {
+                        .NumDescriptorRanges = 1u,
+                        .pDescriptorRanges = &parameter.mDescriptorRangesScratchPad.back(),
+                    },
+                    .ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL,
+                };
+
+                parameter.mVariableName = shaderInputBindDesc.Name;
+                parameter.mVariableTypeName = "Sampler";
             }
             break;
             default:
-                YLOG_ERROR("COMP", "Unsupported Bound Resources type: '%d'", shaderInputBindDesc.Type);
+                YLOG_ERROR("COMP", std::format("Unsupported Bound Resources type: '{}'", magic_enum::enum_name(shaderInputBindDesc.Type)).c_str());
         }
     }
 }

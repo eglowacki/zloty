@@ -27,6 +27,7 @@ namespace yaget::image
         int mComponents = 0;    // number of components in image (rgba = 4, Single = 1)
         size_t GetImageSize() const { return static_cast<size_t>(mSizeX * mSizeY * mComponents); }
         int GetStride() const { return mSizeX * mComponents; }
+        size_t GetPixelBits() const { return static_cast<size_t>(mComponents) * 8; }
     };
 
     enum class ImageType { PNG, JPG, BMP, TGA };

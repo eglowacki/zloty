@@ -29,7 +29,14 @@ namespace yaget::render
         enum class ConstantTypes
         {
             WorldViewProjection,
-            Time
+            Time,
+            Texture2d,
+            Texture2dSecond,
+            Texture2dThird,
+            Texture2dFourth,
+            Texture3d,
+            Texture2dNormal,
+            Sampler
         };
 
         enum class ConstantLayout
@@ -38,7 +45,9 @@ namespace yaget::render
             Float,
             Float4,
             Int,
-            Int4
+            Int4,
+            Pixels,
+            Struct
         };
 
         enum class RootType

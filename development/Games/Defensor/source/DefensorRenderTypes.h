@@ -26,6 +26,13 @@ namespace defensor::render
     // from game thread and consumed by render thread
     struct EntityState
     {
+        enum class ValidFields : uint8_t
+        {
+            None        = 0,
+            Matrix      = 1 << 0,
+            AssetGuid   = 1 << 1,
+        };
+
         comp::Id_t mId;
         float mMatrix[16];
         unsigned char mAssetGuid[16];
@@ -36,12 +43,6 @@ namespace defensor::render
     inline size_t Serialize(const EntityState& entityState, io::BufferView& buffer)
     {
         memcpy(io::cast_data<char>(buffer), &entityState.mId, sizeof(entityState.mId));
-        entityState;
-        buffer;
-
-        int z =0;
-        z;
-
         return 0;
     }
     //--------------------------------------------------------------------------

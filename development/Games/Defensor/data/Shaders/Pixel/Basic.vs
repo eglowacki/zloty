@@ -8,7 +8,7 @@ ConstantBuffer<WorldViewProjection> perObjectConstants : register(b0, space0);
 
 struct Time
 {
-    float4 timeValue;
+    float timeValue;
 };
 ConstantBuffer<Time> timeValueConstants : register(b4, space0);
 

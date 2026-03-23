@@ -8,6 +8,8 @@
 
 #include "Core/ErrorHandlers.h"
 
+#include "magic_enum/magic_enum.hpp"
+
 
 namespace
 {
@@ -25,7 +27,8 @@ namespace
             const HRESULT hr = device->CreateCommandAllocator(type, IID_PPV_ARGS(&commandAllocator));
             yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Command Allocator");
 
-            YAGET_RENDER_SET_DEBUG_NAME(commandAllocator.Get(), "Yaget Command Allocator");
+            const auto debugName = std::format("Command Allocator-T_{}-I_{}", magic_enum::enum_name(cqType), i);
+            YAGET_RENDER_SET_DEBUG_NAME(commandAllocator.Get(), debugName);
 
             allocatorsList.push_back(commandAllocator);
         }
@@ -61,6 +64,7 @@ ID3D12CommandAllocator* yaget::render::platform::CommandAllocators::GetCommandAl
 
     auto allocator = mCommandAllocatorList.find(type)->second[allocatorIndex].Get();
     const HRESULT hr = allocator->Reset();
+    YLOG_WARNING("REND", "================== Resetting Command Allocator. Type: '%d', Index: '%d'", type,allocatorIndex);
     error_handlers::ThrowOnError(hr, "Could not reset allocator");
 
     return allocator;

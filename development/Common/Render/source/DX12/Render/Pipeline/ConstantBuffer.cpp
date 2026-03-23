@@ -56,6 +56,13 @@ bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTy
 
 
 //--------------------------------------------------------------------------------------------------
+bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTypes /*constantTypes*/, ID3D12Resource* /*resource*/)
+{
+    return false;
+}
+
+
+//--------------------------------------------------------------------------------------------------
 bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTypes constantTypes, const void* data, size_t dataSize)
 {
     return UpdateData(constantTypes, static_cast<const uint8_t*>(data), dataSize);
@@ -79,6 +86,11 @@ void yaget::render::ConstantBuffer::Bind(ID3D12GraphicsCommandList* commandList)
         {
             D3D12_GPU_VIRTUAL_ADDRESS constBufGPUAddr = variable.mResource->GetGPUVirtualAddress();
             commandList->SetGraphicsRootConstantBufferView(variable.mIndex, constBufGPUAddr);
+        }
+        else if (variable.mRootType == constant_shader_types::RootType::Table)
+        {
+            int z = 0;
+            z;
         }
     }
 }

@@ -42,9 +42,16 @@ void yaget::render::ShaderBuffers::MakeBuffers(const io::Tag& tag, const RenderS
             {
                 dataWidth = sizeof(float) * 16;
             }
-            else if (value.mType == constant_shader_types::ConstantTypes::Time && value.mLayout == constant_shader_types::ConstantLayout::Float4)
+            else if (value.mType == constant_shader_types::ConstantTypes::Time)
             {
-                dataWidth = sizeof(float) * 4;
+                if (value.mLayout == constant_shader_types::ConstantLayout::Float)
+                {
+                    dataWidth = sizeof(float);
+                }
+                else if (value.mLayout == constant_shader_types::ConstantLayout::Float4)
+                {
+                    dataWidth = sizeof(float) * 4;
+                }
             }
             else
             {
@@ -75,19 +82,33 @@ void yaget::render::ShaderBuffers::MakeBuffers(const io::Tag& tag, const RenderS
                 IID_PPV_ARGS(&resource));
 
             error_handlers::ThrowOnError(hr, std::format("Could not allocate constant buffer for tag: {}", conv::ToString(tag)));
-
-#if YAGET_DEBUG
-            std::string debugName = std::format("ConstantBuffer_{}", value.mVariableName);
-            allocation->SetName(conv::utf8_to_wide(debugName).c_str());
-            YAGET_RENDER_SET_DEBUG_NAME(resource.Get(), debugName);
-#endif
+            platform::SetDebugName(resource.Get(), allocation, "ConstantBuffer", value.mVariableName.c_str());
 
             ConstantBuffer::ShaderVariable shaderVariable(allocation, resource, value.mRootType, value.mType, value.mLayout, value.mOffset);
             shaderVariables.push_back(std::move(shaderVariable));
         }
+        else if (value.mRootType == constant_shader_types::RootType::Table)
+        {
+            if (value.mType == constant_shader_types::ConstantTypes::Texture2d)
+            {
+                //YAGET_ASSERT(false, "Table->Texture2d");
+                ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset);
+                shaderVariables.push_back(std::move(shaderVariable));
+            }
+            else if (value.mType == constant_shader_types::ConstantTypes::Sampler)
+            {
+                //YAGET_ASSERT(false, "Table->Sampler");
+                ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset);
+                shaderVariables.push_back(std::move(shaderVariable));
+            }
+            else
+            {
+                YAGET_ASSERT(false, std::format("Unsupported root type: '{}' for type: '{}'.", magic_enum::enum_name(value.mRootType), magic_enum::enum_name(value.mType)).c_str());
+            }
+        }
         else
         {
-            YAGET_ASSERT(std::format("Unsupported root type for constant buffer: '{}'", magic_enum::enum_name(value.mRootType)).c_str());
+            YAGET_ASSERT(false, std::format("Unsupported root type: '{}'.", magic_enum::enum_name(value.mRootType)).c_str());
         }
     }
 

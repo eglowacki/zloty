@@ -60,6 +60,7 @@ namespace defensor::render
         yaget::render::RenderShaders mRenderShaders;
         yaget::render::RenderMaterialProperties mRenderMaterials;
         yaget::render::RenderTextures mRenderTextures;
+        yaget::render::TextureResources mTextureResources;
         yaget::render::ShaderBuffers mShaderBuffers;
 
         RenderState mCurrentRenderState;

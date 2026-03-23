@@ -1,22 +1,21 @@
-#include "Render/Platform/Adapter.h"
 #include "App/AppUtilities.h"
+#include "Core/ErrorHandlers.h"
+#include "Render/Platform/Adapter.h"
 #include "Render/Platform/D3D12MemAlloc.h"
 
 #include <d3d12.h>
 
-#include "Core/ErrorHandlers.h"
 
 namespace
 {
-    
-    static void* GraphicsAllocate(size_t size, size_t alignment, void* /*pPrivateData*/)
+    void* GraphicsAllocate(size_t size, size_t alignment, void* /*pPrivateData*/)
     {
         void* memory = _aligned_malloc(size, alignment);
         YLOG_INFO("GMEM", "Allocate Size: '%llu -> %p'", size, memory);
         return memory;
     }
 
-    static void GraphicsFree(void* memory, void* /*pPrivateData*/)
+    void GraphicsFree(void* memory, void* /*pPrivateData*/)
     {
         if (memory)
         {
@@ -28,7 +27,7 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::Adapter::Adapter([[maybe_unused]] app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo)
+yaget::render::platform::Adapter::Adapter([[maybe_unused]] app::WindowFrame windowFrame, const info::Adapter& adapterInfo)
     : mAllocationCallbacks(std::make_unique<D3D12MA::ALLOCATION_CALLBACKS>(&GraphicsAllocate, &GraphicsFree, nullptr))
 {
     auto [device, adapter, factory] = info::CreateDevice(adapterInfo);
@@ -82,4 +81,3 @@ D3D12MA::Allocator* yaget::render::platform::Adapter::GetAllocator() const
 {
     return mAllocator.get();
 }
-

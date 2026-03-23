@@ -40,7 +40,7 @@ namespace defensor::render
     class RenderComponent : public comp::BaseComponent<comp::DefaultPoolSize>
     {
     public:
-        RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& assetTag, io::VirtualTransportSystem& vts, const yaget::render::platform::Adapter& adapter);
+        RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& assetTag, const io::Tags& textureTags, io::VirtualTransportSystem& vts, const yaget::render::platform::Adapter& adapter);
         ~RenderComponent();
 
         void Render(ID3D12GraphicsCommandList* commandList) const;
@@ -51,6 +51,8 @@ namespace defensor::render
         yaget::render::RenderShape mRenderShape;
         // represents material (shaders, textures, render states)
         render::RenderMaterial mRenderMaterial;
+
+        io::Tags mTextureTags;
     };
 
 }

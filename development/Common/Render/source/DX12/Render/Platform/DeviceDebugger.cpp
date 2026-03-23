@@ -1,3 +1,5 @@
+#include "D3D12MemAlloc.h"
+
 #include "Render/Platform/DeviceDebugger.h"
 #include "HashUtilities.h"
 
@@ -126,13 +128,14 @@ void yaget::render::platform::DeviceDebugger::ActivateMessageSeverity(const ComP
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::SetDebugName(ID3D12Object* object, const std::string& name, const char* file, unsigned line)
+void yaget::render::platform::SetDebugName(ID3D12Object* object, std::string_view name, const char* file, unsigned line)
 {
-    namespace fs = std::filesystem;
-
-    const auto message = std::format("{}-{}({})", name, fs::path(file).filename().generic_string(), line);
+    const auto message = std::format("{}-{}({})", name, std::filesystem::path(file).filename().generic_string(), line);
     const auto text = conv::utf8_to_wide(message);
-    object->SetName(text.c_str());
+    HRESULT hr = object->SetName(text.c_str());
+    hr;
+    int z = 0;
+    z;
 }
 
 
@@ -153,6 +156,15 @@ std::string yaget::render::platform::GetDebugName(ID3D12Object* object)
     }
 
     return result;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::SetDebugName(ID3D12Object* object, D3D12MA::Allocation* allocation, std::string_view typeName, std::string_view objectName, const std::source_location& location)
+{
+    std::string debugName = std::format("{}_{}", typeName, objectName);
+    allocation->SetName(conv::utf8_to_wide(debugName).c_str());
+    SetDebugName(object, debugName, location.file_name(), location.line());
 }
 
 #else // YAGET_DEBUG_RENDER == 1
