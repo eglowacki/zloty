@@ -1,10 +1,11 @@
-#include "Renders/RenderSystem.h"
+#include "Compression/Zipper.h"
+#include "MemoryManager/NewAllocator.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Device.h"
-#include "Render/Platform/Adapter.h"
-#include "Render/Pipeline/ShaderBuffers.h"
 #include "Render/Pipeline/ConstantBuffer.h"
-#include "Compression/Zipper.h"
+#include "Render/Pipeline/ShaderBuffers.h"
+#include "Render/Platform/Adapter.h"
+#include "Renders/RenderSystem.h"
 
 #include <ranges>
 
@@ -78,13 +79,17 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
     if (id == comp::END_ID_MARKER)
     {
-        YLOG_WARNING("REND", "=========== GameFlock Tick: '%d'", gameClock.GetTickCounter());
+        memory::StartRecordAllocations();
 
-        auto& vts = mApp.VTS();
+        YLOG_WARNING("REND", "=========== GameClock Tick: '%d'", gameClock.GetTickCounter());
 
         const colors::Color color = mColorInterpolator.GetValue(gameClock);
         auto& device = GetDevice();
-        auto framerHandle = device.GetFramerHandle(gameClock, channel, &color);
+        auto frameCommands = device.GetFrameCommands(gameClock, channel);
+        frameCommands.BeginFrame(&color);
+
+#if 0
+        auto& vts = mApp.VTS();
         auto commandList = framerHandle.GetCommandList();
         const auto frameIndex = framerHandle.GetFrameIndex();
 
@@ -138,6 +143,10 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
             return true;
         });
+#endif
+        frameCommands.EndFrame();
+
+        memory::StopRecordAllocations();
     }
     else
     {

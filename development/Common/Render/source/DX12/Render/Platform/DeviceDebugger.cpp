@@ -15,7 +15,7 @@ YAGET_COMPILE_GLOBAL_SETTINGS("Debug Render Module Included")
 #include "StringHelpers.h"
 
 #include <filesystem>
-#include <d3d12.h>
+#include <d3dx12.h>
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 

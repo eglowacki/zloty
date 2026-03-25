@@ -707,7 +707,7 @@ namespace yaget::meta
     template <typename T, T beginVal, T endVal, bool iterateOverLast = true>
     class EnumIterator 
     {
-        typedef typename std::underlying_type<T>::type val_t;
+        typedef std::underlying_type_t<T> val_t;
 
     public:
         EnumIterator(const T& f) : mVal(static_cast<val_t>(f)) {}

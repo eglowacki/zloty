@@ -263,11 +263,51 @@ void yaget::memory::ReportAllocations() {}
 #else
 YAGET_COMPILE_GLOBAL_SETTINGS("Allocator NOT Included")
 
-void yaget::memory::StartRecordAllocations() {}
-void yaget::memory::StopRecordAllocations() {}
-void yaget::memory::ReportAllocations() {}
+namespace
+{
+    size_t AllocationCounter = 0;
+    size_t TotalAllocations = 0;
+    
+    size_t CurrentCounter = 0;
+    size_t CurrentAllocations = 0;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::memory::StartRecordAllocations()
+{
+    AllocationCounter = 0;
+    TotalAllocations = 0;
+
+    CurrentCounter = 0;
+    CurrentAllocations = 0;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::memory::StopRecordAllocations()
+{
+    ReportAllocations();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::memory::ReportAllocations()
+{
+    const auto counter = AllocationCounter;
+    const auto totalAllocations = TotalAllocations;
+
+    const auto currentCounter = CurrentCounter;
+    const auto currentAllocations = CurrentAllocations;
+
+    
+    int z = 0;
+    z;
+    
+}
 
 #endif // YAGET_NEW_ALLOCATOR_ENABLED
+
 
 int MyAllocHook(int allocType, void* userData, std::size_t size, int blockType, long requestNumber, const unsigned char* filename, int lineNumber)
 {
@@ -281,8 +321,11 @@ int MyAllocHook(int allocType, void* userData, std::size_t size, int blockType, 
 
     if (allocType == _HOOK_ALLOC)
     {
-        int z = 0;
-        z;
+        AllocationCounter++;
+        TotalAllocations += size;
+
+        CurrentCounter++;
+        CurrentAllocations += size;
     }
     else if (allocType == _HOOK_REALLOC)
     {
@@ -291,8 +334,8 @@ int MyAllocHook(int allocType, void* userData, std::size_t size, int blockType, 
     }
     else if (allocType == _HOOK_FREE)
     {
-        int z = 0;
-        z;
+        CurrentCounter--;
+        CurrentAllocations -= size;
     }
 
     return true;

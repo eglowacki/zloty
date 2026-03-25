@@ -7,7 +7,7 @@
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
 
-#include <d3d12.h>
+#include <d3dx12.h>
 #include <d3dx12_resource_helpers.h>
 
 

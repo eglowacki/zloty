@@ -14,40 +14,39 @@
 #pragma once
 
 #include "Render/RenderCore.h"
-#include "Render/Platform/CommandQueue.h"
 #include "Render/RenderStringHelpers.h"
+#include "Core/ErrorHandlers.h"
+#include "magic_enum/magic_enum.hpp"
 
 #include <d3dx12.h>
-
-#include "Core/ErrorHandlers.h"
 
 
 namespace yaget::render
 {
-    inline D3D12_COMMAND_LIST_TYPE ConvertCommandQueueType(platform::CommandQueue::Type cqType)
+    inline D3D12_COMMAND_LIST_TYPE ConvertCommandQueueType(commands::Type type)
     {
-        using namespace yaget::render::platform;
-        D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        using namespace yaget::render::commands;
+        D3D12_COMMAND_LIST_TYPE dx12Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-        switch (cqType)
+        switch (type)
         {
-        case CommandQueue::Type::Direct:
-            type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        case Type::Direct:
+            dx12Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
             break;
 
-        case CommandQueue::Type::Compute:
-            type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+        case Type::Compute:
+            dx12Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
             break;
 
-        case CommandQueue::Type::Copy:
-            type = D3D12_COMMAND_LIST_TYPE_COPY;
+        case Type::Copy:
+            dx12Type = D3D12_COMMAND_LIST_TYPE_COPY;
             break;
 
         default:
-            error_handlers::Throw("DEVI", std::format("Invalid Command Type Queue: {}.", conv::Convertor<CommandQueue::Type>::ToString(cqType)));
+            error_handlers::Throw("DEVI", std::format("Invalid Command Type Queue: {}.", magic_enum::enum_name(type)));
         }
 
-        return type;
+        return dx12Type;
     }
 
 } // namespace yaget::render

@@ -149,6 +149,11 @@
     <ClInclude Include="..\include\DX12\Render\AdapterInfo.h" />
     <ClInclude Include="..\include\DX12\Render\Cache\AssetCache.h" />
     <ClInclude Include="..\include\DX12\Render\Cache\CacheWatcher.h" />
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderAllocator.h" />
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandList.h" />
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandListStates.h" />
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandTypes.h" />
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderQueue.h" />
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
     <ClInclude Include="..\include\DX12\Render\Device.h" />
     <ClInclude Include="..\include\DX12\Render\Logger\RenderLogTags.h" />
@@ -174,10 +179,6 @@
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\source\DX12\Render\EnumConversion.h" />
     <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h" />
-    <ClInclude Include="..\source\DX12\Render\Platform\CommandAllocators.h" />
-    <ClInclude Include="..\source\DX12\Render\Platform\Commander.h" />
-    <ClInclude Include="..\source\DX12\Render\Platform\CommandListPool.h" />
-    <ClInclude Include="..\source\DX12\Render\Platform\CommandQueue.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\ResourceCompiler.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h" />
@@ -196,6 +197,11 @@
     <ClCompile Include="..\source\DX12\Render\AdapterInfo.cpp" />
     <ClCompile Include="..\source\DX12\Render\Cache\AssetCache.cpp" />
     <ClCompile Include="..\source\DX12\Render\Cache\CacheWatcher.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderAllocator.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandList.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandListStates.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandTypes.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderQueue.cpp" />
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
@@ -207,10 +213,6 @@
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderSignatures.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderTextures.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp" />
-    <ClCompile Include="..\source\DX12\Render\Platform\CommandAllocators.cpp" />
-    <ClCompile Include="..\source\DX12\Render\Platform\Commander.cpp" />
-    <ClCompile Include="..\source\DX12\Render\Platform\CommandListPool.cpp" />
-    <ClCompile Include="..\source\DX12\Render\Platform\CommandQueue.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\D3D12MemAlloc.cpp">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level3</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Level3</WarningLevel>

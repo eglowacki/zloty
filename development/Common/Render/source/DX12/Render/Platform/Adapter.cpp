@@ -3,7 +3,7 @@
 #include "Render/Platform/Adapter.h"
 #include "Render/Platform/D3D12MemAlloc.h"
 
-#include <d3d12.h>
+#include <d3dx12.h>
 
 
 namespace
