@@ -28,7 +28,7 @@ namespace yaget::io
 
     // Provides simple "polling" for file changes. 
     // If file was modified, calls ChangedCallback
-    class Watcher : public Noncopyable<Watcher>
+    class Watcher : public NoCopy
     {
     public:
         using ChangedCallback = std::function<void()>;
@@ -64,7 +64,7 @@ namespace yaget::io
 
 #else
 
-    class Watcher : public Noncopyable<Watcher>
+    class Watcher : public NoCopy
     {
     public:
         using ChangedCallback = std::function<void()>;

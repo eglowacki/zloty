@@ -24,7 +24,7 @@ namespace yaget::mt
 { 
     // Creates number of threads and feeds with tasks by using provided callback PopNextTask_t 
     // This class is used by JobPool 
-    class JobProcessor : public Noncopyable<JobProcessor> 
+    class JobProcessor : public NoCopy
     { 
     public: 
         using Task_t = std::function<void()>; 

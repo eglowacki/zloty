@@ -123,7 +123,7 @@ yaget::render::commands::CommandListStorage::CommandListHandle::~CommandListHand
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::CommandListStorage::CommandListHandle::CommandListHandle(CommandListHandle&& other)
+yaget::render::commands::CommandListStorage::CommandListHandle::CommandListHandle(CommandListHandle&& other) noexcept
     : mCommandList{ other.mCommandList }
     , mStorage{ other.mStorage }
 {
@@ -133,7 +133,7 @@ yaget::render::commands::CommandListStorage::CommandListHandle::CommandListHandl
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::CommandListStorage::CommandListHandle& yaget::render::commands::CommandListStorage::CommandListHandle::operator=(CommandListHandle&& other)
+yaget::render::commands::CommandListStorage::CommandListHandle& yaget::render::commands::CommandListStorage::CommandListHandle::operator=(CommandListHandle&& other) noexcept
 {
     mCommandList = other.mCommandList;
     mStorage = other.mStorage;

@@ -79,7 +79,7 @@ void yaget::render::RenderTextures::SaveMappings(io::VirtualTransportSystem::Sec
 //-------------------------------------------------------------------------------------------------
 yaget::render::TextureResources::TextureResources(DeviceB& device, RenderTextures& renderTextures)
     : mDevice(device)
-      , mRenderTextures(renderTextures)
+    , mRenderTextures(renderTextures)
 {
 }
 
@@ -89,11 +89,10 @@ yaget::render::TextureResources::~TextureResources() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResources::GetResources(const io::Tags& /*tags*/)
+std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResources::GetResources(const io::Tags& tags)
 {
     std::vector<ComPtr<ID3D12Resource>> results;
 
-#if 0
     for (const auto& tag : tags)
     {
         {
@@ -101,6 +100,7 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
             if (auto it = mResources.find(tag); it != mResources.end())
             {
                 results.push_back(it->second.mResource);
+                continue;
             }
         }
 
@@ -110,6 +110,7 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
             YLOG_ERROR("REND", "Could not find texture data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
             continue;
         }
+#if 0
 
         mt::WriteLock writeLocker(mSharedMutex);
         auto [textureHeader, texturePixels] = io::TextureAsset::ParseBuffer(textureBuffer);
@@ -222,60 +223,60 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
             z;
 
 #if 0
-    ThrowIfFailed(m_device->CreateCommittedResource(
-        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-        D3D12_HEAP_FLAG_NONE,
-        &textureDesc,
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        nullptr,
-        IID_PPV_ARGS(&m_texture)));
+        ThrowIfFailed(m_device->CreateCommittedResource(
+            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+            D3D12_HEAP_FLAG_NONE,
+            &textureDesc,
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            nullptr,
+            IID_PPV_ARGS(&m_texture)));
 
 
-    D3D12_RESOURCE_DESC resourceDesc = {};
-    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    resourceDesc.Alignment = 0;
-    resourceDesc.Width = textureHeader.mSizeX;
-    resourceDesc.Height = textureHeader.mSizeY;
-    resourceDesc.DepthOrArraySize = 1;
-    resourceDesc.MipLevels = 1;
-    resourceDesc.Format = textureFormat;
-    resourceDesc.SampleDesc.Count = 1;
-    resourceDesc.SampleDesc.Quality = 0;
-    resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+        D3D12_RESOURCE_DESC resourceDesc = {};
+        resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        resourceDesc.Alignment = 0;
+        resourceDesc.Width = textureHeader.mSizeX;
+        resourceDesc.Height = textureHeader.mSizeY;
+        resourceDesc.DepthOrArraySize = 1;
+        resourceDesc.MipLevels = 1;
+        resourceDesc.Format = textureFormat;
+        resourceDesc.SampleDesc.Count = 1;
+        resourceDesc.SampleDesc.Quality = 0;
+        resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-    D3D12MA::ALLOCATION_DESC allocationDesc = {};
-    allocationDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+        D3D12MA::ALLOCATION_DESC allocationDesc = {};
+        allocationDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
 
-    D3D12MA::Allocation* allocation;
-    ComPtr<ID3D12Resource> resource;
+        D3D12MA::Allocation* allocation;
+        ComPtr<ID3D12Resource> resource;
 
-    HRESULT hr = allocator->CreateResource(
-        &allocationDesc,
-        &resourceDesc,
-        D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr,
-        &allocation,
-        IID_PPV_ARGS(&resource));
+        HRESULT hr = allocator->CreateResource(
+            &allocationDesc,
+            &resourceDesc,
+            D3D12_RESOURCE_STATE_GENERIC_READ,
+            nullptr,
+            &allocation,
+            IID_PPV_ARGS(&resource));
 
-    error_handlers::ThrowOnError(hr, std::format("Could not allocate texture resource for tag: {}", conv::ToString(tag)));
-    platform::SetDebugName(resource.Get(), allocation, "Texture", conv::ToString(tag));
+        error_handlers::ThrowOnError(hr, std::format("Could not allocate texture resource for tag: {}", conv::ToString(tag)));
+        platform::SetDebugName(resource.Get(), allocation, "Texture", conv::ToString(tag));
 
-    D3D12_RANGE emptyRange = { 0, 0 };
-    void* mappedPtr;
-    hr = resource->Map(0, &emptyRange, &mappedPtr);
+        D3D12_RANGE emptyRange = { 0, 0 };
+        void* mappedPtr;
+        hr = resource->Map(0, &emptyRange, &mappedPtr);
 
-    memcpy(mappedPtr, io::cast_data<const uint8_t>(texturePixels), io::size_data(texturePixels));
+        memcpy(mappedPtr, io::cast_data<const uint8_t>(texturePixels), io::size_data(texturePixels));
 
-    resource->Unmap(0, nullptr);
+        resource->Unmap(0, nullptr);
 
-    mResources[tag] = { resource, unique_obj<D3D12MA::Allocation>(allocation) };
-    results.push_back(resource);
+        mResources[tag] = { resource, unique_obj<D3D12MA::Allocation>(allocation) };
+        results.push_back(resource);
 #endif
         }
+#endif
     }
 
-#endif
 
     return results;
 }

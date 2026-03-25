@@ -31,7 +31,7 @@ namespace yaget
     namespace io { class VirtualTransportSystem; }
     namespace items { class Director; }
 
-    class Application : public NonCopyMove<Application>  // NOLINT(cppcoreguidelines-special-member-functions)
+    class Application : public NoCopy
     {
     public:
         enum class ReturnCode

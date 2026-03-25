@@ -45,7 +45,7 @@ namespace yaget
 
         // ------------------------------------------------------------------------------------------------------------
         template <typename T, typename Policy>
-        struct ResourceWatchRefresher : public Noncopyable<ResourceWatchRefresher<T, Policy>>
+        struct ResourceWatchRefresher : public NoCopy
         {
             using SmartType = typename mt::SmartVariable<T>::SmartType;
 
@@ -74,7 +74,7 @@ namespace yaget
     
         // ------------------------------------------------------------------------------------------------------------
         template <typename T, typename Policy = DeafultUpdatePolicy>
-        class ResourceWatchCollection : public Noncopyable<ResourceWatchCollection<T, Policy>>
+        class ResourceWatchCollection : public NoCopy
         {
         public:
             using ResourceWatch = ResourceWatchRefresher<T, Policy>;

@@ -66,7 +66,7 @@ namespace yaget::render
 {
     namespace platform { class HardwareDevice; class DeviceDebugger; class Adapter; }
 
-    class Device : public Noncopyable<Device>
+    class Device : public NoCopy
     {
     public:
         // Uniform data

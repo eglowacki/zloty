@@ -166,7 +166,7 @@ namespace yaget::comp
 	//}
 	// 
 	template <typename T>
-	class CollectorHelper : public Noncopyable<CollectorHelper<T>>
+	class CollectorHelper : public NoCopy
 	{
 	public:
 		using Stager = PayloadStager<T>;

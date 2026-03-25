@@ -43,7 +43,7 @@ namespace yaget
             //! Typical value for that is 32 or 64.
             //! This class is used by PoolAllocator class and not design for external use
             template <typename T, int E>
-            class PoolAllocatorLine : public Noncopyable<PoolAllocatorLine<T, E>>
+            class PoolAllocatorLine : public NoCopy
             {
                 static_assert(E > 0, "Number of Slots for Allocator Line must be bigger then 0.");
 
@@ -280,7 +280,7 @@ namespace yaget
         //! TODO: Do we want to add some kind of compaction? This would mean that pointers would need
         //! to be changed,
         template <typename T, int E = internal::GetCapacity<T>()>
-        class PoolAllocator : public Noncopyable<PoolAllocator<T, E>>
+        class PoolAllocator : public NoCopy
         {
         public:
             static constexpr int Size = E;

@@ -25,7 +25,7 @@ namespace yaget::items
     //-------------------------------------------------------------------------------------------------
     // Manages overall scene like items-component, provides id cache wired to DB to assure unique
     // persistent id's across runs of application, unless DB is deleted.
-    class Director : public Noncopyable<Director>
+    class Director : public NoCopy
     {
     public:
         constexpr static int BatchIdMarker = 1;

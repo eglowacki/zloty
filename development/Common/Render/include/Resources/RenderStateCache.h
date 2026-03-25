@@ -35,7 +35,7 @@ namespace yaget
         // The default state list should have all possible types of ResourceView.
         // Then for each description/geometry/shader, call Begin, Set and then End
         // TODO: Allow call Begin/Set recursevly
-        class RenderStateCache : public Noncopyable<RenderStateCache>
+        class RenderStateCache : public NoCopy
         {
         public:
             // Default - whatever makes sense to for this state in how to reset. In most cases it will be treaded as AutoReset.

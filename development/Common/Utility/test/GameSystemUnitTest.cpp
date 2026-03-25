@@ -19,7 +19,7 @@ namespace yaget
 namespace
 {
 
-    class DummyComp : yaget::Noncopyable<DummyComp>
+    class DummyComp : yaget::NoCopy
     {
     public:
         static constexpr int Capacity = 4;
@@ -28,7 +28,7 @@ namespace
         yaget::comp::Id_t mId;
     };
 
-    class DummyComp2 : yaget::Noncopyable<DummyComp2>
+    class DummyComp2 : yaget::NoCopy
     {
     public:
         static constexpr int Capacity = 4;

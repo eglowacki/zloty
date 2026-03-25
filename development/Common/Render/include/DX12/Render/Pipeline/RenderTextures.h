@@ -29,12 +29,6 @@ namespace yaget::render
 {
     class DeviceB;
 
-    //namespace platform
-    //{
-    //    class Adapter;
-    //}
-
-
     //-------------------------------------------------------------------------------------------------
     class RenderTextures : public CacheWatcher<io::Buffer>
     {

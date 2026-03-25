@@ -27,10 +27,10 @@ namespace yaget
     namespace io
     {
 
-        //! Class to handle loading of data from from some persistent storage (like file or network) into buffer and then calls Convertor with buffer as a parameter.
+        //! Class to handle loading of data from some persistent storage (like file or network) into buffer and then calls Convertor with buffer as a parameter.
         //! The actual loading and saving is done by DataLoader derived class.
         //! Expect calls to Convertor/ErrorCallback to be done from different thread.
-        class BlobLoader : public Noncopyable<BlobLoader>
+        class BlobLoader : public NoCopy
         {
         public:
             using ErrorCallback = std::function<void(const std::string& filePathName, const std::string& errorMessage)>;

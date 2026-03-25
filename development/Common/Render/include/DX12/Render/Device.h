@@ -67,7 +67,7 @@ namespace yaget::render
     namespace info { struct Adapter; }
 
     //-------------------------------------------------------------------------------------------------
-    class DeviceB : public Noncopyable<DeviceB>
+    class DeviceB : public NoCopy
     {
     public:
         DeviceB(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo);
@@ -127,7 +127,7 @@ namespace yaget::render
     };
 
     // add class of type DeviceB but stub out all calls as a no-op
-    class NullDevice : public Noncopyable<NullDevice>
+    class NullDevice : public NoCopy
     {
     public:
         NullDevice(app::WindowFrame /*windowFrame*/, const yaget::render::info::Adapter& /*adapterInfo*/) {}

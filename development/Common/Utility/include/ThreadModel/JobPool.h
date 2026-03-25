@@ -33,7 +33,7 @@ namespace yaget::mt
     There is no validation on upper limit and undefined behavior may occur at large values.
     What are a large values you may ask. Circa 2019 it may be thousands or so, later who knows???
     */
-    class JobPool : public Noncopyable<JobPool>
+    class JobPool : public NoCopy
     {
     public:
         using Threads_t = std::map<std::string, JobProcessor::Holder>;

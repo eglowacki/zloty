@@ -37,7 +37,7 @@ namespace yaget
 
         //------------------------------------------------------------------------------------------------------------------------------------------------------
         // class for keeping and organizing metrics.
-        class Gather : public Noncopyable<Gather>
+        class Gather : public NoCopy
         {
         public:
             using IdMarker = uint32_t;
