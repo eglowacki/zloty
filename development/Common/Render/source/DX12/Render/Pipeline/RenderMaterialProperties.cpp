@@ -1,4 +1,4 @@
-#include "Render/Pipeline/RenderMaterials.h"
+#include "Render/Pipeline/RenderMaterialProperties.h"
 
 
 namespace
@@ -35,19 +35,19 @@ namespace
 }
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderMaterials::RenderMaterials(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+yaget::render::RenderMaterialProperties::RenderMaterialProperties(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
     : CacheWatcher(vts, fileName)
 {
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderMaterials::~RenderMaterials() = default;
+yaget::render::RenderMaterialProperties::~RenderMaterialProperties() = default;
 
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::MaterialProperties yaget::render::RenderMaterials::GetMaterial(const io::Tag& tag)
+yaget::render::MaterialProperties yaget::render::RenderMaterialProperties::GetMaterial(const io::Tag& tag)
 {
     auto results = GetMaterials({ tag });
 
@@ -56,7 +56,7 @@ yaget::render::MaterialProperties yaget::render::RenderMaterials::GetMaterial(co
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::MaterialProperties> yaget::render::RenderMaterials::GetMaterials(const io::Tags& tags)
+std::vector<yaget::render::MaterialProperties> yaget::render::RenderMaterialProperties::GetMaterials(const io::Tags& tags)
 {
     std::vector<MaterialProperties> results;
 
@@ -92,12 +92,12 @@ std::vector<yaget::render::MaterialProperties> yaget::render::RenderMaterials::G
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderMaterials::PopulateMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+void yaget::render::RenderMaterialProperties::PopulateMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
 {
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderMaterials::SaveMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
+void yaget::render::RenderMaterialProperties::SaveMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
 {
 }

@@ -5,7 +5,6 @@
 #include "Render/AdapterInfo.h"
 #include "App/AppUtilities.h"
 #include "App/Application.h"
-#include "CommandQueue.h"
 #include "MathFacade.h"
 
 #include <d3dx12.h>

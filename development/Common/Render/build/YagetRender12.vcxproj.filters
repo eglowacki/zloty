@@ -41,6 +41,9 @@
     <Filter Include="Logger">
       <UniqueIdentifier>{21ca6f6f-7168-454e-bbb9-a5735979e14d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Commands Files">
+      <UniqueIdentifier>{c3e3fe38-01f0-42ff-a98e-1e9879d3123d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\Device.h">
@@ -88,9 +91,6 @@
     <ClInclude Include="..\include\DX12\Render\Waiter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\DX12\Render\Platform\CommandQueue.h">
-      <Filter>Source Files\Platform Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\DX12\Render\RenderCore.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -102,15 +102,6 @@
     </ClInclude>
     <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h">
       <Filter>Source Files\Metrics Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\DX12\Render\Platform\Commander.h">
-      <Filter>Source Files\Platform Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\DX12\Render\Platform\CommandListPool.h">
-      <Filter>Source Files\Platform Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\DX12\Render\Platform\CommandAllocators.h">
-      <Filter>Source Files\Platform Files</Filter>
     </ClInclude>
     <ClInclude Include="..\source\DX12\Render\EnumConversion.h">
       <Filter>Source Files</Filter>
@@ -136,7 +127,7 @@
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderShaders.h">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\DX12\Render\Pipeline\RenderMaterials.h">
+    <ClInclude Include="..\include\DX12\Render\Pipeline\RenderMaterialProperties.h">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderTextures.h">
@@ -156,6 +147,21 @@
     </ClInclude>
     <ClInclude Include="..\include\DX12\Render\Pipeline\ConstantBuffer.h">
       <Filter>Source Files\Pipeline Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderAllocator.h">
+      <Filter>Source Files\Commands Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandList.h">
+      <Filter>Source Files\Commands Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderQueue.h">
+      <Filter>Source Files\Commands Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandTypes.h">
+      <Filter>Source Files\Commands Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandListStates.h">
+      <Filter>Source Files\Commands Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -204,9 +210,6 @@
     <ClCompile Include="..\source\DX12\Render\Waiter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\DX12\Render\Platform\CommandQueue.cpp">
-      <Filter>Source Files\Platform Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp">
       <Filter>Source Files\Application Files</Filter>
     </ClCompile>
@@ -219,16 +222,7 @@
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp">
       <Filter>Source Files\Metrics Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\DX12\Render\Platform\Commander.cpp">
-      <Filter>Source Files\Platform Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Platform\ResourceCompiler.cpp">
-      <Filter>Source Files\Platform Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\DX12\Render\Platform\CommandListPool.cpp">
-      <Filter>Source Files\Platform Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\DX12\Render\Platform\CommandAllocators.cpp">
       <Filter>Source Files\Platform Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Polygons\RenderShape.cpp">
@@ -243,7 +237,7 @@
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderShaders.cpp">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\DX12\Render\Pipeline\RenderMaterials.cpp">
+    <ClCompile Include="..\source\DX12\Render\Pipeline\RenderMaterialProperties.cpp">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderTextures.cpp">
@@ -260,6 +254,21 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Pipeline\ConstantBuffer.cpp">
       <Filter>Source Files\Pipeline Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderAllocator.cpp">
+      <Filter>Source Files\Commands Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandList.cpp">
+      <Filter>Source Files\Commands Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderQueue.cpp">
+      <Filter>Source Files\Commands Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandTypes.cpp">
+      <Filter>Source Files\Commands Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandListStates.cpp">
+      <Filter>Source Files\Commands Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

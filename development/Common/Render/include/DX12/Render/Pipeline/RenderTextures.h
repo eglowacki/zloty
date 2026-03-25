@@ -18,8 +18,22 @@
 #include "Render/Cache/CacheWatcher.h"
 
 
+namespace D3D12MA
+{
+    class Allocation;
+}
+
+struct ID3D12Resource;
+
 namespace yaget::render
 {
+    class DeviceB;
+
+    //namespace platform
+    //{
+    //    class Adapter;
+    //}
+
 
     //-------------------------------------------------------------------------------------------------
     class RenderTextures : public CacheWatcher<io::Buffer>
@@ -28,7 +42,6 @@ namespace yaget::render
         RenderTextures(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
         ~RenderTextures();
 
-
         io::Buffer GetTexture(const io::Tag& tag);
         std::vector<io::Buffer> GetTextures(const io::Tags& tags);
 
@@ -36,4 +49,31 @@ namespace yaget::render
         static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
     };
 
+
+    //-------------------------------------------------------------------------------------------------
+    class TextureResources
+    {
+    public:
+        TextureResources(DeviceB& device, RenderTextures& renderTextures);
+        ~TextureResources();
+
+        ComPtr<ID3D12Resource> GetResource(const io::Tag& tag);
+        std::vector<ComPtr<ID3D12Resource>> GetResources(const io::Tags& tags);
+
+    private:
+        DeviceB& mDevice;
+        //const platform::Adapter& mAdapter;
+        RenderTextures& mRenderTextures;
+
+        struct ResourceData
+        {
+            ComPtr<ID3D12Resource> mResource;
+            unique_obj<D3D12MA::Allocation> mAllocation;
+        };
+
+        using ResourceMap = std::map<io::Tag, ResourceData>;
+        ResourceMap mResources;
+
+        std::shared_mutex mSharedMutex;
+    };
 }

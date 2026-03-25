@@ -1,10 +1,11 @@
-#include "Renders/RenderSystem.h"
+#include "Compression/Zipper.h"
+#include "MemoryManager/NewAllocator.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Device.h"
-#include "Render/Platform/Adapter.h"
-#include "Render/Pipeline/ShaderBuffers.h"
 #include "Render/Pipeline/ConstantBuffer.h"
-#include "Compression/Zipper.h"
+#include "Render/Pipeline/ShaderBuffers.h"
+#include "Render/Platform/Adapter.h"
+#include "Renders/RenderSystem.h"
 
 #include <ranges>
 
@@ -52,6 +53,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
       , mRenderShaders(app.VTS(), GetSection("Shaders"))
       , mRenderMaterials(app.VTS(), GetSection("Materials"))
       , mRenderTextures(app.VTS(), GetSection("Textures"))
+      , mTextureResources(GetDevice(), mRenderTextures)
       , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
 {
     mApp.PoolThread().AddTask([this]()
@@ -77,11 +79,17 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
     if (id == comp::END_ID_MARKER)
     {
-        auto& vts = mApp.VTS();
+        memory::StartRecordAllocations();
+
+        YLOG_WARNING("REND", "=========== GameClock Tick: '%d'", gameClock.GetTickCounter());
 
         const colors::Color color = mColorInterpolator.GetValue(gameClock);
         auto& device = GetDevice();
-        auto framerHandle = device.GetFramerHandle(gameClock, channel, &color);
+        auto frameCommands = device.GetFrameCommands(gameClock, channel);
+        frameCommands.BeginFrame(&color);
+
+#if 0
+        auto& vts = mApp.VTS();
         auto commandList = framerHandle.GetCommandList();
         const auto frameIndex = framerHandle.GetFrameIndex();
 
@@ -90,6 +98,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             auto renderComponent = std::get<RenderComponent*>(row);
 
             auto& material = renderComponent->mRenderMaterial;
+            auto materialProperties = mRenderMaterials.GetMaterial(material.mAssetTag);
 
             if (DependencyNode* materialNode = mDependencyGraph.Find(material.mAssetTag.mGuid, nullptr))
             {
@@ -100,35 +109,44 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                     //materialNode->ClearDirty();
                 }
 
-                auto signatureTag = TypeToTag(material.mMaterialProperties.mSignature, vts);
+                auto signatureTag = TypeToTag(materialProperties.mSignature, vts);
                 auto rootSig = mRenderSignatures.GetSignature(signatureTag);
-                //const auto& indexMap = mRenderSignatures.GetIndexMap(signatureTag);
-                //indexMap;
                 commandList->SetGraphicsRootSignature(rootSig);
 
-                auto psoTag = TypeToTag(material.mMaterialProperties.mPSO, vts);
+                auto psoTag = TypeToTag(materialProperties.mPSO, vts);
                 auto pso = mRenderPipelines.GetPipeline(psoTag);
                 commandList->SetPipelineState(pso);
 
-                auto constantBufferTag = TypeToTag(material.mMaterialProperties.mShaderBuffer, vts);
-                auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag);
+                auto location = renderComponent->mMatrix;
 
-                const auto location = renderComponent->mMatrix;
-                float matrix[16];
-                math3d::GetMatrixAsFloats(location, matrix);
-                std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
+                auto constantBufferTag = TypeToTag(materialProperties.mShaderBuffer, vts);
+                if (auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag))
+                {
+                    // this is just test to see if matrix updates get propagated to shader.
+                    float matrix[16];
+                    std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
+                    math3d::Matrix adjustedMatrix = math3d::Matrix(matrix);
+                    constantBuffer->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
 
-                constantBuffer->UpdateData(matrix, sizeof(matrix));
-                constantBuffer->Bind(commandList);
-                
+                    float timeData = 0.5f;//[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
+                    constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
 
-                commandList->SetGraphicsRoot32BitConstants(0, 16, matrix, 0);
+                    //auto textureTag = *renderComponent->mTextureTags.begin();
+                    //auto testResource = mTextureResources.GetResource(textureTag);
+                    //constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Texture2d, testResource.Get());
+
+                    constantBuffer->Bind(commandList);
+                }
 
                 renderComponent->Render(commandList);
             }
 
             return true;
         });
+#endif
+        frameCommands.EndFrame();
+
+        memory::StopRecordAllocations();
     }
     else
     {
@@ -143,10 +161,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
                 if (renderComponent->mRenderMaterial.mAssetTag.mGuid != Guid(data->mAssetGuid))
                 {
-                    auto material = mRenderMaterials.GetMaterial(vts.FindTag(Guid(data->mAssetGuid)));
-
-                    // we need to update material for this render component
-                    renderComponent->mRenderMaterial.ResolveAssetTag(vts.FindTag(Guid(data->mAssetGuid)));
+                    renderComponent->mRenderMaterial.mAssetTag.mGuid = Guid(data->mAssetGuid);
                 }
             }
 
@@ -185,6 +200,7 @@ void defensor::render::RenderSystem::PreloadAssets()
     const Section textureSection("Images");
     auto textureTags = vts.GetTags(textureSection);
     mRenderTextures.GetTextures(textureTags);
+    mTextureResources.GetResources(textureTags);
 
     const Section materialSection("Materials");
     auto materialTags = vts.GetTags(materialSection);
@@ -265,8 +281,8 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     mDependencyGraph.Add(matTag.mGuid, psoTag.mGuid);
     mDependencyGraph.Add(psoTag.mGuid, sigTag.mGuid);
     mDependencyGraph.Add(sigTag.mGuid, shaderBufferTag.mGuid);
-    mDependencyGraph.Add(sigTag.mGuid, vsTag.mGuid);
-    mDependencyGraph.Add(sigTag.mGuid, psTag.mGuid);
+    mDependencyGraph.Add(shaderBufferTag.mGuid, vsTag.mGuid);
+    mDependencyGraph.Add(shaderBufferTag.mGuid, psTag.mGuid);
 
     //mDependencyGraph.ClearDirty(matTag.mGuid);
 }

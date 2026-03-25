@@ -14,8 +14,6 @@
 #pragma once
 
 #include "Render/Cache/AssetCache.h"
-#include "Render/Pipeline/RenderMaterials.h"
-#include "VTS/VirtualTransportSystem.h"
 
 
 namespace defensor::render
@@ -26,19 +24,10 @@ namespace defensor::render
     class RenderMaterial
     {
     public:
-        using AssetCacheType = yaget::render::AssetCacheType;
-
-        RenderMaterial(const io::Tag& assetTag, io::VirtualTransportSystem& vts);
+        RenderMaterial(const io::Tag& assetTag);
         ~RenderMaterial();
 
-        void ResolveAssetTag(const io::Tag& assetTag);
-
         io::Tag mAssetTag;
-        io::VirtualTransportSystem& mVTS;
-
-        using MaterialProperties = yaget::render::MaterialProperties;
-
-        MaterialProperties mMaterialProperties;
     };
 
 }

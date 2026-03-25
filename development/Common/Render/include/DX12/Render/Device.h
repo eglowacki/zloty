@@ -37,7 +37,7 @@
 
 #pragma once
 
-#include "Render/RenderCore.h"
+#include "Render/Commands/RenderCommandList.h"
 #include "App/WindowFrame.h"
 #include "Render/Waiter.h"
 
@@ -52,13 +52,16 @@ namespace yaget
 
 namespace yaget::render
 {
+    namespace commands
+    {
+        class CommandListStorage;
+        class AllocatorStorage;
+        class QueueStorage;
+    }
+
     namespace platform
     {
         class Adapter;
-        class CommandAllocators;
-        class CommandQueues;
-        class CommandListPool;
-        class Fence;
         class SwapChain;
     }
     namespace info { struct Adapter; }
@@ -75,30 +78,48 @@ namespace yaget::render
         int64_t OnHandleRawInput(app::DisplaySurface::PlatformWindowHandle hWnd, uint32_t message, uint64_t wParam, int64_t lParam);
 
         void Shutdown();
+        const platform::Adapter& GetAdapter() const { return *mAdapter.get(); }
 
-        friend Framer;
-
-        struct FramerHandle
+        //--------------------------------
+        // Some refactor for DX12 command classes
+        struct FrameCommands
         {
-            FramerHandle(const time::GameClock& gameClock, metrics::Channel& channel, DeviceB& device, const colors::Color* color);
+            FrameCommands(DeviceB& device, const time::GameClock& gameClock, metrics::Channel& channel);
+            ~FrameCommands();
 
-            ID3D12GraphicsCommandList* GetCommandList();
-            uint32_t GetFrameIndex() const;
-            std::shared_ptr<Framer> mFramer;
+            // This returns first CommandList.
+            commands::CommandList* BeginFrame(const colors::Color* color);
+            void EndFrame();
+
+            // This will return next available CommandList
+            commands::CommandList* GetAvailableCommandList(commands::Type commandType);
+
+        private:
+            commands::QueueStorage& GetQueueStorage() const;
+            commands::AllocatorStorage& GetAllocatorStorage() const;
+            commands::CommandListStorage& GetCommandListStorage() const;
+
+            // Return next available CommandList and add it to mCommandsToRender
+            commands::CommandListStorage::CommandListHandle FindNextFreeCommandList(commands::Type commandType);
+
+            DeviceB* mDevice{};
+            const time::GameClock* mGameClock{};
+            metrics::Channel* mChannel{};
+            std::vector<commands::CommandListStorage::CommandListHandle> mCommandsToRender;
         };
 
-        FramerHandle GetFramerHandle(const time::GameClock& gameClock, metrics::Channel& channel, const colors::Color* color);
-        const platform::Adapter& GetAdapter() const { return *mAdapter.get(); }
+        FrameCommands GetFrameCommands(const time::GameClock& gameClock, metrics::Channel& channel);
 
     private:
         app::WindowFrame mWindowFrame;
+        int mNumBackBuffers{};
         Waiter mWaiter;
 
         std::unique_ptr<platform::Adapter> mAdapter;
-        std::unique_ptr<platform::CommandAllocators> mCommandAllocators;
-        std::unique_ptr<platform::CommandQueues> mCommandQueues;
+        std::unique_ptr<commands::QueueStorage> mQueueStorage;
+        std::unique_ptr<commands::AllocatorStorage> mAllocatorStorage;
+        std::unique_ptr<commands::CommandListStorage> mCommandListStorage;
         std::unique_ptr<platform::SwapChain> mSwapChain;
-        std::unique_ptr<platform::CommandListPool> mCommandListPool;
 
         // map of mapping between frame buffer index and which fence value is associated with that buffer index;
         using FrameFenceValues = std::map<uint32_t, uint64_t>;
@@ -114,7 +135,6 @@ namespace yaget::render
         void Resize() {}
         void SurfaceStateChange() {}
         int64_t OnHandleRawInput(app::DisplaySurface::PlatformWindowHandle /*hWnd*/, uint32_t /*message*/, uint64_t /*wParam*/, int64_t /*lParam*/) { return 0; }
-
-        void RenderFrame(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/) {}
+        void Shutdown();
     };
 }

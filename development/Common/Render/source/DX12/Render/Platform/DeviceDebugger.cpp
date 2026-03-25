@@ -1,3 +1,5 @@
+#include "D3D12MemAlloc.h"
+
 #include "Render/Platform/DeviceDebugger.h"
 #include "HashUtilities.h"
 
@@ -13,7 +15,7 @@ YAGET_COMPILE_GLOBAL_SETTINGS("Debug Render Module Included")
 #include "StringHelpers.h"
 
 #include <filesystem>
-#include <d3d12.h>
+#include <d3dx12.h>
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 
@@ -126,14 +128,45 @@ void yaget::render::platform::DeviceDebugger::ActivateMessageSeverity(const ComP
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::platform::SetDebugName(ID3D12Object* object, const std::string& name, const char* file, unsigned line)
+void yaget::render::platform::SetDebugName(ID3D12Object* object, std::string_view name, const char* file, unsigned line)
 {
-    namespace fs = std::filesystem;
-
-    const auto message = std::format("{}-{}({})", name, fs::path(file).filename().generic_string(), line);
+    const auto message = std::format("{}-{}({})", name, std::filesystem::path(file).filename().generic_string(), line);
     const auto text = conv::utf8_to_wide(message);
-    object->SetName(text.c_str());
+    HRESULT hr = object->SetName(text.c_str());
+    hr;
+    int z = 0;
+    z;
 }
+
+
+//-------------------------------------------------------------------------------------------------
+std::string yaget::render::platform::GetDebugName(ID3D12Object* object)
+{
+    std::string result;
+    uint32_t dataSize = 0;
+    HRESULT hr = object->GetPrivateData(WKPDID_D3DDebugObjectNameW, &dataSize, nullptr);
+    if (SUCCEEDED(hr) && dataSize)
+    {
+        std::wstring name(dataSize, 0);
+        hr = object->GetPrivateData(WKPDID_D3DDebugObjectNameW, &dataSize, name.data());
+        if (SUCCEEDED(hr))
+        {
+            result = conv::wide_to_utf8(name.c_str());
+        }
+    }
+
+    return result;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::SetDebugName(ID3D12Object* object, D3D12MA::Allocation* allocation, std::string_view typeName, std::string_view objectName, const std::source_location& location)
+{
+    std::string debugName = std::format("{}_{}", typeName, objectName);
+    allocation->SetName(conv::utf8_to_wide(debugName).c_str());
+    SetDebugName(object, debugName, location.file_name(), location.line());
+}
+
 #else // YAGET_DEBUG_RENDER == 1
 
 YAGET_COMPILE_GLOBAL_SETTINGS("Debug Render Module NOT Included")

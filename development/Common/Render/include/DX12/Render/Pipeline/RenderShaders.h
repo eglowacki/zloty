@@ -16,7 +16,7 @@
 #include "Streams/Buffers.h"
 #include "VTS/VirtualTransportSystem.h"
 #include "Render/Cache/CacheWatcher.h"
-#include <d3d12.h>
+#include <d3dx12.h> // NOTE(eg) we need to figure out how to not include this dx12 header file
 
 
 namespace yaget::render
@@ -29,7 +29,14 @@ namespace yaget::render
         enum class ConstantTypes
         {
             WorldViewProjection,
-            Time
+            Time,
+            Texture2d,
+            Texture2dSecond,
+            Texture2dThird,
+            Texture2dFourth,
+            Texture3d,
+            Texture2dNormal,
+            Sampler
         };
 
         enum class ConstantLayout
@@ -38,7 +45,9 @@ namespace yaget::render
             Float,
             Float4,
             Int,
-            Int4
+            Int4,
+            Pixels,
+            Struct
         };
 
         enum class RootType

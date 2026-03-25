@@ -4,6 +4,8 @@
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
 
+#include <stacktrace>
+
 
 //-------------------------------------------------------------------------------------------------
 namespace
@@ -40,7 +42,9 @@ yaget::render::AssetCache::Section yaget::render::AssetCache::operator[](AssetCa
     {
         return it->second;
     }
-    YLOG_ERROR("DEVI", "There is no asset section associated with AssetCacheType: '%s'", std::string(internal::CacheTypeToString(typeFlag)).c_str());
+    const auto& stackTrace = std::stacktrace::current(0, 5);
+    const auto stackText = std::to_string(stackTrace);
+    YLOG_ERROR("DEVI", "There is no asset section associated with AssetCacheType: '%s'\n%s", std::string(internal::CacheTypeToString(typeFlag)).c_str(), stackText.c_str());
     return {};
 }
 

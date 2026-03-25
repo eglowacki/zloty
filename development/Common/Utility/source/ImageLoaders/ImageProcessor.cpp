@@ -38,12 +38,13 @@ yaget::io::Buffer yaget::image::GetImage(const io::Buffer& imageData)
 {
     if (auto header = GetImageInfo(imageData); header.GetImageSize())
     {
+        int requiredComp = header.mComponents == 3 ? 4 : header.mComponents;
         int x = 0;
         int y = 0;
         int comp = 0;
-        if (auto imageMemory = stbi_load_from_memory(io::cast_data<const stbi_uc>(imageData), io::size_data<io::Buffer, int>(imageData), &x, &y, &comp, 0))
+        if (auto imageMemory = stbi_load_from_memory(io::cast_data<const stbi_uc>(imageData), io::size_data<io::Buffer, int>(imageData), &x, &y, &comp, requiredComp))
         {
-            header = { .mSizeX = x, .mSizeY = y, .mComponents = comp };
+            header = { .mSizeX = x, .mSizeY = y, .mComponents = requiredComp };
             auto imagePixels = io::CreateBuffer(header.GetImageSize() + sizeof(header));
 
             size_t writeOffset = 0;

@@ -2,5 +2,38 @@
     "WorldViewProjection": {
         "Layout": "Matrix4x4",
         "Type": "WorldViewProjection"
+
+    },
+    "Time": {
+        "Layout": "Float",
+        "Type": "Time"
+    },
+    "Texture2d": {
+        "Layout": "Pixels",
+        "Type": "Texture2d"
+    },
+    "Texture2dSecond": {
+        "Layout": "Pixels",
+        "Type": "Texture2dSecond"
+    },
+    "Texture2dThird": {
+        "Layout": "Pixels",
+        "Type": "Texture2dThird"
+    },
+    "Texture2dFourth": {
+        "Layout": "Pixels",
+        "Type": "Texture2dFourth"
+    },
+    "Texture3d": {
+        "Layout": "Pixels",
+        "Type": "Texture3d"
+    },
+    "Texture2dNormal": {
+        "Layout": "Pixels",
+        "Type": "Texture2dNormal"
+    },
+    "Sampler": {
+        "Layout": "Struct",
+        "Type": "Sampler"
     }
 }

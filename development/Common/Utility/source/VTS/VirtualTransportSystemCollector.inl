@@ -268,6 +268,8 @@ namespace
 
 		~SectionEntriesCollector()
 		{
+            int z = 0;
+			z;
 			//yaget::metrics::MarkEndTimeSpan(reinterpret_cast<std::uintptr_t>(this));
 		}
 

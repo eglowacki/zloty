@@ -1,102 +1,29 @@
 #include "App/AppUtilities.h"
 #include "Metrics/Concurrency.h"
+#include "Render/Commands/RenderAllocator.h"
+#include "Render/Commands/RenderCommandListStates.h"
+#include "Render/Commands/RenderQueue.h"
 #include "Render/Device.h"
-#include "Render/Metrics/RenderMetrics.h"
 #include "Render/Platform/Adapter.h"
-#include "Render/Platform/CommandAllocators.h"
-#include "Render/Platform/CommandListPool.h"
-#include "Render/Platform/CommandQueue.h"
 #include "Render/Platform/SwapChain.h"
 #include "StringHelpers.h"
 #include "Time/GameClock.h"
-#include <d3d12.h>
 
-
-namespace
-{
-    using namespace yaget;
-
-    constexpr uint32_t NumCommands = 6;
-
-    struct Framer
-    {
-        Framer(const time::GameClock& gameClock, metrics::Channel& channel, render::DeviceB& device, const colors::Color* color)
-            : mDevice(device)
-            , mFrameIndex(mDevice.mSwapChain->GetCurrentBackBufferIndex())
-            , mCommandQueue(Framer::GetCommandQueueHandle(device, mFrameIndex))
-            , mCommandHandle(Framer::GetCommandHandle(device, mFrameIndex, color))
-            , mGameClock(gameClock)
-            , mChannel(channel)
-        {}
-
-        ~Framer()
-        {
-            mCommandHandle.TransitionToPresent(true /*closeCommand*/);
-            mCommandQueue.Execute(mCommandHandle);
-            mDevice.mFrameFenceValues[mFrameIndex] = mCommandQueue.Signal();
-
-            mDevice.mSwapChain->Present(mGameClock, mChannel);
-
-            mDevice.mWaiter.Wait();
-        }
-
-        ID3D12GraphicsCommandList* GetCommandList()
-        {
-            return mCommandHandle;
-        }
-
-        uint32_t GetFrameIndex() const
-        {
-            return mFrameIndex;
-        }
-
-        static render::platform::CommandQueues::CQ GetCommandQueueHandle(render::DeviceB& device, uint32_t frameIndex)
-        {
-            auto commandQueues = device.mCommandQueues->GetCQ(render::platform::CommandQueue::Type::Direct, false /*finished*/);
-            const auto fenceValue = device.mFrameFenceValues[frameIndex];
-            commandQueues.Wait(fenceValue);
-
-            return std::move(commandQueues);
-        }
-
-        static render::platform::CommandListPool::Handle GetCommandHandle(render::DeviceB& device, uint32_t frameIndex, const colors::Color* color)
-        {
-            auto allocator = device.mCommandAllocators->GetCommandAllocator(render::platform::CommandQueue::Type::Direct, frameIndex);
-            auto renderTarget = device.mSwapChain->GetCurrentRenderTarget();
-            auto descriptorHeap = device.mSwapChain->GetDescriptorHeap();
-
-            auto commandHandle = device.mCommandListPool->GetCommandList(render::platform::CommandQueue::Type::Direct, allocator, renderTarget, descriptorHeap, frameIndex);
-            commandHandle.TransitionToRenderTarget();
-
-            if (color)
-            {
-                commandHandle.ClearRenderTarget(*color);
-            }
-
-            return commandHandle;
-        }
-
-        render::DeviceB& mDevice;
-        uint32_t mFrameIndex = 0;
-        render::platform::CommandQueues::CQ mCommandQueue;
-        render::platform::CommandListPool::Handle mCommandHandle;
-        const time::GameClock& mGameClock;
-        metrics::Channel& mChannel;
-    };
-
-}
+#include <d3dx12.h>
+#include <ranges>
 
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo)
     : mWindowFrame{ windowFrame }
+    , mNumBackBuffers{ mWindowFrame.GetSurface().NumBackBuffers() }
     , mAdapter{ std::make_unique<platform::Adapter>(mWindowFrame, adapterInfo) }
-    , mCommandAllocators{ std::make_unique<platform::CommandAllocators>(mAdapter->GetDevice(), mWindowFrame.GetSurface().NumBackBuffers()) }
-    , mCommandQueues{ std::make_unique<platform::CommandQueues>(mAdapter->GetDevice()) }
-    , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory(), mCommandQueues->GetCQ(platform::CommandQueue::Type::Direct, false /*finished*/).GetCommandQueue()) }
-    , mCommandListPool{ std::make_unique<platform::CommandListPool>(mAdapter->GetDevice(), NumCommands) }
+    , mQueueStorage{ std::make_unique<commands::QueueStorage>(mAdapter->GetDevice()) }
+    , mAllocatorStorage{ std::make_unique<commands::AllocatorStorage>(mAdapter->GetDevice(), mNumBackBuffers) }
+    , mCommandListStorage{ std::make_unique<commands::CommandListStorage>(mAdapter->GetDevice(), mNumBackBuffers) }
+    , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory(), mQueueStorage->GetQueue(commands::Type::Direct)->GetDeviceCommandQueue()) }
 {
-    for (uint32_t i = 0; i < static_cast<uint32_t>(mWindowFrame.GetSurface().NumBackBuffers()); ++i)
+    for (uint32_t i = 0; i < static_cast<uint32_t>(mNumBackBuffers); ++i)
     {
         mFrameFenceValues[i] = 0;
     }
@@ -119,7 +46,7 @@ void yaget::render::DeviceB::Resize()
 {
     Waiter::Lock scoper(mWaiter);
 
-    mCommandQueues->Reset();
+    mQueueStorage->WaitForAllIdle();
     mSwapChain->Resize();
 }
 
@@ -141,33 +68,121 @@ int64_t yaget::render::DeviceB::OnHandleRawInput(app::DisplaySurface::PlatformWi
 //-------------------------------------------------------------------------------------------------
 void yaget::render::DeviceB::Shutdown()
 {
-    mCommandQueues->Reset();
+    mQueueStorage->WaitForAllIdle();
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::DeviceB::FramerHandle yaget::render::DeviceB::GetFramerHandle(const time::GameClock& gameClock, metrics::Channel& channel, const colors::Color* color)
-{
-    return { gameClock, channel, *this, color };
-}
-
-
-//-------------------------------------------------------------------------------------------------
-yaget::render::DeviceB::FramerHandle::FramerHandle(const time::GameClock& gameClock, metrics::Channel& channel, DeviceB& device, const colors::Color* color)
-    : mFramer(std::make_shared<Framer>(gameClock, channel, device, color))
+yaget::render::DeviceB::FrameCommands::FrameCommands(DeviceB& device, const time::GameClock& gameClock, metrics::Channel& channel)
+    : mDevice{ &device}
+    , mGameClock{ &gameClock }
+    , mChannel{ &channel }
 {
 }
 
 
 //-------------------------------------------------------------------------------------------------
-ID3D12GraphicsCommandList* yaget::render::DeviceB::FramerHandle::GetCommandList()
+yaget::render::DeviceB::FrameCommands::~FrameCommands()
 {
-    return mFramer->GetCommandList();
+    auto frameIndex = mDevice->mSwapChain->GetCurrentBackBufferIndex();
+
+    mDevice->mSwapChain->Present(*mGameClock, *mChannel);
+
+    auto queue = GetQueueStorage().GetQueue(commands::Type::Direct);
+    auto fenceValue = queue->Signal();
+    mDevice->mFrameFenceValues[frameIndex] = fenceValue;
+    mDevice->mWaiter.Wait();
 }
 
 
 //-------------------------------------------------------------------------------------------------
-uint32_t render::DeviceB::FramerHandle::GetFrameIndex() const
+yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::BeginFrame(const colors::Color* color)
 {
-    return mFramer->GetFrameIndex();
+    auto deviceRenderTarget = mDevice->mSwapChain->GetCurrentRenderTarget();
+    auto frameIndex = mDevice->mSwapChain->GetCurrentBackBufferIndex();
+
+    auto thisFrameFenceValue = mDevice->mFrameFenceValues[frameIndex];
+    auto queue = GetQueueStorage().GetQueue(commands::Type::Direct);
+    queue->WaitForFenceCPUBlocking(thisFrameFenceValue);
+
+    auto allocator = GetAllocatorStorage().GetAllocator(commands::Type::Direct, frameIndex);
+    auto deviceDescriptorHeap = mDevice->mSwapChain->GetDescriptorHeap();
+
+    auto commandList = GetAvailableCommandList(commands::Type::Direct);
+    allocator->Reset();
+    commandList->Reset(allocator);
+
+    commands::TransitionToRenderTarget(commandList, deviceRenderTarget, deviceDescriptorHeap, frameIndex);
+
+    if (color)
+    {
+        commands::ClearRenderTarget(commandList, *color, deviceRenderTarget, deviceDescriptorHeap, frameIndex);
+    }
+
+    return commandList;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::DeviceB::FrameCommands::EndFrame()
+{
+    auto deviceRenderTarget = mDevice->mSwapChain->GetCurrentRenderTarget();
+
+    auto& lastCommandList = mCommandsToRender.back();
+    commands::TransitionToPresent(lastCommandList, deviceRenderTarget);
+
+    commands::Queue::CommandLists commandsList = mCommandsToRender | std::ranges::views::transform([this](const auto& command)
+    {
+        return command.Get();
+    }) | std::ranges::to<std::vector>();
+
+    auto queue = GetQueueStorage().GetQueue(commands::Type::Direct);
+    queue->ExecuteCommandLists(commandsList);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::GetAvailableCommandList(commands::Type commandType)
+{
+    auto commandListHandle = FindNextFreeCommandList(commandType);
+    mCommandsToRender.emplace_back(std::move(commandListHandle));
+    return mCommandsToRender.back().Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::commands::QueueStorage& yaget::render::DeviceB::FrameCommands::GetQueueStorage() const
+{
+    return *mDevice->mQueueStorage;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::commands::AllocatorStorage& yaget::render::DeviceB::FrameCommands::GetAllocatorStorage() const
+{
+    return *mDevice->mAllocatorStorage;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::commands::CommandListStorage& yaget::render::DeviceB::FrameCommands::GetCommandListStorage() const
+{
+    return *mDevice->mCommandListStorage;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::commands::CommandListStorage::CommandListHandle yaget::render::DeviceB::FrameCommands::FindNextFreeCommandList(commands::Type commandType)
+{
+    auto frameIndex = mDevice->mSwapChain->GetCurrentBackBufferIndex();
+
+    auto commandList = GetCommandListStorage().GetCommandList(commandType, frameIndex);
+    return commandList;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::DeviceB::FrameCommands yaget::render::DeviceB::GetFrameCommands(const time::GameClock& gameClock, metrics::Channel& channel)
+{
+    return FrameCommands{ *this, gameClock, channel };
 }

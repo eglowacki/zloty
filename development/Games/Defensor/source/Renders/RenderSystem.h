@@ -17,7 +17,7 @@
 #include "Math/Interpolators.h"
 #include "Parsers/DependencyGraph.h"
 #include "Render/DesktopApplication.h"
-#include "Render/Pipeline/RenderMaterials.h"
+#include "Render/Pipeline/RenderMaterialProperties.h"
 #include "Render/Pipeline/RenderPipelines.h"
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderSignatures.h"
@@ -58,8 +58,9 @@ namespace defensor::render
         yaget::render::RenderSignatures mRenderSignatures;
         yaget::render::RenderPipelines mRenderPipelines;
         yaget::render::RenderShaders mRenderShaders;
-        yaget::render::RenderMaterials mRenderMaterials;
+        yaget::render::RenderMaterialProperties mRenderMaterials;
         yaget::render::RenderTextures mRenderTextures;
+        yaget::render::TextureResources mTextureResources;
         yaget::render::ShaderBuffers mShaderBuffers;
 
         RenderState mCurrentRenderState;

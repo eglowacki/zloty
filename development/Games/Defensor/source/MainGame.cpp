@@ -8,7 +8,7 @@
 #include "Render/AdapterInfo.h"
 #include "Render/Cache/AssetCache.h"
 #include "Render/DesktopApplication.h"
-#include "Render/Pipeline/RenderMaterials.h"
+#include "Render/Pipeline/RenderMaterialProperties.h"
 #include "Render/Pipeline/RenderPipelines.h"
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderSignatures.h"
@@ -76,7 +76,7 @@ namespace
         {&yaget::render::RenderPipelines::PopulateMappings, &yaget::render::RenderPipelines::SaveMappings, "Manifest@RenderPipelineOptions"},
         {&yaget::render::RenderShaders::PopulateMappings, &yaget::render::RenderShaders::SaveMappings, "Manifest@ShaderCompileOptions"},
         {&yaget::render::RenderShaders::PopulateReflectorMappings, &yaget::render::RenderShaders::SaveReflectorMappings, "Manifest@ShaderReflectionOptions"},
-        {&yaget::render::RenderMaterials::PopulateMappings, &yaget::render::RenderMaterials::SaveMappings, "Manifest@RenderMaterialOptions"},
+        {&yaget::render::RenderMaterialProperties::PopulateMappings, &yaget::render::RenderMaterialProperties::SaveMappings, "Manifest@RenderMaterialPropertyOptions"},
         {&yaget::render::RenderTextures::PopulateMappings, &yaget::render::RenderTextures::SaveMappings, "Manifest@RenderTextureOptions"},
     };
 
