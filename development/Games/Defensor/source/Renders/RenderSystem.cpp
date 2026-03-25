@@ -81,17 +81,12 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     {
         memory::StartRecordAllocations();
 
-        YLOG_WARNING("REND", "=========== GameClock Tick: '%d'", gameClock.GetTickCounter());
-
         const colors::Color color = mColorInterpolator.GetValue(gameClock);
         auto& device = GetDevice();
         auto frameCommands = device.GetFrameCommands(gameClock, channel);
-        frameCommands.BeginFrame(&color);
+        auto commandList = frameCommands.BeginFrame(&color)->GetDeviceCommandList();;
 
-#if 0
         auto& vts = mApp.VTS();
-        auto commandList = framerHandle.GetCommandList();
-        const auto frameIndex = framerHandle.GetFrameIndex();
 
         coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
         {
@@ -143,9 +138,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
             return true;
         });
-#endif
-        frameCommands.EndFrame();
 
+        frameCommands.EndFrame();
         memory::StopRecordAllocations();
     }
     else
