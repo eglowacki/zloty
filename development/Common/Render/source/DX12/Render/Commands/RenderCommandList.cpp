@@ -123,22 +123,21 @@ yaget::render::commands::CommandListStorage::CommandListHandle::~CommandListHand
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::CommandListStorage::CommandListHandle::CommandListHandle(CommandListHandle&& other)
-    : mCommandList{ other.mCommandList }
-    , mStorage{ other.mStorage }
+yaget::render::commands::CommandListStorage::CommandListHandle::CommandListHandle(CommandListHandle&& other) noexcept
+    : mCommandList{ std::exchange(other.mCommandList, nullptr) }
+    , mStorage{ std::exchange(other.mStorage, nullptr) }
 {
-    other.mCommandList = nullptr;
-    other.mStorage = nullptr;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::CommandListStorage::CommandListHandle& yaget::render::commands::CommandListStorage::CommandListHandle::operator=(CommandListHandle&& other)
+yaget::render::commands::CommandListStorage::CommandListHandle& yaget::render::commands::CommandListStorage::CommandListHandle::operator=(CommandListHandle&& other) noexcept
 {
-    mCommandList = other.mCommandList;
-    mStorage = other.mStorage;
-    other.mCommandList = nullptr;
-    other.mStorage = nullptr;
+    if (this != &other)
+    {
+        mCommandList = std::exchange(other.mCommandList, nullptr);
+        mStorage = std::exchange(other.mStorage, nullptr);
+    }
 
     return *this;
 }

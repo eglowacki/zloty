@@ -99,7 +99,7 @@ namespace yaget::comp
 
     // just provide basic template when using components. This does not add virtual table (vpt).
     template <int Cap = DefaultPoolSize>
-    class BaseComponent : public Noncopyable<BaseComponent<Cap>>
+    class BaseComponent : public NoCopy
     {
     public:
         static constexpr int Capacity = Cap;

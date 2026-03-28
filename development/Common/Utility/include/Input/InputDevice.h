@@ -79,7 +79,7 @@ namespace yaget
         using ActionCallback_t = std::function<void(const std::string& /*contextName*/, const std::string& /*actionName*/, uint64_t /*timeStamp*/, int32_t /*mouseX*/, int32_t /*mouseY*/, uint32_t /*flags*/)>;
         using ActionNonParamCallback_t = std::function<void()>;
 
-        class InputDevice : public Noncopyable<InputDevice>
+        class InputDevice : public NoCopy
         {
         public:
             InputDevice(const InputDevice&) = delete;

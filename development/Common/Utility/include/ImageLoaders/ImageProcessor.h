@@ -25,7 +25,7 @@ namespace yaget::image
         int mSizeX = 0;
         int mSizeY = 0;
         int mComponents = 0;    // number of components in image (rgba = 4, Single = 1)
-        size_t GetImageSize() const { return static_cast<size_t>(mSizeX * mSizeY * mComponents); }
+        size_t GetImageSize() const { return static_cast<size_t>(mSizeX * mComponents * mSizeY); }
         int GetStride() const { return mSizeX * mComponents; }
         size_t GetPixelBits() const { return static_cast<size_t>(mComponents) * 8; }
     };

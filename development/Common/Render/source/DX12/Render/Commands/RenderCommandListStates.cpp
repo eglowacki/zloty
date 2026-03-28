@@ -45,7 +45,7 @@ void yaget::render::commands::TransitionToRenderTarget(CommandList* commandList,
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::commands::TransitionToPresent(CommandList* commandList, ID3D12Resource* renderTarget)
+void yaget::render::commands::TransitionToPresent(const CommandList* commandList, ID3D12Resource* renderTarget)
 {
     YAGET_ASSERT(commandList, "renderTarget is null.");
     YAGET_ASSERT(renderTarget, "renderTarget is null.");

@@ -1,17 +1,14 @@
 #include "Render/Platform/SwapChain.h"
 #include "StringHelpers.h"
 #include "Render/Platform/DeviceDebugger.h"
-#include "Render/Metrics/RenderMetrics.h"
 #include "Render/AdapterInfo.h"
-#include "App/AppUtilities.h"
 #include "App/Application.h"
 #include "MathFacade.h"
+#include "Core/ErrorHandlers.h"
+#include "Render/Pipeline/RenderShaders.h"
 
 #include <d3dx12.h>
 #include <dxgi1_6.h>
-
-#include "Core/ErrorHandlers.h"
-
 
 namespace 
 {
@@ -33,6 +30,7 @@ namespace
 
         return allowTearing == TRUE;
     }
+
 
     //-------------------------------------------------------------------------------------------------
     yaget::render::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, const yaget::render::info::Adapter& adapterInfo, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue, uint32_t numBackBuffers, bool tearingSupported)
@@ -70,21 +68,6 @@ namespace
         return swapChain4;
     }
 
-    //-------------------------------------------------------------------------------------------------
-    yaget::render::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
-    {
-        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-        desc.NumDescriptors = numDescriptors;
-        desc.Type = type;
-    
-        yaget::render::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
-        const HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap));
-        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 DescriptorHeap");
-
-        YAGET_RENDER_SET_DEBUG_NAME(descriptorHeap.Get(), "Yaget Descriptor Heap");
-
-        return descriptorHeap;
-    }
 
     //-------------------------------------------------------------------------------------------------
     yaget::render::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
@@ -163,7 +146,7 @@ ID3D12Resource* yaget::render::platform::SwapChain::GetCurrentRenderTarget() con
 
 
 //-------------------------------------------------------------------------------------------------
-ID3D12DescriptorHeap* yaget::render::platform::SwapChain::GetDescriptorHeap() const
+ID3D12DescriptorHeap* yaget::render::platform::SwapChain::GetRTVDescriptorHeap() const
 {
     return mRTVDescriptorHeap.Get();
 }

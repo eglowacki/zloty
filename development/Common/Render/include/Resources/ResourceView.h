@@ -29,7 +29,7 @@ namespace yaget
     {
         class Device;
 
-        class ResourceView : public Noncopyable<ResourceView>
+        class ResourceView : public NoCopy
         {
         public:
             ResourceView(Device& device, const io::Tag& tag, const std::type_index& typeIndex) : mAssetTag(tag), mDevice(device), mTypeIndex(typeIndex)

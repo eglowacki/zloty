@@ -48,7 +48,7 @@ namespace yaget::comp::gs
     //};
     //
     template <typename CS, typename E, typename M, typename... Comps>
-    class GameSystem : public Noncopyable<GameSystem<CS, E, M, Comps...>>
+    class GameSystem : public NoCopy
     {
     public:
         using EndMarker = E;

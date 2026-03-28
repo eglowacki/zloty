@@ -1,7 +1,7 @@
 // Basic pixel shader ===
 
-//Texture2D<float4> MyTexture : register(t0);
-//SamplerState MySampler : register(s0);
+Texture2D<float4> MyTexture : register(t0);
+SamplerState MySampler : register(s0);
 
 struct PSInput
 {
@@ -11,6 +11,7 @@ struct PSInput
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-    //float4 sampledColor = MyTexture.Sample(MySampler, float2(1.0f, 1.0f));
-    return input.color * input.color;
+    float4 sampledColor = MyTexture.Sample(MySampler, float2(0.5f, 0.5f)) * input.color;
+    return sampledColor;
+    //return input.color * input.color;
 }

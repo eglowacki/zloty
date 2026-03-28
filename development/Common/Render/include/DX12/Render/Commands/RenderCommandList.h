@@ -75,8 +75,8 @@ namespace yaget::render::commands
             CommandListHandle(CommandList* commandList, CommandListStorage* storage);
             ~CommandListHandle();
 
-            CommandListHandle(CommandListHandle&& other);
-            CommandListHandle& operator=(CommandListHandle&& other);
+            CommandListHandle(CommandListHandle&& other) noexcept;
+            CommandListHandle& operator=(CommandListHandle&& other) noexcept;
 
             operator CommandList*() const { return mCommandList; }
             CommandList* operator->() const { return mCommandList; }
@@ -106,8 +106,3 @@ namespace yaget::render::commands
     };
 
 }
-
-//template <typename T>
-//void yaget::render::commands::CommandListStorage::Deleter<T>::operator()(T* object) const
-//{
-//}

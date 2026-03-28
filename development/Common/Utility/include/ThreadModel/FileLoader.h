@@ -27,7 +27,7 @@ namespace yaget::io
 {
     // Interface for getting and saving data blobs. Derived classes will provide connection to file system
     // or possibly to network/internet
-    class DataLoader : public Noncopyable<DataLoader>
+    class DataLoader : public NoCopy
     {
     public:
         using DoneCallback_t = std::function<void(const io::Buffer& fileData, const std::string& fileName)>;

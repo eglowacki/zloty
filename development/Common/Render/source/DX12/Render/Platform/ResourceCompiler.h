@@ -43,10 +43,18 @@ namespace yaget::render
 
         struct RootParameter
         {
+            RootParameter() = default;
+            RootParameter(const D3D12_ROOT_PARAMETER1& parameter, const std::string& variableName, const std::string& variableTypeName);
+            RootParameter(const RootParameter& other);
+            RootParameter& operator=(const RootParameter& other);
+
             D3D12_ROOT_PARAMETER1 mParameter;
             std::string mVariableName;
             std::string mVariableTypeName;
             std::vector<CD3DX12_DESCRIPTOR_RANGE1> mDescriptorRangesScratchPad;
+
+        private:
+            void FixScratchPad();
         };
 
         using RootParameters = std::vector<RootParameter>;
@@ -66,7 +74,7 @@ namespace yaget::render
         uint32_t mMinorVersion = 0;
         D3D12_SHADER_VISIBILITY mShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-        static const RootDescResult MakeRootSignature(const RootParameters& rootParameters);
+        static const RootDescResult MakeRootSignature(const RootParameters& rootParameters, const RootParameters& samplerParameters);
 
         void GenerateSignature(RootParameters& rootParameters);
         D3D12_SHADER_VISIBILITY GeneratePins(uint32_t shaderType, const D3D12_SHADER_DESC& shaderDesc);

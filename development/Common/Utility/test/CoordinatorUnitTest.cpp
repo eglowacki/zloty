@@ -12,13 +12,13 @@
 
 //CHECK_EQUAL(expected, actual);
 
-class DummyComp : yaget::Noncopyable<DummyComp>
+class DummyComp : yaget::NoCopy
 {
 public:
     static constexpr int Capacity = 4;
 };
 
-class DummyComp2 : yaget::Noncopyable<DummyComp2>
+class DummyComp2 : yaget::NoCopy
 {
 public:
     static constexpr int Capacity = 4;

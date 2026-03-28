@@ -25,7 +25,7 @@ namespace yaget
     namespace render::state
     {
 
-        class ResourceActivator : public Noncopyable<ResourceActivator>
+        class ResourceActivator : public NoCopy
         {
         public:
             using ResourcePtr = std::shared_ptr<ResourceView>;

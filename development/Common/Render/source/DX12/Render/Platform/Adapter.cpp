@@ -5,24 +5,70 @@
 
 #include <d3dx12.h>
 
-
 namespace
 {
+#if YAGET_DEBUG_RENDER == 1
+    struct MemoryEntry
+    {
+        size_t mSize{};
+        size_t mOffset{};
+    };
+    using MemoryTracker = std::unordered_map<void*, MemoryEntry>;
+
+    MemoryTracker memoryTracker;
+
+    void PrintMemoryTracker()
+    {
+        YLOG_INFO("GMEM", "=== Graphics Memory Report ===");
+        for (auto [mem, entry] : memoryTracker)
+        {
+            YLOG_INFO("GMEM", "Left Memory: '%p ->%llu'", mem, entry.mSize);
+        }
+    }
+#else
+    void PrintMemoryTracker() {}
+#endif
+
+
+    //-------------------------------------------------------------------------------------------------
     void* GraphicsAllocate(size_t size, size_t alignment, void* /*pPrivateData*/)
     {
         void* memory = _aligned_malloc(size, alignment);
-        YLOG_INFO("GMEM", "Allocate Size: '%llu -> %p'", size, memory);
+
+#if YAGET_DEBUG_RENDER == 1
+        //YLOG_INFO("GMEM", "Allocate Size: '%llu -> %p'", size, memory);
+        memoryTracker[memory] = { size, alignment };
+#endif
+
         return memory;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
     void GraphicsFree(void* memory, void* /*pPrivateData*/)
     {
         if (memory)
         {
-            YLOG_INFO("GMEM", "Free: '%p'", memory);
+#if YAGET_DEBUG_RENDER == 1
+            //YLOG_INFO("GMEM", "Free: '%p'", memory);
+            auto& element = memoryTracker[memory];
+            element.mSize -= _aligned_msize(memory, element.mOffset, 0);
+            if (memoryTracker[memory].mSize == 0)
+            {
+                memoryTracker.erase(memory);
+            }
+#endif
+
             _aligned_free(memory);
         }
     }
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::platform::PrintD3D12MAMemoryTracker()
+{
+    PrintMemoryTracker();
 }
 
 
@@ -81,3 +127,4 @@ D3D12MA::Allocator* yaget::render::platform::Adapter::GetAllocator() const
 {
     return mAllocator.get();
 }
+

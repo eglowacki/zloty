@@ -67,7 +67,7 @@ namespace yaget::render
     namespace info { struct Adapter; }
 
     //-------------------------------------------------------------------------------------------------
-    class DeviceB : public Noncopyable<DeviceB>
+    class DeviceB : public NoCopy
     {
     public:
         DeviceB(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo);
@@ -79,12 +79,14 @@ namespace yaget::render
 
         void Shutdown();
         const platform::Adapter& GetAdapter() const { return *mAdapter.get(); }
+        platform::SwapChain& GetSwapChain() const;
 
         //--------------------------------
         // Some refactor for DX12 command classes
         struct FrameCommands
         {
             FrameCommands(DeviceB& device, const time::GameClock& gameClock, metrics::Channel& channel);
+            FrameCommands(DeviceB& device);
             ~FrameCommands();
 
             // This returns first CommandList.
@@ -95,6 +97,14 @@ namespace yaget::render
             commands::CommandList* GetAvailableCommandList(commands::Type commandType);
 
         private:
+            enum class FrameType
+            {
+                Render,
+                Copy
+            };
+
+            FrameCommands(DeviceB& device, const time::GameClock* gameClock, metrics::Channel* channel, FrameType frameType);
+
             commands::QueueStorage& GetQueueStorage() const;
             commands::AllocatorStorage& GetAllocatorStorage() const;
             commands::CommandListStorage& GetCommandListStorage() const;
@@ -103,14 +113,29 @@ namespace yaget::render
             commands::CommandListStorage::CommandListHandle FindNextFreeCommandList(commands::Type commandType);
 
             DeviceB* mDevice{};
+            uint32_t mFrameIndex{};
             const time::GameClock* mGameClock{};
             metrics::Channel* mChannel{};
             std::vector<commands::CommandListStorage::CommandListHandle> mCommandsToRender;
+
+            FrameType mFrameType{};
+
+            // NOTE(eg) for now we use Direct type for copy. Once I get more familiar
+            // with uploading resources, we'll want to re-visit this and start using an actual Copy type
+            commands::Type mCommandTypeForCopy = commands::Type::Direct;
         };
 
         FrameCommands GetFrameCommands(const time::GameClock& gameClock, metrics::Channel& channel);
+        FrameCommands GetCopyCommands();
 
     private:
+        struct MemoryTrackerReporter
+        {
+            MemoryTrackerReporter() = default;
+            ~MemoryTrackerReporter();
+        };
+
+        MemoryTrackerReporter mMemoryTrackerReporter;
         app::WindowFrame mWindowFrame;
         int mNumBackBuffers{};
         Waiter mWaiter;
@@ -122,12 +147,16 @@ namespace yaget::render
         std::unique_ptr<platform::SwapChain> mSwapChain;
 
         // map of mapping between frame buffer index and which fence value is associated with that buffer index;
-        using FrameFenceValues = std::map<uint32_t, uint64_t>;
+        using FenceValueArray = uint64_t[commands::Type::Max];
+        using FrameFenceValues = std::map<uint32_t, FenceValueArray>;
         FrameFenceValues mFrameFenceValues;
+
+        void SetFrameFenceValue(uint64_t fenceValue, uint32_t frameIndex, commands::Type type);
+        uint64_t GetFrameFenceValue(uint32_t frameIndex, commands::Type type);
     };
 
     // add class of type DeviceB but stub out all calls as a no-op
-    class NullDevice : public Noncopyable<NullDevice>
+    class NullDevice : public NoCopy
     {
     public:
         NullDevice(app::WindowFrame /*windowFrame*/, const yaget::render::info::Adapter& /*adapterInfo*/) {}

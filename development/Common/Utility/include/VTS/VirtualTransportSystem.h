@@ -43,7 +43,7 @@ namespace yaget
         //! To get specific asset at runtime, call RequestBlob with callback to receive said asset when it's loaded and processed.
         //! Assets are stored internally by VirtualTransportSystem and are returned on subsequent request.
         //! Using templatize version RequestBlob, allows handling of proper casting above our code, adding some semblance of correctness
-        class Asset : public Noncopyable<Asset>
+        class Asset : public NoCopy
         {
         public:
             virtual ~Asset() = default;
@@ -62,7 +62,7 @@ namespace yaget
         };
 
         //! Fully multi-threaded and async requests and notifications for file data from "some" source
-        class VirtualTransportSystem : public Noncopyable<VirtualTransportSystem>
+        class VirtualTransportSystem : public NoCopy
         {
         public:
             //! Default    - default values
@@ -281,7 +281,7 @@ namespace yaget
         //--------------------------------------------------------------------------------------------------
         // Synced call to load and get all assets,
         template <typename T>
-        class BLobLoader : public Noncopyable<BLobLoader<T>>
+        class BLobLoader : public NoCopy
         {
         public:
             using AssetPtr = std::shared_ptr<T>;

@@ -76,6 +76,7 @@ namespace
         //{ "Time", { yaget::render::constant_shader_types::ConstantTypes::Time, yaget::render::constant_shader_types::ConstantLayout::Float }}
     };
 
+
     //-------------------------------------------------------------------------------------------------
     const yaget::render::ResourceReflector::IndexMap MakeIndexMap(const yaget::render::ResourceReflector::RootParameters& rootParameters)
     {
@@ -143,6 +144,8 @@ namespace
         return result;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
     std::string GetTextureTypeName(D3D_SRV_DIMENSION dimension)
     {
         switch (dimension)
@@ -174,18 +177,93 @@ namespace
         }
     }
 
+
+    //-------------------------------------------------------------------------------------------------
+    size_t GetNumSamplers(const yaget::render::ResourceReflector::RootParameters& rootParameters)
+    {
+        auto numSamplers = std::ranges::count_if(rootParameters, [](const auto& element)
+        {
+            if (element.mParameter.ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE)
+            {
+                if (element.mParameter.DescriptorTable.NumDescriptorRanges)
+                {
+                    if (element.mParameter.DescriptorTable.pDescriptorRanges->NumDescriptors && element.mParameter.DescriptorTable.pDescriptorRanges->RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        });
+
+        return numSamplers;
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    struct ShaderParameters
+    {
+        ShaderParameters(const yaget::Strings& parameters)
+        {
+            mShaderArguments = parameters | std::views::transform([](const std::string& element)
+            {
+                return yaget::conv::utf8_to_wide(element);
+            }) | std::ranges::to<std::vector<std::wstring>>();
+
+            mArguments = mShaderArguments | std::views::transform([](const std::wstring& element)
+            {
+                return element.c_str();
+            }) | std::ranges::to<std::vector<LPCWSTR>>();
+        }
+
+        std::vector<LPCWSTR> mArguments;
+
+    private:
+        std::vector<std::wstring> mShaderArguments;
+    };
+
+
+    //-------------------------------------------------------------------------------------------------
+    D3D12_STATIC_SAMPLER_DESC CreateSampler(D3D12_FILTER filter, D3D12_TEXTURE_ADDRESS_MODE addressMode, uint32_t shaderRegister, uint32_t shaderSpace)
+    {
+        D3D12_STATIC_SAMPLER_DESC sampler = {};
+        sampler.Filter = filter;//D3D12_FILTER_MIN_MAG_MIP_POINT;
+        sampler.AddressU = addressMode;//D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+        sampler.AddressV = addressMode;//D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+        sampler.AddressW = addressMode;//D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+        sampler.MipLODBias = 0;
+        sampler.MaxAnisotropy = 0;
+        sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+        sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+        sampler.MinLOD = 0.0f;
+        sampler.MaxLOD = D3D12_FLOAT32_MAX;
+        sampler.ShaderRegister = shaderRegister;//0;
+        sampler.RegisterSpace = shaderSpace;//0;
+        sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+        return sampler;
+    }
+
 }
 
 
 //-------------------------------------------------------------------------------------------------
-const yaget::render::ResourceReflector::RootDescResult yaget::render::ResourceReflector::MakeRootSignature(const RootParameters& rootParameters)
+const yaget::render::ResourceReflector::RootDescResult yaget::render::ResourceReflector::MakeRootSignature(const RootParameters& rootParameters, const RootParameters& samplerParameters)
 {
     RootDescResult rootResult;
 
     rootResult.mRootParameters = rootParameters | std::views::transform([](const auto& element)
     {
         return element.mParameter;
-    }) | std::ranges::to<std::vector<D3D12_ROOT_PARAMETER1>>();
+    }) | std::ranges::to<std::vector>();
+
+    rootResult.mSamplerParameters = samplerParameters | std::views::transform([](const auto& element)
+    {
+        auto shaderRegister = element.mParameter.DescriptorTable.pDescriptorRanges->BaseShaderRegister;
+        auto shaderSpace = element.mParameter.DescriptorTable.pDescriptorRanges->RegisterSpace;
+        return CreateSampler(D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, shaderRegister, shaderSpace);;
+    }) | std::ranges::to<std::vector>();
 
     rootResult.mRootSignatureDesc =
     {
@@ -194,8 +272,8 @@ const yaget::render::ResourceReflector::RootDescResult yaget::render::ResourceRe
         {
             .NumParameters = static_cast<uint32_t>(rootResult.mRootParameters.size()),
             .pParameters = rootResult.mRootParameters.data(),
-            .NumStaticSamplers = 0u,
-            .pStaticSamplers = nullptr,
+            .NumStaticSamplers = static_cast<uint32_t>(rootResult.mSamplerParameters.size()),
+            .pStaticSamplers = rootResult.mSamplerParameters.data(),
             .Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
                      D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
                      D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
@@ -204,6 +282,7 @@ const yaget::render::ResourceReflector::RootDescResult yaget::render::ResourceRe
     };
 
     rootResult.mIndexMap = MakeIndexMap(rootParameters);
+    rootResult.mIndexSamplerMap = MakeIndexMap(samplerParameters);
 
     return rootResult;
 }
@@ -219,7 +298,27 @@ void yaget::render::ResourceReflector::MakeRootSignature(ResourceReflector* addi
         additionalReflector->GenerateSignature(rootParameters);
     }
 
-    const RootDescResult rootResult = MakeRootSignature(rootParameters);
+    auto numSamplers = GetNumSamplers(rootParameters);
+    RootParameters samplerParameters{ numSamplers, {} };
+    size_t currentIndex = 0;
+    rootParameters.erase(std::ranges::remove_if(rootParameters, [&samplerParameters, &currentIndex](const RootParameter& element)
+    {
+        if (element.mParameter.ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE)
+        {
+            if (element.mParameter.DescriptorTable.NumDescriptorRanges)
+            {
+                if (element.mParameter.DescriptorTable.pDescriptorRanges->NumDescriptors && element.mParameter.DescriptorTable.pDescriptorRanges->RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
+                {
+                    samplerParameters[currentIndex++] = element;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }).begin(), rootParameters.end());
+
+    const RootDescResult rootResult = MakeRootSignature(rootParameters, samplerParameters);
 
     descriptionCallback(rootResult);
 }
@@ -255,32 +354,6 @@ yaget::render::ResourceCompiler::~ResourceCompiler() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-namespace
-{
-    struct ShaderParameters
-    {
-        ShaderParameters(const yaget::Strings& parameters)
-        {
-            mShaderArguments = parameters | std::views::transform([](const std::string& element)
-            {
-                return yaget::conv::utf8_to_wide(element);
-            }) | std::ranges::to<std::vector<std::wstring>>();
-
-            mArguments = mShaderArguments | std::views::transform([](const std::wstring& element)
-            {
-                return element.c_str();
-            }) | std::ranges::to<std::vector<LPCWSTR>>();
-        }
-
-        std::vector<LPCWSTR> mArguments;
-
-    private:
-        std::vector<std::wstring> mShaderArguments;
-    };
-}
-
-
-//-------------------------------------------------------------------------------------------------
 yaget::render::ResourceCompiler::CompileResult yaget::render::ResourceCompiler::Compile(io::BufferView data, const Strings& parameters) const
 {
     CompileResult compiledResult;
@@ -299,7 +372,7 @@ yaget::render::ResourceCompiler::CompileResult yaget::render::ResourceCompiler::
 
     if (errors && errors->GetStringLength())
     {
-        error_handlers::ThrowOnError(hr, std::format("Did not compile shader. {}", errors->GetStringPointer()));
+        error_handlers::Throw("COMP", std::format("Did not compile shader. {}", errors->GetStringPointer()));
     }
 
     ComPtr<IDxcBlob> shaderBin;
@@ -339,6 +412,56 @@ yaget::render::ResourceReflector::ResourceReflector(IDxcUtils* utils, io::Buffer
     const DxcBuffer reflectionBuffer{ .Ptr = bufferPtr, .Size = bufferSize, .Encoding = 0, };
     HRESULT hr = utils->CreateReflection(&reflectionBuffer, IID_PPV_ARGS(&mShaderReflection));
     error_handlers::ThrowOnError(hr, "Could not get Shader Reflection from compiled shader.");
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::ResourceReflector::RootParameter::RootParameter(const D3D12_ROOT_PARAMETER1& parameter, const std::string& variableName, const std::string& variableTypeName)
+    : mParameter{ parameter }
+    , mVariableName{ variableName }
+    , mVariableTypeName{ variableTypeName }
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::ResourceReflector::RootParameter::RootParameter(const RootParameter& other)
+    : RootParameter(other.mParameter, other.mVariableName, other.mVariableTypeName)
+{
+    mDescriptorRangesScratchPad = other.mDescriptorRangesScratchPad;
+    FixScratchPad();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::ResourceReflector::RootParameter& yaget::render::ResourceReflector::RootParameter::operator=(const RootParameter& other)
+{
+    if (this != &other)
+    {
+        mParameter = other.mParameter;
+        mVariableName = other.mVariableName;
+        mVariableTypeName = other.mVariableTypeName;
+        mDescriptorRangesScratchPad = other.mDescriptorRangesScratchPad;
+        FixScratchPad();
+    }
+
+    return *this;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::ResourceReflector::RootParameter::FixScratchPad()
+{
+    if (!mDescriptorRangesScratchPad.empty())
+    {
+        if (mParameter.ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE)
+        {
+            if (mParameter.DescriptorTable.NumDescriptorRanges)
+            {
+                mParameter.DescriptorTable.pDescriptorRanges = &mDescriptorRangesScratchPad.back();
+            }
+        }
+    }
 }
 
 
@@ -433,99 +556,48 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
                 error_handlers::ThrowOnCheck(!variableTypeName.empty(), std::format("Could not get variable type name for constant buffer: '{}'", constantBufferDesc.Name));
 
                 // NOTE(eg) we may want to consider having path for small (one matrix?) root const buffer
-                D3D12_ROOT_PARAMETER1 rootParameter = {};
+                CD3DX12_ROOT_PARAMETER1 rootParameter = {};
 
-                if (constantBufferDesc.Variables * constantBufferDesc.Size < sizeof(float) * 4)
+                if (constantBufferDesc.Variables * constantBufferDesc.Size <= sizeof(float) * 4)
                 {
-                    rootParameter = D3D12_ROOT_PARAMETER1
-                    {
-                        .ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS,
-                        .Constants
-                        {
-                            .ShaderRegister = shaderInputBindDesc.BindPoint,
-                            .RegisterSpace = shaderInputBindDesc.Space,
-                            .Num32BitValues = 16,
-                        },
-                        .ShaderVisibility = mShaderVisibility,
-                    };
+                    rootParameter.InitAsConstants(constantBufferDesc.Size / 4, shaderInputBindDesc.BindPoint, shaderInputBindDesc.Space, mShaderVisibility);
                 }
                 else
                 {
-                    rootParameter = D3D12_ROOT_PARAMETER1
-                    {
-                        .ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV,
-                        .Descriptor
-                        {
-                            .ShaderRegister = shaderInputBindDesc.BindPoint,
-                            .RegisterSpace = shaderInputBindDesc.Space,
-                            .Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
-                        },
-                        .ShaderVisibility = mShaderVisibility,
-                    };
+                    rootParameter.InitAsConstantBufferView(shaderInputBindDesc.BindPoint, shaderInputBindDesc.Space, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, mShaderVisibility);
                 }
 
-                rootParameters.push_back({ .mParameter = rootParameter, .mVariableName = shaderInputBindDesc.Name, .mVariableTypeName = variableTypeName });
+                rootParameters.push_back({ rootParameter, shaderInputBindDesc.Name, variableTypeName });
             }
             break;
             case D3D_SIT_TEXTURE:
-            {
-                //ID3D12ShaderReflectionConstantBuffer* shaderReflectionConstantBuffer = mShaderReflection->GetConstantBufferByIndex(i);
-
-                //D3D12_SHADER_BUFFER_DESC constantBufferDesc{};
-                //hr = shaderReflectionConstantBuffer->GetDesc(&constantBufferDesc);
-                //error_handlers::ThrowOnError(hr, std::format("Could not get Constant Buffer Description from compiled vertex shader. BoundResources Index: {}", i));
-
-                //std::string variableTypeName = GetVariableTypeName(shaderReflectionConstantBuffer, constantBufferDesc.Name);
-                //error_handlers::ThrowOnCheck(!variableTypeName.empty(), std::format("Could not get variable type name for constant buffer: '{}'", constantBufferDesc.Name));
-
-                rootParameters.push_back({});
-                auto& parameter = rootParameters.back();
-                const CD3DX12_DESCRIPTOR_RANGE1 srvRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
-                                                         1u,
-                                                         shaderInputBindDesc.BindPoint,
-                                                         shaderInputBindDesc.Space,
-                                                         D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
-
-                parameter.mDescriptorRangesScratchPad.push_back(srvRange);
-
-                parameter.mParameter =
-                {
-                    .ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
-                    .DescriptorTable
-                    {
-                        .NumDescriptorRanges = 1u,
-                        .pDescriptorRanges = &parameter.mDescriptorRangesScratchPad.back(),
-                    },
-                    .ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL,
-                };
-
-                parameter.mVariableName = shaderInputBindDesc.Name;
-                parameter.mVariableTypeName = GetTextureTypeName(shaderInputBindDesc.Dimension);
-            }
-            break;
             case D3D_SIT_SAMPLER:
             {
-                rootParameters.push_back({});
-                auto& parameter = rootParameters.back();
-                const CD3DX12_DESCRIPTOR_RANGE1 srvRange(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER,
-                                                         1u,
-                                                         shaderInputBindDesc.BindPoint,
-                                                         shaderInputBindDesc.Space);
+                D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = shaderInputBindDesc.Type == D3D_SIT_TEXTURE ? D3D12_DESCRIPTOR_RANGE_TYPE_SRV : D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+                CD3DX12_DESCRIPTOR_RANGE1 srvRange{};
+                srvRange.Init(descriptorRangeType, 1, shaderInputBindDesc.BindPoint, shaderInputBindDesc.Space, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
 
-                parameter.mDescriptorRangesScratchPad.push_back(srvRange);
-                parameter.mParameter =
+                ResourceReflector::RootParameter reflectorRootParameter{};
+                reflectorRootParameter.mDescriptorRangesScratchPad.push_back(srvRange);
+
+                uint32_t numDescriptors = static_cast<uint32_t>(reflectorRootParameter.mDescriptorRangesScratchPad.size());
+                auto dataDescriptors = reflectorRootParameter.mDescriptorRangesScratchPad.data();
+                CD3DX12_ROOT_PARAMETER1 rootParameter{};
+                rootParameter.InitAsDescriptorTable(numDescriptors, dataDescriptors, D3D12_SHADER_VISIBILITY_PIXEL);
+
+                reflectorRootParameter.mParameter = rootParameter;
+                reflectorRootParameter.mVariableName = shaderInputBindDesc.Name;
+
+                if (shaderInputBindDesc.Type == D3D_SIT_TEXTURE)
                 {
-                    .ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE,
-                    .DescriptorTable
-                    {
-                        .NumDescriptorRanges = 1u,
-                        .pDescriptorRanges = &parameter.mDescriptorRangesScratchPad.back(),
-                    },
-                    .ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL,
-                };
+                    reflectorRootParameter.mVariableTypeName = GetTextureTypeName(shaderInputBindDesc.Dimension);
+                }
+                else
+                {
+                    reflectorRootParameter.mVariableTypeName = "Sampler";
+                }
 
-                parameter.mVariableName = shaderInputBindDesc.Name;
-                parameter.mVariableTypeName = "Sampler";
+                rootParameters.push_back(reflectorRootParameter);
             }
             break;
             default:

@@ -81,7 +81,7 @@ namespace yaget::comp
     // Coordinator stores map of items (keyed on item id), manages creation, storage and deletion of components.
     // It uses PoolAllocator as a storage for components.
     template <typename P>
-    class Coordinator : public Noncopyable<Coordinator<P>>
+    class Coordinator : public NoCopy
     {
     public:
         using Policy = P;

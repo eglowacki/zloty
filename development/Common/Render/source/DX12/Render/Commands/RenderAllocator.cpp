@@ -65,7 +65,7 @@ yaget::render::commands::AllocatorStorage::AllocatorStorage(ID3D12Device* device
         allocatorListCompute.push_back({ std::make_unique<Allocator>(device, Type::Compute), i});
 
         auto& allocatorListCopy= mAllocators[Type::Copy];
-        allocatorListCopy.push_back({ std::make_unique<Allocator>(device, Type::Copy),1 });
+        allocatorListCopy.push_back({ std::make_unique<Allocator>(device, Type::Copy), i });
     }
 }
 

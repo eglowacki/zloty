@@ -8,6 +8,8 @@
 #include "Json/JsonHelpers.h"
 #include "Exception/Exception.h"
 
+#include "Render/Platform/DeviceDebugger.h"
+
 
 namespace
 {
@@ -125,13 +127,14 @@ namespace
 
         parameters.emplace_back("-encoding");
         parameters.emplace_back("utf8");
-        parameters.emplace_back("-fdiagnostics-format=msvc");
+        parameters.emplace_back("-fdiagnostics-format=msvc");   
+        parameters.emplace_back("-WX");                 // Warnings as errors
 
         if (debugShader)
         {
-            parameters.emplace_back("-Zi");
-            parameters.emplace_back("-Qembed_debug");
-            parameters.emplace_back("-Od");
+            parameters.emplace_back("-Zi");             // debug code
+            parameters.emplace_back("-Qembed_debug");   // Embed PDB in shader container (must be used with /Zi)
+            parameters.emplace_back("-Od");             // skip optimizations
         }
 
         return parameters;
@@ -176,6 +179,30 @@ namespace yaget::render
 }
 
 
+
+//-------------------------------------------------------------------------------------------------
+size_t yaget::render::constant_shader_types::GetConstantLayoutSize(ConstantLayout constantLayout)
+{
+    switch (constantLayout)
+    {
+        case ConstantLayout::Matrix4x4:
+            return sizeof(float) * 4 * 4;
+        case ConstantLayout::Float:
+            return sizeof(float);
+        case ConstantLayout::Float4:
+            return sizeof(float) * 4;
+        case ConstantLayout::Int:
+            return sizeof(uint32_t);
+        case ConstantLayout::Int4:
+            return sizeof(uint32_t) * 4;
+        case ConstantLayout::Pixels:
+        case ConstantLayout::Struct:
+            break;
+    }
+
+    return UnnamedSize;
+}
+
 //-------------------------------------------------------------------------------------------------
 yaget::render::RenderShaders::RenderShaders(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
     : CacheWatcher(vts, fileName)
@@ -207,6 +234,13 @@ std::vector<yaget::io::Buffer> yaget::render::RenderShaders::GetShaders(const io
         return AssureShaderNonMT(tag, shaderType);
     }) | std::ranges::to<std::vector>();
     return results;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::RenderShaders::Preload(const io::Tags& tags, ShaderType shaderType)
+{
+    GetShaders(tags, shaderType);
 }
 
 
@@ -334,4 +368,37 @@ yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const io::Tag&
     mCache.SaveCachedAsset(tag, buffer);
     mReflections.insert({ tag, reflection });
     return buffer;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::ComPtr<ID3D12DescriptorHeap> yaget::render::CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+{
+    D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+    desc.NumDescriptors = numDescriptors;
+    desc.Type = type;
+    if (type == D3D12_DESCRIPTOR_HEAP_TYPE_RTV)
+    {
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    }
+    else if (type == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+    {
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    }
+    else if (type == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER)
+    {
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    }
+    else
+    {
+        YAGET_ASSERT(false, std::format("Descriptor Type: '{}' not handled!!!", magic_enum::enum_name(type)).c_str());
+    }
+
+    ComPtr<ID3D12DescriptorHeap> descriptorHeap;
+    const HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap));
+    error_handlers::ThrowOnError(hr, "Could not create DX12 DescriptorHeap");
+
+    YAGET_RENDER_SET_DEBUG_NAME(descriptorHeap.Get(), std::format("DescriptorHeap-{}", magic_enum::enum_name(type)).c_str());
+
+    return descriptorHeap;
 }

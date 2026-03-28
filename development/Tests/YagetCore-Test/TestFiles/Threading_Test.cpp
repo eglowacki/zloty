@@ -12,7 +12,7 @@ class Threading : public ::testing::Test
 };
 
 
-class Foo : public yaget::NonCopyMove<Foo>
+class Foo : public yaget::NoCopy
 {
 private:
     int mZ = 417;

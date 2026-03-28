@@ -45,7 +45,7 @@ namespace yaget::metrics
 
     namespace internal
     {
-        class Metric : public yaget::Noncopyable<Metric>
+        class Metric : public NoCopy
         {
         public:
             virtual ~Metric() = default;

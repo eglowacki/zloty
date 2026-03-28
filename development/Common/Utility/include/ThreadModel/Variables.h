@@ -28,7 +28,7 @@ namespace yaget::mt
     //!  f2 = varFoo;
     //!  assert(f1 == f2);
     template<typename T>
-    struct Variable : public Noncopyable<Variable<T>>
+    struct Variable : public NoCopy
     {
         using Type = T;
 
@@ -106,7 +106,7 @@ namespace yaget::mt
     // Provides specialized mt read and write for shared_ptr<T>
     // TODO: make this class specialized template from Variable
     template<typename T>
-    struct SmartVariable : public Noncopyable<SmartVariable<T>>
+    struct SmartVariable : public NoCopy
     {
         using SmartType = std::shared_ptr<T>;
         using SmartType2 = std::atomic<std::shared_ptr<T>>;
