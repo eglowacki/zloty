@@ -129,6 +129,13 @@ namespace yaget::render
         FrameCommands GetCopyCommands();
 
     private:
+        struct MemoryTrackerReporter
+        {
+            MemoryTrackerReporter() = default;
+            ~MemoryTrackerReporter();
+        };
+
+        MemoryTrackerReporter mMemoryTrackerReporter;
         app::WindowFrame mWindowFrame;
         int mNumBackBuffers{};
         Waiter mWaiter;

@@ -48,5 +48,7 @@ namespace yaget::render::platform
         std::unique_ptr<D3D12MA::ALLOCATION_CALLBACKS> mAllocationCallbacks;
     };
 
+    void PrintD3D12MAMemoryTracker();
+
 } // namespace yaget::render::platform
 

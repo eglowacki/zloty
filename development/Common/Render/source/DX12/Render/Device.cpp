@@ -289,6 +289,13 @@ yaget::render::DeviceB::FrameCommands yaget::render::DeviceB::GetCopyCommands()
 
 
 //-------------------------------------------------------------------------------------------------
+yaget::render::DeviceB::MemoryTrackerReporter::~MemoryTrackerReporter()
+{
+    yaget::render::platform::PrintD3D12MAMemoryTracker();
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::DeviceB::SetFrameFenceValue(uint64_t fenceValue, uint32_t frameIndex, commands::Type type)
 {
     mFrameFenceValues[frameIndex][static_cast<uint32_t>(type)] = fenceValue;
