@@ -189,6 +189,11 @@ void yaget::render::commands::Queue::ExecuteCommandList(CommandList* commandList
 //-------------------------------------------------------------------------------------------------
 void yaget::render::commands::Queue::ExecuteCommandLists(const CommandLists& commandLists)
 {
+    if (commandLists.empty())
+    {
+        return;
+    }
+
     for (const auto& commandList : commandLists)
     {
         commandList->Close();

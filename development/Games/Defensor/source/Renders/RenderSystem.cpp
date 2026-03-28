@@ -117,18 +117,19 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 auto constantBufferTag = TypeToTag(materialProperties.mShaderBuffer, vts);
                 if (auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag))
                 {
+                    auto matrixInterpolateValue = mMatrixInterpolator.GetValue(gameClock);
                     // this is just test to see if matrix updates get propagated to shader.
                     float matrix[16];
-                    std::ranges::fill(matrix, mMatrixInterpolator.GetValue(gameClock));
+                    std::ranges::fill(matrix, matrixInterpolateValue);
                     math3d::Matrix adjustedMatrix = math3d::Matrix(matrix);
                     constantBuffer->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
 
-                    float timeData = 0.5f;//[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
+                    float timeData = matrixInterpolateValue;//[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
                     constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
 
-                    //auto textureTag = *renderComponent->mTextureTags.begin();
-                    //auto testResource = mTextureResources.GetResource(textureTag);
-                    //constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Texture2d, testResource.Get());
+                    auto textureTag = *renderComponent->mTextureTags.begin();
+                    auto textureView = mTextureResources.GetResourceView(textureTag);
+                    constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Texture2d, textureView.Get());
 
                     constantBuffer->Bind(commandList);
                 }
@@ -188,13 +189,13 @@ void defensor::render::RenderSystem::PreloadAssets()
     const Section pixelShaderSection("PixelShaders");
     auto pixelShaderTags = vts.GetTags(pixelShaderSection);
 
-    mRenderShaders.GetShaders(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex);
-    mRenderShaders.GetShaders(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel);
+    mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex);
+    mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel);
 
     const Section textureSection("Images");
     auto textureTags = vts.GetTags(textureSection);
-    mRenderTextures.GetTextures(textureTags);
-    mTextureResources.GetResources(textureTags);
+    mRenderTextures.Preload(textureTags);
+    mTextureResources.Preload(textureTags);
 
     const Section materialSection("Materials");
     auto materialTags = vts.GetTags(materialSection);

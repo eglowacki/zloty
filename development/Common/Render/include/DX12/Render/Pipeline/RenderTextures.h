@@ -24,6 +24,7 @@ namespace D3D12MA
 }
 
 struct ID3D12Resource;
+struct ID3D12DescriptorHeap;
 
 namespace yaget::render
 {
@@ -39,6 +40,8 @@ namespace yaget::render
         io::Buffer GetTexture(const io::Tag& tag);
         std::vector<io::Buffer> GetTextures(const io::Tags& tags);
 
+        void Preload(const io::Tags& tags);
+
         static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
         static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
     };
@@ -51,18 +54,21 @@ namespace yaget::render
         TextureResources(DeviceB& device, RenderTextures& renderTextures);
         ~TextureResources();
 
+        ComPtr<ID3D12DescriptorHeap> GetResourceView(const io::Tag& tag);
         ComPtr<ID3D12Resource> GetResource(const io::Tag& tag);
         std::vector<ComPtr<ID3D12Resource>> GetResources(const io::Tags& tags);
 
+        void Preload(const io::Tags& tags);
+
     private:
         DeviceB& mDevice;
-        //const platform::Adapter& mAdapter;
         RenderTextures& mRenderTextures;
 
         struct ResourceData
         {
-            ComPtr<ID3D12Resource> mResource;
             unique_obj<D3D12MA::Allocation> mAllocation;
+            ComPtr<ID3D12Resource> mResource;
+            ComPtr<ID3D12DescriptorHeap> mDescriptorHeap;
         };
 
         using ResourceMap = std::map<io::Tag, ResourceData>;

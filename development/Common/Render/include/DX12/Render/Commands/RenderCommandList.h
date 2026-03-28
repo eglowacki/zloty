@@ -106,8 +106,3 @@ namespace yaget::render::commands
     };
 
 }
-
-//template <typename T>
-//void yaget::render::commands::CommandListStorage::Deleter<T>::operator()(T* object) const
-//{
-//}

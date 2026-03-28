@@ -59,6 +59,20 @@ namespace yaget::io
     }
 
 
+    template <typename T>
+    T* cast_data_to_ptr(Buffer buffer)
+    {
+        return (T*)*io::cast_data<ptrdiff_t>(buffer);
+    }
+
+
+    template <typename T>
+    T* cast_data_to_ptr(BufferView& buffer)
+    {
+        return (T*)*io::cast_data<ptrdiff_t>(buffer);
+    }
+
+
     inline BufferView cast_to_view(const Buffer& buffer, size_t offset = 0, size_t range = 0)
     {
         YAGET_ASSERT(range == 0, "range for buffer view is not implemented yet!!!");

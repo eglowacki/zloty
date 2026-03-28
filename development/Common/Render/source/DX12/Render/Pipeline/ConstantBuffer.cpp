@@ -14,8 +14,14 @@ yaget::render::ConstantBuffer::ConstantBuffer(const ShaderVariables& shaderVaria
 yaget::render::ConstantBuffer::~ConstantBuffer()
 {
     std::vector<D3D12MA::Allocation*> allocationsToRelease = std::ranges::views::transform(mShaderVariables,
-                                                                                           [](const auto& shaderVariable) { return shaderVariable.mAllocation; }) |
-        std::views::filter([](const auto& shaderVariable) { return shaderVariable != nullptr; }) |
+        [](const auto& shaderVariable)
+        {
+            return shaderVariable.mAllocation;
+        }) |
+        std::views::filter([](const auto& shaderVariable)
+        {
+            return shaderVariable != nullptr;
+        }) |
         std::ranges::to<std::vector>();
 
     mShaderVariables.clear();
@@ -30,6 +36,13 @@ bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTy
     {
         if (variable->mRootType == constant_shader_types::RootType::Constant)
         {
+            YLOG_CERROR("REND", (constant_shader_types::GetConstantLayoutSize(variable->mConstantLayout) == dataSize), 
+                std::format("Variable: '{}' update data size: '{} bytes/{} word(s)' does not match Constant Layout size: '{} bytes/{} word(s)'.",
+                    magic_enum::enum_name(constantTypes),
+                    dataSize, dataSize/4, 
+                    constant_shader_types::GetConstantLayoutSize(variable->mConstantLayout),
+                    constant_shader_types::GetConstantLayoutSize(variable->mConstantLayout)/4).c_str());
+
             mVariableUpdateData[constantTypes] = io::CreateBuffer(data, dataSize);
         }
         else if (variable->mRootType == constant_shader_types::RootType::ConstantBufferView)
@@ -49,6 +62,22 @@ bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTy
 
             variable->mResource->Unmap(0, nullptr);
         }
+        else if (variable->mRootType == constant_shader_types::RootType::Table)
+        {
+            switch (variable->mConstantType)
+            {
+                case constant_shader_types::ConstantTypes::Texture2d:
+                case constant_shader_types::ConstantTypes::Texture2dSecond:
+                case constant_shader_types::ConstantTypes::Texture2dThird:
+                case constant_shader_types::ConstantTypes::Texture2dFourth:
+                {
+                    mVariableUpdateData[constantTypes] = io::CreateBuffer(data, dataSize);
+                    break;
+                }
+                default:
+                    YLOG_ERROR("REND", std::format("Variable Type '{}' not handled for updating data.", magic_enum::enum_name(variable->mConstantType)).c_str());
+            }
+        }
     }
 
     return true;
@@ -59,6 +88,13 @@ bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTy
 bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTypes /*constantTypes*/, ID3D12Resource* /*resource*/)
 {
     return false;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTypes constantTypes, ID3D12DescriptorHeap* resourceView)
+{
+    return UpdateData<ID3D12DescriptorHeap*>(constantTypes, resourceView);
 }
 
 
@@ -89,8 +125,14 @@ void yaget::render::ConstantBuffer::Bind(ID3D12GraphicsCommandList* commandList)
         }
         else if (variable.mRootType == constant_shader_types::RootType::Table)
         {
-            int z = 0;
-            z;
+            if (auto it = mVariableUpdateData.find(variable.mConstantType); it != mVariableUpdateData.end())
+            {
+                const auto& dataBuffer = it->second;
+                ID3D12DescriptorHeap* srvHeap = io::cast_data_to_ptr<ID3D12DescriptorHeap>(dataBuffer);
+                ID3D12DescriptorHeap* ppHeaps[] = { srvHeap };
+                commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+                commandList->SetGraphicsRootDescriptorTable(variable.mIndex, srvHeap->GetGPUDescriptorHandleForHeapStart());
+            }
         }
     }
 }

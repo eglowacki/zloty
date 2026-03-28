@@ -50,6 +50,9 @@ namespace yaget::render
             Struct
         };
 
+        constexpr size_t UnnamedSize = std::numeric_limits<size_t>::max();
+        size_t GetConstantLayoutSize(ConstantLayout constantLayout);
+
         enum class RootType
         {
             Table,
@@ -91,6 +94,8 @@ namespace yaget::render
         io::Buffer GetShader(const io::Tag& tag, ShaderType shaderType);
         std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType);
 
+        void Preload(const io::Tags& tags, ShaderType shaderType);
+
         void ClearCache(const io::Tag& tag);
 
         struct ShaderPin
@@ -106,7 +111,9 @@ namespace yaget::render
         struct RootDescResult : NoCopy
         {
             std::vector<D3D12_ROOT_PARAMETER1> mRootParameters;
+            std::vector<D3D12_STATIC_SAMPLER_DESC> mSamplerParameters;
             IndexMap mIndexMap;
+            IndexMap mIndexSamplerMap;
             D3D12_VERSIONED_ROOT_SIGNATURE_DESC mRootSignatureDesc{};
         };
 
@@ -125,4 +132,8 @@ namespace yaget::render
         std::shared_ptr<ResourceCompiler> mResourceCompiler;
         std::map<io::Tag, std::shared_ptr<ResourceReflector>> mReflections;
     };
+
+    // Helper function to create Descriptor Heap
+    ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors);
+
 }

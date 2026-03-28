@@ -26,7 +26,8 @@ namespace yaget::render::commands
     {
         Direct = 0,     // D3D12_COMMAND_LIST_TYPE_DIRECT
         Compute = 2,    // D3D12_COMMAND_LIST_TYPE_COMPUTE
-        Copy = 3        // D3D12_COMMAND_LIST_TYPE_COPY
+        Copy = 3,       // D3D12_COMMAND_LIST_TYPE_COPY
+        Max             // used to create an array of last fence values in Device
     };
 
 
