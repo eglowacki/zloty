@@ -20,5 +20,27 @@
             }
         ],
         "name": "Materials@BasicMaterial"
+    },
+    "Materials@BasicTextureMaterial": {
+        "dependencies": [
+            {
+                "dependencies": [
+                    {
+                        "dependencies": [
+                            {
+                                "dependencies": [
+                                    "VertexShaders@BasicTexture",
+                                    "PixelShaders@BasicTexture"
+                                ],
+                                "name": "Transient@BasicTextureConstantBuffer"
+                            }
+                        ],
+                        "name": "Transient@BasicTextureSig"
+                    }
+                ],
+                "name": "Transient@BasicTexturePipe"
+            }
+        ],
+        "name": "Materials@BasicTextureMaterial"
     }
 }

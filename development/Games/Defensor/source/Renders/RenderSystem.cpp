@@ -258,8 +258,11 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     auto vsBlob = mRenderShaders.GetShader(vsTag, yaget::render::RenderShaders::ShaderType::Vertex);
     auto psBlob = mRenderShaders.GetShader(psTag, yaget::render::RenderShaders::ShaderType::Pixel);
 
+    auto vertexPins =  mRenderShaders.GetShaderPins(vsTag);
+    auto pixelPins =  mRenderShaders.GetShaderPins(psTag);
+
     /*ID3D12PipelineState* pipeline =*/
-    mRenderPipelines.GetPipeline(psoTag, signature, vsBlob, psBlob);
+    mRenderPipelines.GetPipeline(psoTag, signature, vsBlob, vertexPins, psBlob, pixelPins);
     AttachTransientAsset(psoTag, vts);
 
     //NOTE(eg) now we need to add this dependencies data:

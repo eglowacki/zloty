@@ -146,6 +146,18 @@
     <CopyFileToFolders Include="data\Manifest\ShaderReflectionOptions.json">
       <Filter>Data Files\Manifest</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\BasicTextureMaterial.json">
+      <Filter>Data Files\Materials</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\BasicTexture.ps">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\BasicTexture.vs">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\Checker.jpg">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\MainGame.h">

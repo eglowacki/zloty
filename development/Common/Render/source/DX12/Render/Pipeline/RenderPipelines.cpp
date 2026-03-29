@@ -11,6 +11,7 @@
 
 namespace
 {
+    //-------------------------------------------------------------------------------------------------
     D3D12_DEPTH_STENCIL_DESC DepthStencilOn
     {
         .DepthEnable = TRUE,
@@ -36,6 +37,7 @@ namespace
     };
 
 
+    //-------------------------------------------------------------------------------------------------
     D3D12_BLEND_DESC GetBlendState(yaget::render::AssetCacheType assetType)
     {
         D3D12_BLEND_DESC blendState = DirectX::CommonStates::Opaque;
@@ -54,6 +56,8 @@ namespace
         return blendState;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
     D3D12_RASTERIZER_DESC GetRasterizeState(yaget::render::AssetCacheType assetType)
     {
         D3D12_RASTERIZER_DESC rasterizerState = DirectX::CommonStates::CullNone;
@@ -72,6 +76,8 @@ namespace
         return rasterizerState;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
     D3D12_DEPTH_STENCIL_DESC GetDepthState(yaget::render::AssetCacheType assetType)
     {
         D3D12_DEPTH_STENCIL_DESC depthStencilState = DirectX::CommonStates::DepthNone;
@@ -90,6 +96,8 @@ namespace
         return depthStencilState;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
     D3D12_PRIMITIVE_TOPOLOGY_TYPE GetPrimitiveTopologyType(yaget::render::AssetCacheType assetType)
     {
         D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -104,6 +112,8 @@ namespace
         return topologyType;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
     DXGI_FORMAT GetRenderTargetFormat(yaget::render::AssetCacheType assetType)
     {
         DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -122,6 +132,8 @@ namespace
         return format;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
     uint32_t GetNumRenderTargets(yaget::render::AssetCacheType assetType)
     {
         uint32_t numRenderTargets = 1;
@@ -140,8 +152,10 @@ namespace
         return numRenderTargets;
     }
 
-    template<typename T>
-    yaget::render::ComPtr<ID3D12PipelineState> CreatePipeline(const yaget::io::Tag& tag, ID3D12Device* device, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer, yaget::io::Buffer& dataBlob)
+
+    //-------------------------------------------------------------------------------------------------
+    yaget::render::ComPtr<ID3D12PipelineState> CreatePipeline(const yaget::io::Tag& tag, ID3D12Device* device, const D3D12_INPUT_LAYOUT_DESC& inputLayout, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer,
+                                                              yaget::io::Buffer pixelShaderBuffer, yaget::io::Buffer& dataBlob)
     {
         using namespace yaget;
 
@@ -162,7 +176,7 @@ namespace
             psoDesc.CachedPSO.CachedBlobSizeInBytes = io::size_data(dataBlob);
         }
 
-        psoDesc.InputLayout = T::InputLayout;
+        psoDesc.InputLayout = inputLayout;
         psoDesc.pRootSignature = rootSignature;
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(io::cast_data<const char>(vertexShaderBuffer), io::size_data(vertexShaderBuffer));
         psoDesc.PS = CD3DX12_SHADER_BYTECODE(io::cast_data<const char>(pixelShaderBuffer), io::size_data(pixelShaderBuffer));
@@ -178,14 +192,14 @@ namespace
         }
         psoDesc.SampleDesc.Count = 1;
 
-        yaget::render::ComPtr<ID3D12PipelineState> pipelineState;
+        render::ComPtr<ID3D12PipelineState> pipelineState;
         HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState));
         error_handlers::ThrowOnError(hr, "Could not create Pipeline State.");
         YAGET_RENDER_SET_DEBUG_NAME(pipelineState.Get(), std::format("Pipeline State"));
 
         if (!io::size_data(dataBlob))
         {
-            yaget::render::ComPtr<ID3DBlob> pipeBlob;
+            render::ComPtr<ID3DBlob> pipeBlob;
             hr = pipelineState->GetCachedBlob(&pipeBlob);
             error_handlers::ThrowOnError(hr, std::format("Could not get ID3D12PipelineState '{}' as a blob to save it", conv::Convertor<io::Tag>::ToString(tag)));
 
@@ -196,6 +210,50 @@ namespace
         return pipelineState;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
+    bool ContainsPin(const yaget::render::RenderShaders::ShaderPins& pins, const std::string& pinName)
+    {
+        return std::ranges::contains(pins, pinName, &yaget::render::RenderShaders::ShaderPin::mName);
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    D3D12_INPUT_LAYOUT_DESC GetShaderInputFormat(const yaget::render::RenderShaders::ShaderInputOutputPins& shaderPins)
+    {
+        switch (shaderPins.mInputPins.size())
+        {
+            case 1:
+            {
+                YAGET_ASSERT(shaderPins.mInputPins.begin()->mName == "SV_POSITION", "Shader Input has only one entry and it must bge SV_POSITION. This has: '%s'", shaderPins.mInputPins.begin()->mName.c_str());
+                return DirectX::VertexPosition::InputLayout;
+            }
+            break;
+            case 2:
+            {
+                if (ContainsPin(shaderPins.mInputPins, "SV_POSITION") && ContainsPin(shaderPins.mInputPins, "COLOR"))
+                {
+                    return DirectX::VertexPositionColor::InputLayout;
+                }
+                if (ContainsPin(shaderPins.mInputPins, "SV_POSITION") && ContainsPin(shaderPins.mInputPins, "TEXCOORD"))
+                {
+                    return DirectX::VertexPositionTexture::InputLayout;
+                }
+            }
+            break;
+            case 3:
+            {
+                if (ContainsPin(shaderPins.mInputPins, "SV_POSITION") && ContainsPin(shaderPins.mInputPins, "COLOR") && ContainsPin(shaderPins.mInputPins, "TEXCOORD"))
+                {
+                    return DirectX::VertexPositionColorTexture::InputLayout;
+                }
+            }
+            break;
+        }
+
+        YAGET_ASSERT(false, "Shader Input not supported.");
+        return D3D12_INPUT_LAYOUT_DESC{};
+    }
 }
 
 
@@ -212,15 +270,18 @@ yaget::render::RenderPipelines::~RenderPipelines() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-ID3D12PipelineState* yaget::render::RenderPipelines::GetPipeline(const yaget::io::Tag& tag, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer, yaget::io::Buffer pixelShaderBuffer)
+ID3D12PipelineState* yaget::render::RenderPipelines::GetPipeline(const io::Tag& tag, ID3D12RootSignature* rootSignature,
+                                                                 io::Buffer vertexShaderBuffer, const RenderShaders::ShaderInputOutputPins& vertexPins,
+                                                                 io::Buffer pixelShaderBuffer, const RenderShaders::ShaderInputOutputPins& pixelPins)
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(), yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
 
     std::lock_guard mutexLocker(mMutex);
 
-    auto result = GetAsset(tag, [this, rootSignature, vertexShaderBuffer, pixelShaderBuffer](auto tag, auto& cachedData)
+    auto result = GetAsset(tag, [this, rootSignature, &vertexShaderBuffer, &vertexPins, &pixelShaderBuffer, &pixelPins](auto tag, auto& cachedData)
     {
-        return CreatePipeline<DirectX::VertexPositionColor>(tag, mDevice, rootSignature, vertexShaderBuffer, pixelShaderBuffer, cachedData);
+        auto vertexInputFormat = GetShaderInputFormat(vertexPins);
+        return CreatePipeline(tag, mDevice, vertexInputFormat, rootSignature, vertexShaderBuffer, pixelShaderBuffer, cachedData);
     });
 
     return result.Get();
@@ -230,7 +291,7 @@ ID3D12PipelineState* yaget::render::RenderPipelines::GetPipeline(const yaget::io
 //-------------------------------------------------------------------------------------------------
 ID3D12PipelineState* yaget::render::RenderPipelines::GetPipeline(const io::Tag& tag)
 {
-    return GetPipeline(tag, nullptr, {}, {});
+    return GetPipeline(tag, nullptr, {}, {}, {}, {});
 }
 
 

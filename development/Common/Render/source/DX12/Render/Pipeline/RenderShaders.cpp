@@ -206,7 +206,7 @@ size_t yaget::render::constant_shader_types::GetConstantLayoutSize(ConstantLayou
 //-------------------------------------------------------------------------------------------------
 yaget::render::RenderShaders::RenderShaders(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
     : CacheWatcher(vts, fileName)
-      , mResourceCompiler(std::make_shared<ResourceCompiler>())
+    , mResourceCompiler(std::make_shared<ResourceCompiler>())
 {
 }
 
@@ -253,6 +253,23 @@ void yaget::render::RenderShaders::ClearCache(const io::Tag& tag)
     }
 
     CacheWatcher<io::Buffer>::ClearCache(tag);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::RenderShaders::ShaderInputOutputPins yaget::render::RenderShaders::GetShaderPins(const io::Tag& tag)
+{
+    ShaderInputOutputPins inputOutputPins;
+
+    std::lock_guard mutexLocker(mMutex);
+    auto result = mReflections.find(tag);
+    if (result != mReflections.end())
+    {
+        inputOutputPins.mInputPins = result->second->mShaderInputs;
+        inputOutputPins.mOutputPins = result->second->mShaderOutputs;
+    }
+
+    return inputOutputPins;
 }
 
 

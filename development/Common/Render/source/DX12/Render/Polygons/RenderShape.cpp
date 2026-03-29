@@ -9,19 +9,21 @@
 #include "VTS/VirtualTransportSystem.h"
 
 // we need following data for the geometry
-// vertices - pointer to the buffer contaiing vertex data (pos, color, etc)
+// vertices - pointer to the buffer containg vertex data (pos, color, etc)
 // numTriangles
 namespace
 {
     using namespace yaget;
-    using Vertex = DirectX::VertexPositionColor;
+
+    //VertexPositionColorTexture
+    using Vertex = DirectX::VertexPositionColorTexture;
 
     const float aspectRatio = 1.0f;
 
     const Vertex vertices[] = {
-        { DirectX::XMFLOAT3{ 0.0f, 1.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.99f } },
-        { DirectX::XMFLOAT3{ 1.0f, -1.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.f } },
-        { DirectX::XMFLOAT3{ -1.0f, -1.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.f } }
+        { DirectX::XMFLOAT3{ 0.0f, 1.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.99f }, DirectX::XMFLOAT2{ 0.5f, 0.0f } },
+        { DirectX::XMFLOAT3{ 1.0f, -1.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.f }, DirectX::XMFLOAT2{ 0.0f, 1.0f } },
+        { DirectX::XMFLOAT3{ -1.0f, -1.0f * aspectRatio, 0.0f }, DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.f }, DirectX::XMFLOAT2{ 1.0f, 1.0f } }
     };
 
     const int numTriangles = 1;
@@ -42,16 +44,19 @@ namespace
         {
             targetVertex->position = math3d::Vector3(sourceVertex->position) * scale + offset;
             targetVertex->color = sourceVertex->color;
+            targetVertex->textureCoordinate = sourceVertex->textureCoordinate;
             targetVertex++;
             sourceVertex++;
 
             targetVertex->position = math3d::Vector3(sourceVertex->position) * scale + offset;
             targetVertex->color = sourceVertex->color;
+            targetVertex->textureCoordinate = sourceVertex->textureCoordinate;
             targetVertex++;
             sourceVertex++;
 
             targetVertex->position = math3d::Vector3(sourceVertex->position) * scale + offset;
             targetVertex->color = sourceVertex->color;
+            targetVertex->textureCoordinate = sourceVertex->textureCoordinate;
             targetVertex++;
             sourceVertex++;
         }
@@ -134,7 +139,7 @@ void yaget::render::RenderShape::Render(ID3D12GraphicsCommandList* commandList) 
     D3D12_VERTEX_BUFFER_VIEW vertexDataView;
     vertexDataView.BufferLocation = resource->GetGPUVirtualAddress();
     vertexDataView.SizeInBytes = mVertexBufferSize;
-    vertexDataView.StrideInBytes = sizeof(DirectX::VertexPositionColor);
+    vertexDataView.StrideInBytes = sizeof(Vertex);
 
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     commandList->IASetVertexBuffers(0, 1, &vertexDataView);
