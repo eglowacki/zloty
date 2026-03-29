@@ -9,7 +9,7 @@
 #include "VTS/VirtualTransportSystem.h"
 
 // we need following data for the geometry
-// vertices - pointer to the buffer containg vertex data (pos, color, etc)
+// vertices - pointer to the buffer containing vertex data (pos, color, etc.)
 // numTriangles
 namespace
 {
