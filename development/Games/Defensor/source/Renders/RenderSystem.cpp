@@ -45,16 +45,18 @@ namespace
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& app, RenderCoordinatorSet& coordinatorSet)
     : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, false)
-      , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
-      , mMatrixInterpolator(0.0f, 1.0f)
-      , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindMaterial(guid); })
-      , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
-      , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"))
-      , mRenderShaders(app.VTS(), GetSection("Shaders"))
-      , mRenderMaterials(app.VTS(), GetSection("Materials"))
-      , mRenderTextures(app.VTS(), GetSection("Textures"))
-      , mTextureResources(GetDevice(), mRenderTextures)
-      , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
+    , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
+    , mMatrixInterpolator(0.0f, 1.0f)
+    , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindMaterial(guid); })
+    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
+    , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"))
+    , mRenderShaders(app.VTS(), GetSection("Shaders"))
+    , mRenderMaterials(app.VTS(), GetSection("Materials"))
+    , mRenderTextures(app.VTS(), GetSection("Textures"))
+    , mTextureResources(GetDevice(), mRenderTextures)
+    , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
+    , mRenderGeometries(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Geometries"))
+    , mGeometriesResources(GetDevice(), mRenderGeometries)
 {
     mApp.PoolThread().AddTask([this]()
     {
@@ -134,6 +136,9 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                     constantBuffer->Bind(commandList);
                 }
 
+                auto geometryResource = mGeometriesResources.GetResource(renderComponent->mGeometryTag);
+                renderComponent->Bind(geometryResource.Get());
+
                 renderComponent->Render(commandList);
             }
 
@@ -196,6 +201,11 @@ void defensor::render::RenderSystem::PreloadAssets()
     auto textureTags = vts.GetTags(textureSection);
     mRenderTextures.Preload(textureTags);
     mTextureResources.Preload(textureTags);
+
+    const Section geometrySection("Geometry");
+    auto geometryTags = vts.GetTags(geometrySection);
+    mRenderGeometries.Preload(geometryTags);
+    mGeometriesResources.Preload(geometryTags);
 
     const Section materialSection("Materials");
     auto materialTags = vts.GetTags(materialSection);

@@ -23,6 +23,7 @@
 #include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Pipeline/ShaderBuffers.h"
+#include "Render/Pipeline/RenderGeometries.h"
 
 
 namespace defensor::render
@@ -62,6 +63,9 @@ namespace defensor::render
         yaget::render::RenderTextures mRenderTextures;
         yaget::render::TextureResources mTextureResources;
         yaget::render::ShaderBuffers mShaderBuffers;
+        yaget::render::RenderGeometries mRenderGeometries;
+        yaget::render::GeometriesResources mGeometriesResources;
+
 
         RenderState mCurrentRenderState;
     };

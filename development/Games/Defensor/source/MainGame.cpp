@@ -140,6 +140,7 @@ int defensor::Run(const yaget::args::Options& options)
         { "JSON", io::ResolveAsset<io::JsonAsset> },
         { "COMP", io::ResolveAsset<io::StringsAsset> },
         { "PERS", io::ResolveAsset<io::StringsAsset> },
+        { "GEOM", io::ResolveAsset<io::StringsAsset> },
         { "BIN", io::ResolveAsset<io::BinAsset> },
         { "IMAGE", io::ResolveAsset<io::TextureAsset> }
     };

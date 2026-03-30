@@ -18,17 +18,14 @@
 #include "Render/RenderCore.h"
 #include "Streams/Buffers.h"
 
-namespace yaget::io
-{
-    class VirtualTransportSystem;
-}
+struct ID3D12GraphicsCommandList;
+struct ID3D12Resource;
 
 namespace D3D12MA
 {
     class Allocator;
     class Allocation;
 }
-struct ID3D12GraphicsCommandList;
 
 
 namespace yaget::render
@@ -36,15 +33,15 @@ namespace yaget::render
     class RenderShape
     {
     public:
-        RenderShape(D3D12MA::Allocator* allocator, const io::Tag& assetTag, io::VirtualTransportSystem& vts);
+        RenderShape();
         ~RenderShape();
 
-        void UploadData(const io::Buffer& dataBlock);
+        void Bind(ID3D12Resource* resource);
         void Render(ID3D12GraphicsCommandList* commandList) const;
 
     private:
-        unique_obj<D3D12MA::Allocation> mAllocation;
-        uint32_t mVertexBufferSize; // in bytes
+        ID3D12Resource* mResource;
+        uint32_t mVertexBufferSize{}; // in bytes
     };
 
 }

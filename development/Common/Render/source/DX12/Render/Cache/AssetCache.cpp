@@ -6,22 +6,14 @@
 
 #include <stacktrace>
 
+#include "Render/RenderCore.h"
+
 
 //-------------------------------------------------------------------------------------------------
 namespace
 {
     constexpr size_t CurrentFileVersion = 1;
 
-    struct YagetFileSignature
-    {
-        const char Signature[4] = { 'G', 'L', 'O', 'W' };
-        size_t Version = 0;
-
-        bool IsValid() const
-        {
-            return std::memcmp(Signature, "GLOW", 4) == 0 && Version <= CurrentFileVersion;
-        }
-    };
 }
 
 
@@ -102,7 +94,7 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
 
             auto fileSignature = reinterpret_cast<YagetFileSignature*>(io::cast_data<char>(cache.mBuffer) + offset);
             offset += sizeof(YagetFileSignature);
-            if (!fileSignature->IsValid())
+            if (!fileSignature->IsValid(CurrentFileVersion))
             {
                 YLOG_ERROR("DEVI", "Unsupported cache '%s' version: '%d'. Expected version is <= '%d'. Cache will be ignored.",
                     conv::Convertor<Section>::ToString(mCacheSection).c_str(),

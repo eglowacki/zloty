@@ -35,6 +35,9 @@
     <Filter Include="Data Files\Images">
       <UniqueIdentifier>{4281daf4-d030-423c-8e58-7f70cdcef336}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\Geometry">
+      <UniqueIdentifier>{bb51805f-26f5-4de7-891f-3c07e1707f48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -157,6 +160,9 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Images\Checker.jpg">
       <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Geometry\Rectangle.geom">
+      <Filter>Data Files\Geometry</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

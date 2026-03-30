@@ -3,11 +3,12 @@
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderComponent::RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& assetTag, const io::Tags& textureTags, io::VirtualTransportSystem& vts, const yaget::render::platform::Adapter& adapter)
+defensor::render::RenderComponent::RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& geometryTag, const io::Tag& materialTag, const io::Tags& textureTags)
     : BaseComponent(id)
     , mMatrix(matrix)
-    , mRenderShape(adapter.GetAllocator(), assetTag, vts)
-    , mRenderMaterial(assetTag)
+    , mRenderShape()
+    , mRenderMaterial(materialTag)
+    , mGeometryTag(geometryTag)
     , mTextureTags(textureTags)
 {
 }
@@ -15,6 +16,13 @@ defensor::render::RenderComponent::RenderComponent(comp::Id_t id, const math3d::
 
 //-------------------------------------------------------------------------------------------------
 defensor::render::RenderComponent::~RenderComponent() = default;
+
+
+//-------------------------------------------------------------------------------------------------
+void defensor::render::RenderComponent::Bind(ID3D12Resource* geometryResource)
+{
+    mRenderShape.Bind(geometryResource);
+}
 
 
 //-------------------------------------------------------------------------------------------------

@@ -163,6 +163,9 @@
     <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandListStates.h">
       <Filter>Source Files\Commands Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Pipeline\RenderGeometries.h">
+      <Filter>Source Files\Pipeline Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -269,6 +272,9 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandListStates.cpp">
       <Filter>Source Files\Commands Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Pipeline\RenderGeometries.cpp">
+      <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
