@@ -9,9 +9,7 @@
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderShape::RenderShape()
-{
-}
+yaget::render::RenderShape::RenderShape() = default;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -19,33 +17,23 @@ yaget::render::RenderShape::~RenderShape() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderShape::Bind(ID3D12Resource* resource)
+void yaget::render::RenderShape::Bind(GeometriesResources::GeometryData geometryData)
 {
-    mResource = resource;
-    if (mResource)
-    {
-        mVertexBufferSize = static_cast<uint32_t>(mResource->GetDesc().Width);
-    }
-    else
-    {
-        mVertexBufferSize = 0;
-    }
+    mGeometryData = std::move(geometryData);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::RenderShape::Render(ID3D12GraphicsCommandList* commandList) const
 {
-    //auto resource = mAllocation->GetResource();
-
-    if (mResource)
+    if (mGeometryData.mHeader.IsValid())
     {
-        auto vertexFormatSize = 36; // sizeof(DirectX::VertexPositionColorTexture)
-        auto numTriangles = 1; //mVertexBufferSize / (3 * vertexFormatSize);
-        D3D12_VERTEX_BUFFER_VIEW vertexDataView;
-        vertexDataView.BufferLocation = mResource->GetGPUVirtualAddress();
-        vertexDataView.SizeInBytes = mVertexBufferSize;
-        vertexDataView.StrideInBytes = vertexFormatSize;
+        D3D12_VERTEX_BUFFER_VIEW vertexDataView{};
+        vertexDataView.BufferLocation = mGeometryData.mVerticesResource->GetGPUVirtualAddress();
+        vertexDataView.SizeInBytes = mGeometryData.mHeader.VertexBufferSize();
+        vertexDataView.StrideInBytes = mGeometryData.mHeader.VertexStride();
+
+        auto numTriangles = mGeometryData.mHeader.NumTriangles();
 
         commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         commandList->IASetVertexBuffers(0, 1, &vertexDataView);

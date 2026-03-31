@@ -42,9 +42,43 @@ namespace yaget::render
         struct Header
         {
             AssetCacheType mVertexFormat = AssetCacheType::Empty;
-            size_t mNumVertices{};
-            size_t mNumIndices{};
+            size_t mVertexFormatSize{}; // size of the vertex structure in bytes
+            size_t mIndexFormatSize{};  // size of the index element in bytes
+            size_t mNumVertices{};      // number of total vertices in the vertex buffer
+            size_t mNumIndices{};       // number of total indices in the index buffer. If this is 0, then the geometry is non-indexed
+                                        // and number of triangles is mNumVertices/3, otherwise mNumIndices/3
+
+            bool IsValid() const
+            {
+                return mVertexFormat != AssetCacheType::Empty && mNumVertices;
+            }
+
+            uint32_t VertexStride() const
+            {
+                return static_cast<uint32_t>(mVertexFormatSize);
+            }
+
+            uint32_t NumTriangles() const
+            {
+                if (mNumIndices)
+                {
+                    return static_cast<uint32_t>(mNumIndices / 3);
+                }
+
+                return static_cast<uint32_t>(mNumVertices / 3);
+            }
+            
+            uint32_t VertexBufferSize() const
+            {
+                return static_cast<uint32_t>(mNumVertices * mVertexFormatSize);
+            }
+            
+            uint32_t IndexBufferSize() const
+            {
+                return static_cast<uint32_t>(mNumIndices * mIndexFormatSize);
+            }
         };
+
         constexpr size_t HeaderBufferSize = sizeof(YagetFileSignature) + sizeof(Header);
 
         bool ValidateDataLayout(const io::Buffer& buffer);
@@ -109,8 +143,16 @@ namespace yaget::render
         GeometriesResources(DeviceB& device, RenderGeometries& renderTextures);
         ~GeometriesResources();
 
-        ComPtr<ID3D12Resource> GetResource(const io::Tag& tag);
-        std::vector<ComPtr<ID3D12Resource>> GetResources(const io::Tags& tags);
+        struct GeometryData
+        {
+            geom::Header mHeader{};
+
+            ID3D12Resource* mVerticesResource{};
+            ID3D12Resource* mIndicesResource{};
+        };
+
+        GeometryData GetResource(const io::Tag& tag);
+        std::vector<GeometryData> GetResources(const io::Tags& tags);
 
         void Preload(const io::Tags& tags);
 
@@ -120,8 +162,13 @@ namespace yaget::render
 
         struct ResourceData
         {
-            unique_obj<D3D12MA::Allocation> mAllocation;
-            ComPtr<ID3D12Resource> mResource;
+            geom::Header mHeader{};
+
+            unique_obj<D3D12MA::Allocation> mVerticesAllocation;
+            ComPtr<ID3D12Resource> mVerticesResource;
+
+            unique_obj<D3D12MA::Allocation> mIndicesAllocation;
+            ComPtr<ID3D12Resource> mIndicesResource;
         };
 
         using ResourceMap = std::map<io::Tag, ResourceData>;

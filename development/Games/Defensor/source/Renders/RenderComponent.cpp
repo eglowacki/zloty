@@ -19,9 +19,9 @@ defensor::render::RenderComponent::~RenderComponent() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::render::RenderComponent::Bind(ID3D12Resource* geometryResource)
+void defensor::render::RenderComponent::Bind(yaget::render::GeometriesResources::GeometryData geometryData)
 {
-    mRenderShape.Bind(geometryResource);
+    mRenderShape.Bind(geometryData);
 }
 
 

@@ -44,6 +44,9 @@
     <Filter Include="Source Files\Commands Files">
       <UniqueIdentifier>{c3e3fe38-01f0-42ff-a98e-1e9879d3123d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Helpers Files">
+      <UniqueIdentifier>{5dc63dc1-5e56-402a-a1e8-e896ac9c2b1e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\Device.h">
@@ -166,6 +169,9 @@
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderGeometries.h">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\Helpers\ResourceDescriptions.h">
+      <Filter>Source Files\Helpers Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -275,6 +281,9 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderGeometries.cpp">
       <Filter>Source Files\Pipeline Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Helpers\ResourceDescriptions.cpp">
+      <Filter>Source Files\Helpers Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

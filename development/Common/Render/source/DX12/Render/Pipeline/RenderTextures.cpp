@@ -7,6 +7,7 @@
 #include "Render/Platform/D3D12MemAlloc.h"
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
+#include "Render/Helpers/ResourceDescriptions.h"
 
 #include <d3dx12.h>
 
@@ -170,94 +171,34 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
                 continue;
             }
 
-            //--------------------------------------------------
-            // Describe and create a Texture2D.
+            auto allocator = mDevice.GetAdapter().GetAllocator();
+
             DXGI_FORMAT textureFormat = GetTextureFormat(textureHeader.mComponents);
 
-            D3D12MA::ALLOCATION_DESC heapDesc = {};
-            heapDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
-            heapDesc.ExtraHeapFlags = D3D12_HEAP_FLAG_NONE;
-
-            D3D12_RESOURCE_DESC textureDesc = {};
-            textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-            textureDesc.Alignment = 0;
-            textureDesc.Width = textureHeader.mSizeX;
-            textureDesc.Height = textureHeader.mSizeY;
-            textureDesc.DepthOrArraySize = 1;
-            textureDesc.MipLevels = 1;
-            textureDesc.Format = textureFormat;
-            textureDesc.SampleDesc.Count = 1;
-            textureDesc.SampleDesc.Quality = 0;
-            textureDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-            textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-            auto allocator = mDevice.GetAdapter().GetAllocator();
-            D3D12MA::Allocation* allocation = nullptr;;
-            ComPtr<ID3D12Resource> texture;
-
-            HRESULT hr = allocator->CreateResource(
-                &heapDesc,
-                &textureDesc,
-                D3D12_RESOURCE_STATE_COPY_DEST,
-                nullptr,
-                &allocation,
-                IID_PPV_ARGS(&texture));
-            error_handlers::ThrowOnError(hr, std::format("Could not allocate texture resource for tag: {}", conv::ToString(tag)));
+            //--------------------------------------------------
+            // Describe and create a Texture2D which will be used by shader (GPU).
+            auto allocation = helpers::CreateCopyHeapTexture(tag, textureHeader.mSizeX, textureHeader.mSizeY, textureFormat, allocator);
 
             unique_obj<D3D12MA::Allocation> textureAllocation(allocation);
-            platform::SetDebugName(texture.Get(), textureAllocation.get(), "Texture2D", conv::ToString(tag));
-
-            const auto uploadBufferSize = GetRequiredIntermediateSize(texture.Get(), 0, 1);
+            ComPtr<ID3D12Resource> texture(textureAllocation->GetResource());
 
             //--------------------------------------------------
-            // Create the GPU upload buffer.
-            D3D12MA::ALLOCATION_DESC uploadHeapDesc = {};
-            uploadHeapDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
-            uploadHeapDesc.ExtraHeapFlags = D3D12_HEAP_FLAG_NONE;
+            // Create the GPU upload buffer, this will receive the actual pixel data and will copy pixel data to the texture.
+            const auto uploadBufferSize = GetRequiredIntermediateSize(texture.Get(), 0, 1);
 
-            D3D12_RESOURCE_DESC uploadDesc = {};
-            uploadDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-            uploadDesc.Alignment = 0;
-            uploadDesc.Width = uploadBufferSize;
-            uploadDesc.Height = 1;
-            uploadDesc.DepthOrArraySize = 1;
-            uploadDesc.MipLevels = 1;
-            uploadDesc.Format = DXGI_FORMAT_UNKNOWN;
-            uploadDesc.SampleDesc.Count = 1;
-            uploadDesc.SampleDesc.Quality = 0;
-            uploadDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-            uploadDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-            D3D12MA::Allocation* uploadAllocation = nullptr;;
-            ComPtr<ID3D12Resource> textureUploadHeap;
-
-            hr = allocator->CreateResource(
-                &uploadHeapDesc,
-                &uploadDesc,
-                D3D12_RESOURCE_STATE_GENERIC_READ,
-                nullptr,
-                &uploadAllocation,
-                IID_PPV_ARGS(&textureUploadHeap));
-            error_handlers::ThrowOnError(hr, std::format("Could not allocate upload texture resource for tag: '{}', size: '{}'", conv::ToString(tag), uploadBufferSize));
+            auto uploadAllocation = helpers::CreateUploadHeapTexture(tag, uploadBufferSize, allocator);
 
             unique_obj<D3D12MA::Allocation> textureUploadAllocation(uploadAllocation);
-            platform::SetDebugName(textureUploadHeap.Get(), textureUploadAllocation.get(), "UploadTexture", conv::ToString(tag));
+            ComPtr<ID3D12Resource> textureUploadHeap(textureUploadAllocation->GetResource());
+
+            auto framerHandler = mDevice.GetCopyCommands();
+            auto commandList = framerHandler.BeginFrame(nullptr);
+            auto preloadCommandList = commandList->GetDeviceCommandList();
 
             //--------------------------------------------------
             // Copy data to the intermediate upload heap and then schedule a copy 
             // from the upload heap to the Texture2D.
-            D3D12_SUBRESOURCE_DATA textureData = {};
-            textureData.pData = io::cast_data<uint8_t>(texturePixels);
-            textureData.RowPitch = textureHeader.GetStride();
-            textureData.SlicePitch = textureHeader.GetImageSize();
-
-            auto framerHandler = mDevice.GetCopyCommands();
-            auto commandList = framerHandler.BeginFrame(nullptr);
-
-            auto preloadCommandList = commandList->GetDeviceCommandList();
-
-            auto subresourceResult = UpdateSubresources(preloadCommandList, texture.Get(), textureUploadHeap.Get(), 0, 0, 1, &textureData);
-            auto resultEven = subresourceResult == uploadBufferSize; resultEven;
+            helpers::UploadData(preloadCommandList, texture.Get(), textureUploadHeap.Get(), io::cast_data<const uint8_t>(texturePixels), textureHeader.GetStride(), textureHeader.GetImageSize());
 
             auto resourceBarrier = CD3DX12_RESOURCE_BARRIER::Transition(texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
             preloadCommandList->ResourceBarrier(1, &resourceBarrier);
@@ -266,7 +207,7 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
             // Describe and create a SRV for the texture.
             D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
             srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-            srvDesc.Format = textureDesc.Format;
+            srvDesc.Format = textureFormat;
             srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
             srvDesc.Texture2D.MipLevels = 1;
 

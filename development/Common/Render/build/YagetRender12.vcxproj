@@ -179,6 +179,7 @@
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_textedit.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\source\DX12\Render\EnumConversion.h" />
+    <ClInclude Include="..\source\DX12\Render\Helpers\ResourceDescriptions.h" />
     <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\ResourceCompiler.h" />
@@ -205,6 +206,7 @@
     <ClCompile Include="..\source\DX12\Render\Commands\RenderQueue.cpp" />
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Helpers\ResourceDescriptions.cpp" />
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\ConstantBuffer.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderGeometries.cpp" />

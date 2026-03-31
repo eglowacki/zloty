@@ -18,6 +18,7 @@
 #include "DefensorRenderTypes.h"
 #include "Render/Polygons/RenderShape.h"
 #include "Renders/RenderMaterial.h"
+#include "Render/Pipeline/RenderGeometries.h"
 
 
 struct ID3D12GraphicsCommandList;
@@ -43,7 +44,7 @@ namespace defensor::render
         RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& geometryTag, const io::Tag& materialTag, const io::Tags& textureTags);
         ~RenderComponent();
 
-        void Bind(ID3D12Resource* geometryResource);
+        void Bind(yaget::render::GeometriesResources::GeometryData geometryData);
         void Render(ID3D12GraphicsCommandList* commandList) const;
 
         math3d::Matrix mMatrix = math3d::Matrix::Identity;

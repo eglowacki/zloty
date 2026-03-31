@@ -130,6 +130,8 @@ namespace
 
         yaget::render::geom::Header header;
         header.mVertexFormat = vertexFormat;
+        header.mVertexFormatSize = sizeof(V::value_type);
+        header.mIndexFormatSize = sizeof(I::value_type);
         header.mNumVertices = vertices.size();
         header.mNumIndices = indices.size();
 
@@ -335,9 +337,9 @@ yaget::render::GeometriesResources::~GeometriesResources() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::GeometriesResources::GetResources(const io::Tags& tags)
+std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::GeometriesResources::GetResources(const io::Tags& tags)
 {
-    std::vector<ComPtr<ID3D12Resource>> results;
+    std::vector<GeometryData> results;
 
     for (const auto& tag : tags)
     {
@@ -345,7 +347,14 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::GeometriesReso
             mt::ReadLock readLocker(mSharedMutex);
             if (auto it = mResources.find(tag); it != mResources.end())
             {
-                results.push_back(it->second.mResource);
+                GeometryData geometryData
+                {
+                    .mHeader = it->second.mHeader,
+                    .mVerticesResource = it->second.mVerticesResource.Get(),
+                    .mIndicesResource = it->second.mIndicesResource.Get()
+                };
+
+                results.push_back(geometryData);
                 continue;
             }
         }
@@ -391,9 +400,31 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::GeometriesReso
 
             ComPtr<ID3D12Resource> geometry = allocation->GetResource();
             unique_obj<D3D12MA::Allocation> geometryAllocation(allocation);
-            mResources.insert({ tag, ResourceData{ std::move(geometryAllocation), geometry } });
 
-            results.push_back(geometry);
+            ResourceData resourceData
+            {
+                .mHeader = *header,
+                .mVerticesAllocation = std::move(geometryAllocation),
+                .mVerticesResource = geometry,
+
+                .mIndicesAllocation = nullptr,
+                .mIndicesResource = nullptr
+            };
+
+            if (!resourceData.mIndicesResource)
+            {
+                resourceData.mHeader.mNumIndices = 0;
+            }
+
+            GeometryData geometryData
+            {
+                .mHeader = resourceData.mHeader,
+                .mVerticesResource = resourceData.mVerticesResource.Get(),
+                .mIndicesResource = resourceData.mIndicesResource.Get()
+            };
+
+            mResources.insert({ tag, std::move(resourceData) });
+            results.push_back(geometryData);
         }
     }
 
@@ -409,8 +440,8 @@ void yaget::render::GeometriesResources::Preload(const io::Tags& tags)
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::ComPtr<ID3D12Resource> yaget::render::GeometriesResources::GetResource(const io::Tag& tag)
+yaget::render::GeometriesResources::GeometryData yaget::render::GeometriesResources::GetResource(const io::Tag& tag)
 {
     auto resources = GetResources(io::Tags{ tag });
-    return !resources.empty() ? *resources.begin() : ComPtr<ID3D12Resource>{};
+    return !resources.empty() ? *resources.begin() : GeometryData{};
 }

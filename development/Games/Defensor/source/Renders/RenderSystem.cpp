@@ -137,7 +137,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 }
 
                 auto geometryResource = mGeometriesResources.GetResource(renderComponent->mGeometryTag);
-                renderComponent->Bind(geometryResource.Get());
+                renderComponent->Bind(geometryResource);
 
                 renderComponent->Render(commandList);
             }

@@ -16,6 +16,7 @@
 //#include <d3d12.h>
 
 #include "Render/RenderCore.h"
+#include "Render/Pipeline/RenderGeometries.h"
 #include "Streams/Buffers.h"
 
 struct ID3D12GraphicsCommandList;
@@ -36,12 +37,11 @@ namespace yaget::render
         RenderShape();
         ~RenderShape();
 
-        void Bind(ID3D12Resource* resource);
+        void Bind(GeometriesResources::GeometryData geometryData);
         void Render(ID3D12GraphicsCommandList* commandList) const;
 
     private:
-        ID3D12Resource* mResource;
-        uint32_t mVertexBufferSize{}; // in bytes
+        GeometriesResources::GeometryData mGeometryData{};
     };
 
 }
