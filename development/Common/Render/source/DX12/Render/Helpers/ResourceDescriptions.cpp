@@ -5,7 +5,6 @@
 #include "StringHelpers.h"
 
 #include "magic_enum/magic_enum.hpp"
-#include <d3dx12.h>
 
 namespace
 {
@@ -60,13 +59,13 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-D3D12MA::Allocation* yaget::render::helpers::CreateCopyHeapTexture(const io::Tag& tag, int sizeX, int sizeY, DXGI_FORMAT format, D3D12MA::Allocator* allocator)
+D3D12MA::Allocation* yaget::render::helpers::CreateGpuHeap(const io::Tag& tag, int sizeX, int sizeY, D3D12_RESOURCE_DIMENSION dimension, D3D12_RESOURCE_STATES resourceState, D3D12_TEXTURE_LAYOUT layout, DXGI_FORMAT format, D3D12MA::Allocator* allocator)
 {
     auto allocation = CreateHeapTexture(tag,
                                         D3D12_HEAP_TYPE_DEFAULT,
-                                        D3D12_RESOURCE_DIMENSION_TEXTURE2D,
-                                        D3D12_RESOURCE_STATE_COPY_DEST,
-                                        D3D12_TEXTURE_LAYOUT_UNKNOWN,
+                                        dimension,
+                                        resourceState,
+                                        layout,
                                         sizeX,
                                         sizeY,
                                         format,
@@ -80,7 +79,7 @@ D3D12MA::Allocation* yaget::render::helpers::CreateCopyHeapTexture(const io::Tag
 
 
 //-------------------------------------------------------------------------------------------------
-D3D12MA::Allocation* yaget::render::helpers::CreateUploadHeapTexture(const io::Tag& tag, uint64_t bufferSize, D3D12MA::Allocator* allocator)
+D3D12MA::Allocation* yaget::render::helpers::CreateUploadHeap(const io::Tag& tag, uint64_t bufferSize, D3D12MA::Allocator* allocator)
 {
     auto allocation = CreateHeapTexture(tag,
                                         D3D12_HEAP_TYPE_UPLOAD,
@@ -105,7 +104,37 @@ void yaget::render::helpers::UploadData(ID3D12GraphicsCommandList* commandList, 
     D3D12_SUBRESOURCE_DATA textureData = {};
     textureData.pData = data;
     textureData.RowPitch = stride;
-    textureData.SlicePitch = sliceSize;
+    textureData.SlicePitch = static_cast<LONG_PTR>(sliceSize);
 
-    /*auto subresourceResult =*/ UpdateSubresources(commandList, destination, intermediate, 0, 0, 1, &textureData);
+    UpdateSubresources(commandList, destination, intermediate, 0, 0, 1, &textureData);
+
+    //Consider using the CopyResource method when copying an entire resource, and use this method for copying regions of a resource.
+    //ID3D12GraphicsCommandList::CopyResource method
+    //Copies the entire contents of the source resource to the destination resource.
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::helpers::GpuResourceResult yaget::render::helpers::CreateGpuResource(const io::Tag& tag, const SourceGpuParameters& parameters, ID3D12GraphicsCommandList* commandList, D3D12MA::Allocator* allocator)
+{
+    //--------------------------------------------------
+    // Describe and create a Texture2D which will be used by shader (GPU).
+    auto allocation = helpers::CreateGpuHeap(tag, parameters.mSizeX, parameters.mSizeY, parameters.mDimension, parameters.mResourceState, parameters.mLayout, parameters.mFormat, allocator);
+    ID3D12Resource* texture = allocation->GetResource();
+
+    //--------------------------------------------------
+    // Create the GPU upload buffer, this will receive the actual pixel data and will copy pixel data to the texture.
+    const auto uploadBufferSize = GetRequiredIntermediateSize(texture, 0, 1);
+
+    auto uploadAllocation = helpers::CreateUploadHeap(tag, uploadBufferSize, allocator);
+
+    //--------------------------------------------------
+    // Copy data to the intermediate upload heap and then schedule a copy 
+    // from the upload heap to the Texture2D.
+    helpers::UploadData(commandList, texture, uploadAllocation->GetResource(), parameters.mData, parameters.mStride, parameters.mSliceSize);
+
+    auto resourceBarrier = CD3DX12_RESOURCE_BARRIER::Transition(texture, D3D12_RESOURCE_STATE_COPY_DEST, parameters.mTransitionTo);
+    commandList->ResourceBarrier(1, &resourceBarrier);
+
+    return { .mGpuAllocation = allocation, .mUploadAllocation = uploadAllocation };
 }

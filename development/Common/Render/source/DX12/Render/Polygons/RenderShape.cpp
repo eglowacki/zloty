@@ -1,13 +1,24 @@
 #include "Render/Polygons/RenderShape.h"
-#include "Core/ErrorHandlers.h"
-#include "Render/Platform/DeviceDebugger.h"
 #include "Render/Platform/D3D12MemAlloc.h"
-#include "Streams/Buffers.h"
-#include "MathFacade.h"
 #include <d3dx12.h>
-#include <VertexTypes.h>
 
 
+namespace
+{
+    DXGI_FORMAT GetIndexFormat(size_t indexFormatSize)
+    {
+        switch (indexFormatSize)
+        {
+            case 2:
+                return DXGI_FORMAT_R16_UINT;
+            case 4:
+                return DXGI_FORMAT_R32_UINT;
+            default:
+                return DXGI_FORMAT_UNKNOWN;
+        }
+    }
+    
+}
 //-------------------------------------------------------------------------------------------------
 yaget::render::RenderShape::RenderShape() = default;
 
@@ -33,10 +44,27 @@ void yaget::render::RenderShape::Render(ID3D12GraphicsCommandList* commandList) 
         vertexDataView.SizeInBytes = mGeometryData.mHeader.VertexBufferSize();
         vertexDataView.StrideInBytes = mGeometryData.mHeader.VertexStride();
 
+
         auto numTriangles = mGeometryData.mHeader.NumTriangles();
 
         commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         commandList->IASetVertexBuffers(0, 1, &vertexDataView);
-        commandList->DrawInstanced(3 * numTriangles, 1, 0, 0);
+
+        if (mGeometryData.mHeader.mNumIndices)
+        {
+            auto indexFormat = GetIndexFormat(mGeometryData.mHeader.mIndexFormatSize);
+
+            D3D12_INDEX_BUFFER_VIEW indexDataView{};
+            indexDataView.BufferLocation = mGeometryData.mIndicesResource->GetGPUVirtualAddress();
+            indexDataView.Format = indexFormat;
+            indexDataView.SizeInBytes = mGeometryData.mHeader.IndexBufferSize();
+
+             commandList->IASetIndexBuffer(&indexDataView);
+             commandList->DrawIndexedInstanced(static_cast<uint32_t>(mGeometryData.mHeader.mNumIndices), 1, 0, 0, 0);
+        }
+        else
+        {
+            commandList->DrawInstanced(3 * numTriangles, 1, 0, 0);
+        }
     }
 }

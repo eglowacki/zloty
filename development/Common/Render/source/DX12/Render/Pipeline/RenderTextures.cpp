@@ -140,16 +140,41 @@ yaget::render::ComPtr<ID3D12DescriptorHeap> yaget::render::TextureResources::Get
 std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResources::GetResources(const io::Tags& tags)
 {
     std::vector<ComPtr<ID3D12Resource>> results;
-
-    for (const auto& tag : tags)
+    io::Tags tagsToLoad;
     {
+        mt::ReadLock readLocker(mSharedMutex);
+        for (const auto& tag : tags)
         {
-            mt::ReadLock readLocker(mSharedMutex);
             if (auto it = mResources.find(tag); it != mResources.end())
             {
                 results.push_back(it->second.mResource);
                 continue;
             }
+
+            tagsToLoad.push_back(tag);
+        }
+
+        if (tagsToLoad.empty())
+        {
+            // NOTE(eg) we need to fix copy command, so we can use it here
+            return results;
+        }
+    }
+
+    std::vector<unique_obj<D3D12MA::Allocation>> allocationsToKeepAlive;
+    auto framerHandler = mDevice.GetCopyCommands();
+    auto commandList = framerHandler.BeginFrame(nullptr);
+    auto preloadCommandList = commandList->GetDeviceCommandList();
+
+    mt::WriteLock writeLocker(mSharedMutex);
+    for (const auto& tag : tagsToLoad)
+    {
+        // it's possible that between the time we released read lock and acquired write lock, 
+        // another thread loaded the same texture, so we need to check again if resource is already in map
+        if (auto it = mResources.find(tag); it != mResources.end())
+        {
+            results.push_back(it->second.mResource);
+            continue;
         }
 
         auto textureBuffer = mRenderTextures.GetTexture(tag);
@@ -160,10 +185,6 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
             YLOG_ERROR("REND", "Could not find texture data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
             continue;
         }
-
-        mt::WriteLock writeLocker(mSharedMutex);
-
-        unique_obj<D3D12MA::Allocation> textureUploadAllocation;
 
         auto [textureHeader, texturePixels] = io::TextureAsset::ParseBuffer(textureBuffer);
         if (textureHeader.GetImageSize())
@@ -178,28 +199,21 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
 
             DXGI_FORMAT textureFormat = GetTextureFormat(textureHeader.mComponents);
 
-            //--------------------------------------------------
-            // Describe and create a Texture2D which will be used by shader (GPU).
-            auto allocation = helpers::CreateCopyHeapTexture(tag, textureHeader.mSizeX, textureHeader.mSizeY, textureFormat, allocator);
-            ID3D12Resource* texture = allocation->GetResource();
+            helpers::SourceGpuParameters sourceGpuParameters
+            {
+                .mSizeX = textureHeader.mSizeX,
+                .mSizeY = textureHeader.mSizeY,
+                .mFormat = textureFormat,
+                .mData = io::cast_data<const uint8_t>(texturePixels),
+                .mStride = textureHeader.GetStride(),
+                .mSliceSize = textureHeader.GetImageSize(),
+                .mDimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D,
+                .mLayout = D3D12_TEXTURE_LAYOUT_UNKNOWN,
+                .mResourceState = D3D12_RESOURCE_STATE_COPY_DEST,
+                .mTransitionTo = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+            };
 
-            //--------------------------------------------------
-            // Create the GPU upload buffer, this will receive the actual pixel data and will copy pixel data to the texture.
-            const auto uploadBufferSize = GetRequiredIntermediateSize(texture, 0, 1);
-
-            auto uploadAllocation = helpers::CreateUploadHeapTexture(tag, uploadBufferSize, allocator);
-
-            auto framerHandler = mDevice.GetCopyCommands();
-            auto commandList = framerHandler.BeginFrame(nullptr);
-            auto preloadCommandList = commandList->GetDeviceCommandList();
-
-            //--------------------------------------------------
-            // Copy data to the intermediate upload heap and then schedule a copy 
-            // from the upload heap to the Texture2D.
-            helpers::UploadData(preloadCommandList, texture, uploadAllocation->GetResource(), io::cast_data<const uint8_t>(texturePixels), textureHeader.GetStride(), textureHeader.GetImageSize());
-
-            auto resourceBarrier = CD3DX12_RESOURCE_BARRIER::Transition(texture, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-            preloadCommandList->ResourceBarrier(1, &resourceBarrier);
+            helpers::GpuResourceResult gpuResourceResult = helpers::CreateGpuResource(tag, sourceGpuParameters, preloadCommandList, allocator);
 
             //--------------------------------------------------
             // Describe and create a SRV for the texture.
@@ -212,16 +226,20 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
             auto d3dDevice = mDevice.GetAdapter().GetDevice();
             auto srvHeap = CreateDescriptorHeap(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 
+            ID3D12Resource* texture = gpuResourceResult.mGpuAllocation->GetResource();
+            auto uploadAllocation = gpuResourceResult.mUploadAllocation;
+            auto allocation = gpuResourceResult.mGpuAllocation;
+
             d3dDevice->CreateShaderResourceView(texture, &srvDesc, srvHeap->GetCPUDescriptorHandleForHeapStart());
 
-            framerHandler.EndFrame();
-
-            textureUploadAllocation.reset(uploadAllocation);
+            allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ uploadAllocation });
 
             mResources.insert({ tag, ResourceData{ unique_obj<D3D12MA::Allocation>{ allocation }, texture, srvHeap } });
             results.push_back(texture);
         }
     }
+
+    framerHandler.EndFrame();
 
     return results;
 }
