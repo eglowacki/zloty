@@ -372,7 +372,6 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
 
         if (tagsToLoad.empty())
         {
-            // NOTE(eg) we need to fix copy command, so we can use it here
             return results;
         }
     }

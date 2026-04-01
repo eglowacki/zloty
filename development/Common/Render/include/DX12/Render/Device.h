@@ -104,6 +104,7 @@ namespace yaget::render
             };
 
             FrameCommands(DeviceB& device, const time::GameClock* gameClock, metrics::Channel* channel, FrameType frameType);
+            static commands::Type GetCommandType(FrameType frameType);
 
             commands::QueueStorage& GetQueueStorage() const;
             commands::AllocatorStorage& GetAllocatorStorage() const;

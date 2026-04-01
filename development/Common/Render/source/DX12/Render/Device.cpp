@@ -16,6 +16,7 @@
 
 namespace
 {
+    //-------------------------------------------------------------------------------------------------
     yaget::render::commands::Queue::CommandLists GetCommandsList(const std::vector<yaget::render::commands::CommandListStorage::CommandListHandle>& commandsToRender, yaget::render::commands::Type commandType)
     {
         yaget::render::commands::Queue::CommandLists commandsList = commandsToRender |
@@ -31,7 +32,7 @@ namespace
 
         return commandsList;
     }
-    
+
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -122,18 +123,33 @@ yaget::render::DeviceB::FrameCommands::FrameCommands(DeviceB& device, const time
     , mChannel{ channel }
     , mFrameType{ frameType }
 {
-    auto frameFenceValue = mDevice->GetFrameFenceValue(mFrameIndex, commands::Type::Direct);
-    GetQueueStorage().GetQueue(commands::Type::Direct)->WaitForFenceCPUBlocking(frameFenceValue);
+    auto commandType = GetCommandType(mFrameType);
 
-    frameFenceValue = mDevice->GetFrameFenceValue(mFrameIndex, commands::Type::Compute);
-    GetQueueStorage().GetQueue(commands::Type::Compute)->WaitForFenceCPUBlocking(frameFenceValue);
+    auto frameFenceValue = mDevice->GetFrameFenceValue(mFrameIndex, commandType);
+    GetQueueStorage().GetQueue(commandType)->WaitForFenceCPUBlocking(frameFenceValue);
 
-    frameFenceValue = mDevice->GetFrameFenceValue(mFrameIndex, commands::Type::Copy);
-    GetQueueStorage().GetQueue(commands::Type::Copy)->WaitForFenceCPUBlocking(frameFenceValue);
+    GetAllocatorStorage().GetAllocator(commandType, mFrameIndex)->Reset();
+}
 
-    GetAllocatorStorage().GetAllocator(commands::Type::Direct, mFrameIndex)->Reset();
-    GetAllocatorStorage().GetAllocator(commands::Type::Compute, mFrameIndex)->Reset();
-    GetAllocatorStorage().GetAllocator(commands::Type::Copy, mFrameIndex)->Reset();
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::commands::Type yaget::render::DeviceB::FrameCommands::GetCommandType(FrameType frameType)
+{
+    commands::Type currentType = commands::Type::Direct;
+    if (frameType == FrameType::Render)
+    {
+        currentType = commands::Type::Direct;
+    }
+    else if (frameType == FrameType::Copy)
+    {
+        currentType = commands::Type::Copy;
+    }
+    else
+    {
+        YAGET_ASSERT(false, "Unhandled FrameType: '{}'.", magic_enum::enum_name(frameType));
+    }
+
+    return currentType;
 }
 
 
@@ -169,21 +185,8 @@ yaget::render::DeviceB::FrameCommands::~FrameCommands()
 //-------------------------------------------------------------------------------------------------
 yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::BeginFrame(const colors::Color* color)
 {
-    commands::Type currentType = commands::Type::Direct;
-    if (mFrameType == FrameType::Render)
-    {
-        currentType = commands::Type::Direct;
-    }
-    else if (mFrameType == FrameType::Copy)
-    {
-        currentType = commands::Type::Copy;
-    }
-    else
-    {
-        YAGET_ASSERT(false, "Unhandled FrameType: '{}'.", magic_enum::enum_name(mFrameType));
-    }
-
-    auto commandList = GetAvailableCommandList(currentType);
+    auto commandType = GetCommandType(mFrameType);
+    auto commandList = GetAvailableCommandList(commandType);
 
     if (mFrameType == FrameType::Render)
     {

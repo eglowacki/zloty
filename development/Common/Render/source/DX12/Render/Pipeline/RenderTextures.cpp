@@ -156,7 +156,6 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
 
         if (tagsToLoad.empty())
         {
-            // NOTE(eg) we need to fix copy command, so we can use it here
             return results;
         }
     }
