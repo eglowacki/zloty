@@ -209,7 +209,7 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
                 .mSliceSize = textureHeader.GetImageSize(),
                 .mDimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D,
                 .mLayout = D3D12_TEXTURE_LAYOUT_UNKNOWN,
-                .mResourceState = D3D12_RESOURCE_STATE_COPY_DEST,
+                .mResourceState = D3D12_RESOURCE_STATE_COMMON,
                 .mTransitionTo = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
             };
 

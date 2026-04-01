@@ -166,7 +166,7 @@ namespace
             .mSliceSize = verticesBufferSize,
             .mDimension = D3D12_RESOURCE_DIMENSION_BUFFER,
             .mLayout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-            .mResourceState = D3D12_RESOURCE_STATE_COPY_DEST,
+            .mResourceState = D3D12_RESOURCE_STATE_COMMON,
             .mTransitionTo = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
         };
 
@@ -186,7 +186,7 @@ namespace
                 .mSliceSize = indicesBufferSize,
                 .mDimension = D3D12_RESOURCE_DIMENSION_BUFFER,
                 .mLayout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-                .mResourceState = D3D12_RESOURCE_STATE_COPY_DEST,
+                .mResourceState = D3D12_RESOURCE_STATE_COMMON,
                 .mTransitionTo = D3D12_RESOURCE_STATE_INDEX_BUFFER
             };
 

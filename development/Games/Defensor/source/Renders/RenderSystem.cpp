@@ -197,15 +197,15 @@ void defensor::render::RenderSystem::PreloadAssets()
     mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex);
     mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel);
 
-    const Section textureSection("Images");
-    auto textureTags = vts.GetTags(textureSection);
-    mRenderTextures.Preload(textureTags);
-    mTextureResources.Preload(textureTags);
-
     const Section geometrySection("Geometry");
     auto geometryTags = vts.GetTags(geometrySection);
     mRenderGeometries.Preload(geometryTags);
     mGeometriesResources.Preload(geometryTags);
+
+    const Section textureSection("Images");
+    auto textureTags = vts.GetTags(textureSection);
+    mRenderTextures.Preload(textureTags);
+    mTextureResources.Preload(textureTags);
 
     const Section materialSection("Materials");
     auto materialTags = vts.GetTags(materialSection);

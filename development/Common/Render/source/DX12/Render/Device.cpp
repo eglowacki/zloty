@@ -160,8 +160,8 @@ yaget::render::DeviceB::FrameCommands::~FrameCommands()
     }
     else if (mFrameType == FrameType::Copy)
     {
-        auto frameFenceValue = mDevice->GetFrameFenceValue(mFrameIndex, mCommandTypeForCopy);
-        GetQueueStorage().GetQueue(mCommandTypeForCopy)->WaitForFenceCPUBlocking(frameFenceValue);
+        auto frameFenceValue = mDevice->GetFrameFenceValue(mFrameIndex, commands::Type::Copy);
+        GetQueueStorage().GetQueue(commands::Type::Copy)->WaitForFenceCPUBlocking(frameFenceValue);
     }
 }
 
@@ -176,7 +176,7 @@ yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::Beg
     }
     else if (mFrameType == FrameType::Copy)
     {
-        currentType = mCommandTypeForCopy;
+        currentType = commands::Type::Copy;
     }
     else
     {
