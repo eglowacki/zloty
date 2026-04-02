@@ -8,6 +8,7 @@
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
 #include "Render/Helpers/ResourceDescriptions.h"
+#include "Render\PlaceholderAssets\PlaceholderAssets.h"
 
 #include <d3dx12.h>
 
@@ -177,65 +178,52 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
         }
 
         auto textureBuffer = mRenderTextures.GetTexture(tag);
-        if (!io::size_data(textureBuffer))
+
+        auto [textureHeader, texturePixels] = io::TextureAsset::ParseBuffer(textureBuffer);
+        if (!textureHeader.GetImageSize())
         {
-            // NOTE(eg) Should we return some kind of built-in texture placeholder, 
-            // in similar manner as we do it in RenderShaders (missing vertex or pixel shader)
-            YLOG_ERROR("REND", "Could not find texture data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
+            YLOG_ERROR("REND", "Could not find texture data for tag: '%s', replacing with built-in placeholder.", yaget::conv::ToString(tag).c_str());
+            auto placeholderTexture = placeholders::GetTextureData();
+            textureHeader = static_cast<image::Header>(placeholderTexture);
+            texturePixels = placeholderTexture.mPixels;
+
+            error_handlers::ThrowOnError(io::size_data(texturePixels) > 0, "Could not get built-in texture");
+        }
+
+        if (textureHeader.mComponents == 3)
+        {
+            YLOG_ERROR("REND", "There is no support for 24 bit images. Tag: '%s'", yaget::conv::ToString(tag).c_str());
             continue;
         }
 
-        auto [textureHeader, texturePixels] = io::TextureAsset::ParseBuffer(textureBuffer);
-        if (textureHeader.GetImageSize())
-        {
-            if (textureHeader.mComponents == 3)
-            {
-                YLOG_ERROR("REND", "There is no support for 24 bit images. Tag: '%s'", yaget::conv::ToString(tag).c_str());
-                continue;
-            }
+        auto allocator = mDevice.GetAdapter().GetAllocator();
 
-            auto allocator = mDevice.GetAdapter().GetAllocator();
+        DXGI_FORMAT textureFormat = GetTextureFormat(textureHeader.mComponents);
+        helpers::SourceGpuParameters sourceGpuParameters = helpers::MakeTextureBufferParameters(io::cast_data<const uint8_t>(texturePixels), textureHeader.mSizeX, textureHeader.mSizeY, textureFormat, textureHeader.GetStride(), textureHeader.GetImageSize());
 
-            DXGI_FORMAT textureFormat = GetTextureFormat(textureHeader.mComponents);
+        helpers::GpuResourceResult gpuResourceResult = helpers::CreateGpuResource(tag, sourceGpuParameters, preloadCommandList, allocator);
 
-            helpers::SourceGpuParameters sourceGpuParameters
-            {
-                .mSizeX = textureHeader.mSizeX,
-                .mSizeY = textureHeader.mSizeY,
-                .mFormat = textureFormat,
-                .mData = io::cast_data<const uint8_t>(texturePixels),
-                .mStride = textureHeader.GetStride(),
-                .mSliceSize = textureHeader.GetImageSize(),
-                .mDimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D,
-                .mLayout = D3D12_TEXTURE_LAYOUT_UNKNOWN,
-                .mResourceState = D3D12_RESOURCE_STATE_COMMON,
-                .mTransitionTo = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-            };
+        //--------------------------------------------------
+        // Describe and create a SRV for the texture.
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Format = textureFormat;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = 1;
 
-            helpers::GpuResourceResult gpuResourceResult = helpers::CreateGpuResource(tag, sourceGpuParameters, preloadCommandList, allocator);
+        auto d3dDevice = mDevice.GetAdapter().GetDevice();
+        auto srvHeap = CreateDescriptorHeap(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 
-            //--------------------------------------------------
-            // Describe and create a SRV for the texture.
-            D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-            srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-            srvDesc.Format = textureFormat;
-            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-            srvDesc.Texture2D.MipLevels = 1;
+        ID3D12Resource* texture = gpuResourceResult.mGpuAllocation->GetResource();
+        auto uploadAllocation = gpuResourceResult.mUploadAllocation;
+        auto allocation = gpuResourceResult.mGpuAllocation;
 
-            auto d3dDevice = mDevice.GetAdapter().GetDevice();
-            auto srvHeap = CreateDescriptorHeap(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
+        d3dDevice->CreateShaderResourceView(texture, &srvDesc, srvHeap->GetCPUDescriptorHandleForHeapStart());
 
-            ID3D12Resource* texture = gpuResourceResult.mGpuAllocation->GetResource();
-            auto uploadAllocation = gpuResourceResult.mUploadAllocation;
-            auto allocation = gpuResourceResult.mGpuAllocation;
+        allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ uploadAllocation });
 
-            d3dDevice->CreateShaderResourceView(texture, &srvDesc, srvHeap->GetCPUDescriptorHandleForHeapStart());
-
-            allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ uploadAllocation });
-
-            mResources.insert({ tag, ResourceData{ unique_obj<D3D12MA::Allocation>{ allocation }, texture, srvHeap } });
-            results.push_back(texture);
-        }
+        mResources.insert({ tag, ResourceData{ unique_obj<D3D12MA::Allocation>{ allocation }, texture, srvHeap } });
+        results.push_back(texture);
     }
 
     framerHandler.EndFrame();

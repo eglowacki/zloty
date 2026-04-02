@@ -47,6 +47,9 @@
     <Filter Include="Source Files\Helpers Files">
       <UniqueIdentifier>{5dc63dc1-5e56-402a-a1e8-e896ac9c2b1e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\PlaceholderAssets Files">
+      <UniqueIdentifier>{d77918b9-091c-4801-86a6-b6b0d5e135be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\Device.h">
@@ -172,6 +175,9 @@
     <ClInclude Include="..\source\DX12\Render\Helpers\ResourceDescriptions.h">
       <Filter>Source Files\Helpers Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\DX12\Render\PlaceholderAssets\PlaceholderAssets.h">
+      <Filter>Source Files\PlaceholderAssets Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -284,6 +290,15 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Helpers\ResourceDescriptions.cpp">
       <Filter>Source Files\Helpers Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\PlaceholderAssets\PlaceholderTexture.cpp">
+      <Filter>Source Files\PlaceholderAssets Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\PlaceholderAssets\PlaceholderShader.cpp">
+      <Filter>Source Files\PlaceholderAssets Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\PlaceholderAssets\PlaceholderGeometry.cpp">
+      <Filter>Source Files\PlaceholderAssets Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

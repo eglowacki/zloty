@@ -5,6 +5,7 @@
 #include "Render/RenderStringHelpers.h"
 #include "Render/Platform/Adapter.h"
 #include "Render/Helpers/ResourceDescriptions.h"
+#include "Render\PlaceholderAssets\PlaceholderAssets.h"
 
 #include <d3dx12.h>
 #include <VertexTypes.h>
@@ -78,9 +79,10 @@ namespace
 
 
     //-------------------------------------------------------------------------------------------------
-    std::vector<uint32_t> GetIndices(const yaget::Strings& stringsAsset)
+    template<typename I>
+    std::vector<I> GetIndices(const yaget::Strings& stringsAsset)
     {
-        std::vector<uint32_t> result;
+        std::vector<I> result;
         auto it = std::ranges::find_if(stringsAsset, [](const auto& element)
         {
             return element.find("Indices Begin:") != std::string::npos;
@@ -142,12 +144,16 @@ namespace
         return messagingBuffer.mBuffer;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
     struct GeometryResourceResult
     {
         yaget::render::helpers::GpuResourceResult mVertices;
         yaget::render::helpers::GpuResourceResult mIndices;
     };
 
+
+    //-------------------------------------------------------------------------------------------------
     template<typename VF>
     GeometryResourceResult CreateGeometryResource(const yaget::io::Tag& tag, const yaget::io::Buffer& buffer, ID3D12GraphicsCommandList* commandList, D3D12MA::Allocator* allocator)
     {
@@ -156,19 +162,7 @@ namespace
         render::geom::DataLayout<VF> dataLayout(buffer);
 
         size_t verticesBufferSize = sizeof(VF) * dataLayout.mHeader->mNumVertices;
-        render::helpers::SourceGpuParameters verticesGpuParameters
-        {
-            .mSizeX = static_cast<int>(verticesBufferSize),
-            .mSizeY = 1,
-            .mFormat = DXGI_FORMAT_UNKNOWN,
-            .mData = reinterpret_cast<const uint8_t*>(dataLayout.mVertices),
-            .mStride = static_cast<int>(verticesBufferSize),
-            .mSliceSize = verticesBufferSize,
-            .mDimension = D3D12_RESOURCE_DIMENSION_BUFFER,
-            .mLayout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-            .mResourceState = D3D12_RESOURCE_STATE_COMMON,
-            .mTransitionTo = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
-        };
+        render::helpers::SourceGpuParameters verticesGpuParameters = render::helpers::MakeVertexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mVertices), verticesBufferSize);
 
         render::helpers::GpuResourceResult gpuVerticesResult = render::helpers::CreateGpuResource(tag, verticesGpuParameters, commandList, allocator);
 
@@ -176,19 +170,7 @@ namespace
         if (dataLayout.mHeader->mNumIndices && dataLayout.mIndices)
         {
             size_t indicesBufferSize = sizeof(uint32_t) * dataLayout.mHeader->mNumIndices;
-            render::helpers::SourceGpuParameters indicesGpuParameters
-            {
-                .mSizeX = static_cast<int>(indicesBufferSize),
-                .mSizeY = 1,
-                .mFormat = DXGI_FORMAT_UNKNOWN,
-                .mData = reinterpret_cast<const uint8_t*>(dataLayout.mIndices),
-                .mStride = static_cast<int>(indicesBufferSize),
-                .mSliceSize = indicesBufferSize,
-                .mDimension = D3D12_RESOURCE_DIMENSION_BUFFER,
-                .mLayout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-                .mResourceState = D3D12_RESOURCE_STATE_COMMON,
-                .mTransitionTo = D3D12_RESOURCE_STATE_INDEX_BUFFER
-            };
+            render::helpers::SourceGpuParameters indicesGpuParameters = render::helpers::MakeIndexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mIndices), indicesBufferSize);
 
             gpuIndicesResult = render::helpers::CreateGpuResource(tag, indicesGpuParameters, commandList, allocator);
         }
@@ -198,6 +180,30 @@ namespace
             .mIndices ={ .mGpuAllocation = gpuIndicesResult.mGpuAllocation, .mUploadAllocation = gpuIndicesResult.mUploadAllocation }
         };
     }
+
+
+    //-------------------------------------------------------------------------------------------------
+    template<typename V, typename I>
+    yaget::io::Buffer GenerateGeometryBuffer(yaget::render::AssetCacheType vertexFormat, const yaget::Strings& strings)
+    {
+        auto vertices = GetVertices<V>(strings);
+        auto indices = GetIndices<I>(strings);
+
+        auto buffer = SerializeToBuffer(vertexFormat, vertices, indices);
+
+        return buffer;
+    }
+
+    template <yaget::render::AssetCacheType T>
+    struct VertexTypeResolver;
+
+
+    template <>
+    struct VertexTypeResolver<yaget::render::AssetCacheType::VertexPosition | yaget::render::AssetCacheType::VertexColor | yaget::render::AssetCacheType::VertexTexture0>
+    {
+        using Type = DirectX::VertexPositionColorTexture;
+    };
+
 
 }
 
@@ -293,35 +299,27 @@ yaget::io::Buffer yaget::render::RenderGeometries::LoadGeometry(const io::Tag& t
     io::SingleBLobLoader<io::StringsAsset> loader(mVTS, tag);
     if (auto stringsAsset = loader.GetAsset(); stringsAsset->IsValid())
     {
+        //Strings geometryStrings = placeholders::GetGeometryData();
+
         const auto vertexFormat = GetVertexFormat(stringsAsset->mStrings);
+
+        //using vertexType = VertexTypeResolver<AssetCacheType::VertexPosition | AssetCacheType::VertexColor | AssetCacheType::VertexTexture0>::Type;
 
         if (vertexFormat == AssetCacheType::VertexPosition)
         {
-            auto vertices = GetVertices<DirectX::VertexPosition>(stringsAsset->mStrings);
-            auto indices= GetIndices(stringsAsset->mStrings);
-
-            buffer = SerializeToBuffer(vertexFormat, vertices, indices);
+            buffer = GenerateGeometryBuffer<DirectX::VertexPosition, uint32_t>(vertexFormat, stringsAsset->mStrings);
         }
         else if (vertexFormat == (AssetCacheType::VertexPosition | AssetCacheType::VertexColor))
         {
-            auto vertices = GetVertices<DirectX::VertexPositionColor>(stringsAsset->mStrings);
-            auto indices= GetIndices(stringsAsset->mStrings);
-
-            buffer = SerializeToBuffer(vertexFormat, vertices, indices);
+            buffer = GenerateGeometryBuffer<DirectX::VertexPositionColor, uint32_t>(vertexFormat, stringsAsset->mStrings);
         }
         else if (vertexFormat == (AssetCacheType::VertexPosition | AssetCacheType::VertexColor | AssetCacheType::VertexTexture0))
         {
-            auto vertices = GetVertices<DirectX::VertexPositionColorTexture>(stringsAsset->mStrings);
-            auto indices= GetIndices(stringsAsset->mStrings);
-
-            buffer = SerializeToBuffer(vertexFormat, vertices, indices);
+            buffer = GenerateGeometryBuffer<DirectX::VertexPositionColorTexture, uint32_t>(vertexFormat, stringsAsset->mStrings);
         }
         else if (vertexFormat == (AssetCacheType::VertexPosition | AssetCacheType::VertexTexture0))
         {
-            auto vertices = GetVertices<DirectX::VertexPositionTexture>(stringsAsset->mStrings);
-            auto indices= GetIndices(stringsAsset->mStrings);
-
-            buffer = SerializeToBuffer(vertexFormat, vertices, indices);
+            buffer = GenerateGeometryBuffer<DirectX::VertexPositionTexture, uint32_t>(vertexFormat, stringsAsset->mStrings);
         }
         else
         {
