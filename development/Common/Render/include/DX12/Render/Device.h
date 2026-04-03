@@ -104,6 +104,7 @@ namespace yaget::render
             };
 
             FrameCommands(DeviceB& device, const time::GameClock* gameClock, metrics::Channel* channel, FrameType frameType);
+            static commands::Type GetCommandType(FrameType frameType);
 
             commands::QueueStorage& GetQueueStorage() const;
             commands::AllocatorStorage& GetAllocatorStorage() const;
@@ -119,10 +120,6 @@ namespace yaget::render
             std::vector<commands::CommandListStorage::CommandListHandle> mCommandsToRender;
 
             FrameType mFrameType{};
-
-            // NOTE(eg) for now we use Direct type for copy. Once I get more familiar
-            // with uploading resources, we'll want to re-visit this and start using an actual Copy type
-            commands::Type mCommandTypeForCopy = commands::Type::Direct;
         };
 
         FrameCommands GetFrameCommands(const time::GameClock& gameClock, metrics::Channel& channel);

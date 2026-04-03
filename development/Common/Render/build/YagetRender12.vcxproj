@@ -158,6 +158,7 @@
     <ClInclude Include="..\include\DX12\Render\Device.h" />
     <ClInclude Include="..\include\DX12\Render\Logger\RenderLogTags.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\ConstantBuffer.h" />
+    <ClInclude Include="..\include\DX12\Render\Pipeline\RenderGeometries.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\ShaderBuffers.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderMaterialProperties.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderPipelines.h" />
@@ -178,7 +179,9 @@
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_textedit.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="..\source\DX12\Render\EnumConversion.h" />
+    <ClInclude Include="..\source\DX12\Render\Helpers\ResourceDescriptions.h" />
     <ClInclude Include="..\source\DX12\Render\Metrics\RenderMetrics.h" />
+    <ClInclude Include="..\source\DX12\Render\PlaceholderAssets\PlaceholderAssets.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\D3D12MemAlloc.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\ResourceCompiler.h" />
     <ClInclude Include="..\source\DX12\Render\Platform\SwapChain.h" />
@@ -204,14 +207,19 @@
     <ClCompile Include="..\source\DX12\Render\Commands\RenderQueue.cpp" />
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Helpers\ResourceDescriptions.cpp" />
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\ConstantBuffer.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Pipeline\RenderGeometries.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\ShaderBuffers.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderMaterialProperties.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderPipelines.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderShaders.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderSignatures.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderTextures.cpp" />
+    <ClCompile Include="..\source\DX12\Render\PlaceholderAssets\PlaceholderGeometry.cpp" />
+    <ClCompile Include="..\source\DX12\Render\PlaceholderAssets\PlaceholderShader.cpp" />
+    <ClCompile Include="..\source\DX12\Render\PlaceholderAssets\PlaceholderTexture.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\Adapter.cpp" />
     <ClCompile Include="..\source\DX12\Render\Platform\D3D12MemAlloc.cpp">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level3</WarningLevel>

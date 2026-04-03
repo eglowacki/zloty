@@ -35,6 +35,18 @@ namespace yaget::render
 
     template <typename T>
     using unique_obj = std::unique_ptr<T, yaget::render::Deleter<T>>;
+
+    struct YagetFileSignature
+    {
+        const char Signature[4] = { 'G', 'L', 'O', 'W' };
+        size_t Version = 0;
+
+        bool IsValid(size_t definedVersion) const
+        {
+            return std::memcmp(Signature, "GLOW", 4) == 0 && Version <= definedVersion;
+        }
+    };
+
 }
 
 

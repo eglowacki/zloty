@@ -18,6 +18,7 @@
 #include "DefensorRenderTypes.h"
 #include "Render/Polygons/RenderShape.h"
 #include "Renders/RenderMaterial.h"
+#include "Render/Pipeline/RenderGeometries.h"
 
 
 struct ID3D12GraphicsCommandList;
@@ -40,9 +41,10 @@ namespace defensor::render
     class RenderComponent : public comp::BaseComponent<comp::DefaultPoolSize>
     {
     public:
-        RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& assetTag, const io::Tags& textureTags, io::VirtualTransportSystem& vts, const yaget::render::platform::Adapter& adapter);
+        RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& geometryTag, const io::Tag& materialTag, const io::Tags& textureTags);
         ~RenderComponent();
 
+        void Bind(yaget::render::GeometriesResources::GeometryData geometryData);
         void Render(ID3D12GraphicsCommandList* commandList) const;
 
         math3d::Matrix mMatrix = math3d::Matrix::Identity;
@@ -52,6 +54,7 @@ namespace defensor::render
         // represents material (shaders, textures, render states)
         render::RenderMaterial mRenderMaterial;
 
+        io::Tag mGeometryTag;
         io::Tags mTextureTags;
     };
 

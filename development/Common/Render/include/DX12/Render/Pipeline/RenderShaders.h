@@ -117,6 +117,14 @@ namespace yaget::render
             D3D12_VERSIONED_ROOT_SIGNATURE_DESC mRootSignatureDesc{};
         };
 
+        struct ShaderInputOutputPins
+        {
+            ShaderPins mInputPins;
+            ShaderPins mOutputPins;
+        };
+
+        ShaderInputOutputPins GetShaderPins(const io::Tag& tag);
+
         using DescriptionCallback = std::function<void(const RootDescResult& descResult)>;
         void CreateSignatureDescription(const io::Tag& vertexTag, const io::Tag& pixelTag, DescriptionCallback callback);
 

@@ -1,50 +1,18 @@
-#include "Render/Pipeline/RenderShaders.h"
 #include "Core/ErrorHandlers.h"
-#include "Render/Platform/ResourceCompiler.h"
-#include "Streams/Guid.h"
-#include "VTS/ResolvedAssets.h"
+#include "Exception/Exception.h"
+#include "Json/JsonHelpers.h"
 #include "magic_enum/magic_enum.hpp"
 #include "Parsers/DependencyGraph.h"
-#include "Json/JsonHelpers.h"
-#include "Exception/Exception.h"
-
+#include "Render/Pipeline/RenderShaders.h"
 #include "Render/Platform/DeviceDebugger.h"
+#include "Render/Platform/ResourceCompiler.h"
+#include "Render\PlaceholderAssets\PlaceholderAssets.h"
+#include "Streams/Guid.h"
+#include "VTS/ResolvedAssets.h"
 
 
 namespace
 {
-    auto buildInShaderSource = R"( 
-            struct PSInput
-            {
-                float4 position : SV_POSITION;
-                float4 color : COLOR;
-            };
-
-            PSInput VSMain(float4 position : SV_POSITION, float4 color : COLOR)
-            {
-                PSInput result;
-
-                result.position = position;
-                result.color = color;
-
-                return result;
-            }
-
-            float4 PSMain(PSInput input) : SV_TARGET
-            {
-                return input.color;
-            }
-        )";
-
-
-    //-------------------------------------------------------------------------------------------------
-    constexpr size_t length(std::string_view sv)
-    {
-        return sv.size();
-    }
-
-    const std::size_t buildInShaderSourceLen = length(buildInShaderSource);;
-
     // let's have a table of mapping between shader type to (entry point and target)
     struct ShaderMapping
     {
@@ -206,7 +174,7 @@ size_t yaget::render::constant_shader_types::GetConstantLayoutSize(ConstantLayou
 //-------------------------------------------------------------------------------------------------
 yaget::render::RenderShaders::RenderShaders(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
     : CacheWatcher(vts, fileName)
-      , mResourceCompiler(std::make_shared<ResourceCompiler>())
+    , mResourceCompiler(std::make_shared<ResourceCompiler>())
 {
 }
 
@@ -253,6 +221,23 @@ void yaget::render::RenderShaders::ClearCache(const io::Tag& tag)
     }
 
     CacheWatcher<io::Buffer>::ClearCache(tag);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::RenderShaders::ShaderInputOutputPins yaget::render::RenderShaders::GetShaderPins(const io::Tag& tag)
+{
+    ShaderInputOutputPins inputOutputPins;
+
+    std::lock_guard mutexLocker(mMutex);
+    auto result = mReflections.find(tag);
+    if (result != mReflections.end())
+    {
+        inputOutputPins.mInputPins = result->second->mShaderInputs;
+        inputOutputPins.mOutputPins = result->second->mShaderOutputs;
+    }
+
+    return inputOutputPins;
 }
 
 
@@ -353,15 +338,15 @@ yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const io::Tag&
 
         arguments = GetCommandParameters(shaderType, false);
 
-        uint8_t* data = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(buildInShaderSource));
-        auto binaryCode = CompileShader(tag, mResourceCompiler.get(), io::BufferView(data, buildInShaderSourceLen), arguments);
+        auto placeholderShader = placeholders::GetShaderData();
+        auto binaryCode = CompileShader(tag, mResourceCompiler.get(), placeholderShader, arguments);
         buffer = binaryCode.first;
         reflection = binaryCode.second;
 
         error_handlers::ThrowOnError(io::size_data(buffer) > 0,
                                      std::format("Could not compile built-in shader type: '%s'. Source:\n'%s'",
                                                  magic_enum::enum_name(shaderType),
-                                                 buildInShaderSource));
+                                                 io::size_data(placeholderShader)));
     }
 
     mAssets.insert({ tag, buffer });

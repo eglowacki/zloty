@@ -115,7 +115,7 @@ void yaget::render::ConstantBuffer::Bind(ID3D12GraphicsCommandList* commandList)
             if (auto it = mVariableUpdateData.find(variable.mConstantType); it != mVariableUpdateData.end())
             {
                 const auto& dataBuffer = it->second;
-                commandList->SetGraphicsRoot32BitConstants(variable.mIndex, static_cast<uint32_t>(io::size_data(dataBuffer) / sizeof(float)), io::cast_data<const float>(dataBuffer), 0);
+                commandList->SetGraphicsRoot32BitConstants(variable.mIndex, static_cast<uint32_t>(io::size_data(dataBuffer) / sizeof(uint32_t)), io::cast_data<const uint32_t>(dataBuffer), 0);
             }
         }
         else if (variable.mRootType == constant_shader_types::RootType::ConstantBufferView)

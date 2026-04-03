@@ -68,6 +68,15 @@
                     }
                 },
                 {
+                    "Geometry": {
+                        "Converters": "GEOM",
+                        "Filters": [ "*.geom" ],
+                        "Path": [ "$(DataFolder)/Data/Geometry" ],
+                        "ReadOnly": true,
+                        "Recursive": true
+                    }
+                },
+                {
                     "UserOptions": {
                         "Converters": "JSON",
                         "Filters": [ "*.json" ],
@@ -82,7 +91,7 @@
                         "Filters": [ "*.vs" ],
                         "Path": [ "$(DataFolder)/Data/Shaders/Vertex" ],
                         "ReadOnly": true,
-                        "Recursive": false
+                        "Recursive": true
                     }
                 },
                 {
@@ -91,7 +100,7 @@
                         "Filters": [ "*.ps" ],
                         "Path": [ "$(DataFolder)/Data/Shaders/Pixel" ],
                         "ReadOnly": true,
-                        "Recursive": false
+                        "Recursive": true
                     }
                 },
                 {
@@ -145,7 +154,7 @@
                         "Filters": [ "*.json" ],
                         "Path": [ "$(DataFolder)/Data/Materials" ],
                         "ReadOnly": true,
-                        "Recursive": false
+                        "Recursive": true
                     }
                 },
                 {
