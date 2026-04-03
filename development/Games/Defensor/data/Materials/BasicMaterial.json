@@ -1,6 +1,6 @@
 {
     "BlendMode": "BlendModeOpaque",
-    "DepthState": "DepthStateNone",
+    "DepthState": "DepthStencilStateOn",
     "PixelShader": "PixelColor",
     "RasterizerState": "RasterizerStateCounterClockwise",
     "VertexShader": "VertexPosition | VertexColor"

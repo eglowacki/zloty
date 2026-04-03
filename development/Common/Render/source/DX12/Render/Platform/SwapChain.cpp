@@ -1,3 +1,5 @@
+#include "D3D12MemAlloc.h"
+
 #include "Render/Platform/SwapChain.h"
 #include "StringHelpers.h"
 #include "Render/Platform/DeviceDebugger.h"
@@ -69,24 +71,70 @@ namespace
     }
 
 
-    //-------------------------------------------------------------------------------------------------
-    yaget::render::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
+    yaget::render::ComPtr<ID3D12Resource> CreateDepthStencilBuffer(ID3D12Device* device, ID3D12DescriptorHeap* dsDescriptorHeap, size_t width, size_t height, int depthStencilFlags)
     {
-        yaget::render::ComPtr<ID3D12Device4> device4;
-        HRESULT hr = device->QueryInterface<ID3D12Device4>(&device4);
-        yaget::error_handlers::ThrowOnError(hr, "Could not create ID3D12Device4 interface");
+        if (depthStencilFlags == 0)
+        {
+            return {};
+        }
+
+        DXGI_FORMAT depthStencilFormat = DXGI_FORMAT_D32_FLOAT;
+        if (depthStencilFlags == (yaget::render::platform::SwapChain::DepthBufferFlag | yaget::render::platform::SwapChain::StencilBufferFlag))
+        {
+            depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        }
+
+        YAGET_ASSERT(depthStencilFlags & yaget::render::platform::SwapChain::DepthBufferFlag, "Can not create Stencil Buffer without Depth Buffer specified.");
+
+        D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+        depthOptimizedClearValue.Format = depthStencilFormat;//DXGI_FORMAT_D24_UNORM_S8_UINT;//DXGI_FORMAT_D32_FLOAT;
+        depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+        depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+        D3D12_RESOURCE_DESC depthStencilDesc = {};
+        depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        depthStencilDesc.Alignment = 0;
+        depthStencilDesc.Width = width;
+        depthStencilDesc.Height = static_cast<uint32_t>(height);
+        depthStencilDesc.DepthOrArraySize = 1;
+        depthStencilDesc.MipLevels = 0;
+        depthStencilDesc.Format = depthStencilFormat;//DXGI_FORMAT_D24_UNORM_S8_UINT;//DXGI_FORMAT_D32_FLOAT;
+        depthStencilDesc.SampleDesc.Count = 1;
+        depthStencilDesc.SampleDesc.Quality = 0;
+        depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+        D3D12_HEAP_PROPERTIES heapProperties =
+        {
+            .Type = D3D12_HEAP_TYPE_DEFAULT,
+            .CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+            .MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
+            .CreationNodeMask = 1,
+            .VisibleNodeMask = 1
+        };
+
+        yaget::render::ComPtr<ID3D12Resource> depthStencilBuffer;
+        HRESULT hr = device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &depthStencilDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthOptimizedClearValue, IID_PPV_ARGS(&depthStencilBuffer));
+        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Depth Stencil buffer");
+
+        YAGET_RENDER_SET_DEBUG_NAME(depthStencilBuffer.Get(), "Depth Stencil Buffer");
+
+        D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
+        depthStencilViewDesc.Format = depthStencilFormat;//DXGI_FORMAT_D24_UNORM_S8_UINT;//DXGI_FORMAT_D32_FLOAT;
+        depthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+        depthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+        device->CreateDepthStencilView(depthStencilBuffer.Get(), &depthStencilViewDesc, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
         
-        yaget::render::ComPtr<ID3D12GraphicsCommandList2> commandList;
-        hr = device4->CreateCommandList1(0, type, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&commandList));
-        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Command List");
-
-        YAGET_RENDER_SET_DEBUG_NAME(commandList.Get(), "Yaget Command List");
-
-        return commandList;
+        return depthStencilBuffer;
     }
+
 
 } // namespace
 
+
+int yaget::render::platform::SwapChain::DepthBufferFlag = 1 << 0;
+int yaget::render::platform::SwapChain::StencilBufferFlag = 1 << 1;
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue)
@@ -98,6 +146,9 @@ yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, cons
     , mCurrentBackBufferIndex{ mSwapChain->GetCurrentBackBufferIndex() }
     , mRTVDescriptorHeap{ CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, mNumBackBuffers) }
     , mBackBuffers(mNumBackBuffers, nullptr)
+    , mDepthStencilFlags{ DepthBufferFlag | StencilBufferFlag }
+    , mDSVDescriptorHeap{ mDepthStencilFlags ? CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1) : ComPtr<ID3D12DescriptorHeap>{} }
+    , mDepthStencilBuffer{ CreateDepthStencilBuffer(mDevice, mDSVDescriptorHeap.Get(), adapterInfo.GetSelectedResolution().mWidth, adapterInfo.GetSelectedResolution().mHeight, mDepthStencilFlags) }
 {
     UpdateRenderTargetViews();
     Resize();
@@ -113,6 +164,9 @@ yaget::render::platform::SwapChain::~SwapChain() = default;
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::SwapChain::Resize()
 {
+    mDepthStencilBuffer.Reset();
+    mDSVDescriptorHeap.Reset();
+
     for (int i = 0; i < mNumBackBuffers; ++i)
     {
         // Any references to the back buffers must be released
@@ -135,6 +189,9 @@ void yaget::render::platform::SwapChain::Resize()
 
     mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
     UpdateRenderTargetViews();
+
+    mDSVDescriptorHeap = CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
+    mDepthStencilBuffer = CreateDepthStencilBuffer(mDevice, mDSVDescriptorHeap.Get(), chainDesc.Width, chainDesc.Height, mDepthStencilFlags);
 }
 
 
@@ -149,6 +206,13 @@ ID3D12Resource* yaget::render::platform::SwapChain::GetCurrentRenderTarget() con
 ID3D12DescriptorHeap* yaget::render::platform::SwapChain::GetRTVDescriptorHeap() const
 {
     return mRTVDescriptorHeap.Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+ID3D12DescriptorHeap* yaget::render::platform::SwapChain::GetDSVDescriptorHeap() const
+{
+    return mDSVDescriptorHeap.Get();
 }
 
 

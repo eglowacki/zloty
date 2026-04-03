@@ -16,6 +16,14 @@
         "Transient@BasicPipe"
     ],
     [
+        "VertexPosition | VertexColor | PixelColor | RasterizerStateCounterClockwise | BlendModeOpaque | DepthStateOn | TopologyStateTriangle | RTVFormatRGBA8",
+        "Transient@BasicDepthPipe"
+    ],
+    [
+        "VertexPosition | VertexColor | PixelColor | RasterizerStateCounterClockwise | BlendModeOpaque | DepthStencilStateOn | TopologyStateTriangle | RTVFormatRGBA8",
+        "Transient@BasicDepthStencilPipe"
+    ],
+    [
         "VertexPosition | VertexColor | PixelColor | RasterizerStateWireframe | BlendModeOpaque | DepthStateNone | TopologyStateTriangle | RTVFormatRGBA8",
         "Transient@BasicPipe_Wire"
     ],
@@ -38,6 +46,14 @@
     [
         "VertexPosition | VertexColor | VertexTexture0 | PixelColor | PixelTexture0 | RasterizerStateCounterClockwise | BlendModeOpaque | DepthStateNone | TopologyStateTriangle | RTVFormatRGBA8",
         "Transient@BasicTexturePipe"
+    ],
+    [
+        "VertexPosition | VertexColor | VertexTexture0 | PixelColor | PixelTexture0 | RasterizerStateCounterClockwise | BlendModeOpaque | DepthStateOn | TopologyStateTriangle | RTVFormatRGBA8",
+        "Transient@BasicTextureDepthPipe"
+    ],
+    [
+        "VertexPosition | VertexColor | VertexTexture0 | PixelColor | PixelTexture0 | RasterizerStateCounterClockwise | BlendModeOpaque | DepthStencilStateOn | TopologyStateTriangle | RTVFormatRGBA8",
+        "Transient@BasicTextureDepthStencilPipe"
     ],
     [
         "ShaderBuffer | VertexPosition | VertexTexture0 | VertexColor | PixelColor | PixelTexture0",

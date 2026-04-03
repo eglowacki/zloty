@@ -191,13 +191,15 @@ yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::Beg
     if (mFrameType == FrameType::Render)
     {
         auto deviceRenderTarget = mDevice->mSwapChain->GetCurrentRenderTarget();
-        auto deviceDescriptorHeap = mDevice->mSwapChain->GetRTVDescriptorHeap();
+        auto rtDescriptorHeap = mDevice->mSwapChain->GetRTVDescriptorHeap();
+        auto dsDescriptorHeap = mDevice->mSwapChain->GetDSVDescriptorHeap();
 
-        commands::TransitionToRenderTarget(commandList, deviceRenderTarget, deviceDescriptorHeap, mFrameIndex);
+        commands::TransitionToRenderTarget(commandList, deviceRenderTarget, rtDescriptorHeap, dsDescriptorHeap, mFrameIndex);
 
         if (color)
         {
-            commands::ClearRenderTarget(commandList, *color, deviceRenderTarget, deviceDescriptorHeap, mFrameIndex);
+            commands::ClearRenderTarget(commandList, *color, deviceRenderTarget, rtDescriptorHeap, mFrameIndex);
+            commands::ClearDepthStencil(commandList, 1.0f, 0, dsDescriptorHeap);
         }
     }
 

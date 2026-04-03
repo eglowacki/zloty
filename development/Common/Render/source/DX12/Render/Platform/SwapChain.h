@@ -13,7 +13,6 @@
 
 #pragma once
 
-
 #include "Render/RenderCore.h"
 #include "App/WindowFrame.h"
 
@@ -54,6 +53,10 @@ namespace yaget::render::platform
         uint32_t GetCurrentBackBufferIndex() const { return mCurrentBackBufferIndex; }
         ID3D12Resource* GetCurrentRenderTarget() const;
         ID3D12DescriptorHeap* GetRTVDescriptorHeap() const;
+        ID3D12DescriptorHeap* GetDSVDescriptorHeap() const;
+
+        static int DepthBufferFlag;
+        static int StencilBufferFlag;
 
     private:
         void UpdateRenderTargetViews();
@@ -67,6 +70,11 @@ namespace yaget::render::platform
 
         ComPtr<ID3D12DescriptorHeap> mRTVDescriptorHeap;
         std::vector<ComPtr<ID3D12Resource>> mBackBuffers;
+
+        int mDepthStencilFlags = 0;
+
+        ComPtr<ID3D12DescriptorHeap> mDSVDescriptorHeap;    // This is a heap for our depth/stencil buffer descriptor
+        ComPtr<ID3D12Resource> mDepthStencilBuffer;         // This is the memory for our depth buffer. it will also be used for a stencil buffer in a later tutorial
     };
 
 } // namespace yaget::render::platform

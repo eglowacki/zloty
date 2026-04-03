@@ -16,8 +16,34 @@ namespace
     {
         .DepthEnable = TRUE,
         .DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL,
-        .DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL,
+        .DepthFunc = D3D12_COMPARISON_FUNC_LESS,
         .StencilEnable = TRUE,
+        .StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK,
+        .StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK,
+        .FrontFace =
+        {
+            .StencilFailOp = D3D12_STENCIL_OP_KEEP,
+            .StencilDepthFailOp = D3D12_STENCIL_OP_KEEP,
+            .StencilPassOp = D3D12_STENCIL_OP_KEEP,
+            .StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS
+        },
+        .BackFace =
+        {
+            .StencilFailOp = D3D12_STENCIL_OP_KEEP,
+            .StencilDepthFailOp = D3D12_STENCIL_OP_KEEP,
+            .StencilPassOp = D3D12_STENCIL_OP_KEEP,
+            .StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS
+        }
+    };
+
+
+    //-------------------------------------------------------------------------------------------------
+    D3D12_DEPTH_STENCIL_DESC DepthOn
+    {
+        .DepthEnable = TRUE,
+        .DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL,
+        .DepthFunc = D3D12_COMPARISON_FUNC_LESS,
+        .StencilEnable = FALSE,
         .StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK,
         .StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK,
         .FrontFace =
@@ -83,7 +109,7 @@ namespace
         D3D12_DEPTH_STENCIL_DESC depthStencilState = DirectX::CommonStates::DepthNone;
         if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DepthStateOn))
         {
-            depthStencilState = DirectX::CommonStates::DepthDefault;
+            depthStencilState = DepthOn;//DirectX::CommonStates::DepthDefault;
         }
         else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DepthStateRead))
         {
@@ -189,6 +215,15 @@ namespace
         for (uint32_t i = 0; i < numTargets; ++i)
         {
             psoDesc.RTVFormats[i] = colorFormat;
+        }
+
+        if ((assetType & render::AssetCacheType::DepthStateOn) == render::AssetCacheType::DepthStateOn)
+        {
+            psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+        }
+        else if ((assetType & render::AssetCacheType::DepthStencilStateOn) == render::AssetCacheType::DepthStencilStateOn)
+        {
+            psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
         }
         psoDesc.SampleDesc.Count = 1;
 

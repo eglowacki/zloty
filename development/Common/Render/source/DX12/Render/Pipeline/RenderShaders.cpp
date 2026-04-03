@@ -362,21 +362,20 @@ yaget::render::ComPtr<ID3D12DescriptorHeap> yaget::render::CreateDescriptorHeap(
     D3D12_DESCRIPTOR_HEAP_DESC desc = {};
     desc.NumDescriptors = numDescriptors;
     desc.Type = type;
-    if (type == D3D12_DESCRIPTOR_HEAP_TYPE_RTV)
+    switch (type)
     {
-        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    }
-    else if (type == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
-    {
-        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    }
-    else if (type == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER)
-    {
-        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    }
-    else
-    {
-        YAGET_ASSERT(false, std::format("Descriptor Type: '{}' not handled!!!", magic_enum::enum_name(type)).c_str());
+        case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:
+        case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:
+            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+            break;
+        case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
+            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            break;
+        case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
+            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            break;
+        default:
+            YAGET_ASSERT(false, std::format("Descriptor Type: '{}' not handled!!!", magic_enum::enum_name(type)).c_str());
     }
 
     ComPtr<ID3D12DescriptorHeap> descriptorHeap;

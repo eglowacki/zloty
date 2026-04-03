@@ -6,11 +6,12 @@
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::commands::TransitionToRenderTarget(CommandList* commandList, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, int frameIndex)
+void yaget::render::commands::TransitionToRenderTarget(CommandList* commandList, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* rtDescriptorHeap, ID3D12DescriptorHeap* dsDescriptorHeap, int frameIndex)
 {
-    YAGET_ASSERT(renderTarget, "renderTarget parameter is null.");
-    YAGET_ASSERT(commandList, "commandList parameter is null.");
-    YAGET_ASSERT(descriptorHeap, "descriptorHeap parameter is null.");
+    YAGET_ASSERT(renderTarget, "Render-Target parameter is null.");
+    YAGET_ASSERT(commandList, "CommandList parameter is null.");
+    YAGET_ASSERT(rtDescriptorHeap, "Render-Target descriptorHeap parameter is null.");
+    YAGET_ASSERT(dsDescriptorHeap, "Depth-Stencil DescriptorHeap parameter is null.");
 
     auto deviceCommandList = commandList->GetDeviceCommandList();
 
@@ -39,16 +40,17 @@ void yaget::render::commands::TransitionToRenderTarget(CommandList* commandList,
 
     const auto descriptorHandleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(descriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, descriptorHandleSize);
-    deviceCommandList->OMSetRenderTargets(1, &rtv, false, nullptr);
+    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, descriptorHandleSize);
+    const CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+    deviceCommandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::commands::TransitionToPresent(const CommandList* commandList, ID3D12Resource* renderTarget)
 {
-    YAGET_ASSERT(commandList, "renderTarget is null.");
-    YAGET_ASSERT(renderTarget, "renderTarget is null.");
+    YAGET_ASSERT(commandList, "CommandList parameter is null.");
+    YAGET_ASSERT(renderTarget, "Render-Target parameter is null.");
 
     auto deviceCommandList = commandList->GetDeviceCommandList();
 
@@ -58,10 +60,10 @@ void yaget::render::commands::TransitionToPresent(const CommandList* commandList
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::commands::ClearRenderTarget(CommandList* commandList, const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, int frameIndex)
+void yaget::render::commands::ClearRenderTarget(const CommandList* commandList, const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, int frameIndex)
 {
-    YAGET_ASSERT(renderTarget, "renderTarget is null.");
-    YAGET_ASSERT(descriptorHeap, "descriptorHeap is null.");
+    YAGET_ASSERT(renderTarget, "Render-Target parameter is null.");
+    YAGET_ASSERT(descriptorHeap, "Render-Target DescriptorHeap parameter is null.");
 
     const float clearColor[] = { color.R(), color.B(), color.G(), color.A() };
     auto deviceCommandList = commandList->GetDeviceCommandList();
@@ -74,4 +76,16 @@ void yaget::render::commands::ClearRenderTarget(CommandList* commandList, const 
 
     const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(descriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, descriptorHandleSize);
     deviceCommandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::commands::ClearDepthStencil(const CommandList* commandList, float depth, uint8_t stencil, ID3D12DescriptorHeap* dsDescriptorHeap)
+{
+    YAGET_ASSERT(dsDescriptorHeap, "Depth-Stencil DescriptorHeap parameter is null.");
+
+    auto deviceCommandList = commandList->GetDeviceCommandList();
+
+    const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+    deviceCommandList->ClearDepthStencilView(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
 }

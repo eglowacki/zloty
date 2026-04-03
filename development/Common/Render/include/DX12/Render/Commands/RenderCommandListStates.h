@@ -26,9 +26,10 @@ namespace yaget::render::commands
 {
     class CommandList;
 
-    void TransitionToRenderTarget(CommandList* commandList, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, int frameIndex);
+    void TransitionToRenderTarget(CommandList* commandList, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* rtDescriptorHeap, ID3D12DescriptorHeap* dsDescriptorHeap, int frameIndex);
     void TransitionToPresent(const CommandList* commandList, ID3D12Resource* renderTarget);
-    void ClearRenderTarget(CommandList* commandList, const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, int frameIndex);
+    void ClearRenderTarget(const CommandList* commandList, const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, int frameIndex);
+    void ClearDepthStencil(const CommandList* commandList, float depth, uint8_t stencil, ID3D12DescriptorHeap* dsDescriptorHeap);
 
 }
 

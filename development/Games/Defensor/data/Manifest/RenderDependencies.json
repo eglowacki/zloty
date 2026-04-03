@@ -16,7 +16,7 @@
                         "name": "Transient@BasicSig"
                     }
                 ],
-                "name": "Transient@BasicPipe"
+                "name": "Transient@BasicDepthStencilPipe"
             }
         ],
         "name": "Materials@BasicMaterial"
@@ -38,7 +38,7 @@
                         "name": "Transient@BasicTextureSig"
                     }
                 ],
-                "name": "Transient@BasicTexturePipe"
+                "name": "Transient@BasicTextureDepthStencilPipe"
             }
         ],
         "name": "Materials@BasicTextureMaterial"
