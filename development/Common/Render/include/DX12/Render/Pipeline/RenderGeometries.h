@@ -97,6 +97,9 @@ namespace yaget::render
         template<typename V, typename I = uint32_t>
         struct DataLayout
         {
+            using VertexType = V;
+            using IndexType = I;
+
             DataLayout(const io::Buffer& buffer)
                 : mHeader{ reinterpret_cast<const Header*>(io::cast_data<const char>(buffer) + sizeof(YagetFileSignature)) }
                 , mVertices{ reinterpret_cast<const V*>(io::cast_data<const char>(buffer) + HeaderBufferSize) }

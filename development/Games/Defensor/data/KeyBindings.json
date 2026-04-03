@@ -75,5 +75,12 @@
         "DisplayName": "->",
         "Flags": "ButtonDown|ButtonUp",
         "Value": "ArrowRight"
+    },
+    "Wire Mode": {
+        "Action": "Wire Mode",
+        "ContextName": "Game",
+        "DisplayName": "Ctrl-W",
+        "Flags": "ButtonCtrl",
+        "Value": "W"
     }
 }

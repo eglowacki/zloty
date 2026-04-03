@@ -49,6 +49,13 @@ namespace
 
 
     //-------------------------------------------------------------------------------------------------
+    bool ValidateGeometryFile(const yaget::Strings& /*stringsAsset*/)
+    {
+        return true;
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
     template<typename T>
     std::vector<T> GetVertices(const yaget::Strings& stringsAsset)
     {
@@ -108,7 +115,7 @@ namespace
                 {
                     if (!token.empty())
                     {
-                        result.emplace_back(yaget::conv::FromString<uint32_t>(token.c_str()));
+                        result.emplace_back(yaget::conv::FromString<I>(token.c_str()));
                     }
                 }
             }
@@ -161,7 +168,7 @@ namespace
 
         render::geom::DataLayout<VF> dataLayout(buffer);
 
-        size_t verticesBufferSize = sizeof(VF) * dataLayout.mHeader->mNumVertices;
+        size_t verticesBufferSize = dataLayout.mHeader->VertexBufferSize();
         render::helpers::SourceGpuParameters verticesGpuParameters = render::helpers::MakeVertexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mVertices), verticesBufferSize);
 
         render::helpers::GpuResourceResult gpuVerticesResult = render::helpers::CreateGpuResource(tag, verticesGpuParameters, commandList, allocator);
@@ -169,7 +176,7 @@ namespace
         render::helpers::GpuResourceResult gpuIndicesResult{};
         if (dataLayout.mHeader->mNumIndices && dataLayout.mIndices)
         {
-            size_t indicesBufferSize = sizeof(uint32_t) * dataLayout.mHeader->mNumIndices;
+            size_t indicesBufferSize = dataLayout.mHeader->IndexBufferSize();
             render::helpers::SourceGpuParameters indicesGpuParameters = render::helpers::MakeIndexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mIndices), indicesBufferSize);
 
             gpuIndicesResult = render::helpers::CreateGpuResource(tag, indicesGpuParameters, commandList, allocator);
@@ -194,10 +201,14 @@ namespace
         return buffer;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
+    // simple test for mapping vertex type to actual type
     template <yaget::render::AssetCacheType T>
     struct VertexTypeResolver;
 
 
+    //-------------------------------------------------------------------------------------------------
     template <>
     struct VertexTypeResolver<yaget::render::AssetCacheType::VertexPosition | yaget::render::AssetCacheType::VertexColor | yaget::render::AssetCacheType::VertexTexture0>
     {
@@ -297,34 +308,41 @@ yaget::io::Buffer yaget::render::RenderGeometries::LoadGeometry(const io::Tag& t
     io::Buffer buffer;
 
     io::SingleBLobLoader<io::StringsAsset> loader(mVTS, tag);
-    if (auto stringsAsset = loader.GetAsset(); stringsAsset->IsValid())
+    auto stringsAsset = loader.GetAsset();
+    const Strings* geometryFile{};
+
+    if (stringsAsset && stringsAsset->IsValid() && ValidateGeometryFile(stringsAsset->mStrings))
     {
-        //Strings geometryStrings = placeholders::GetGeometryData();
+        geometryFile = &stringsAsset->mStrings;
+    }
+    else
+    {
+        YLOG_ERROR("REND", "Could not find geometry data for tag: '%s', replacing with built-in placeholder.", yaget::conv::ToString(tag).c_str());
 
-        const auto vertexFormat = GetVertexFormat(stringsAsset->mStrings);
+        geometryFile = &placeholders::GetGeometryData();
+    }
 
-        //using vertexType = VertexTypeResolver<AssetCacheType::VertexPosition | AssetCacheType::VertexColor | AssetCacheType::VertexTexture0>::Type;
+    const auto vertexFormat = GetVertexFormat(*geometryFile);
 
-        if (vertexFormat == AssetCacheType::VertexPosition)
-        {
-            buffer = GenerateGeometryBuffer<DirectX::VertexPosition, uint32_t>(vertexFormat, stringsAsset->mStrings);
-        }
-        else if (vertexFormat == (AssetCacheType::VertexPosition | AssetCacheType::VertexColor))
-        {
-            buffer = GenerateGeometryBuffer<DirectX::VertexPositionColor, uint32_t>(vertexFormat, stringsAsset->mStrings);
-        }
-        else if (vertexFormat == (AssetCacheType::VertexPosition | AssetCacheType::VertexColor | AssetCacheType::VertexTexture0))
-        {
-            buffer = GenerateGeometryBuffer<DirectX::VertexPositionColorTexture, uint32_t>(vertexFormat, stringsAsset->mStrings);
-        }
-        else if (vertexFormat == (AssetCacheType::VertexPosition | AssetCacheType::VertexTexture0))
-        {
-            buffer = GenerateGeometryBuffer<DirectX::VertexPositionTexture, uint32_t>(vertexFormat, stringsAsset->mStrings);
-        }
-        else
-        {
-            YAGET_ASSERT(false, "Geometry: '%s' Vertex Format: '%s' is not handled!!!", yaget::conv::ToString(tag).c_str(), conv::ToString(vertexFormat).c_str());
-        }
+    if (vertexFormat == AssetCacheType::VertexPosition)
+    {
+        buffer = GenerateGeometryBuffer<DirectX::VertexPosition, uint32_t>(vertexFormat, *geometryFile);
+    }
+    else if (vertexFormat == (AssetCacheType::VertexPosition | AssetCacheType::VertexColor))
+    {
+        buffer = GenerateGeometryBuffer<DirectX::VertexPositionColor, uint32_t>(vertexFormat, *geometryFile);
+    }
+    else if (vertexFormat == (AssetCacheType::VertexPosition | AssetCacheType::VertexColor | AssetCacheType::VertexTexture0))
+    {
+        buffer = GenerateGeometryBuffer<DirectX::VertexPositionColorTexture, uint32_t>(vertexFormat, *geometryFile);
+    }
+    else if (vertexFormat == (AssetCacheType::VertexPosition | AssetCacheType::VertexTexture0))
+    {
+        buffer = GenerateGeometryBuffer<DirectX::VertexPositionTexture, uint32_t>(vertexFormat, *geometryFile);
+    }
+    else
+    {
+        YAGET_ASSERT(false, "Geometry: '%s' Vertex Format: '%s' is not handled!!!", yaget::conv::ToString(tag).c_str(), conv::ToString(vertexFormat).c_str());
     }
 
     return buffer;
@@ -400,9 +418,9 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
         auto geometryBuffer = mRenderGeometries.GetGeometry(tag);
         if (!io::size_data(geometryBuffer))
         {
-            // NOTE(eg) Should we return some kind of built-in geometry placeholder, 
-            // in similar manner as we do it in RenderShaders (missing vertex or pixel shader)
-            YLOG_ERROR("REND", "Could not find geometry data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
+            // this should not happen here, since the mRenderGeometries.GetGeometry weill always return valid buffer.
+            // It will use placeholder geometry if tag does not exist.
+            YAGET_ASSERT(false, "Could not find geometry data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
             continue;
         }
 

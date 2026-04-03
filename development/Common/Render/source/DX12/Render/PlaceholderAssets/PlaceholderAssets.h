@@ -32,6 +32,6 @@ namespace yaget::render::placeholders
     io::BufferView GetShaderData();
 
     //-------------------------------------------------------------------------------------------------
-    Strings GetGeometryData();
+    const Strings& GetGeometryData();
 
 }
