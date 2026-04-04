@@ -186,8 +186,11 @@ void yaget::render::platform::SwapChain::Resize()
     mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
     UpdateRenderTargetViews();
 
-    mDSVDescriptorHeap = CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
-    mDepthStencilBuffer = CreateDepthStencilBuffer(mDevice, mDSVDescriptorHeap.Get(), chainDesc.Width, chainDesc.Height, mDepthStencilFormat);
+    if (mDepthStencilFormat != DXGI_FORMAT_UNKNOWN)
+    {
+        mDSVDescriptorHeap = CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
+        mDepthStencilBuffer = CreateDepthStencilBuffer(mDevice, mDSVDescriptorHeap.Get(), chainDesc.Width, chainDesc.Height, mDepthStencilFormat);
+    }
 }
 
 

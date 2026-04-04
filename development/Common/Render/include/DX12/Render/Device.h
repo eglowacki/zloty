@@ -37,17 +37,29 @@
 
 #pragma once
 
+#include "AdapterInfo.h"
 #include "Render/Commands/RenderCommandList.h"
 #include "App/WindowFrame.h"
 #include "Render/Waiter.h"
 
 struct ID3D12GraphicsCommandList;
-namespace { struct Framer; }
+
+namespace
+{
+    struct Framer;
+}
 
 namespace yaget
 {
-    namespace metrics { class Channel; }
-    namespace time { class GameClock; }
+    namespace metrics
+    {
+        class Channel;
+    }
+
+    namespace time
+    {
+        class GameClock;
+    }
 }
 
 namespace yaget::render
@@ -64,13 +76,17 @@ namespace yaget::render
         class Adapter;
         class SwapChain;
     }
-    namespace info { struct Adapter; }
+
+    namespace info
+    {
+        struct Adapter;
+    }
 
     //-------------------------------------------------------------------------------------------------
     class DeviceB : public NoCopy
     {
     public:
-        DeviceB(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo);
+        DeviceB(app::WindowFrame windowFrame, const info::Adapter& adapterInfo);
         ~DeviceB();
 
         void Resize();
@@ -80,6 +96,7 @@ namespace yaget::render
         void Shutdown();
         const platform::Adapter& GetAdapter() const { return *mAdapter.get(); }
         platform::SwapChain& GetSwapChain() const;
+        const info::Adapter& GetSelectedAdapter() const { return mSelectedAdapter; }
 
         //--------------------------------
         // Some refactor for DX12 command classes
@@ -150,17 +167,18 @@ namespace yaget::render
 
         void SetFrameFenceValue(uint64_t fenceValue, uint32_t frameIndex, commands::Type type);
         uint64_t GetFrameFenceValue(uint32_t frameIndex, commands::Type type);
+
+        info::Adapter mSelectedAdapter;
     };
 
     // add class of type DeviceB but stub out all calls as a no-op
     class NullDevice : public NoCopy
     {
     public:
-        NullDevice(app::WindowFrame /*windowFrame*/, const yaget::render::info::Adapter& /*adapterInfo*/) {}
-
+        NullDevice(app::WindowFrame /*windowFrame*/, const info::Adapter& /*adapterInfo*/) {}
         void Resize() {}
         void SurfaceStateChange() {}
         int64_t OnHandleRawInput(app::DisplaySurface::PlatformWindowHandle /*hWnd*/, uint32_t /*message*/, uint64_t /*wParam*/, int64_t /*lParam*/) { return 0; }
-        void Shutdown();
+        void Shutdown() {};
     };
 }

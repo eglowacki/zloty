@@ -49,7 +49,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mMatrixInterpolator(0.0f, 1.0f)
     , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindMaterial(guid); })
     , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
-    , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"))
+    , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"), GetDevice().GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat)
     , mRenderShaders(app.VTS(), GetSection("Shaders"))
     , mRenderMaterials(app.VTS(), GetSection("Materials"))
     , mRenderTextures(app.VTS(), GetSection("Textures"))

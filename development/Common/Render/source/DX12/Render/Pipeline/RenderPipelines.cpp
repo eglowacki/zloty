@@ -104,21 +104,26 @@ namespace
 
 
     //-------------------------------------------------------------------------------------------------
-    D3D12_DEPTH_STENCIL_DESC GetDepthState(yaget::render::AssetCacheType assetType)
+    D3D12_DEPTH_STENCIL_DESC GetDepthState(yaget::render::AssetCacheType assetType, int depthStencilFormatFlags)
     {
         D3D12_DEPTH_STENCIL_DESC depthStencilState = DirectX::CommonStates::DepthNone;
-        if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DepthStateOn))
+        DXGI_FORMAT depthStencilFormat = static_cast<DXGI_FORMAT>(depthStencilFormatFlags);
+        if (depthStencilFormat != DXGI_FORMAT_UNKNOWN)
         {
-            depthStencilState = DepthOn;//DirectX::CommonStates::DepthDefault;
+            if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DepthStateOn) && depthStencilFormat == DXGI_FORMAT_D32_FLOAT)
+            {
+                depthStencilState = DepthOn;//DirectX::CommonStates::DepthDefault;
+            }
+            else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DepthStateRead))
+            {
+                depthStencilState = DirectX::CommonStates::DepthRead;
+            }
+            else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DepthStencilStateOn) && depthStencilFormat == DXGI_FORMAT_D24_UNORM_S8_UINT)
+            {
+                depthStencilState = DepthStencilOn;
+            }
         }
-        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DepthStateRead))
-        {
-            depthStencilState = DirectX::CommonStates::DepthRead;
-        }
-        else if (static_cast<bool>(assetType & yaget::render::AssetCacheType::DepthStencilStateOn))
-        {
-            depthStencilState = DepthStencilOn;
-        }
+
         return depthStencilState;
     }
 
@@ -181,7 +186,7 @@ namespace
 
     //-------------------------------------------------------------------------------------------------
     yaget::render::ComPtr<ID3D12PipelineState> CreatePipeline(const yaget::io::Tag& tag, ID3D12Device* device, const D3D12_INPUT_LAYOUT_DESC& inputLayout, ID3D12RootSignature* rootSignature, yaget::io::Buffer vertexShaderBuffer,
-                                                              yaget::io::Buffer pixelShaderBuffer, yaget::io::Buffer& dataBlob)
+                                                              yaget::io::Buffer pixelShaderBuffer, yaget::io::Buffer& dataBlob, int depthStencilFormatFlags)
     {
         using namespace yaget;
 
@@ -189,7 +194,7 @@ namespace
 
         D3D12_BLEND_DESC blendState = GetBlendState(assetType);
         D3D12_RASTERIZER_DESC rasterizerState = GetRasterizeState(assetType);
-        D3D12_DEPTH_STENCIL_DESC depthState = GetDepthState(assetType);
+        D3D12_DEPTH_STENCIL_DESC depthState = GetDepthState(assetType, depthStencilFormatFlags);
         D3D12_PRIMITIVE_TOPOLOGY_TYPE primitiveTopology = GetPrimitiveTopologyType(assetType);
         DXGI_FORMAT colorFormat = GetRenderTargetFormat(assetType);
         uint32_t numTargets = GetNumRenderTargets(assetType);
@@ -293,9 +298,10 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderPipelines::RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+yaget::render::RenderPipelines::RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, int depthStencilFormatFlags)
     : CacheWatcher(vts, fileName)
     , mDevice(device)
+    , mDepthStencilFormatFlags(depthStencilFormatFlags)
 {
 }
 
@@ -316,7 +322,7 @@ ID3D12PipelineState* yaget::render::RenderPipelines::GetPipeline(const io::Tag& 
     auto result = GetAsset(tag, [this, rootSignature, &vertexShaderBuffer, &vertexPins, &pixelShaderBuffer, &pixelPins](auto tag, auto& cachedData)
     {
         auto vertexInputFormat = GetShaderInputFormat(vertexPins);
-        return CreatePipeline(tag, mDevice, vertexInputFormat, rootSignature, vertexShaderBuffer, pixelShaderBuffer, cachedData);
+        return CreatePipeline(tag, mDevice, vertexInputFormat, rootSignature, vertexShaderBuffer, pixelShaderBuffer, cachedData, mDepthStencilFormatFlags);
     });
 
     return result.Get();

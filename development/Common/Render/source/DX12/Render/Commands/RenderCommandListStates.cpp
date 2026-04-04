@@ -11,7 +11,6 @@ void yaget::render::commands::TransitionToRenderTarget(CommandList* commandList,
     YAGET_ASSERT(renderTarget, "Render-Target parameter is null.");
     YAGET_ASSERT(commandList, "CommandList parameter is null.");
     YAGET_ASSERT(rtDescriptorHeap, "Render-Target descriptorHeap parameter is null.");
-    YAGET_ASSERT(dsDescriptorHeap, "Depth-Stencil DescriptorHeap parameter is null.");
 
     auto deviceCommandList = commandList->GetDeviceCommandList();
 
@@ -41,8 +40,16 @@ void yaget::render::commands::TransitionToRenderTarget(CommandList* commandList,
     const auto descriptorHandleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
     const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, descriptorHandleSize);
-    const CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-    deviceCommandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+
+    if (dsDescriptorHeap)
+    {
+        const CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+        deviceCommandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+    }
+    else
+    {
+        deviceCommandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+    }
 }
 
 

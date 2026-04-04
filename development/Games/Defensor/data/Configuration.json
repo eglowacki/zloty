@@ -169,6 +169,7 @@
             ],
             "WindowOptions": "UserOptions@WindowConfiguration",
             "VSync": false,
+            "DepthStencilFormat": 1,
             "StartingStage": "Boot",
             "ItemsFile": ""
         }

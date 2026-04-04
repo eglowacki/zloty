@@ -34,7 +34,7 @@ namespace yaget::render
     class RenderPipelines : public CacheWatcher<ComPtr<ID3D12PipelineState>>
     {
     public:
-        RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
+        RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, int depthStencilFormatFlags);
         ~RenderPipelines();
 
         ID3D12PipelineState* GetPipeline(const io::Tag& tag, ID3D12RootSignature* rootSignature,
@@ -47,5 +47,6 @@ namespace yaget::render
 
     private:
         ID3D12Device* mDevice = {};
+        int mDepthStencilFormatFlags{};
     };
 }

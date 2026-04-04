@@ -36,7 +36,7 @@ namespace
 }
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo)
+yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const render::info::Adapter& adapterInfo)
     : mWindowFrame{ windowFrame }
     , mNumBackBuffers{ mWindowFrame.GetSurface().NumBackBuffers() }
     , mAdapter{ std::make_unique<platform::Adapter>(mWindowFrame, adapterInfo) }
@@ -44,6 +44,7 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const yaget::rende
     , mAllocatorStorage{ std::make_unique<commands::AllocatorStorage>(mAdapter->GetDevice(), mNumBackBuffers) }
     , mCommandListStorage{ std::make_unique<commands::CommandListStorage>(mAdapter->GetDevice(), mNumBackBuffers) }
     , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory(), mQueueStorage->GetQueue(commands::Type::Direct)->GetDeviceCommandQueue()) }
+    , mSelectedAdapter{ adapterInfo }
 {
     for (uint32_t i = 0; i < static_cast<uint32_t>(mNumBackBuffers); ++i)
     {
@@ -199,7 +200,10 @@ yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::Beg
         if (color)
         {
             commands::ClearRenderTarget(commandList, *color, deviceRenderTarget, rtDescriptorHeap, mFrameIndex);
-            commands::ClearDepthStencil(commandList, 1.0f, 0, dsDescriptorHeap);
+            if (dsDescriptorHeap)
+            {
+                commands::ClearDepthStencil(commandList, 1.0f, 0, dsDescriptorHeap);
+            }
         }
     }
 
