@@ -6,15 +6,12 @@ VertexFormat: VertexPosition | VertexColor | VertexTexture0
 Vertices Begin:
     { -1.0f,  1.0f , 0.5f }; { 1.0f, 0.0f, 0.0f, 0.99f }; { 0.0f, 0.0f }
     {  1.0f,  1.0f , 0.5f }; { 0.0f, 1.0f, 0.0f, 0.0f };  { 1.0f, 0.0f }
-    { -1.0f, -1.0f , 0.5f }; { 0.0f, 0.0f, 1.0f, 0.0f };  { 0.0f, 1.0f }
-
-    //{  1.0f,  1.0f , 0.5f }; { 0.0f, 1.0f, 0.0f, 0.0f }; { 1.0f, 0.0f }
     {  1.0f, -1.0f , 0.5f }; { 0.0f, 0.0f, 1.0f, 0.0f };  { 1.0f, 1.0f }
-    //{ -1.0f, -1.0f , 0.5f }; { 0.0f, 0.0f, 1.0f, 0.0f };  { 0.0f, 1.0f }
+    { -1.0f, -1.0f , 0.5f }; { 0.0f, 0.0f, 1.0f, 0.0f };  { 0.0f, 1.0f }
 Vertices End:
 
 
 Indices Begin:
     0, 1, 2
-    1, 3, 2
+    0, 2, 3
 Indices End:
