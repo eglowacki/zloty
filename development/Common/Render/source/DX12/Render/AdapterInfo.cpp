@@ -16,8 +16,6 @@
 //-------------------------------------------------------------------------------------------------
 namespace 
 {
-    using namespace yaget::render;
-
     std::string IsSoftware(uint32_t flags)
     {
         return flags & DXGI_ADAPTER_FLAG_SOFTWARE ? "Yes" : "No";
@@ -32,7 +30,7 @@ namespace
         D3D_FEATURE_LEVEL_12_0
     };
 
-    ComPtr<IDXGIFactory7> CreateFactory()
+    yaget::render::ComPtr<IDXGIFactory7> CreateFactory()
     {
         if (yaget::dev::CurrentConfiguration().mGraphics.mGPUTraceback)
         {
@@ -64,11 +62,11 @@ namespace
         dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif // YAGET_DEBUG_RENDER == 1
 
-        ComPtr<IDXGIFactory2> compatibleFactory{};
+        yaget::render::ComPtr<IDXGIFactory2> compatibleFactory{};
         HRESULT hr = ::CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&compatibleFactory));
         yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Factory");
 
-        ComPtr<IDXGIFactory7> factory{};
+        yaget::render::ComPtr<IDXGIFactory7> factory{};
         hr = compatibleFactory.As(&factory);
         yaget::error_handlers::ThrowOnError(hr, "Could not get factory Interface 7 from from DXGI factory.");
 
@@ -107,6 +105,17 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
 {
     Adapters adapters;
     ComPtr<IDXGIFactory7> factory = CreateFactory();
+
+    int depthStencilFormatConfig = dev::CurrentConfiguration().mInit.DepthStencilFormat;
+    DXGI_FORMAT depthStencilFormat = DXGI_FORMAT_UNKNOWN;
+    if (depthStencilFormatConfig == 1)
+    {
+        depthStencilFormat = DXGI_FORMAT_D32_FLOAT;
+    }
+    else if (depthStencilFormatConfig == 2)
+    {
+        depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    }
 
     std::vector<ComPtr<IDXGIAdapter1>> foundAdapters{};
 
@@ -207,7 +216,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
                                 }
 
                                 const auto refreshRate = std::lround(display.RefreshRate.Numerator / (display.RefreshRate.Denominator * 1.0f));
-                                const Resolution resolution{display.Width, display.Height, refreshRate, currentFormat};
+                                const Resolution resolution{ display.Width, display.Height, refreshRate, currentFormat, depthStencilFormat };
 
                                 if (!filters.IsResolution(resolution))
                                 {
@@ -353,7 +362,7 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
     hr = device->QueryInterface<ID3D12Device8>(&hardwareDevice);
     error_handlers::ThrowOnError(hr, "Could not get DX12 Device8 interface");
 
-    YAGET_RENDER_SET_DEBUG_NAME(hardwareDevice.Get(), "Yaget Device");
+    YAGET_RENDER_SET_DEBUG_NAME(hardwareDevice.Get(), "Device");
 
     //-------------------------------------------------------------
     DXGI_QUERY_VIDEO_MEMORY_INFO infoLocal = {};

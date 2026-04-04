@@ -38,6 +38,7 @@ namespace yaget::render::info
         size_t mHeight = 0;
         long mRefreshRate = 0;
         DXGI_FORMAT_Y mFormat = 0;
+        DXGI_FORMAT_Y mDepthStencilFormat = 0;
 
         bool IsValid() const
         {

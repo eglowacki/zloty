@@ -12,7 +12,7 @@
 #include <d3dx12.h>
 #include <dxgi1_6.h>
 
-namespace 
+namespace
 {
     //-------------------------------------------------------------------------------------------------
     bool CheckTearingSupport(const Microsoft::WRL::ComPtr<IDXGIFactory>& factory)
@@ -35,7 +35,8 @@ namespace
 
 
     //-------------------------------------------------------------------------------------------------
-    yaget::render::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, const yaget::render::info::Adapter& adapterInfo, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue, uint32_t numBackBuffers, bool tearingSupported)
+    yaget::render::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, const yaget::render::info::Adapter& adapterInfo, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue,
+                                                           uint32_t numBackBuffers, bool tearingSupported)
     {
         const auto& adapterResolution = adapterInfo.GetSelectedResolution();
 
@@ -71,20 +72,16 @@ namespace
     }
 
 
-    yaget::render::ComPtr<ID3D12Resource> CreateDepthStencilBuffer(ID3D12Device* device, ID3D12DescriptorHeap* dsDescriptorHeap, size_t width, size_t height, int depthStencilFlags)
+    yaget::render::ComPtr<ID3D12Resource> CreateDepthStencilBuffer(ID3D12Device* device, ID3D12DescriptorHeap* dsDescriptorHeap, size_t width, size_t height, DXGI_FORMAT depthStencilFormat)
     {
-        if (depthStencilFlags == 0)
+        if (depthStencilFormat == DXGI_FORMAT_UNKNOWN)
         {
             return {};
         }
 
-        DXGI_FORMAT depthStencilFormat = DXGI_FORMAT_D32_FLOAT;
-        if (depthStencilFlags == (yaget::render::platform::SwapChain::DepthBufferFlag | yaget::render::platform::SwapChain::StencilBufferFlag))
-        {
-            depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        }
-
-        YAGET_ASSERT(depthStencilFlags & yaget::render::platform::SwapChain::DepthBufferFlag, "Can not create Stencil Buffer without Depth Buffer specified.");
+        YAGET_ASSERT(depthStencilFormat == DXGI_FORMAT_D32_FLOAT || depthStencilFormat == DXGI_FORMAT_D24_UNORM_S8_UINT,
+                     std::format("Can not create Depth-Stencil Buffer with invalid format: '%s'.",
+                         magic_enum::enum_name(depthStencilFormat)).c_str());
 
         D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
         depthOptimizedClearValue.Format = depthStencilFormat;//DXGI_FORMAT_D24_UNORM_S8_UINT;//DXGI_FORMAT_D32_FLOAT;
@@ -125,11 +122,9 @@ namespace
         depthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
 
         device->CreateDepthStencilView(depthStencilBuffer.Get(), &depthStencilViewDesc, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-        
+
         return depthStencilBuffer;
     }
-
-
 } // namespace
 
 
@@ -137,7 +132,7 @@ int yaget::render::platform::SwapChain::DepthBufferFlag = 1 << 0;
 int yaget::render::platform::SwapChain::StencilBufferFlag = 1 << 1;
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue)
+yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, const info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue)
     : mWindowFrame{ std::move(windowFrame) }
     , mNumBackBuffers{ mWindowFrame.GetSurface().NumBackBuffers() }
     , mTearingSupported{ CheckTearingSupport(factory) }
@@ -146,14 +141,15 @@ yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, cons
     , mCurrentBackBufferIndex{ mSwapChain->GetCurrentBackBufferIndex() }
     , mRTVDescriptorHeap{ CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, mNumBackBuffers) }
     , mBackBuffers(mNumBackBuffers, nullptr)
-    , mDepthStencilFlags{ DepthBufferFlag | StencilBufferFlag }
-    , mDSVDescriptorHeap{ mDepthStencilFlags ? CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1) : ComPtr<ID3D12DescriptorHeap>{} }
-    , mDepthStencilBuffer{ CreateDepthStencilBuffer(mDevice, mDSVDescriptorHeap.Get(), adapterInfo.GetSelectedResolution().mWidth, adapterInfo.GetSelectedResolution().mHeight, mDepthStencilFlags) }
+    , mDepthStencilFormat{ static_cast<DXGI_FORMAT>(adapterInfo.GetSelectedResolution().mDepthStencilFormat) }
+    , mDSVDescriptorHeap{ mDepthStencilFormat == DXGI_FORMAT_UNKNOWN ? ComPtr<ID3D12DescriptorHeap>{} : CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1) }
+    , mDepthStencilBuffer{ CreateDepthStencilBuffer(mDevice, mDSVDescriptorHeap.Get(), adapterInfo.GetSelectedResolution().mWidth, adapterInfo.GetSelectedResolution().mHeight, mDepthStencilFormat) }
 {
     UpdateRenderTargetViews();
     Resize();
 
-    YLOG_INFO("DEVI", "Swap Chain created with '%d' Back Buffers, VSync: '%s' and Tearing Supported: '%s'.", mNumBackBuffers, conv::ToBool(mWindowFrame.GetSurface().VSync()).c_str(), conv::ToBool(mTearingSupported).c_str());
+    YLOG_INFO("DEVI", "Swap Chain created with '%d' Back Buffers, VSync: '%s' and Tearing Supported: '%s'.", mNumBackBuffers, conv::ToBool(mWindowFrame.GetSurface().VSync()).c_str(),
+              conv::ToBool(mTearingSupported).c_str());
 }
 
 
@@ -191,7 +187,7 @@ void yaget::render::platform::SwapChain::Resize()
     UpdateRenderTargetViews();
 
     mDSVDescriptorHeap = CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
-    mDepthStencilBuffer = CreateDepthStencilBuffer(mDevice, mDSVDescriptorHeap.Get(), chainDesc.Width, chainDesc.Height, mDepthStencilFlags);
+    mDepthStencilBuffer = CreateDepthStencilBuffer(mDevice, mDSVDescriptorHeap.Get(), chainDesc.Width, chainDesc.Height, mDepthStencilFormat);
 }
 
 
@@ -246,7 +242,7 @@ void yaget::render::platform::SwapChain::UpdateRenderTargetViews()
         const HRESULT hr = mSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer));
         error_handlers::ThrowOnError(hr, "Could not get DX12 SwapChain Back Buffer");
 
-        YAGET_RENDER_SET_DEBUG_NAME(backBuffer.Get(), std::format("Yaget Back Buffer {}", i));
+        YAGET_RENDER_SET_DEBUG_NAME(backBuffer.Get(), std::format("Back Buffer {}", i));
 
         mDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
         mBackBuffers[i] = backBuffer;

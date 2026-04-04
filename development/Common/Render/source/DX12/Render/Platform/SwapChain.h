@@ -71,7 +71,7 @@ namespace yaget::render::platform
         ComPtr<ID3D12DescriptorHeap> mRTVDescriptorHeap;
         std::vector<ComPtr<ID3D12Resource>> mBackBuffers;
 
-        int mDepthStencilFlags = 0;
+        DXGI_FORMAT mDepthStencilFormat;
 
         ComPtr<ID3D12DescriptorHeap> mDSVDescriptorHeap;    // This is a heap for our depth/stencil buffer descriptor
         ComPtr<ID3D12Resource> mDepthStencilBuffer;         // This is the memory for our depth buffer. it will also be used for a stencil buffer in a later tutorial
