@@ -2,20 +2,17 @@
 #include "Render/Commands/RenderCommandList.h"
 #include "Render/Commands/RenderCommandListStates.h"
 
-#include <d3dx12.h>
-
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::commands::TransitionToRenderTarget(CommandList* commandList, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* rtDescriptorHeap, ID3D12DescriptorHeap* dsDescriptorHeap, int frameIndex)
+D3D12_RESOURCE_STATES yaget::render::commands::TransitionToRenderTarget(const CommandList* commandList, D3D12_RESOURCE_STATES fromState, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* rtDescriptorHeap, ID3D12DescriptorHeap* dsDescriptorHeap, uint32_t frameIndex)
 {
     YAGET_ASSERT(renderTarget, "Render-Target parameter is null.");
     YAGET_ASSERT(commandList, "CommandList parameter is null.");
     YAGET_ASSERT(rtDescriptorHeap, "Render-Target descriptorHeap parameter is null.");
 
-    auto deviceCommandList = commandList->GetDeviceCommandList();
+    TransitionFromTo(commandList, renderTarget, fromState/*D3D12_RESOURCE_STATE_PRESENT*/, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-    const CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    deviceCommandList->ResourceBarrier(1, &barrier);
+    auto deviceCommandList = commandList->GetDeviceCommandList();
 
     D3D12_RESOURCE_DESC desc = renderTarget->GetDesc();
     auto width = std::max(1.0f, static_cast<float>(desc.Width));
@@ -50,24 +47,13 @@ void yaget::render::commands::TransitionToRenderTarget(CommandList* commandList,
     {
         deviceCommandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
     }
+
+    return D3D12_RESOURCE_STATE_RENDER_TARGET;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::commands::TransitionToPresent(const CommandList* commandList, ID3D12Resource* renderTarget)
-{
-    YAGET_ASSERT(commandList, "CommandList parameter is null.");
-    YAGET_ASSERT(renderTarget, "Render-Target parameter is null.");
-
-    auto deviceCommandList = commandList->GetDeviceCommandList();
-
-    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-    deviceCommandList->ResourceBarrier(1, &barrier);
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void yaget::render::commands::ClearRenderTarget(const CommandList* commandList, const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, int frameIndex)
+void yaget::render::commands::ClearRenderTarget(const CommandList* commandList, const colors::Color& color, ID3D12Resource* renderTarget, ID3D12DescriptorHeap* descriptorHeap, uint32_t frameIndex)
 {
     YAGET_ASSERT(renderTarget, "Render-Target parameter is null.");
     YAGET_ASSERT(descriptorHeap, "Render-Target DescriptorHeap parameter is null.");
@@ -95,4 +81,16 @@ void yaget::render::commands::ClearDepthStencil(const CommandList* commandList, 
 
     const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
     deviceCommandList->ClearDepthStencilView(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+D3D12_RESOURCE_STATES yaget::render::commands::TransitionFromTo(const CommandList* commandList, ID3D12Resource* renderTarget, D3D12_RESOURCE_STATES fromState, D3D12_RESOURCE_STATES toState)
+{
+    auto deviceCommandList = commandList->GetDeviceCommandList();
+
+    const CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, fromState, toState);
+    deviceCommandList->ResourceBarrier(1, &barrier);
+
+    return toState;
 }

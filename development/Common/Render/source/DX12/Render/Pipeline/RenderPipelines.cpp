@@ -1,12 +1,12 @@
 #include "Core/ErrorHandlers.h"
-#include "Render/Platform/DeviceDebugger.h"
+#include "Parsers/DependencyGraph.h"
 #include "Render/Pipeline/RenderPipelines.h"
+#include "Render/Platform/DeviceDebugger.h"
+#include "Streams/Buffers.h"
+
 #include <CommonStates.h>
 #include <d3dx12.h>
 #include <VertexTypes.h>
-
-#include "Parsers/DependencyGraph.h"
-#include "Streams/Buffers.h"
 
 
 namespace

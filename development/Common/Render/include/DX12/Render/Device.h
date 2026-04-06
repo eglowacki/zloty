@@ -43,6 +43,8 @@
 #include "Render/Waiter.h"
 
 struct ID3D12GraphicsCommandList;
+struct ID3D12Resource;
+struct ID3D12DescriptorHeap;
 
 namespace
 {
@@ -66,6 +68,7 @@ namespace yaget::render
 {
     namespace commands
     {
+        class RenderTarget;
         class CommandListStorage;
         class AllocatorStorage;
         class QueueStorage;
@@ -98,11 +101,18 @@ namespace yaget::render
         platform::SwapChain& GetSwapChain() const;
         const info::Adapter& GetSelectedAdapter() const { return mSelectedAdapter; }
 
+        // this allows us to register for device resizing, so dependent resource
+        // cna be reset and recreated.
+        using ResizeCallback = std::function<void(const app::WindowFrame& windowFrame)>;
+
+        size_t RegisterResizeCallback(ResizeCallback callback);
+        void UnregisterResizeCallback(size_t callbackId);
+
         //--------------------------------
         // Some refactor for DX12 command classes
         struct FrameCommands
         {
-            FrameCommands(DeviceB& device, const time::GameClock& gameClock, metrics::Channel& channel);
+            FrameCommands(DeviceB& device, const time::GameClock& gameClock, metrics::Channel& channel, commands::RenderTarget* selectedRenderTarget);
             FrameCommands(DeviceB& device);
             ~FrameCommands();
 
@@ -120,7 +130,7 @@ namespace yaget::render
                 Copy
             };
 
-            FrameCommands(DeviceB& device, const time::GameClock* gameClock, metrics::Channel* channel, FrameType frameType);
+            FrameCommands(DeviceB& device, const time::GameClock* gameClock, metrics::Channel* channel, FrameType frameType, commands::RenderTarget* selectedRenderTarget);
             static commands::Type GetCommandType(FrameType frameType);
 
             commands::QueueStorage& GetQueueStorage() const;
@@ -137,9 +147,10 @@ namespace yaget::render
             std::vector<commands::CommandListStorage::CommandListHandle> mCommandsToRender;
 
             FrameType mFrameType{};
+            commands::RenderTarget* mSelectedRenderTarget{};
         };
 
-        FrameCommands GetFrameCommands(const time::GameClock& gameClock, metrics::Channel& channel);
+        FrameCommands GetFrameCommands(commands::RenderTarget& selectedRenderTarget, const time::GameClock& gameClock, metrics::Channel& channel);
         FrameCommands GetCopyCommands();
 
     private:
@@ -169,6 +180,16 @@ namespace yaget::render
         uint64_t GetFrameFenceValue(uint32_t frameIndex, commands::Type type);
 
         info::Adapter mSelectedAdapter;
+
+        struct ResizeCallbackData
+        {
+            size_t mId;
+            ResizeCallback mCallback;
+        };
+
+        using ResizeCallbacks = std::vector<ResizeCallbackData>;
+        ResizeCallbacks mResizeCallbacks;
+        size_t mNextResizeCallbackId{};
     };
 
     // add class of type DeviceB but stub out all calls as a no-op

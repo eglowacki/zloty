@@ -16,14 +16,15 @@
 #include "DefensorGameTypes.h"
 #include "Math/Interpolators.h"
 #include "Parsers/DependencyGraph.h"
+#include "Render/Commands/RenderTarget.h"
 #include "Render/DesktopApplication.h"
+#include "Render/Pipeline/RenderGeometries.h"
 #include "Render/Pipeline/RenderMaterialProperties.h"
 #include "Render/Pipeline/RenderPipelines.h"
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Pipeline/ShaderBuffers.h"
-#include "Render/Pipeline/RenderGeometries.h"
 
 
 namespace defensor::render
@@ -41,6 +42,8 @@ namespace defensor::render
         void PreloadAssets();
         void RebindMaterial(const io::Tag& tag, yaget::render::MaterialProperties material);
         void HotRebindMaterial(const Guid& guid);
+
+        void OnResetDevice(const app::WindowFrame& windowFrame);
 
         // This structure is used to keep track of what assets are used for rendering particular entity. 
         // It is used to track changes in assets and update them accordingly.
@@ -65,7 +68,10 @@ namespace defensor::render
         yaget::render::ShaderBuffers mShaderBuffers;
         yaget::render::RenderGeometries mRenderGeometries;
         yaget::render::GeometriesResources mGeometriesResources;
+        yaget::render::commands::RenderTargetStorage mRenderTargetStorage;
+        io::Tag mSwapChainRenderTargetTag{ .mName = "", .mGuid = NewGuid() };
 
+        size_t mResizeCallbackId{};
 
         RenderState mCurrentRenderState;
     };

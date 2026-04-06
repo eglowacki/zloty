@@ -178,6 +178,9 @@
     <ClInclude Include="..\source\DX12\Render\PlaceholderAssets\PlaceholderAssets.h">
       <Filter>Source Files\PlaceholderAssets Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderTarget.h">
+      <Filter>Source Files\Commands Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -299,6 +302,9 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\PlaceholderAssets\PlaceholderGeometry.cpp">
       <Filter>Source Files\PlaceholderAssets Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderTarget.cpp">
+      <Filter>Source Files\Commands Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

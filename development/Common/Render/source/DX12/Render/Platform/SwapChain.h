@@ -15,15 +15,16 @@
 
 #include "Render/RenderCore.h"
 #include "App/WindowFrame.h"
+#include <d3dx12.h>
 
 
-struct ID3D12CommandAllocator;
-struct ID3D12CommandQueue;
-struct ID3D12DescriptorHeap;
-struct ID3D12Device;
-struct ID3D12GraphicsCommandList;
-struct ID3D12Resource;
-struct IDXGIFactory;
+//struct ID3D12CommandAllocator;
+//struct ID3D12CommandQueue;
+//struct ID3D12DescriptorHeap;
+//struct ID3D12Device;
+//struct ID3D12GraphicsCommandList;
+//struct ID3D12Resource;
+//struct IDXGIFactory;
 struct IDXGISwapChain4;
 
 namespace yaget
@@ -54,6 +55,9 @@ namespace yaget::render::platform
         ID3D12Resource* GetCurrentRenderTarget() const;
         ID3D12DescriptorHeap* GetRTVDescriptorHeap() const;
         ID3D12DescriptorHeap* GetDSVDescriptorHeap() const;
+
+        DXGI_SWAP_CHAIN_DESC1 GetDescription() const;
+        D3D12_RESOURCE_DESC GetDepthStencilDescription() const;
 
         static int DepthBufferFlag;
         static int StencilBufferFlag;

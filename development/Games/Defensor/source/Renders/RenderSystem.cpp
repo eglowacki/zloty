@@ -57,7 +57,10 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
     , mRenderGeometries(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Geometries"))
     , mGeometriesResources(GetDevice(), mRenderGeometries)
+    , mRenderTargetStorage(GetDevice().GetAdapter().GetDevice())
+    , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](const auto& windowFrame) { OnResetDevice(windowFrame); }) }
 {
+    
     mApp.PoolThread().AddTask([this]()
     {
         PreloadAssets();
@@ -83,12 +86,15 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     {
         memory::StartRecordAllocations();
 
+        auto& vts = mApp.VTS();
         const colors::Color color = mColorInterpolator.GetValue(gameClock);
         auto& device = GetDevice();
-        auto frameCommands = device.GetFrameCommands(gameClock, channel);
-        auto commandList = frameCommands.BeginFrame(&color)->GetDeviceCommandList();;
 
-        auto& vts = mApp.VTS();
+        //auto renderTarget = commands::CreateRenderTargetFrom({}, device.GetSwapChain(), mRenderTargetStorage);
+        auto renderTarget = mRenderTargetStorage.AliasRenderTarget(mSwapChainRenderTargetTag, device.GetSwapChain());
+
+        auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
+        auto commandList = frameCommands.BeginFrame(&color)->GetDeviceCommandList();;
 
         coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
         {
@@ -186,8 +192,10 @@ void defensor::render::RenderSystem::PreloadAssets()
     //    z;
     //}
 
+    
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mApp.VTS();
+
     const Section vertexShaderSection("VertexShaders");
     auto vertexShaderTags = vts.GetTags(vertexShaderSection);
 
@@ -342,4 +350,11 @@ void defensor::render::RenderSystem::HotRebindMaterial(const Guid& guid)
     RebindMaterial(matTag, material);
 
     matNode->Dirty() = true;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windowFrame)
+{
+    mRenderTargetStorage.ResetAll(windowFrame);
 }

@@ -14,6 +14,8 @@
 
 #include "magic_enum/magic_enum.hpp"
 
+#include "Render/Commands/RenderTarget.h"
+
 namespace
 {
     //-------------------------------------------------------------------------------------------------
@@ -70,6 +72,12 @@ void yaget::render::DeviceB::Resize()
     Waiter::Lock scoper(mWaiter);
 
     mQueueStorage->WaitForAllIdle();
+
+    std::ranges::for_each(mResizeCallbacks, [this](const auto& element)
+    {
+        element.mCallback(mWindowFrame);
+    });
+
     mSwapChain->Resize();
 }
 
@@ -103,26 +111,47 @@ yaget::render::platform::SwapChain& yaget::render::DeviceB::GetSwapChain() const
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::DeviceB::FrameCommands::FrameCommands(DeviceB& device, const time::GameClock& gameClock, metrics::Channel& channel)
-    : FrameCommands(device, &gameClock, &channel, FrameType::Render)
+size_t yaget::render::DeviceB::RegisterResizeCallback(ResizeCallback callback)
+{
+    mNextResizeCallbackId++;
+    mResizeCallbacks.push_back({ .mId = mNextResizeCallbackId, .mCallback = callback });
+
+    return mNextResizeCallbackId;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::DeviceB::UnregisterResizeCallback(size_t callbackId)
+{
+    std::erase_if(mResizeCallbacks, [callbackId](const auto& callbackData)
+    {
+        return callbackData.mId == callbackId;
+    });
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::DeviceB::FrameCommands::FrameCommands(DeviceB& device, const time::GameClock& gameClock, metrics::Channel& channel, commands::RenderTarget* selectedRenderTarget)
+    : FrameCommands(device, &gameClock, &channel, FrameType::Render, selectedRenderTarget)
 {
 }
 
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::DeviceB::FrameCommands::FrameCommands(DeviceB& device)
-    : FrameCommands(device, nullptr, nullptr, FrameType::Copy)
+    : FrameCommands(device, nullptr, nullptr, FrameType::Copy, nullptr)
 {
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::DeviceB::FrameCommands::FrameCommands(DeviceB& device, const time::GameClock* gameClock, metrics::Channel* channel, FrameType frameType)
+yaget::render::DeviceB::FrameCommands::FrameCommands(DeviceB& device, const time::GameClock* gameClock, metrics::Channel* channel, FrameType frameType, commands::RenderTarget* selectedRenderTarget)
     : mDevice{ &device }
     , mFrameIndex{ mDevice->mSwapChain->GetCurrentBackBufferIndex() }
     , mGameClock{ gameClock }
     , mChannel{ channel }
     , mFrameType{ frameType }
+    , mSelectedRenderTarget{ selectedRenderTarget }
 {
     auto commandType = GetCommandType(mFrameType);
 
@@ -159,7 +188,7 @@ yaget::render::DeviceB::FrameCommands::~FrameCommands()
 {
     if (mFrameType == FrameType::Render)
     {
-        mDevice->mSwapChain->Present(*mGameClock, *mChannel);
+        mSelectedRenderTarget->Present(*mGameClock, *mChannel);
     }
 
     for (const auto& commandHandle: mCommandsToRender)
@@ -184,27 +213,16 @@ yaget::render::DeviceB::FrameCommands::~FrameCommands()
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::BeginFrame(const colors::Color* color)
+yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::BeginFrame(const colors::Color* /*color*/)
 {
     auto commandType = GetCommandType(mFrameType);
     auto commandList = GetAvailableCommandList(commandType);
 
     if (mFrameType == FrameType::Render)
     {
-        auto deviceRenderTarget = mDevice->mSwapChain->GetCurrentRenderTarget();
-        auto rtDescriptorHeap = mDevice->mSwapChain->GetRTVDescriptorHeap();
-        auto dsDescriptorHeap = mDevice->mSwapChain->GetDSVDescriptorHeap();
+        YAGET_ASSERT(mSelectedRenderTarget, "FrameType Render must have valid mSelectedRenderTarget.");
 
-        commands::TransitionToRenderTarget(commandList, deviceRenderTarget, rtDescriptorHeap, dsDescriptorHeap, mFrameIndex);
-
-        if (color)
-        {
-            commands::ClearRenderTarget(commandList, *color, deviceRenderTarget, rtDescriptorHeap, mFrameIndex);
-            if (dsDescriptorHeap)
-            {
-                commands::ClearDepthStencil(commandList, 1.0f, 0, dsDescriptorHeap);
-            }
-        }
+        mSelectedRenderTarget->BeginFrame(commandList);
     }
 
     return commandList;
@@ -219,10 +237,8 @@ void yaget::render::DeviceB::FrameCommands::EndFrame()
         auto currentCommandType = commands::Type::Direct;
         if (auto commandsList = GetCommandsList(mCommandsToRender, currentCommandType); !commandsList.empty())
         {
-            auto deviceRenderTarget = mDevice->mSwapChain->GetCurrentRenderTarget();
-
-            auto& lastCommandList = commandsList.back();
-            commands::TransitionToPresent(lastCommandList, deviceRenderTarget);
+            auto lastCommandList = commandsList.back();
+            mSelectedRenderTarget->EndFrame(lastCommandList);
         }
     }
 
@@ -284,9 +300,9 @@ yaget::render::commands::CommandListStorage::CommandListHandle yaget::render::De
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::DeviceB::FrameCommands yaget::render::DeviceB::GetFrameCommands(const time::GameClock& gameClock, metrics::Channel& channel)
+yaget::render::DeviceB::FrameCommands yaget::render::DeviceB::GetFrameCommands(commands::RenderTarget& selectedRenderTarget, const time::GameClock& gameClock, metrics::Channel& channel)
 {
-    return FrameCommands{ *this, gameClock, channel };
+    return FrameCommands{ *this, gameClock, channel, &selectedRenderTarget };
 }
 
 

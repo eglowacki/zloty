@@ -154,6 +154,7 @@
     <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandListStates.h" />
     <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandTypes.h" />
     <ClInclude Include="..\include\DX12\Render\Commands\RenderQueue.h" />
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderTarget.h" />
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
     <ClInclude Include="..\include\DX12\Render\Device.h" />
     <ClInclude Include="..\include\DX12\Render\Logger\RenderLogTags.h" />
@@ -205,6 +206,7 @@
     <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandListStates.cpp" />
     <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandTypes.cpp" />
     <ClCompile Include="..\source\DX12\Render\Commands\RenderQueue.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderTarget.cpp" />
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
     <ClCompile Include="..\source\DX12\Render\Helpers\ResourceDescriptions.cpp" />

@@ -101,14 +101,8 @@ namespace
         depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
         depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-        D3D12_HEAP_PROPERTIES heapProperties =
-        {
-            .Type = D3D12_HEAP_TYPE_DEFAULT,
-            .CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
-            .MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
-            .CreationNodeMask = 1,
-            .VisibleNodeMask = 1
-        };
+        D3D12_HEAP_PROPERTIES heapProperties{};
+        heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
 
         yaget::render::ComPtr<ID3D12Resource> depthStencilBuffer;
         HRESULT hr = device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &depthStencilDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthOptimizedClearValue, IID_PPV_ARGS(&depthStencilBuffer));
@@ -212,6 +206,29 @@ ID3D12DescriptorHeap* yaget::render::platform::SwapChain::GetRTVDescriptorHeap()
 ID3D12DescriptorHeap* yaget::render::platform::SwapChain::GetDSVDescriptorHeap() const
 {
     return mDSVDescriptorHeap.Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+DXGI_SWAP_CHAIN_DESC1 yaget::render::platform::SwapChain::GetDescription() const
+{
+    DXGI_SWAP_CHAIN_DESC1 chainDesc = {};
+    HRESULT hr = mSwapChain->GetDesc1(&chainDesc);
+    error_handlers::ThrowOnError(hr, "Could not get DX12 swap chain description");
+
+    return chainDesc;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+D3D12_RESOURCE_DESC yaget::render::platform::SwapChain::GetDepthStencilDescription() const
+{
+    if (mDepthStencilBuffer)
+    {
+        return mDepthStencilBuffer->GetDesc();
+    }
+
+    return {};
 }
 
 
