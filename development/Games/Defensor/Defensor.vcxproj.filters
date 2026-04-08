@@ -38,6 +38,9 @@
     <Filter Include="Data Files\Geometry">
       <UniqueIdentifier>{bb51805f-26f5-4de7-891f-3c07e1707f48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\SceneItems">
+      <UniqueIdentifier>{44394fe7-c8d2-43b2-8485-0d80bd16b8f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -163,6 +166,15 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Geometry\Rectangle.geom">
       <Filter>Data Files\Geometry</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\ScreenQuadMaterial.json">
+      <Filter>Data Files\Materials</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Geometry\ScreenQuad.geom">
+      <Filter>Data Files\Geometry</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\CheckerRectangle.json">
+      <Filter>Data Files\SceneItems</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

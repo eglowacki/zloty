@@ -49,6 +49,20 @@ namespace yaget::app
             return { width, height };
         }
 
+        template <typename T>
+        T GetSizeX() const
+        {
+            const auto& size = Size();
+            return static_cast<T>(size.x);
+        }
+
+        template <typename T>
+        T GetSizeY() const
+        {
+            const auto& size = Size();
+            return static_cast<T>(size.y);
+        }
+
     private:
         PlatformWindowHandle mHandle{nullptr};
         SurfaceState mSurfaceState = SurfaceState::Shared;

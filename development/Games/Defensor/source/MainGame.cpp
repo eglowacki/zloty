@@ -13,6 +13,7 @@
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
+#include "Render/Scene/RenderSceneItems.h"
 #include "Script/luacpp.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
@@ -78,6 +79,7 @@ namespace
         {&yaget::render::RenderShaders::PopulateReflectorMappings, &yaget::render::RenderShaders::SaveReflectorMappings, "Manifest@ShaderReflectionOptions"},
         {&yaget::render::RenderMaterialProperties::PopulateMappings, &yaget::render::RenderMaterialProperties::SaveMappings, "Manifest@RenderMaterialPropertyOptions"},
         {&yaget::render::RenderTextures::PopulateMappings, &yaget::render::RenderTextures::SaveMappings, "Manifest@RenderTextureOptions"},
+        {&yaget::render::scene::SceneItemsStorage::PopulateMappings, &yaget::render::scene::SceneItemsStorage::SaveMappings, "Manifest@RenderSceneItemOptions"},
     };
 
     struct Mappers

@@ -141,7 +141,4 @@ namespace yaget::render
         std::map<io::Tag, std::shared_ptr<ResourceReflector>> mReflections;
     };
 
-    // Helper function to create Descriptor Heap
-    ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors);
-
 }

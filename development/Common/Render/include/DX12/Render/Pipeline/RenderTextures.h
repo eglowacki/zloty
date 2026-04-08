@@ -55,6 +55,7 @@ namespace yaget::render
         ~TextureResources();
 
         ComPtr<ID3D12DescriptorHeap> GetResourceView(const io::Tag& tag);
+        std::vector<ComPtr<ID3D12DescriptorHeap>> GetResourceViews(const io::Tags& tags);
         ComPtr<ID3D12Resource> GetResource(const io::Tag& tag);
         std::vector<ComPtr<ID3D12Resource>> GetResources(const io::Tags& tags);
 

@@ -48,7 +48,7 @@ namespace yaget::render::commands
     class RenderTarget
     {
     public:
-        RenderTarget(ID3D12Device* device, int sizeX, int sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat);
+        RenderTarget(ID3D12Device* device, int sizeX, int sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource);
         RenderTarget(platform::SwapChain& swapChain);
         ~RenderTarget();
 
@@ -71,8 +71,9 @@ namespace yaget::render::commands
 
         DXGI_FORMAT mRenderTargetFormat;
         D3D12_RESOURCE_STATES mState;
-        float mClearColor[4];
+        colors::Color mClearColor;
         ComPtr<ID3D12Resource> mRenderTargetResource;
+        ComPtr<ID3D12Resource> mDepthStencilResource;
         platform::SwapChain* mSwapChain;
     };
 
@@ -85,9 +86,11 @@ namespace yaget::render::commands
         ~RenderTargetStorage();
 
         // create (or return existing) render target based on passed parameters
-        RenderTarget* GetRenderTarget(const io::Tag& tag, uint32_t sizeX, uint32_t sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat);
+        RenderTarget* GetRenderTarget(const io::Tag& tag, uint32_t sizeX, uint32_t sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource);
         // Wrap RenderTarget around swapChain
         RenderTarget* AliasRenderTarget(const io::Tag& tag, platform::SwapChain& swapChain);
+        // If render target exists, return it, otherwise return nullptr
+        RenderTarget* FindRenderTarget(const io::Tag& tag) const;
 
         void ResetAll(const app::WindowFrame& windowFrame);
 
@@ -102,7 +105,7 @@ namespace yaget::render::commands
         static RenderTarget* FindRenderTarget(const yaget::io::Tag& tag, size_t hashValue, const RenderTargetMap& renderTargetMap);
 
 
-        std::shared_mutex mMutex;
+        mutable std::shared_mutex mMutex;
         RenderTargetMap mRenderTargetMap;
         ID3D12Device* mDevice;
     };

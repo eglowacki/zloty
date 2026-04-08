@@ -126,14 +126,28 @@ yaget::render::TextureResources::~TextureResources()// = default;
 
 yaget::render::ComPtr<ID3D12DescriptorHeap> yaget::render::TextureResources::GetResourceView(const io::Tag& tag)
 {
+    auto resources = GetResourceViews(io::Tags{ tag });
+
+    YLOG_CERROR("REND", !resources.empty(), "Could not find texture resource view data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
+    return !resources.empty() ? *resources.begin() : ComPtr<ID3D12DescriptorHeap>{};
+}
+
+
+//-------------------------------------------------------------------------------------------------
+std::vector<yaget::render::ComPtr<ID3D12DescriptorHeap>> yaget::render::TextureResources::GetResourceViews(const io::Tags& tags)
+{
+    std::vector<yaget::render::ComPtr<ID3D12DescriptorHeap>> results;
+
     mt::ReadLock readLocker(mSharedMutex);
-    if (auto it = mResources.find(tag); it != mResources.end())
+    for (const auto& tag : tags)
     {
-        return it->second.mDescriptorHeap;
+        if (auto it = mResources.find(tag); it != mResources.end())
+        {
+            results.push_back(it->second.mDescriptorHeap);
+        }
     }
 
-    YLOG_ERROR("REND", "Could not find texture resource view data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
-    return {};
+    return results;
 }
 
 
@@ -212,7 +226,7 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
         srvDesc.Texture2D.MipLevels = 1;
 
         auto d3dDevice = mDevice.GetAdapter().GetDevice();
-        auto srvHeap = CreateDescriptorHeap(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
+        auto srvHeap = helpers::CreateDescriptorHeap(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 
         ID3D12Resource* texture = gpuResourceResult.mGpuAllocation->GetResource();
         auto uploadAllocation = gpuResourceResult.mUploadAllocation;

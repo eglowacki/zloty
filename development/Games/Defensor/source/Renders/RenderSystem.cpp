@@ -56,11 +56,17 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mTextureResources(GetDevice(), mRenderTextures)
     , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
     , mRenderGeometries(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Geometries"))
-    , mGeometriesResources(GetDevice(), mRenderGeometries)
+    , mGeometryResources(GetDevice(), mRenderGeometries)
     , mRenderTargetStorage(GetDevice().GetAdapter().GetDevice())
+    , mSceneItemsStorage(mRenderMaterials,
+                         mRenderSignatures,
+                         mRenderPipelines,
+                         mShaderBuffers,
+                         mTextureResources,
+                         mGeometryResources,
+                         app.VTS(), GetSection("SceneItems"))
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](const auto& windowFrame) { OnResetDevice(windowFrame); }) }
 {
-    
     mApp.PoolThread().AddTask([this]()
     {
         PreloadAssets();
@@ -85,73 +91,115 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     if (id == comp::END_ID_MARKER)
     {
         memory::StartRecordAllocations();
+        int passId = 0;
+        passId;
 
         auto& vts = mApp.VTS();
         const colors::Color color = mColorInterpolator.GetValue(gameClock);
         auto& device = GetDevice();
 
-        //auto renderTarget = commands::CreateRenderTargetFrom({}, device.GetSwapChain(), mRenderTargetStorage);
-        auto renderTarget = mRenderTargetStorage.AliasRenderTarget(mSwapChainRenderTargetTag, device.GetSwapChain());
-
-        auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
-        auto commandList = frameCommands.BeginFrame(&color)->GetDeviceCommandList();;
-
-        coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
         {
-            auto renderComponent = std::get<RenderComponent*>(row);
+            auto renderTarget = commands::CreateRenderTargetFrom(mSceneRenderTargetTag, device.GetSwapChain(), mRenderTargetStorage);
+            //auto renderTarget = mRenderTargetStorage.AliasRenderTarget(mSwapChainRenderTargetTag, device.GetSwapChain());
 
-            auto& material = renderComponent->mRenderMaterial;
-            auto materialProperties = mRenderMaterials.GetMaterial(material.mAssetTag);
+            auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
+            auto commandList = frameCommands.BeginFrame(&color)->GetDeviceCommandList();
 
-            if (DependencyNode* materialNode = mDependencyGraph.Find(material.mAssetTag.mGuid, nullptr))
+            coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
             {
-                if (materialNode->IsBranchDirty())
+                auto renderComponent = std::get<RenderComponent*>(row);
+
+                auto& material = renderComponent->mRenderMaterial;
+                auto materialProperties = mRenderMaterials.GetMaterial(material.mAssetTag);
+
+                if (DependencyNode* materialNode = mDependencyGraph.Find(material.mAssetTag.mGuid, nullptr))
                 {
-                    return true;
-                    //material.ResolveAssetTag(material.mAssetTag);
-                    //materialNode->ClearDirty();
+                    if (materialNode->IsBranchDirty())
+                    {
+                        return true;
+                        //material.ResolveAssetTag(material.mAssetTag);
+                        //materialNode->ClearDirty();
+                    }
+
+                    auto signatureTag = TypeToTag(materialProperties.mSignature, vts);
+                    auto rootSig = mRenderSignatures.GetSignature(signatureTag);
+                    commandList->SetGraphicsRootSignature(rootSig);
+
+                    auto psoTag = TypeToTag(materialProperties.mPSO, vts);
+                    auto pso = mRenderPipelines.GetPipeline(psoTag);
+                    commandList->SetPipelineState(pso);
+
+                    auto location = renderComponent->mMatrix;
+
+                    auto constantBufferTag = TypeToTag(materialProperties.mShaderBuffer, vts);
+                    if (auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag))
+                    {
+                        auto matrixInterpolateValue = mMatrixInterpolator.GetValue(gameClock);
+                        // this is just test to see if matrix updates get propagated to shader.
+                        float matrix[16];
+                        std::ranges::fill(matrix, matrixInterpolateValue);
+                        auto adjustedMatrix = math3d::Matrix(matrix);
+                        constantBuffer->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
+
+                        float timeData = matrixInterpolateValue;//[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
+                        constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+
+                        auto textureTag = *renderComponent->mTextureTags.begin();
+                        auto textureView = mTextureResources.GetResourceView(textureTag);
+                        constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Texture2d, textureView.Get());
+
+                        constantBuffer->Bind(commandList);
+                    }
+
+                    auto geometryResource = mGeometryResources.GetResource(renderComponent->mGeometryTag);
+                    renderComponent->Bind(geometryResource);
+
+                    renderComponent->Render(commandList);
                 }
 
-                auto signatureTag = TypeToTag(materialProperties.mSignature, vts);
-                auto rootSig = mRenderSignatures.GetSignature(signatureTag);
-                commandList->SetGraphicsRootSignature(rootSig);
+                return true;
+            });
 
-                auto psoTag = TypeToTag(materialProperties.mPSO, vts);
-                auto pso = mRenderPipelines.GetPipeline(psoTag);
-                commandList->SetPipelineState(pso);
+            frameCommands.EndFrame();
+        }
 
-                auto location = renderComponent->mMatrix;
+        RenderShape renderShape;
+        auto quadScreenMaterialTag = vts.GetTag(Section{ "Materials@ScreenQuadMaterial" });
+        auto quadScreenMaterialProperties = mRenderMaterials.GetMaterial(quadScreenMaterialTag);
+        if (DependencyNode* quadScreenMaterialNode = mDependencyGraph.Find(quadScreenMaterialTag.mGuid, nullptr))
+        {
+            auto sceneTexture = mRenderTargetStorage.FindRenderTarget(mSceneRenderTargetTag);
 
-                auto constantBufferTag = TypeToTag(materialProperties.mShaderBuffer, vts);
-                if (auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag))
-                {
-                    auto matrixInterpolateValue = mMatrixInterpolator.GetValue(gameClock);
-                    // this is just test to see if matrix updates get propagated to shader.
-                    float matrix[16];
-                    std::ranges::fill(matrix, matrixInterpolateValue);
-                    math3d::Matrix adjustedMatrix = math3d::Matrix(matrix);
-                    constantBuffer->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
+            auto renderTarget = mRenderTargetStorage.AliasRenderTarget(mSwapChainRenderTargetTag, device.GetSwapChain());
+            auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
+            auto commandList = frameCommands.BeginFrame(&color)->GetDeviceCommandList();
 
-                    float timeData = matrixInterpolateValue;//[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
-                    constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+            auto signatureTag = TypeToTag(quadScreenMaterialProperties.mSignature, vts);
+            auto rootSig = mRenderSignatures.GetSignature(signatureTag);
+            commandList->SetGraphicsRootSignature(rootSig);
 
-                    auto textureTag = *renderComponent->mTextureTags.begin();
-                    auto textureView = mTextureResources.GetResourceView(textureTag);
-                    constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Texture2d, textureView.Get());
+            auto psoTag = TypeToTag(quadScreenMaterialProperties.mPSO, vts);
+            auto pso = mRenderPipelines.GetPipeline(psoTag);
+            commandList->SetPipelineState(pso);
 
-                    constantBuffer->Bind(commandList);
-                }
+            auto constantBufferTag = TypeToTag(quadScreenMaterialProperties.mShaderBuffer, vts);
+            auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag);
 
-                auto geometryResource = mGeometriesResources.GetResource(renderComponent->mGeometryTag);
-                renderComponent->Bind(geometryResource);
+            math3d::Matrix adjustedMatrix = math3d::Matrix::Identity;
+            constantBuffer->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
+            float timeData = 1.0f;
+            constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+            constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Texture2d, sceneTexture->SRVDescriptorHeap());
+            constantBuffer->Bind(commandList);
 
-                renderComponent->Render(commandList);
-            }
+            auto geometryTag = vts.GetTag(Section{ "Geometry@ScreenQuad" });
+            auto geometryResource = mGeometryResources.GetResource(geometryTag);
+            renderShape.Bind(geometryResource);
+            renderShape.Render(commandList);
 
-            return true;
-        });
+            frameCommands.EndFrame();
+        }
 
-        frameCommands.EndFrame();
         memory::StopRecordAllocations();
     }
     else
@@ -192,7 +240,7 @@ void defensor::render::RenderSystem::PreloadAssets()
     //    z;
     //}
 
-    
+
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mApp.VTS();
 
@@ -208,7 +256,7 @@ void defensor::render::RenderSystem::PreloadAssets()
     const Section geometrySection("Geometry");
     auto geometryTags = vts.GetTags(geometrySection);
     mRenderGeometries.Preload(geometryTags);
-    mGeometriesResources.Preload(geometryTags);
+    mGeometryResources.Preload(geometryTags);
 
     const Section textureSection("Images");
     auto textureTags = vts.GetTags(textureSection);
@@ -223,6 +271,10 @@ void defensor::render::RenderSystem::PreloadAssets()
     {
         RebindMaterial(matTag, material);
     }
+
+    const Section sceneItemsSection("SceneItems");
+    auto sceneItemsTags = vts.GetTags(sceneItemsSection);
+    mSceneItemsStorage.Preload(sceneItemsTags);
 
     // let's try to load some textures here as a test
 
@@ -276,8 +328,8 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
     auto vsBlob = mRenderShaders.GetShader(vsTag, yaget::render::RenderShaders::ShaderType::Vertex);
     auto psBlob = mRenderShaders.GetShader(psTag, yaget::render::RenderShaders::ShaderType::Pixel);
 
-    auto vertexPins =  mRenderShaders.GetShaderPins(vsTag);
-    auto pixelPins =  mRenderShaders.GetShaderPins(psTag);
+    auto vertexPins = mRenderShaders.GetShaderPins(vsTag);
+    auto pixelPins = mRenderShaders.GetShaderPins(psTag);
 
     /*ID3D12PipelineState* pipeline =*/
     mRenderPipelines.GetPipeline(psoTag, signature, vsBlob, vertexPins, psBlob, pixelPins);

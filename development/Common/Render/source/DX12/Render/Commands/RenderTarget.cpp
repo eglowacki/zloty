@@ -1,51 +1,101 @@
 #include "Core/ErrorHandlers.h"
 #include "HashUtilities.h"
 #include "Render/Commands/RenderCommandList.h"
+#include "Render/Commands/RenderCommandListStates.h"
 #include "Render/Commands/RenderTarget.h"
 #include "Render/Helpers/ResourceDescriptions.h"
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Platform/SwapChain.h"
-#include "Render/Commands/RenderCommandListStates.h"
 
+
+namespace
+{
+    //-------------------------------------------------------------------------------------------------
+    yaget::render::ComPtr<ID3D12DescriptorHeap> SetupDepthStencilDescriptorHeap(ID3D12Device* device, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* descriptorHeap)
+    {
+        if (descriptorHeap)
+        {
+            return descriptorHeap;
+        }
+
+        if (depthStencilFormat == DXGI_FORMAT_UNKNOWN)
+        {
+            return {};
+        }
+
+        return yaget::render::helpers::CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    yaget::render::ComPtr<ID3D12Resource> SetupDepthStencilResource(ID3D12Device* device, int sizeX, int sizeY, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* descriptorHeap, ID3D12Resource* resource)
+    {
+        if (resource)
+        {
+            return resource;
+        }
+
+        return yaget::render::helpers::CreateDepthStencilBuffer(device, descriptorHeap, sizeX, sizeY, depthStencilFormat);
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    yaget::render::ComPtr<ID3D12Resource> SetupRenderResource(ID3D12Device* device, int sizeX, int sizeY, DXGI_FORMAT renderTargetFormat, D3D12_RESOURCE_STATES state, ID3D12DescriptorHeap* rtvHeap, ID3D12DescriptorHeap* srvHeap)
+    {
+        yaget::render::ComPtr<ID3D12Resource> renderTargetResource;
+        D3D12_HEAP_PROPERTIES heapProperties{};
+        heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+        D3D12_RESOURCE_DESC renderTargetDesc = {};
+        renderTargetDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        renderTargetDesc.Alignment = 0;
+        renderTargetDesc.Width = sizeX;
+        renderTargetDesc.Height = sizeY;
+        renderTargetDesc.DepthOrArraySize = 1;
+        renderTargetDesc.MipLevels = 1;
+        renderTargetDesc.Format = renderTargetFormat;
+        renderTargetDesc.SampleDesc.Count = 1;
+        renderTargetDesc.SampleDesc.Quality = 0;
+        renderTargetDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        renderTargetDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+        D3D12_CLEAR_VALUE optimizedClearValue = {};
+        optimizedClearValue.Format = renderTargetFormat;
+        //optimizedClearValue.Color[0] = 0.0f;
+        //optimizedClearValue.Color[1] = 1.0f;
+        //optimizedClearValue.Color[2] = 0.0f;
+        //optimizedClearValue.Color[3] = 1.0f;
+        memcpy(optimizedClearValue.Color, colors::Aqua, sizeof(optimizedClearValue.Color));
+
+        HRESULT hr = device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &renderTargetDesc, state, &optimizedClearValue, IID_PPV_ARGS(&renderTargetResource));
+        yaget::error_handlers::ThrowOnError(hr, std::format("Could not create render target for texture format: '{}' with sizeX: '{}', sizeY: '{}'.", magic_enum::enum_name(renderTargetFormat), sizeX, sizeY).c_str());
+
+        D3D12_CPU_DESCRIPTOR_HANDLE rtvCpuDescriptorHandle{ rtvHeap->GetCPUDescriptorHandleForHeapStart() };
+        D3D12_CPU_DESCRIPTOR_HANDLE srvCpuDescriptorHandle{ srvHeap->GetCPUDescriptorHandleForHeapStart() };
+
+        device->CreateRenderTargetView(renderTargetResource.Get(), nullptr, rtvCpuDescriptorHandle);
+        device->CreateShaderResourceView(renderTargetResource.Get(), nullptr, srvCpuDescriptorHandle);
+
+        return renderTargetResource;
+        
+    }
+
+
+}
+    
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::RenderTarget::RenderTarget(ID3D12Device* device, int sizeX, int sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT /*depthStencilFormat*/)
-    : mSRVDescriptorHeap{ CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1) }
-    , mRTVDescriptorHeap{ CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1) }
-    , mDSVDescriptorHeap{}
-    , mRenderTargetResource{}
+yaget::render::commands::RenderTarget::RenderTarget(ID3D12Device* device, int sizeX, int sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource)
+    : mSRVDescriptorHeap{ helpers::CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1) }
+    , mRTVDescriptorHeap{ helpers::CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1) }
+    , mDSVDescriptorHeap{ SetupDepthStencilDescriptorHeap(device, depthStencilFormat, depthStencilDescriptorHeap) }
     , mRenderTargetFormat{ renderTargetFormat }
-    , mState{ D3D12_RESOURCE_STATE_RENDER_TARGET }
-    , mClearColor{ 1.0f, 1.0f, 1.0f, 1.0f }
+    , mDepthStencilResource{ SetupDepthStencilResource(device, sizeX, sizeY, depthStencilFormat, depthStencilDescriptorHeap, depthStencilResource) }
+    , mState{ D3D12_RESOURCE_STATE_COMMON }
+    , mClearColor{ colors::Aqua }
+    , mRenderTargetResource{ SetupRenderResource(device, sizeX, sizeY, mRenderTargetFormat, mState, mRTVDescriptorHeap.Get(), mSRVDescriptorHeap.Get()) }
+    , mSwapChain{ nullptr }
 {
-    D3D12_HEAP_PROPERTIES heapProperties{};
-    heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
-
-    D3D12_RESOURCE_DESC renderTargetDesc = {};
-    renderTargetDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    renderTargetDesc.Alignment = 0;
-    renderTargetDesc.Width = sizeX;
-    renderTargetDesc.Height = sizeY;
-    renderTargetDesc.DepthOrArraySize = 1;
-    renderTargetDesc.MipLevels = 1;
-    renderTargetDesc.Format = renderTargetFormat;
-    renderTargetDesc.SampleDesc.Count = 1;
-    renderTargetDesc.SampleDesc.Quality = 0;
-    renderTargetDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    renderTargetDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-
-    //D3D12_CLEAR_VALUE optimizedClearValue = {};
-    //optimizedClearValue.Format = renderTargetFormat;
-    //memcpy(optimizedClearValue.Color, mClearColor, sizeof(optimizedClearValue.Color));
-
-    HRESULT hr = device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &renderTargetDesc, mState, nullptr/*&optimizedClearValue*/, IID_PPV_ARGS(&mRenderTargetResource));
-    error_handlers::ThrowOnError(hr, std::format("Could not create render target for texture format: '{}' with sizeX: '{}', sizeY: '{}'.", magic_enum::enum_name(renderTargetFormat), sizeX, sizeY).c_str());
-
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvCpuDescriptorHandle{ mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart() };
-    D3D12_CPU_DESCRIPTOR_HANDLE srvCpuDescriptorHandle{ mSRVDescriptorHeap->GetCPUDescriptorHandleForHeapStart() };
-
-    device->CreateRenderTargetView(mRenderTargetResource.Get(), nullptr, rtvCpuDescriptorHandle);
-    device->CreateShaderResourceView(mRenderTargetResource.Get(), nullptr, srvCpuDescriptorHandle);
 }
 
 
@@ -57,11 +107,11 @@ yaget::render::commands::RenderTarget::RenderTarget(platform::SwapChain& swapCha
     , mRenderTargetResource{ nullptr }
     , mRenderTargetFormat{ swapChain.GetDescription().Format }
     , mState{ D3D12_RESOURCE_STATE_PRESENT }
-    , mClearColor{ 1.0f, 1.0f, 1.0f, 1.0f }
+    , mClearColor{ colors::Aqua }
     , mSwapChain{ &swapChain }
 {
-    
 }
+
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::commands::RenderTarget::~RenderTarget() = default;
@@ -78,7 +128,7 @@ void yaget::render::commands::RenderTarget::BeginFrame(const CommandList* comman
 
     mState = commands::TransitionToRenderTarget(commandList, mState, mRenderTargetResource.Get(), mRTVDescriptorHeap.Get(), mDSVDescriptorHeap.Get(), frameIndex);
 
-    commands::ClearRenderTarget(commandList, colors::CornflowerBlue, mRenderTargetResource.Get(), mRTVDescriptorHeap.Get(), frameIndex);
+    commands::ClearRenderTarget(commandList, mClearColor, mRenderTargetResource.Get(), mRTVDescriptorHeap.Get(), frameIndex);
     if (mDSVDescriptorHeap)
     {
         commands::ClearDepthStencil(commandList, 1.0f, 0, mDSVDescriptorHeap.Get());
@@ -122,7 +172,7 @@ yaget::render::commands::RenderTargetStorage::~RenderTargetStorage() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStorage::GetRenderTarget(const io::Tag& tag, uint32_t sizeX, uint32_t sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat)
+yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStorage::GetRenderTarget(const io::Tag& tag, uint32_t sizeX, uint32_t sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource)
 {
     D3D12_FEATURE_DATA_FORMAT_SUPPORT formatSupport = { renderTargetFormat, D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2_NONE };
     HRESULT hr = mDevice->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(formatSupport));
@@ -140,20 +190,20 @@ yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStor
     conv::hash_combine(hashValue, sizeX, sizeY, renderTargetFormat);
 
     {
-        mt::ReadLock readLock(mMutex);
+        mt::ReadLock locker(mMutex);
         if (auto renderTarget = FindRenderTarget(tag, hashValue, mRenderTargetMap))
         {
             return renderTarget;
         }
     }
 
-    mt::WriteLock readLock(mMutex);
+    mt::WriteLock locker(mMutex);
     if (auto renderTarget = FindRenderTarget(tag, hashValue, mRenderTargetMap))
     {
         return renderTarget;
     }
 
-    auto renderTarget = std::make_shared<RenderTarget>(mDevice, sizeX, sizeY, renderTargetFormat, depthStencilFormat);
+    auto renderTarget = std::make_shared<RenderTarget>(mDevice, sizeX, sizeY, renderTargetFormat, depthStencilFormat, depthStencilDescriptorHeap, depthStencilResource);
     mRenderTargetMap[tag] = { .mHash = hashValue, .mRenderTarget = renderTarget };
 
     return renderTarget.get();
@@ -166,14 +216,14 @@ yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStor
     uint64_t hashValue = tag.Hash();
 
     {
-        mt::ReadLock readLock(mMutex);
+        mt::ReadLock locker(mMutex);
         if (auto renderTarget = FindRenderTarget(tag, hashValue, mRenderTargetMap))
         {
             return renderTarget;
         }
     }
 
-    mt::WriteLock readLock(mMutex);
+    mt::WriteLock locker(mMutex);
     if (auto renderTarget = FindRenderTarget(tag, hashValue, mRenderTargetMap))
     {
         return renderTarget;
@@ -187,9 +237,23 @@ yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStor
 
 
 //-------------------------------------------------------------------------------------------------
+yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStorage::FindRenderTarget(const io::Tag& tag) const
+{
+    mt::ReadLock locker(mMutex);
+
+    if (auto it = mRenderTargetMap.find(tag); it != mRenderTargetMap.end())
+    {
+        return it->second.mRenderTarget.get();
+    }
+
+    return nullptr;
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::commands::RenderTargetStorage::ResetAll(const app::WindowFrame& /*windowFrame*/)
 {
-    mt::WriteLock readLock(mMutex);
+    mt::WriteLock locker(mMutex);
     mRenderTargetMap.clear();
 }
 
@@ -215,6 +279,9 @@ yaget::render::commands::RenderTarget* yaget::render::commands::CreateRenderTarg
     // this can be used to extract actual buffer size (window size)
     auto chainDesc = swapChain.GetDescription();
     auto depthStencilDesc = swapChain.GetDepthStencilDescription();
+    //ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource
+    auto depthStencilDescriptorHeap = swapChain.GetDSVDescriptorHeap();
+    auto depthStencilResource = swapChain.GetCurrentDepthStencil();
 
-    return renderTargetStorage.GetRenderTarget(tag, chainDesc.Width, chainDesc.Height, chainDesc.Format, depthStencilDesc.Format);
+    return renderTargetStorage.GetRenderTarget(tag, chainDesc.Width, chainDesc.Height, chainDesc.Format, depthStencilDesc.Format, depthStencilDescriptorHeap, depthStencilResource);
 }

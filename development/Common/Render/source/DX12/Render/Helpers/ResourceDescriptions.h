@@ -128,5 +128,10 @@ namespace yaget::render::helpers
         return parameters;
     }
 
-    
+
+    //-------------------------------------------------------------------------------------------------
+    // Helper function to create Descriptor Heap, Depth Stencil buffer
+    ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors);
+    ComPtr<ID3D12Resource> CreateDepthStencilBuffer(ID3D12Device* device, ID3D12DescriptorHeap* dsDescriptorHeap, size_t width, size_t height, DXGI_FORMAT depthStencilFormat);
+
 }

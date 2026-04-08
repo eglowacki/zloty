@@ -354,35 +354,3 @@ yaget::io::Buffer yaget::render::RenderShaders::AssureShaderNonMT(const io::Tag&
     mReflections.insert({ tag, reflection });
     return buffer;
 }
-
-
-//-------------------------------------------------------------------------------------------------
-yaget::render::ComPtr<ID3D12DescriptorHeap> yaget::render::CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
-{
-    D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-    desc.NumDescriptors = numDescriptors;
-    desc.Type = type;
-    switch (type)
-    {
-        case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:
-        case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:
-            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-            break;
-        case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
-            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-            break;
-        case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
-            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-            break;
-        default:
-            YAGET_ASSERT(false, std::format("Descriptor Type: '{}' not handled!!!", magic_enum::enum_name(type)).c_str());
-    }
-
-    ComPtr<ID3D12DescriptorHeap> descriptorHeap;
-    const HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap));
-    error_handlers::ThrowOnError(hr, "Could not create DX12 DescriptorHeap");
-
-    YAGET_RENDER_SET_DEBUG_NAME(descriptorHeap.Get(), std::format("DescriptorHeap-{}", magic_enum::enum_name(type)).c_str());
-
-    return descriptorHeap;
-}

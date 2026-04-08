@@ -165,6 +165,15 @@
                         "ReadOnly": false,
                         "Recursive": false
                     }
+                },
+                {
+                    "SceneItems": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(DataFolder)/Data/SceneItems" ],
+                        "ReadOnly": true,
+                        "Recursive": true
+                    }
                 }
             ],
             "WindowOptions": "UserOptions@WindowConfiguration",

@@ -25,6 +25,7 @@
 #include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Pipeline/ShaderBuffers.h"
+#include "Render/Scene/RenderSceneItems.h"
 
 
 namespace defensor::render
@@ -67,9 +68,11 @@ namespace defensor::render
         yaget::render::TextureResources mTextureResources;
         yaget::render::ShaderBuffers mShaderBuffers;
         yaget::render::RenderGeometries mRenderGeometries;
-        yaget::render::GeometriesResources mGeometriesResources;
+        yaget::render::GeometriesResources mGeometryResources;
         yaget::render::commands::RenderTargetStorage mRenderTargetStorage;
-        io::Tag mSwapChainRenderTargetTag{ .mName = "", .mGuid = NewGuid() };
+        yaget::render::scene::SceneItemsStorage mSceneItemsStorage;
+        io::Tag mSwapChainRenderTargetTag{ .mName = "SwapChainRenderTarget", .mGuid = NewGuid() };
+        io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTargetTag", .mGuid = NewGuid() };
 
         size_t mResizeCallbackId{};
 

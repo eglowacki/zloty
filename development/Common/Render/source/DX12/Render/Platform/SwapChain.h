@@ -53,6 +53,7 @@ namespace yaget::render::platform
 
         uint32_t GetCurrentBackBufferIndex() const { return mCurrentBackBufferIndex; }
         ID3D12Resource* GetCurrentRenderTarget() const;
+        ID3D12Resource* GetCurrentDepthStencil() const;
         ID3D12DescriptorHeap* GetRTVDescriptorHeap() const;
         ID3D12DescriptorHeap* GetDSVDescriptorHeap() const;
 
