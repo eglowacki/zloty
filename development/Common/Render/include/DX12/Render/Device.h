@@ -103,7 +103,12 @@ namespace yaget::render
 
         // this allows us to register for device resizing, so dependent resource
         // cna be reset and recreated.
-        using ResizeCallback = std::function<void(const app::WindowFrame& windowFrame)>;
+        enum class ResizeState
+        {
+            Reset,
+            Set
+        };
+        using ResizeCallback = std::function<void(const app::WindowFrame& windowFrame, ResizeState resizeState)>;
 
         size_t RegisterResizeCallback(ResizeCallback callback);
         void UnregisterResizeCallback(size_t callbackId);

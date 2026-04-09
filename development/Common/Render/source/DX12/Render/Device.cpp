@@ -75,10 +75,15 @@ void yaget::render::DeviceB::Resize()
 
     std::ranges::for_each(mResizeCallbacks, [this](const auto& element)
     {
-        element.mCallback(mWindowFrame);
+        element.mCallback(mWindowFrame, ResizeState::Reset);
     });
 
     mSwapChain->Resize();
+
+    std::ranges::for_each(mResizeCallbacks, [this](const auto& element)
+    {
+        element.mCallback(mWindowFrame, ResizeState::Set);
+    });
 }
 
 

@@ -52,8 +52,10 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
                          mTextureResources,
                          mGeometryResources,
                          app.VTS(), GetSection("SceneItems"))
-    , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](const auto& windowFrame) { OnResetDevice(windowFrame); }) }
+    , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
+    //io::AttachTransientAsset(mSceneRenderTargetTag, app.VTS());
+
     mApp.PoolThread().AddTask([this]()
     {
         PreloadAssets();
@@ -87,12 +89,11 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
         {
             auto renderTarget = commands::CreateRenderTargetFrom(mSceneRenderTargetTag, device.GetSwapChain(), mRenderTargetStorage);
-            //auto renderTarget = mRenderTargetStorage.AliasRenderTarget(mSwapChainRenderTargetTag, device.GetSwapChain());
+            // NOTE(eg) Before uncommenting this, we need to make sure that it's cleared from mTextureResources when we resize window!
+            //mTextureResources.AttachRenderTarget(mSceneRenderTargetTag, renderTarget);
 
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
-
             auto commandList = frameCommands.BeginFrame(&color);
-            //auto deviceCommandList = commandList->GetDeviceCommandList();
 
             coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
             {
@@ -103,66 +104,16 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 auto sceneItem = mSceneItemsStorage.GetSceneItem(sceneItemTag);
 
                 auto matrixInterpolateValue = mMatrixInterpolator.GetValue(gameClock);
-                // this is just test to see if matrix updates get propagated to shader.
-                float matrix[16];
-                std::ranges::fill(matrix, matrixInterpolateValue);
-                auto adjustedMatrix = math3d::Matrix(matrix);
-                sceneItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
+                //// this is just test to see if matrix updates get propagated to shader.
+                //float matrix[16];
+                //std::ranges::fill(matrix, matrixInterpolateValue);
+                //auto adjustedMatrix = math3d::Matrix(matrix);
+                //sceneItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
 
                 float timeData = matrixInterpolateValue;//[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
                 sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
 
                 sceneItem->Render(commandList);
-
-#if 0
-                auto& material = renderComponent->mRenderMaterial;
-                auto materialProperties = mRenderMaterials.GetMaterial(material.mAssetTag);
-
-                if (DependencyNode* materialNode = mDependencyGraph.Find(material.mAssetTag.mGuid, nullptr))
-                {
-                    if (materialNode->IsBranchDirty())
-                    {
-                        return true;
-                        //material.ResolveAssetTag(material.mAssetTag);
-                        //materialNode->ClearDirty();
-                    }
-
-                    auto signatureTag = TypeToTag(materialProperties.mSignature, vts);
-                    auto rootSig = mRenderSignatures.GetSignature(signatureTag);
-                    commandList->SetGraphicsRootSignature(rootSig);
-
-                    auto psoTag = TypeToTag(materialProperties.mPSO, vts);
-                    auto pso = mRenderPipelines.GetPipeline(psoTag);
-                    commandList->SetPipelineState(pso);
-
-                    auto location = renderComponent->mMatrix;
-
-                    auto constantBufferTag = TypeToTag(materialProperties.mShaderBuffer, vts);
-                    if (auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag))
-                    {
-                        auto matrixInterpolateValue = mMatrixInterpolator.GetValue(gameClock);
-                        // this is just test to see if matrix updates get propagated to shader.
-                        float matrix[16];
-                        std::ranges::fill(matrix, matrixInterpolateValue);
-                        auto adjustedMatrix = math3d::Matrix(matrix);
-                        constantBuffer->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
-
-                        float timeData = matrixInterpolateValue;//[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
-                        constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
-
-                        auto textureTag = *renderComponent->mTextureTags.begin();
-                        auto textureView = mTextureResources.GetResourceView(textureTag);
-                        constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Texture2d, textureView.Get());
-
-                        constantBuffer->Bind(commandList);
-                    }
-
-                    auto geometryResource = mGeometryResources.GetResource(renderComponent->mGeometryTag);
-                    renderComponent->Bind(geometryResource);
-
-                    renderComponent->Render(commandList);
-                }
-#endif
 
                 return true;
             });
@@ -170,7 +121,6 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             frameCommands.EndFrame();
         }
 
-        RenderShape renderShape;
         auto quadScreenMaterialTag = vts.GetTag(Section{ "Materials@ScreenQuadMaterial" });
         auto quadScreenMaterialProperties = mRenderMaterials.GetMaterial(quadScreenMaterialTag);
         if (DependencyNode* quadScreenMaterialNode = mDependencyGraph.Find(quadScreenMaterialTag.mGuid, nullptr))
@@ -201,6 +151,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
             auto geometryTag = vts.GetTag(Section{ "Geometry@ScreenQuad" });
             auto geometryResource = mGeometryResources.GetResource(geometryTag);
+            RenderShape renderShape{};
             renderShape.Bind(geometryResource);
             renderShape.Render(commandList);
 
@@ -413,7 +364,14 @@ void defensor::render::RenderSystem::HotRebindMaterial(const Guid& guid)
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windowFrame)
+void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windowFrame, yaget::render::DeviceB::ResizeState resizeState)
 {
-    mRenderTargetStorage.ResetAll(windowFrame);
+    if (resizeState == yaget::render::DeviceB::ResizeState::Reset)
+    {
+        mRenderTargetStorage.ResetAll(windowFrame);
+    }
+    else if (resizeState == yaget::render::DeviceB::ResizeState::Set)
+    {
+        // NOTE(eg) possibly recreate render targets
+    }
 }

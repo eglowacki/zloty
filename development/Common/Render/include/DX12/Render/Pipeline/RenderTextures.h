@@ -28,6 +28,11 @@ struct ID3D12DescriptorHeap;
 
 namespace yaget::render
 {
+    namespace commands
+    {
+        class RenderTarget;
+    }
+
     class DeviceB;
 
     //-------------------------------------------------------------------------------------------------
@@ -58,6 +63,8 @@ namespace yaget::render
         std::vector<ID3D12DescriptorHeap*> GetResourceViews(const io::Tags& tags) const;
         ID3D12Resource* GetResource(const io::Tag& tag);
         std::vector<ID3D12Resource*> GetResources(const io::Tags& tags);
+
+        void AttachRenderTarget(const io::Tag& tag, const commands::RenderTarget* renderTarget);
 
         void Preload(const io::Tags& tags);
 

@@ -1,16 +1,18 @@
 #include "Core/ErrorHandlers.h"
 #include "Json/JsonHelpers.h"
+#include "Render/Commands/RenderTarget.h"
 #include "Render/Device.h"
+#include "Render/Helpers/ResourceDescriptions.h"
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Platform/Adapter.h"
 #include "Render/Platform/D3D12MemAlloc.h"
+#include "Render/PlaceholderAssets/PlaceholderAssets.h"
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
-#include "Render/Helpers/ResourceDescriptions.h"
-#include "Render\PlaceholderAssets\PlaceholderAssets.h"
 
 #include <d3dx12.h>
+
 
 namespace
 {
@@ -118,12 +120,10 @@ yaget::render::TextureResources::TextureResources(DeviceB& device, RenderTexture
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::TextureResources::~TextureResources()// = default;
-{
-    int z = 0;
-    z;
-}
+yaget::render::TextureResources::~TextureResources() = default;
 
+
+//-------------------------------------------------------------------------------------------------
 ID3D12DescriptorHeap* yaget::render::TextureResources::GetResourceView(const io::Tag& tag) const
 {
     auto resources = GetResourceViews(io::Tags{ tag });
@@ -243,6 +243,14 @@ std::vector<ID3D12Resource*> yaget::render::TextureResources::GetResources(const
     framerHandler.EndFrame();
 
     return results;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::TextureResources::AttachRenderTarget(const io::Tag& tag, const commands::RenderTarget* renderTarget)
+{
+    mt::WriteLock writeLocker(mSharedMutex);
+    mResources[tag] = ResourceData{ unique_obj<D3D12MA::Allocation>{}, renderTarget->Resource(), renderTarget->SRVDescriptorHeap() };
 }
 
 

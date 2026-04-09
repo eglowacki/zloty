@@ -14,6 +14,7 @@
 //! \file
 #pragma once
 
+#include "MathFacade.h"
 #include "Render/RenderCore.h"
 #include "Streams/Buffers.h"
 #include <d3dx12.h>

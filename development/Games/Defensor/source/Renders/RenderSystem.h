@@ -44,7 +44,7 @@ namespace defensor::render
         void RebindMaterial(const io::Tag& tag, yaget::render::MaterialProperties material);
         void HotRebindMaterial(const Guid& guid);
 
-        void OnResetDevice(const app::WindowFrame& windowFrame);
+        void OnResetDevice(const app::WindowFrame& windowFrame, yaget::render::DeviceB::ResizeState resizeState);
 
         // This structure is used to keep track of what assets are used for rendering particular entity. 
         // It is used to track changes in assets and update them accordingly.
@@ -72,7 +72,7 @@ namespace defensor::render
         yaget::render::commands::RenderTargetStorage mRenderTargetStorage;
         yaget::render::scene::SceneItemsStorage mSceneItemsStorage;
         io::Tag mSwapChainRenderTargetTag{ .mName = "SwapChainRenderTarget", .mGuid = NewGuid() };
-        io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTargetTag", .mGuid = NewGuid() };
+        io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTarget", .mGuid = NewGuid() };
 
         size_t mResizeCallbackId{};
 
