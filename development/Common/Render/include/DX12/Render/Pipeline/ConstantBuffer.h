@@ -61,7 +61,6 @@ namespace yaget::render
 
         bool UpdateData(constant_shader_types::ConstantTypes constantTypes, const void* data, size_t dataSize);
         bool UpdateData(constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize);
-        bool UpdateData(constant_shader_types::ConstantTypes constantTypes, ID3D12Resource* resource);
         bool UpdateData(constant_shader_types::ConstantTypes constantTypes, ID3D12DescriptorHeap* resourceView);
         void Bind(ID3D12GraphicsCommandList* commandList) const;
 

@@ -1,4 +1,3 @@
-#include "Compression/Zipper.h"
 #include "MemoryManager/NewAllocator.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Device.h"
@@ -6,26 +5,13 @@
 #include "Render/Pipeline/ShaderBuffers.h"
 #include "Render/Platform/Adapter.h"
 #include "Renders/RenderSystem.h"
+#include "Render/Cache/AssetCache.h"
 
 #include <ranges>
 
 
 namespace
 {
-    yaget::io::Tag TypeToTag(yaget::render::AssetCacheType assetCacheType, const yaget::io::VirtualTransportSystem& vts)
-    {
-        auto section = yaget::render::AssetCache::operator[](assetCacheType);
-        if (section.mName.empty())
-        {
-            return {};
-        }
-
-        yaget::io::VirtualTransportSystem::Section querySection = section;
-        querySection.mMatch = yaget::io::VirtualTransportSystem::Section::FilterMatch::Exact;
-        auto tag = vts.AssureTag(querySection);
-        return tag;
-    }
-
     yaget::io::VirtualTransportSystem::Section GetSection(const char* cacheName)
     {
         using Section = yaget::io::VirtualTransportSystem::Section;
@@ -39,6 +25,7 @@ namespace
         return section;
 #endif
     }
+
 }
 
 
@@ -103,12 +90,31 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             //auto renderTarget = mRenderTargetStorage.AliasRenderTarget(mSwapChainRenderTargetTag, device.GetSwapChain());
 
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
-            auto commandList = frameCommands.BeginFrame(&color)->GetDeviceCommandList();
+
+            auto commandList = frameCommands.BeginFrame(&color);
+            //auto deviceCommandList = commandList->GetDeviceCommandList();
 
             coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
             {
                 auto renderComponent = std::get<RenderComponent*>(row);
+                renderComponent;
 
+                auto sceneItemTag = vts.GetTag(Section{ "SceneItems@CheckerRectangle" });
+                auto sceneItem = mSceneItemsStorage.GetSceneItem(sceneItemTag);
+
+                auto matrixInterpolateValue = mMatrixInterpolator.GetValue(gameClock);
+                // this is just test to see if matrix updates get propagated to shader.
+                float matrix[16];
+                std::ranges::fill(matrix, matrixInterpolateValue);
+                auto adjustedMatrix = math3d::Matrix(matrix);
+                sceneItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
+
+                float timeData = matrixInterpolateValue;//[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
+                sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+
+                sceneItem->Render(commandList);
+
+#if 0
                 auto& material = renderComponent->mRenderMaterial;
                 auto materialProperties = mRenderMaterials.GetMaterial(material.mAssetTag);
 
@@ -156,6 +162,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
                     renderComponent->Render(commandList);
                 }
+#endif
 
                 return true;
             });

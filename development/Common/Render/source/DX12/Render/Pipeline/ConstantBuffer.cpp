@@ -85,13 +85,6 @@ bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTy
 
 
 //--------------------------------------------------------------------------------------------------
-bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTypes /*constantTypes*/, ID3D12Resource* /*resource*/)
-{
-    return false;
-}
-
-
-//--------------------------------------------------------------------------------------------------
 bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTypes constantTypes, ID3D12DescriptorHeap* resourceView)
 {
     return UpdateData<ID3D12DescriptorHeap*>(constantTypes, resourceView);

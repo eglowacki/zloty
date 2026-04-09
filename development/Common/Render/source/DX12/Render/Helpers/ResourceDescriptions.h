@@ -20,6 +20,7 @@
 #include <d3dx12.h>
 #include <dxgiformat.h>
 
+
 struct ID3D12GraphicsCommandList;
 struct ID3D12Resource;
 

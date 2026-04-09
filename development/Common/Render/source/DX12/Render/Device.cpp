@@ -155,8 +155,8 @@ yaget::render::DeviceB::FrameCommands::FrameCommands(DeviceB& device, const time
 {
     auto commandType = GetCommandType(mFrameType);
 
-    auto frameFenceValue = mDevice->GetFrameFenceValue(mFrameIndex, commandType);
-    GetQueueStorage().GetQueue(commandType)->WaitForFenceCPUBlocking(frameFenceValue);
+    auto frameFenceValue = mDevice->GetFrameFenceValue(commandType);
+    GetQueueStorage().WaitForFenceCPUBlocking(frameFenceValue);
 
     GetAllocatorStorage().GetAllocator(commandType, mFrameIndex)->Reset();
 }
@@ -186,9 +186,10 @@ yaget::render::commands::Type yaget::render::DeviceB::FrameCommands::GetCommandT
 //-------------------------------------------------------------------------------------------------
 yaget::render::DeviceB::FrameCommands::~FrameCommands()
 {
+    bool framePresented = false;
     if (mFrameType == FrameType::Render)
     {
-        mSelectedRenderTarget->Present(*mGameClock, *mChannel);
+        framePresented = mSelectedRenderTarget->Present(*mGameClock, *mChannel);
     }
 
     for (const auto& commandHandle: mCommandsToRender)
@@ -200,14 +201,14 @@ yaget::render::DeviceB::FrameCommands::~FrameCommands()
         mDevice->SetFrameFenceValue(fenceValue, mFrameIndex, type);
     }
 
-    if (mFrameType == FrameType::Render)
+    if (framePresented && mFrameType == FrameType::Render)
     {
         mDevice->mWaiter.Wait();
     }
     else if (mFrameType == FrameType::Copy)
     {
         auto frameFenceValue = mDevice->GetFrameFenceValue(mFrameIndex, commands::Type::Copy);
-        GetQueueStorage().GetQueue(commands::Type::Copy)->WaitForFenceCPUBlocking(frameFenceValue);
+        GetQueueStorage().WaitForFenceCPUBlocking(frameFenceValue);
     }
 }
 
@@ -328,8 +329,25 @@ void yaget::render::DeviceB::SetFrameFenceValue(uint64_t fenceValue, uint32_t fr
 
 
 //-------------------------------------------------------------------------------------------------
-uint64_t yaget::render::DeviceB::GetFrameFenceValue(uint32_t frameIndex, commands::Type type)
+uint64_t yaget::render::DeviceB::GetFrameFenceValue(uint32_t frameIndex, commands::Type type) const
 {
-    auto frameValue = mFrameFenceValues[frameIndex][static_cast<uint32_t>(type)];
-    return frameValue;
+    if (auto it = mFrameFenceValues.find(frameIndex); it != mFrameFenceValues.end())
+    {
+        return it->second[static_cast<uint32_t>(type)];
+    }
+
+    YAGET_ASSERT(false, "There is no entry frameIndex: '{}'.", frameIndex);
+    return 0;
+}
+
+//-------------------------------------------------------------------------------------------------
+uint64_t yaget::render::DeviceB::GetFrameFenceValue(commands::Type type) const
+{
+    uint64_t largestResult = 0;
+    for (auto& node : mFrameFenceValues | std::views::values)
+    {
+        largestResult = std::max(largestResult, node[static_cast<uint32_t>(type)]);
+    }
+
+    return largestResult;
 }

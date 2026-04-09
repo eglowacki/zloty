@@ -59,7 +59,7 @@ namespace yaget::render::commands
         void BeginFrame(const CommandList* commandList);
         void EndFrame(const CommandList* commandList);
 
-        void Present(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/);
+        bool Present(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/);
 
     private:
         // this is used in pixel shader as source texture

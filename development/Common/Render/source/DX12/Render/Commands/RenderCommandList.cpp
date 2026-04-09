@@ -9,7 +9,7 @@
 
 namespace
 {
-    yaget::render::ComPtr<ID3D12GraphicsCommandList> CreateCommandList(ID3D12Device* device, yaget::render::commands::Type type)
+    yaget::render::ComPtr<ID3D12GraphicsCommandList> CreateCommandList(ID3D12Device* device, yaget::render::commands::Type type, int index)
     {
         using namespace yaget;
 
@@ -22,7 +22,7 @@ namespace
 
         hr = device4->CreateCommandList1(0, commandType, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&commandList));
         error_handlers::ThrowOnError(hr, "Could not get create ID3D12GraphicsCommandList1 from ID3D12Device4");
-        YAGET_RENDER_SET_DEBUG_NAME(commandList.Get(), std::format("CommandList-{}", magic_enum::enum_name(type)));
+        YAGET_RENDER_SET_DEBUG_NAME(commandList.Get(), std::format("CommandList.{}-{}", index, magic_enum::enum_name(type)));
 
         return commandList;
     }
@@ -31,9 +31,9 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::CommandList::CommandList(ID3D12Device* device, Type commandType)
+yaget::render::commands::CommandList::CommandList(ID3D12Device* device, Type commandType, int index)
     : mCommandType{ commandType }
-    , mCommandList{ CreateCommandList(device, mCommandType) }
+    , mCommandList{ CreateCommandList(device, mCommandType, index) }
 {
 }
 
@@ -79,9 +79,9 @@ yaget::render::commands::CommandListStorage::CommandListStorage(ID3D12Device* de
 
         for (auto numCommands = 0u; numCommands < numCommandsPerBuffer; ++numCommands)
         {
-            allocatorListDirect.push_back({ std::make_unique<CommandList>(device, Type::Direct), false, i });
-            allocatorListCompute.push_back({ std::make_unique<CommandList>(device, Type::Compute), false, i });
-            allocatorListCopy.push_back({ std::make_unique<CommandList>(device, Type::Copy), false, i });
+            allocatorListDirect.push_back({ std::make_unique<CommandList>(device, Type::Direct, i), false, i });
+            allocatorListCompute.push_back({ std::make_unique<CommandList>(device, Type::Compute, i), false, i });
+            allocatorListCopy.push_back({ std::make_unique<CommandList>(device, Type::Copy, i), false, i });
         }
     }
 }

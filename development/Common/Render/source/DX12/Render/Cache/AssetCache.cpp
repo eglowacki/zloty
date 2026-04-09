@@ -28,6 +28,22 @@ yaget::render::AssetCache::TypeToSectionMap yaget::render::AssetCache::TypeToSec
 
 
 //-------------------------------------------------------------------------------------------------
+yaget::io::Tag yaget::render::TypeToTag(AssetCacheType assetCacheType, const io::VirtualTransportSystem& vts)
+{
+    auto section = yaget::render::AssetCache::operator[](assetCacheType);
+    if (section.mName.empty())
+    {
+        return {};
+    }
+
+    yaget::io::VirtualTransportSystem::Section querySection = section;
+    querySection.mMatch = yaget::io::VirtualTransportSystem::Section::FilterMatch::Exact;
+    auto tag = vts.AssureTag(querySection);
+    return tag;
+}
+
+
+//-------------------------------------------------------------------------------------------------
 yaget::render::AssetCache::Section yaget::render::AssetCache::operator[](AssetCacheType typeFlag)
 {
     if (auto it = TypeToSection.find(typeFlag); it != TypeToSection.end())

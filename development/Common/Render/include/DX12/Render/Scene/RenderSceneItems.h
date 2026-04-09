@@ -16,6 +16,7 @@
 #include "Render/RenderCore.h"
 #include "VTS/VirtualTransportSystem.h"
 #include "Render/Pipeline/RenderGeometries.h"
+#include "Render/Polygons/RenderShape.h"
 
 struct ID3D12RootSignature;
 struct ID3D12PipelineState;
@@ -32,11 +33,18 @@ namespace yaget::render
     class TextureResources;
     class GeometriesResources;
 
+    namespace commands
+    {
+        class CommandList;
+    }
+
 }
 
 
 namespace yaget::render::scene
 {
+    class SceneItemsStorage;
+
     //-------------------------------------------------------------------------------------------------
     class SceneItem
     {
@@ -44,13 +52,27 @@ namespace yaget::render::scene
         SceneItem();
         ~SceneItem();
 
+        void Render(commands::CommandList* commandList);
+
+        template <typename T>
+        bool UpdateData(constant_shader_types::ConstantTypes constantTypes, const T& data)
+        {
+            return UpdateData(constantTypes, reinterpret_cast<const uint8_t*>(&data), sizeof(T));
+        }
+
     private:
+        friend SceneItemsStorage;
+
+        bool UpdateData(constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize);
+
         ID3D12RootSignature* mRootSignature{};
-        ID3D12PipelineState* mPielineState{};
+        ID3D12PipelineState* mPipelineState{};
         ConstantBuffer* mConstantBuffer{};
 
         GeometriesResources::GeometryData mGeometryData{};
         std::vector<ID3D12DescriptorHeap*> mTextureResources{};
+
+        RenderShape mRenderShape;
     };
 
 
@@ -83,7 +105,7 @@ namespace yaget::render::scene
         RenderMaterialProperties& mRenderMaterials;
         RenderSignatures& mSignatures;
         RenderPipelines& mPipelines;
-        ShaderBuffers& shaderBuffers;
+        ShaderBuffers& mShaderBuffers;
         TextureResources& mTextures;
         GeometriesResources& mGeometries;
         io::VirtualTransportSystem& mVTS;

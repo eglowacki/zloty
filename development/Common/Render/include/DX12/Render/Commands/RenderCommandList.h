@@ -44,7 +44,7 @@ namespace yaget::render::commands
     class CommandList
     {
     public:
-        CommandList(ID3D12Device* device, Type commandType);
+        CommandList(ID3D12Device* device, Type commandType, int index);
         ~CommandList();
 
         ID3D12GraphicsCommandList* GetDeviceCommandList() const;

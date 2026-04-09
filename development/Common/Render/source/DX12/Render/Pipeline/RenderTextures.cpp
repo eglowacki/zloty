@@ -124,26 +124,26 @@ yaget::render::TextureResources::~TextureResources()// = default;
     z;
 }
 
-yaget::render::ComPtr<ID3D12DescriptorHeap> yaget::render::TextureResources::GetResourceView(const io::Tag& tag)
+ID3D12DescriptorHeap* yaget::render::TextureResources::GetResourceView(const io::Tag& tag) const
 {
     auto resources = GetResourceViews(io::Tags{ tag });
 
     YLOG_CERROR("REND", !resources.empty(), "Could not find texture resource view data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
-    return !resources.empty() ? *resources.begin() : ComPtr<ID3D12DescriptorHeap>{};
+    return !resources.empty() ? *resources.begin() : nullptr;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::ComPtr<ID3D12DescriptorHeap>> yaget::render::TextureResources::GetResourceViews(const io::Tags& tags)
+std::vector<ID3D12DescriptorHeap*> yaget::render::TextureResources::GetResourceViews(const io::Tags& tags) const
 {
-    std::vector<yaget::render::ComPtr<ID3D12DescriptorHeap>> results;
+    std::vector<ID3D12DescriptorHeap*> results;
 
     mt::ReadLock readLocker(mSharedMutex);
     for (const auto& tag : tags)
     {
         if (auto it = mResources.find(tag); it != mResources.end())
         {
-            results.push_back(it->second.mDescriptorHeap);
+            results.push_back(it->second.mDescriptorHeap.Get());
         }
     }
 
@@ -152,9 +152,9 @@ std::vector<yaget::render::ComPtr<ID3D12DescriptorHeap>> yaget::render::TextureR
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResources::GetResources(const io::Tags& tags)
+std::vector<ID3D12Resource*> yaget::render::TextureResources::GetResources(const io::Tags& tags)
 {
-    std::vector<ComPtr<ID3D12Resource>> results;
+    std::vector<ID3D12Resource*> results;
     io::Tags tagsToLoad;
     {
         mt::ReadLock readLocker(mSharedMutex);
@@ -162,7 +162,7 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
         {
             if (auto it = mResources.find(tag); it != mResources.end())
             {
-                results.push_back(it->second.mResource);
+                results.push_back(it->second.mResource.Get());
                 continue;
             }
 
@@ -187,7 +187,7 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
         // another thread loaded the same texture, so we need to check again if resource is already in map
         if (auto it = mResources.find(tag); it != mResources.end())
         {
-            results.push_back(it->second.mResource);
+            results.push_back(it->second.mResource.Get());
             continue;
         }
 
@@ -254,8 +254,8 @@ void yaget::render::TextureResources::Preload(const io::Tags& tags)
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::ComPtr<ID3D12Resource> yaget::render::TextureResources::GetResource(const io::Tag& tag)
+ID3D12Resource* yaget::render::TextureResources::GetResource(const io::Tag& tag)
 {
     auto resources = GetResources(io::Tags{ tag });
-    return !resources.empty() ? *resources.begin() : ComPtr<ID3D12Resource>{};
+    return !resources.empty() ? *resources.begin() : nullptr;
 }

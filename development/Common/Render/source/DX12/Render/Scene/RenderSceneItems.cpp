@@ -1,9 +1,12 @@
-#include "Render/Scene/RenderSceneItems.h"
+#include "Render/Cache/AssetCache.h"
+#include "Render/Commands/RenderCommandList.h"
+#include "Render/Pipeline/ConstantBuffer.h"
 #include "Render/Pipeline/RenderMaterialProperties.h"
 #include "Render/Pipeline/RenderPipelines.h"
 #include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Pipeline/ShaderBuffers.h"
+#include "Render/Scene/RenderSceneItems.h"
 
 namespace
 {
@@ -45,6 +48,41 @@ yaget::render::scene::SceneItem::~SceneItem() = default;
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::render::scene::SceneItem::Render(commands::CommandList* commandList)
+{
+    auto deviceCommandList = commandList->GetDeviceCommandList();
+
+    deviceCommandList->SetGraphicsRootSignature(mRootSignature);
+    deviceCommandList->SetPipelineState(mPipelineState);
+
+    constexpr constant_shader_types::ConstantTypes textureTypes[4] =
+    {
+        constant_shader_types::ConstantTypes::Texture2d,
+        constant_shader_types::ConstantTypes::Texture2dSecond,
+        constant_shader_types::ConstantTypes::Texture2dThird,
+        constant_shader_types::ConstantTypes::Texture2dFourth
+    };
+
+    for (size_t i = 0; i < mTextureResources.size(); ++i)
+    {
+        mConstantBuffer->UpdateData(textureTypes[i], mTextureResources[i]);
+    }
+
+    mConstantBuffer->Bind(deviceCommandList);
+
+    mRenderShape.Bind(mGeometryData);
+    mRenderShape.Render(deviceCommandList);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+bool yaget::render::scene::SceneItem::UpdateData(constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize)
+{
+    return mConstantBuffer->UpdateData(constantTypes, data, dataSize);
+}
+
+
+//-------------------------------------------------------------------------------------------------
 yaget::render::scene::SceneItemsStorage::SceneItemsStorage(RenderMaterialProperties& renderMaterials,
                                                            RenderSignatures& renderSignatures,
                                                            RenderPipelines& renderPipelines,
@@ -55,23 +93,23 @@ yaget::render::scene::SceneItemsStorage::SceneItemsStorage(RenderMaterialPropert
     : mRenderMaterials{ renderMaterials }
     , mSignatures{ renderSignatures }
     , mPipelines{ renderPipelines }
-    , shaderBuffers{ shaderBuffers }
+    , mShaderBuffers{ shaderBuffers }
     , mTextures{ textureResources }
     , mGeometries{ geometriesResources }
     , mVTS{ vts }
 {
-    ItemProperties itemProperties{
-        .mMaterial = "Materials@BasicTextureMaterial",
-        .mGeometry = "Geometry@Rectangle",
-        .mTextures = { Section("Images@Checker"), Section("Images@Red") }
-    };
+    //ItemProperties itemProperties{
+    //    .mMaterial = "Materials@BasicTextureMaterial",
+    //    .mGeometry = "Geometry@Rectangle",
+    //    .mTextures = { Section("Images@Checker"), Section("Images@Red") }
+    //};
 
-    nlohmann::json jsonBlock = itemProperties;
-    auto textBlock = json::PrettyPrint(jsonBlock);
-    textBlock;
+    //nlohmann::json jsonBlock = itemProperties;
+    //auto textBlock = json::PrettyPrint(jsonBlock);
+    //textBlock;
 
-    int z = 0;
-    z;
+    //int z = 0;
+    //z;
 }
 
 
@@ -93,6 +131,7 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
     std::vector<yaget::render::scene::SceneItem*> results;
     for (const auto& tag : tags)
     {
+        YAGET_ASSERT(tag.IsValid(), "Tag: '%s' is not valid.", yaget::conv::ToString(tag).c_str());
         {
             mt::ReadLock locker(mMutex);
             if (auto it = mItems.find(tag); it != mItems.end())
@@ -120,6 +159,23 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         auto geometryData = mGeometries.GetResource(geometryTag);
         auto textures = mTextures.GetResourceViews(texturesTags);
 
+        io::Tag signatureTag = TypeToTag(materialProperties.mSignature, mVTS);
+        auto rootSig = mSignatures.GetSignature(signatureTag);
+
+        io::Tag psoTag = TypeToTag(materialProperties.mPSO, mVTS);
+        auto pso = mPipelines.GetPipeline(psoTag);
+
+        io::Tag constantBufferTag = TypeToTag(materialProperties.mShaderBuffer, mVTS);
+        auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag);
+
+        auto& sceneItem = mItems[tag];
+        sceneItem.mRootSignature = rootSig;
+        sceneItem.mPipelineState = pso;
+        sceneItem.mConstantBuffer = constantBuffer;
+        sceneItem.mGeometryData = geometryData;
+        std::ranges::copy(textures.begin(), textures.end(), std::back_inserter(sceneItem.mTextureResources));
+
+        results.push_back(&sceneItem);
     }
 
     return results;

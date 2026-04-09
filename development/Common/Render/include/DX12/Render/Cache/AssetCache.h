@@ -261,6 +261,10 @@ namespace yaget::render
         cacheType = result;
     }
 
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    io::Tag TypeToTag(AssetCacheType assetCacheType, const io::VirtualTransportSystem& vts);
+
 }
 
 

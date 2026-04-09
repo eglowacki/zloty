@@ -151,12 +151,15 @@ void yaget::render::commands::RenderTarget::EndFrame(const CommandList* commandL
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::commands::RenderTarget::Present(const time::GameClock& gameClock, metrics::Channel& channel)
+bool yaget::render::commands::RenderTarget::Present(const time::GameClock& gameClock, metrics::Channel& channel)
 {
     if (mSwapChain)
     {
         mSwapChain->Present(gameClock, channel);
+        return true;
     }
+
+    return false;
 }
 
 

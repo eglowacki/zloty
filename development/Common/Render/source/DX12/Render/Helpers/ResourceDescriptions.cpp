@@ -1,10 +1,10 @@
 #include "Core/ErrorHandlers.h"
+#include "magic_enum/magic_enum.hpp"
+#include "Render/Cache/AssetCache.h"
 #include "Render/Helpers/ResourceDescriptions.h"
 #include "Render/Platform/D3D12MemAlloc.h"
 #include "Render/Platform/DeviceDebugger.h"
 #include "StringHelpers.h"
-
-#include "magic_enum/magic_enum.hpp"
 
 namespace
 {
