@@ -187,6 +187,9 @@
     <ClInclude Include="..\include\DX12\Render\Scene\RenderSceneItems.h">
       <Filter>Source Files\Scene Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderPasses.h">
+      <Filter>Source Files\Commands Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -314,6 +317,9 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Scene\RenderSceneItems.cpp">
       <Filter>Source Files\Scene Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderPasses.cpp">
+      <Filter>Source Files\Commands Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

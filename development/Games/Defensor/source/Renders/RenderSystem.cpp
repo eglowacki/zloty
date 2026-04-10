@@ -44,7 +44,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
     , mRenderGeometries(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Geometries"))
     , mGeometryResources(GetDevice(), mRenderGeometries)
-    , mRenderTargetStorage(GetDevice().GetAdapter().GetDevice())
+    , mRenderTargetStorage(GetDevice().GetAdapter().GetDevice(), GetDevice().GetSwapChain(), mTextureResources, app.VTS())
     , mSceneItemsStorage(mRenderMaterials,
                          mRenderSignatures,
                          mRenderPipelines,
@@ -88,9 +88,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         auto& device = GetDevice();
 
         {
-            auto renderTarget = commands::CreateRenderTargetFrom(mSceneRenderTargetTag, device.GetSwapChain(), mRenderTargetStorage);
-            // NOTE(eg) Before uncommenting this, we need to make sure that it's cleared from mTextureResources when we resize window!
-            //mTextureResources.AttachRenderTarget(mSceneRenderTargetTag, renderTarget);
+            auto sceneRenderTargetTag = vts.GetTag(Section{ "RenderTargets@Scene" });
+            auto renderTarget = mRenderTargetStorage.FindRenderTarget(sceneRenderTargetTag);
 
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
             auto commandList = frameCommands.BeginFrame(&color);
@@ -125,7 +124,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         auto quadScreenMaterialProperties = mRenderMaterials.GetMaterial(quadScreenMaterialTag);
         if (DependencyNode* quadScreenMaterialNode = mDependencyGraph.Find(quadScreenMaterialTag.mGuid, nullptr))
         {
-            auto sceneTexture = mRenderTargetStorage.FindRenderTarget(mSceneRenderTargetTag);
+            auto sceneRenderTargetTag = vts.GetTag(Section{ "RenderTargets@Scene" });
+            auto sceneTexture = mTextureResources.GetResourceView(sceneRenderTargetTag);
 
             auto renderTarget = mRenderTargetStorage.AliasRenderTarget(mSwapChainRenderTargetTag, device.GetSwapChain());
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
@@ -146,7 +146,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             constantBuffer->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
             float timeData = 1.0f;
             constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
-            constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Texture2d, sceneTexture->SRVDescriptorHeap());
+            constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Texture2d, sceneTexture);
             constantBuffer->Bind(commandList);
 
             auto geometryTag = vts.GetTag(Section{ "Geometry@ScreenQuad" });
@@ -229,6 +229,10 @@ void defensor::render::RenderSystem::PreloadAssets()
     {
         RebindMaterial(matTag, material);
     }
+
+    const Section renderTargetsSection("RenderTargets");
+    auto renderTargetsTags = vts.GetTags(renderTargetsSection);
+    mRenderTargetStorage.Preload(renderTargetsTags);
 
     const Section sceneItemsSection("SceneItems");
     auto sceneItemsTags = vts.GetTags(sceneItemsSection);
@@ -372,6 +376,8 @@ void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windo
     }
     else if (resizeState == yaget::render::DeviceB::ResizeState::Set)
     {
-        // NOTE(eg) possibly recreate render targets
+        const Section renderTargetsSection("RenderTargets");
+        auto renderTargetsTags = mApp.VTS().GetTags(renderTargetsSection);
+        mRenderTargetStorage.Preload(renderTargetsTags);
     }
 }

@@ -41,6 +41,12 @@
     <Filter Include="Data Files\SceneItems">
       <UniqueIdentifier>{44394fe7-c8d2-43b2-8485-0d80bd16b8f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\RenderTargets">
+      <UniqueIdentifier>{ee90d43e-647d-4b1d-b818-9ed477fa80bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\RenderPasses">
+      <UniqueIdentifier>{aeb77277-cfea-4b13-8887-610c21492b3c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -175,6 +181,18 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\SceneItems\CheckerRectangle.json">
       <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderTargets\SwapChain.json">
+      <Filter>Data Files\RenderTargets</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderTargets\Scene.json">
+      <Filter>Data Files\RenderTargets</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderTargets\Alfresco.json">
+      <Filter>Data Files\RenderTargets</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderPasses\GameScene.json">
+      <Filter>Data Files\RenderPasses</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

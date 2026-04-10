@@ -17,8 +17,14 @@
 #include "MathFacade.h"
 #include "Render/RenderCore.h"
 #include "Streams/Buffers.h"
+#include "VTS/VirtualTransportSystem.h"
 #include <d3dx12.h>
 #include <shared_mutex>
+
+namespace yaget::render
+{
+    class TextureResources;
+}
 
 namespace yaget::app
 {
@@ -49,6 +55,8 @@ namespace yaget::render::commands
     class RenderTarget
     {
     public:
+        // if depthStencilFormat != DXGI_FORMAT_UNKNOWN then use that to create depth-stencil buffer of the size of render target
+        // otherwise if depthStencilDescriptorHeap and depthStencilResource non-null, just use that.
         RenderTarget(ID3D12Device* device, int sizeX, int sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource);
         RenderTarget(platform::SwapChain& swapChain);
         ~RenderTarget();
@@ -83,7 +91,7 @@ namespace yaget::render::commands
     class RenderTargetStorage
     {
     public:
-        RenderTargetStorage(ID3D12Device* device);
+        RenderTargetStorage(ID3D12Device* device, platform::SwapChain& swapChain, TextureResources& textureResources, io::VirtualTransportSystem& vts);
         ~RenderTargetStorage();
 
         // create (or return existing) render target based on passed parameters
@@ -93,7 +101,11 @@ namespace yaget::render::commands
         // If render target exists, return it, otherwise return nullptr
         RenderTarget* FindRenderTarget(const io::Tag& tag) const;
 
+        void Preload(const io::Tags& tags);
         void ResetAll(const app::WindowFrame& windowFrame);
+
+        static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+        static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
 
     private:
         struct RenderTargetData
@@ -105,10 +117,12 @@ namespace yaget::render::commands
 
         static RenderTarget* FindRenderTarget(const yaget::io::Tag& tag, size_t hashValue, const RenderTargetMap& renderTargetMap);
 
-
+        ID3D12Device* mDevice;
+        platform::SwapChain& mSwapChain;
+        TextureResources& mTextureResources;
+        io::VirtualTransportSystem& mVTS;
         mutable std::shared_mutex mMutex;
         RenderTargetMap mRenderTargetMap;
-        ID3D12Device* mDevice;
     };
 
 

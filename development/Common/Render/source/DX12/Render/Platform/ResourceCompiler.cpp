@@ -53,19 +53,8 @@ namespace
     {
         using namespace yaget::render;
 
-        auto typeName = yaget::json::GetValue(j, "Type", std::string{});
-        auto enumValueType = magic_enum::enum_cast<constant_shader_types::ConstantTypes>(typeName);
-        if (enumValueType.has_value())
-        {
-            reflectorVariable.mType = enumValueType.value();
-        }
-
-        auto layoutName = yaget::json::GetValue(j, "Layout", std::string{});
-        auto enumValueLayout = magic_enum::enum_cast<constant_shader_types::ConstantLayout>(layoutName);
-        if (enumValueLayout.has_value())
-        {
-            reflectorVariable.mLayout = enumValueLayout.value();
-        }
+        reflectorVariable.mType = yaget::json::from_json_enum<constant_shader_types::ConstantTypes>(j, "Type", "");
+        reflectorVariable.mLayout = yaget::json::from_json_enum<constant_shader_types::ConstantLayout>(j, "Layout", "");
     }
 
 

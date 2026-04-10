@@ -16,6 +16,7 @@
 #include "DefensorGameTypes.h"
 #include "Math/Interpolators.h"
 #include "Parsers/DependencyGraph.h"
+#include "Render/Commands/RenderPasses.h"
 #include "Render/Commands/RenderTarget.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Pipeline/RenderGeometries.h"

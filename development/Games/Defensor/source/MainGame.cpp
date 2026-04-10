@@ -80,6 +80,7 @@ namespace
         {&yaget::render::RenderMaterialProperties::PopulateMappings, &yaget::render::RenderMaterialProperties::SaveMappings, "Manifest@RenderMaterialPropertyOptions"},
         {&yaget::render::RenderTextures::PopulateMappings, &yaget::render::RenderTextures::SaveMappings, "Manifest@RenderTextureOptions"},
         {&yaget::render::scene::SceneItemsStorage::PopulateMappings, &yaget::render::scene::SceneItemsStorage::SaveMappings, "Manifest@RenderSceneItemOptions"},
+        {&yaget::render::commands::RenderTargetStorage::PopulateMappings, &yaget::render::commands::RenderTargetStorage::SaveMappings, "Manifest@RenderTargetOptions"},
     };
 
     struct Mappers

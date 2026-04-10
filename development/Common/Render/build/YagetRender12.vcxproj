@@ -153,6 +153,7 @@
     <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandList.h" />
     <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandListStates.h" />
     <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandTypes.h" />
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderPasses.h" />
     <ClInclude Include="..\include\DX12\Render\Commands\RenderQueue.h" />
     <ClInclude Include="..\include\DX12\Render\Commands\RenderTarget.h" />
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandList.cpp" />
     <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandListStates.cpp" />
     <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandTypes.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderPasses.cpp" />
     <ClCompile Include="..\source\DX12\Render\Commands\RenderQueue.cpp" />
     <ClCompile Include="..\source\DX12\Render\Commands\RenderTarget.cpp" />
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
