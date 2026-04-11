@@ -183,6 +183,15 @@
                         "ReadOnly": true,
                         "Recursive": true
                     }
+                },
+                {
+                    "RenderPasses": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(DataFolder)/Data/RenderPasses" ],
+                        "ReadOnly": true,
+                        "Recursive": true
+                    }
                 }
             ],
             "WindowOptions": "UserOptions@WindowConfiguration",

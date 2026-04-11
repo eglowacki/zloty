@@ -29,6 +29,7 @@ namespace defensor::render
         const render::EntityState* FindState(comp::Id_t id) const;
         comp::ItemIds GetIds() const;
 
+        io::Tag mRenderPassTag;
         std::vector<render::EntityState> mEntities;
     };
 

@@ -2,6 +2,6 @@
     "Geometry": "Geometry@Rectangle",
     "Material": "Materials@BasicTextureMaterial",
     "Textures": [
-        "Images@SpaceBackground"
+        "RenderTargets@Scene"
     ]
 }

@@ -188,6 +188,14 @@ void yaget::render::scene::SceneItemsStorage::Preload(const io::Tags& tags)
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::render::scene::SceneItemsStorage::ResetAll(const app::WindowFrame& /*windowFrame*/)
+{
+    mt::WriteLock locker(mMutex);
+    mItems.clear();
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::scene::SceneItemsStorage::PopulateMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
 {
     //PopulateMap(fileName, vts, ShaderOptionsMappings);

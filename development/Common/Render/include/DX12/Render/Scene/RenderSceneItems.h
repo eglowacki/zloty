@@ -18,6 +18,11 @@
 #include "Render/Pipeline/RenderGeometries.h"
 #include "Render/Polygons/RenderShape.h"
 
+namespace yaget::app
+{
+    class WindowFrame;
+}
+
 struct ID3D12RootSignature;
 struct ID3D12PipelineState;
 struct ID3D12DescriptorHeap;
@@ -97,6 +102,7 @@ namespace yaget::render::scene
         std::vector<SceneItem*> GetSceneItems(const io::Tags& tags);
 
         void Preload(const io::Tags& tags);
+        void ResetAll(const app::WindowFrame& windowFrame);
 
         static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
         static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);

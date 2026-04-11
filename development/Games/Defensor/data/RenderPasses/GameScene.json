@@ -1,0 +1,12 @@
+[
+    {
+        "Name": "Scene",
+        "RenderTarget": "RenderTargets@Scene",
+        "SceneItems": []
+    },
+    {
+        "Name": "BackBuffer",
+        "RenderTarget": "RenderTargets@SwapChain",
+        "SceneItems": ["SceneItems@FinalRender"]
+    }
+]

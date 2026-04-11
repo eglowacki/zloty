@@ -52,6 +52,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
                          mTextureResources,
                          mGeometryResources,
                          app.VTS(), GetSection("SceneItems"))
+    , mRenderPasses{ app.VTS() }
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
     //io::AttachTransientAsset(mSceneRenderTargetTag, app.VTS());
@@ -80,81 +81,46 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     if (id == comp::END_ID_MARKER)
     {
         memory::StartRecordAllocations();
-        int passId = 0;
-        passId;
+
+        const auto& renderPasses = mRenderPasses.GetPasses();
 
         auto& vts = mApp.VTS();
         const colors::Color color = mColorInterpolator.GetValue(gameClock);
         auto& device = GetDevice();
 
+        for (const auto& renderPass: renderPasses)
         {
-            auto sceneRenderTargetTag = vts.GetTag(Section{ "RenderTargets@Scene" });
-            auto renderTarget = mRenderTargetStorage.FindRenderTarget(sceneRenderTargetTag);
+            auto renderTarget = mRenderTargetStorage.FindRenderTarget(renderPass.mRenderTargetTag);
 
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
             auto commandList = frameCommands.BeginFrame(&color);
 
-            coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
+            if (renderPass.mSceneItemTags.empty())
             {
-                auto renderComponent = std::get<RenderComponent*>(row);
-                renderComponent;
+                coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
+                {
+                    auto renderComponent = std::get<RenderComponent*>(row);
 
-                auto sceneItemTag = vts.GetTag(Section{ "SceneItems@CheckerRectangle" });
-                auto sceneItem = mSceneItemsStorage.GetSceneItem(sceneItemTag);
+                    auto sceneItem = mSceneItemsStorage.GetSceneItem(renderComponent->mSceneItemTag);
 
-                auto matrixInterpolateValue = mMatrixInterpolator.GetValue(gameClock);
-                //// this is just test to see if matrix updates get propagated to shader.
-                //float matrix[16];
-                //std::ranges::fill(matrix, matrixInterpolateValue);
-                //auto adjustedMatrix = math3d::Matrix(matrix);
-                //sceneItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
+                    float timeData = 1.0f;
+                    sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+                    sceneItem->Render(commandList);
 
-                float timeData = matrixInterpolateValue;//[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
-                sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+                    return true;
+                });
+            }
+            else
+            {
+                for (const auto& sceneItemTag : renderPasses[1].mSceneItemTags)
+                {
+                    auto sceneItem = mSceneItemsStorage.GetSceneItem(sceneItemTag);
 
-                sceneItem->Render(commandList);
-
-                return true;
-            });
-
-            frameCommands.EndFrame();
-        }
-
-        auto quadScreenMaterialTag = vts.GetTag(Section{ "Materials@ScreenQuadMaterial" });
-        auto quadScreenMaterialProperties = mRenderMaterials.GetMaterial(quadScreenMaterialTag);
-        if (DependencyNode* quadScreenMaterialNode = mDependencyGraph.Find(quadScreenMaterialTag.mGuid, nullptr))
-        {
-            auto sceneTextureTag = vts.GetTag(Section{ "RenderTargets@Scene" });
-            auto sceneTexture = mTextureResources.GetResourceView(sceneTextureTag);
-
-            auto renderTarget = mRenderTargetStorage.AliasRenderTarget(mSwapChainRenderTargetTag, device.GetSwapChain());
-            auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
-            auto commandList = frameCommands.BeginFrame(&color)->GetDeviceCommandList();
-
-            auto signatureTag = TypeToTag(quadScreenMaterialProperties.mSignature, vts);
-            auto rootSig = mRenderSignatures.GetSignature(signatureTag);
-            commandList->SetGraphicsRootSignature(rootSig);
-
-            auto psoTag = TypeToTag(quadScreenMaterialProperties.mPSO, vts);
-            auto pso = mRenderPipelines.GetPipeline(psoTag);
-            commandList->SetPipelineState(pso);
-
-            auto constantBufferTag = TypeToTag(quadScreenMaterialProperties.mShaderBuffer, vts);
-            auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag);
-
-            math3d::Matrix adjustedMatrix = math3d::Matrix::Identity;
-            constantBuffer->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, adjustedMatrix);
-            float timeData = 1.0f;
-            constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
-            constantBuffer->UpdateData(constant_shader_types::ConstantTypes::Texture2d, sceneTexture);
-            constantBuffer->Bind(commandList);
-
-            auto geometryTag = vts.GetTag(Section{ "Geometry@ScreenQuad" });
-            auto geometryResource = mGeometryResources.GetResource(geometryTag);
-            RenderShape renderShape{};
-            renderShape.Bind(geometryResource);
-            renderShape.Render(commandList);
-
+                    float timeData = 1.0f;
+                    sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+                    sceneItem->Render(commandList);
+                }
+            }
             frameCommands.EndFrame();
         }
 
@@ -164,6 +130,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     {
         const auto& newFrameRenderIds = sceneComponent->GetIds();
 
+        mRenderPasses.BindAsset(sceneComponent->mRenderPassTag);
+
         coordinator.ForEach<RenderEntity>(newFrameRenderIds, [sceneComponent, &vts = mApp.VTS(), this](comp::Id_t id, const auto& row)
         {
             if (auto data = sceneComponent->FindState(id))
@@ -171,9 +139,9 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 auto renderComponent = std::get<RenderComponent*>(row);
                 renderComponent->mMatrix = math3d::Matrix(data->mMatrix);
 
-                if (renderComponent->mRenderMaterial.mAssetTag.mGuid != Guid(data->mAssetGuid))
+                if (renderComponent->mSceneItemTag.mGuid != Guid(data->mAssetGuid))
                 {
-                    renderComponent->mRenderMaterial.mAssetTag.mGuid = Guid(data->mAssetGuid);
+                    renderComponent->mSceneItemTag = mApp.VTS().FindTag(Guid(data->mAssetGuid));
                 }
             }
 
@@ -202,6 +170,10 @@ void defensor::render::RenderSystem::PreloadAssets()
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mApp.VTS();
 
+    const Section renderTargetsSection("RenderTargets");
+    auto renderTargetsTags = vts.GetTags(renderTargetsSection);
+    mRenderTargetStorage.Preload(renderTargetsTags);
+
     const Section vertexShaderSection("VertexShaders");
     auto vertexShaderTags = vts.GetTags(vertexShaderSection);
 
@@ -229,11 +201,6 @@ void defensor::render::RenderSystem::PreloadAssets()
     {
         RebindMaterial(matTag, material);
     }
-
-    const Section renderTargetsSection("RenderTargets");
-    auto renderTargetsTags = vts.GetTags(renderTargetsSection);
-    mRenderTargetStorage.Preload(renderTargetsTags);
-
     const Section sceneItemsSection("SceneItems");
     auto sceneItemsTags = vts.GetTags(sceneItemsSection);
     mSceneItemsStorage.Preload(sceneItemsTags);
@@ -373,11 +340,16 @@ void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windo
     if (resizeState == yaget::render::DeviceB::ResizeState::Reset)
     {
         mRenderTargetStorage.ResetAll(windowFrame);
+        mSceneItemsStorage.ResetAll(windowFrame);
     }
     else if (resizeState == yaget::render::DeviceB::ResizeState::Set)
     {
         const Section renderTargetsSection("RenderTargets");
         auto renderTargetsTags = mApp.VTS().GetTags(renderTargetsSection);
         mRenderTargetStorage.Preload(renderTargetsTags);
+
+        const Section sceneItemsSection("SceneItems");
+        auto sceneItemsTags = mApp.VTS().GetTags(sceneItemsSection);
+        mSceneItemsStorage.Preload(sceneItemsTags);
     }
 }

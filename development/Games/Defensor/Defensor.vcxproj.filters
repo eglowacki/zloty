@@ -194,6 +194,12 @@
     <CopyFileToFolders Include="data\RenderPasses\GameScene.json">
       <Filter>Data Files\RenderPasses</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\SpaceBackground.png">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\FinalRender.json">
+      <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\MainGame.h">

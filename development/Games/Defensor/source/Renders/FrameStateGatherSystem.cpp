@@ -17,6 +17,10 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
     {
         if (auto payload = mMessaging.ConsumePayload())
         {
+            auto& vts = mApp.VTS();
+            auto renderPassTag = vts.GetTag(io::VirtualTransportSystem::Section("RenderPasses@GameScene"));
+            sceneComponent->mRenderPassTag = renderPassTag;
+
             auto entityState = io::cast_data<EntityState>(payload->mBuffer);
             for (auto i = 0; i < payload->mNumEntities; ++i)
             {
@@ -38,7 +42,6 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
             std::ranges::set_difference(newFrameRenderIds, oldFrameRenderIds, std::inserter(newIds, newIds.end()));
             std::ranges::set_difference(oldFrameRenderIds, newFrameRenderIds, std::inserter(deletedIds, deletedIds.end()));
 
-            auto& vts = mApp.VTS();
             auto& device = GetDevice();
             const auto& adapter = device.GetAdapter();
             std::ranges::for_each(newIds, [this, sceneComponent, &adapter, &vts](const auto& id)
@@ -48,10 +51,7 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
                 auto assetTag = mApp.VTS().FindTag(guid);
                 YLOG_CERROR("REND", assetTag.IsValid(), "Render Asset '%s' does not exist.", conv::ToString(guid).c_str());
 
-                auto textureTag = mApp.VTS().GetTag(io::VirtualTransportSystem::Section("Images@Checker"));
-                auto geometryTag = mApp.VTS().GetTag(io::VirtualTransportSystem::Section("Geometry@Rectangle"));
-
-                GetCS().AddComponent<RenderComponent>(id, math3d::Matrix(data->mMatrix), geometryTag, assetTag, io::Tags{ textureTag });
+                GetCS().AddComponent<RenderComponent>(id, math3d::Matrix(data->mMatrix), assetTag);
             });
 
             std::ranges::for_each(deletedIds, [this](const auto& id)

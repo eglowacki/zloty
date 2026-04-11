@@ -16,7 +16,7 @@
 #include "DefensorGameTypes.h"
 #include "Math/Interpolators.h"
 #include "Parsers/DependencyGraph.h"
-//#include "Render/Commands/RenderPasses.h"
+#include "Render/Commands/RenderPasses.h"
 #include "Render/Commands/RenderTarget.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Pipeline/RenderGeometries.h"
@@ -72,6 +72,7 @@ namespace defensor::render
         yaget::render::GeometriesResources mGeometryResources;
         yaget::render::commands::RenderTargetStorage mRenderTargetStorage;
         yaget::render::scene::SceneItemsStorage mSceneItemsStorage;
+        yaget::render::commands::RenderPasses mRenderPasses;
         io::Tag mSwapChainRenderTargetTag{ .mName = "SwapChainRenderTarget", .mGuid = NewGuid() };
         io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTarget", .mGuid = NewGuid() };
 
