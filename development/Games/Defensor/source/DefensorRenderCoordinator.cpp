@@ -1,4 +1,6 @@
 ﻿#include "DefensorRenderCoordinator.h"
+#include "Render/AdapterInfo.h"
+#include "Debugging/Assert.h"
 
 
 //-------------------------------------------------------------------------------------------------

@@ -115,7 +115,7 @@ namespace yaget::render::commands
         };
         using RenderTargetMap = std::map<io::Tag, RenderTargetData>;
 
-        static RenderTarget* FindRenderTarget(const yaget::io::Tag& tag, size_t hashValue, const RenderTargetMap& renderTargetMap);
+        static RenderTarget* FindRenderTarget(const io::Tag& tag, size_t hashValue, const RenderTargetMap& renderTargetMap);
 
         ID3D12Device* mDevice;
         platform::SwapChain& mSwapChain;

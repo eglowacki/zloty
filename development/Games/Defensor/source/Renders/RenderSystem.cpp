@@ -124,8 +124,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         auto quadScreenMaterialProperties = mRenderMaterials.GetMaterial(quadScreenMaterialTag);
         if (DependencyNode* quadScreenMaterialNode = mDependencyGraph.Find(quadScreenMaterialTag.mGuid, nullptr))
         {
-            auto sceneRenderTargetTag = vts.GetTag(Section{ "RenderTargets@Scene" });
-            auto sceneTexture = mTextureResources.GetResourceView(sceneRenderTargetTag);
+            auto sceneTextureTag = vts.GetTag(Section{ "RenderTargets@Scene" });
+            auto sceneTexture = mTextureResources.GetResourceView(sceneTextureTag);
 
             auto renderTarget = mRenderTargetStorage.AliasRenderTarget(mSwapChainRenderTargetTag, device.GetSwapChain());
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);

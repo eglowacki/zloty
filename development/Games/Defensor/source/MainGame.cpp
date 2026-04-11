@@ -1,11 +1,9 @@
 #include "MainGame.h"
 
-#include "../resource.h"
 #include "DefensorGameCoordinator.h"
 #include "DefensorGameTypes.h"
 #include "DefensorRenderCoordinator.h"
 #include "Items/ItemsDirector.h"
-#include "Render/AdapterInfo.h"
 #include "Render/Cache/AssetCache.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Pipeline/RenderMaterialProperties.h"
@@ -18,7 +16,9 @@
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
-#include <Debugging/DevConfiguration.h>
+#include "Debugging/DevConfiguration.h"
+
+#include "../resource.h"
 
 #if 0
 namespace yaget::app
