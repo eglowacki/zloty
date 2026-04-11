@@ -17,7 +17,6 @@
 #include "Streams/Buffers.h"
 #include "VTS/VirtualTransportSystem.h"
 
-
 namespace yaget::render::commands
 {
     struct ScenePassData
