@@ -46,7 +46,7 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
                 auto data = sceneComponent->FindState(id);
                 Guid guid(data->mAssetGuid);
                 auto assetTag = mApp.VTS().FindTag(guid);
-                YLOG_CERROR("REND", assetTag.IsValid(), "Render Asset '%s' does not exist.", conv::Convertor<Guid>::ToString(guid).c_str());
+                YLOG_CERROR("REND", assetTag.IsValid(), "Render Asset '%s' does not exist.", conv::ToString(guid).c_str());
 
                 auto textureTag = mApp.VTS().GetTag(io::VirtualTransportSystem::Section("Images@Checker"));
                 auto geometryTag = mApp.VTS().GetTag(io::VirtualTransportSystem::Section("Geometry@Rectangle"));

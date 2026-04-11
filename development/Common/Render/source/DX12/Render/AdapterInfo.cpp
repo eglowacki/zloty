@@ -1,17 +1,15 @@
 #include "Render/AdapterInfo.h"
 #include "App/AppUtilities.h"
+#include "App/Display.h"
+#include "Core/ErrorHandlers.h"
 #include "Debugging/DevConfiguration.h"
 #include "Render/Platform/DeviceDebugger.h"
 #include "Render/RenderStringHelpers.h"
 
+#include <comdef.h>
 #include <d3dx12.h>
 #include <dxgi1_6.h>
 
-#include <comdef.h>
-
-#include "App/Display.h"
-
-#include "Core/ErrorHandlers.h"
 
 //-------------------------------------------------------------------------------------------------
 namespace 

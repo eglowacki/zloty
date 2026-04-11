@@ -13,7 +13,8 @@
 //////////////////////////////////////////////////////////////////////
 //! \file
 #pragma once
-#include "RenderCommandList.h"
+
+#include "Render/Commands/RenderCommandList.h"
 
 
 namespace yaget::render::yaget::commands
