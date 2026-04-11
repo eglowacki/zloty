@@ -200,6 +200,15 @@
     <CopyFileToFolders Include="data\SceneItems\FinalRender.json">
       <Filter>Data Files\SceneItems</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\HMS-Defensor.png">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\Defensor-Ship.json">
+      <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Geometry\Defensor-Ship.geom">
+      <Filter>Data Files\Geometry</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\MainGame.h">

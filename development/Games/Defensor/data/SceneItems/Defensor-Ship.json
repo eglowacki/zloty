@@ -1,0 +1,7 @@
+{
+    "Geometry": "Geometry@Defensor-Ship",
+    "Material": "Materials@BasicTextureMaterial",
+    "Textures": [
+        "Images@HMS-Defensor"
+    ]
+}
