@@ -84,7 +84,6 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
         const auto& renderPasses = mRenderPasses.GetPasses();
 
-        auto& vts = mApp.VTS();
         const colors::Color color = mColorInterpolator.GetValue(gameClock);
         auto& device = GetDevice();
 
@@ -98,7 +97,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             if (renderPass.mSceneItemTags.empty())
             {
                 std::vector<scene::SceneItem*> itemsToRender;
-                coordinator.ForEach<RenderEntity>([/*commandList,*/ &vts, &gameClock, &itemsToRender, this](comp::Id_t /*id*/, const auto& row)
+                coordinator.ForEach<RenderEntity>([&itemsToRender, this](comp::Id_t /*id*/, const auto& row)
                 {
                     auto renderComponent = std::get<RenderComponent*>(row);
 
