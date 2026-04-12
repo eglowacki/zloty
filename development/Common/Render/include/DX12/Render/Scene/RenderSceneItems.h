@@ -54,6 +54,8 @@ namespace yaget::render::scene
     class SceneItem
     {
     public:
+        static inline uint32_t PassOrderIndependent = 0;
+
         SceneItem();
         ~SceneItem();
 
@@ -64,6 +66,11 @@ namespace yaget::render::scene
         {
             return UpdateData(constantTypes, reinterpret_cast<const uint8_t*>(&data), sizeof(T));
         }
+
+        // mRenderPassOrder is upper 32 bits and lower 32 bits
+        // are combination of properties, like root, pipeline, constants, geometry data and texture resources.
+        // That means the lower value of mRenderPassOrder will be rendered 'first'
+        uint64_t GetRenderOrder() const;
 
     private:
         friend SceneItemsStorage;
@@ -78,6 +85,8 @@ namespace yaget::render::scene
         std::vector<ID3D12DescriptorHeap*> mTextureResources{};
 
         RenderShape mRenderShape;
+
+        uint32_t mRenderPassOrder{ PassOrderIndependent };
     };
 
 
@@ -100,6 +109,8 @@ namespace yaget::render::scene
 
         SceneItem* GetSceneItem(const io::Tag& tag);
         std::vector<SceneItem*> GetSceneItems(const io::Tags& tags);
+
+        static void SortSceneItems(std::vector<SceneItem*>& sceneItems);
 
         void Preload(const io::Tags& tags);
         void ResetAll(const app::WindowFrame& windowFrame);

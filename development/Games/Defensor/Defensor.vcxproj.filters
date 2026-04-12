@@ -209,6 +209,9 @@
     <CopyFileToFolders Include="data\Geometry\Defensor-Ship.geom">
       <Filter>Data Files\Geometry</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\SpaceBackground.json">
+      <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\MainGame.h">

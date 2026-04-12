@@ -14,7 +14,7 @@ New Item
 Name: Background
 LocationComponent3: [x = 1.00, y = 2.00, z = 3.00];[x = 4.00, y = 5.00, z = 6.00, w = 7.00];[x = 8.00, y = 9.00, z = 10.00]
 StageName: Boot
-Material: SceneItems@CheckerRectangle
+Material: SceneItems@SpaceBackground
 
 New Item
 Name: Player

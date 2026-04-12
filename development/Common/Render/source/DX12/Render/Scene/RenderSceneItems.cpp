@@ -10,11 +10,17 @@
 
 namespace
 {
+    //-------------------------------------------------------------------------------------------------
     struct ItemProperties
     {
-        yaget::io::VirtualTransportSystem::Section mMaterial;
-        yaget::io::VirtualTransportSystem::Section mGeometry;
-        yaget::io::VirtualTransportSystem::Sections mTextures;
+        using Section = yaget::io::VirtualTransportSystem::Section;
+        using Sections = yaget::io::VirtualTransportSystem::Sections;
+
+        Section mMaterial;
+        Section mGeometry;
+        Sections mTextures;
+
+        uint32_t mRenderOrder{ yaget::render::scene::SceneItem::PassOrderIndependent};
     };
 
 
@@ -24,6 +30,7 @@ namespace
         j["Material"] = itemProperties.mMaterial;
         j["Geometry"] = itemProperties.mGeometry;
         j["Textures"] =  itemProperties.mTextures;
+        j["RenderOrder"] =  itemProperties.mRenderOrder;
     }
 
 
@@ -33,6 +40,7 @@ namespace
         itemProperties.mMaterial = yaget::json::GetValue(j, "Material", itemProperties.mMaterial);
         itemProperties.mGeometry = yaget::json::GetValue(j, "Geometry", itemProperties.mGeometry);
         itemProperties.mTextures = yaget::json::GetValue(j, "Textures", itemProperties.mTextures);
+        itemProperties.mRenderOrder = yaget::json::GetValue(j, "RenderOrder", itemProperties.mRenderOrder);
     }
     
 }
@@ -70,6 +78,18 @@ void yaget::render::scene::SceneItem::Render(commands::CommandList* commandList)
 
     mRenderShape.Bind(mGeometryData);
     mRenderShape.Render(deviceCommandList);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+uint64_t yaget::render::scene::SceneItem::GetRenderOrder() const
+{
+    uint64_t order{};
+    uint32_t propertiesOrder = 0;
+
+    order = (static_cast<uint64_t>(mRenderPassOrder) << 32) | propertiesOrder;
+
+    return order;
 }
 
 
@@ -172,12 +192,23 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         sceneItem.mPipelineState = pso;
         sceneItem.mConstantBuffer = constantBuffer;
         sceneItem.mGeometryData = geometryData;
+        sceneItem.mRenderPassOrder = itemProperties.mRenderOrder;
         std::ranges::copy(textures.begin(), textures.end(), std::back_inserter(sceneItem.mTextureResources));
 
         results.push_back(&sceneItem);
     }
 
     return results;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::scene::SceneItemsStorage::SortSceneItems(std::vector<SceneItem*>& sceneItems)
+{
+    std::ranges::sort(sceneItems, [](const SceneItem* item1, const SceneItem* item2)
+    {
+        return item1->GetRenderOrder() < item2->GetRenderOrder();
+    });
 }
 
 

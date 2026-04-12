@@ -97,7 +97,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
             if (renderPass.mSceneItemTags.empty())
             {
-                coordinator.ForEach<RenderEntity>([commandList, &vts, &gameClock, this](comp::Id_t /*id*/, const auto& row)
+                std::vector<scene::SceneItem*> itemsToRender;
+                coordinator.ForEach<RenderEntity>([/*commandList,*/ &vts, &gameClock, &itemsToRender, this](comp::Id_t /*id*/, const auto& row)
                 {
                     auto renderComponent = std::get<RenderComponent*>(row);
 
@@ -105,9 +106,15 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
                     float timeData = 1.0f;
                     sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
-                    sceneItem->Render(commandList);
+                    itemsToRender.push_back(sceneItem);
 
                     return true;
+                });
+
+                scene::SceneItemsStorage::SortSceneItems(itemsToRender);
+                std::ranges::for_each(itemsToRender, [commandList](scene::SceneItem* item)
+                {
+                    item->Render(commandList);
                 });
             }
             else
