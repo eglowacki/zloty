@@ -19,6 +19,7 @@
 #include "Render/Commands/RenderTarget.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Commands/RenderPasses.h"
+#include "Render/Pipeline/PipelineTags.h"
 #include "Render/Pipeline/RenderGeometries.h"
 #include "Render/Pipeline/RenderMaterialProperties.h"
 #include "Render/Pipeline/RenderPipelines.h"
@@ -73,6 +74,7 @@ namespace defensor::render
         yaget::render::commands::RenderTargetStorage mRenderTargetStorage;
         yaget::render::scene::SceneItemsStorage mSceneItemsStorage;
         yaget::render::commands::RenderPasses mRenderPasses;
+        yaget::render::PipelineTags mPipelineTags;
         io::Tag mSwapChainRenderTargetTag{ .mName = "SwapChainRenderTarget", .mGuid = NewGuid() };
         io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTarget", .mGuid = NewGuid() };
 

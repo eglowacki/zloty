@@ -38,6 +38,7 @@ namespace yaget::render
         bool operator == (MaterialProperties const&) const  = default;
     };
 
+
     class RenderMaterialProperties : public CacheWatcher<MaterialProperties>
     {
     public:

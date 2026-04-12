@@ -53,6 +53,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
                          mGeometryResources,
                          app.VTS(), GetSection("SceneItems"))
     , mRenderPasses{ app.VTS() }
+    , mPipelineTags{ app.VTS() }
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
     //io::AttachTransientAsset(mSceneRenderTargetTag, app.VTS());
@@ -100,6 +101,13 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 coordinator.ForEach<RenderEntity>([&itemsToRender, this](comp::Id_t /*id*/, const auto& row)
                 {
                     auto renderComponent = std::get<RenderComponent*>(row);
+
+                    Section section(renderComponent->mSceneItemTag);
+                    if (section.mFilter == "Defensor-Ship")
+                    {
+                        const auto& matrix = renderComponent->mMatrix;
+                        YLOG_WARNING("REND", std::format("============= Ship Position: {}", conv::ToString(matrix.Translation())).c_str());
+                    }
 
                     auto sceneItem = mSceneItemsStorage.GetSceneItem(renderComponent->mSceneItemTag);
 
@@ -250,6 +258,15 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
                        conv::ToString(material)).c_str());
         return;
     }
+
+#if 0
+    // new way of registering Signatures, Pipeline and ShaderBuffers
+    size_t sigHash = 0;
+    conv::hash_combine(sigHash, vsTag.mGuid, psTag.mGuid);
+
+    const std::string sigName = std::format("Signature-{}-{}", Section(vsTag).mFilter, Section(psTag).mFilter);
+    auto sigTag2 = mPipelineTags.ResolveTag(sigHash, sigName);
+#endif
 
     ID3D12RootSignature* signature = nullptr;
     mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &sigTag, &signature, &shaderBufferTag](const auto& descResult)

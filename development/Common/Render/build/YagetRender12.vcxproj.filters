@@ -190,6 +190,9 @@
     <ClInclude Include="..\include\DX12\Render\Commands\RenderPasses.h">
       <Filter>Source Files\Commands Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Pipeline\PipelineTags.h">
+      <Filter>Source Files\Pipeline Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -320,6 +323,9 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Commands\RenderPasses.cpp">
       <Filter>Source Files\Commands Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Pipeline\PipelineTags.cpp">
+      <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
