@@ -1,42 +1,70 @@
 #include "Render/Pipeline/RenderMaterialProperties.h"
+#include "Render/Pipeline/PipelineTags.h"
+#include "HashUtilities.h"
 
 
 namespace
 {
     //-------------------------------------------------------------------------------------------------
-    yaget::render::MaterialProperties ResolveAssetTag(const yaget::io::Tag& assetTag, yaget::io::VirtualTransportSystem& vts)
+    yaget::render::MaterialPropertyTags ResolveAssetTag(const yaget::io::Tag& assetTag, yaget::render::PipelineTags& pipelineTags, yaget::io::VirtualTransportSystem& vts)
     {
         using namespace yaget;
+        using Section = io::VirtualTransportSystem::Section;
 
-        render::MaterialProperties materialProperties = {};
+        render::MaterialPropertyTags materialTags = {};
 
         if (auto jsonAsset = io::LoadJson(vts, assetTag); jsonAsset && jsonAsset->IsValid())
         {
             auto& jasonBlock = jsonAsset->root;
 
-            materialProperties.mVertexShader = json::GetValue(jasonBlock, "VertexShader", render::AssetCacheType::Empty);
-            materialProperties.mPixelShader = json::GetValue(jasonBlock, "PixelShader", render::AssetCacheType::Empty);
-            materialProperties.mRasterizerState = json::GetValue(jasonBlock, "RasterizerState", render::AssetCacheType::RasterizerStateCounterClockwise);
-            materialProperties.mBlendMode = json::GetValue(jasonBlock, "BlendMode", render::AssetCacheType::BlendModeOpaque);
-            materialProperties.mDepthState = json::GetValue(jasonBlock, "DepthState", render::AssetCacheType::DepthStateNone);
+            auto vsSection = json::GetValue(jasonBlock, "VertexShader", Section{});
+            materialTags.mVertexShader = vts.GetTag(vsSection);
 
-            materialProperties.mSignature = materialProperties.mVertexShader | materialProperties.mPixelShader;
-            materialProperties.mPSO = materialProperties.mSignature | materialProperties.mRasterizerState | materialProperties.mDepthState | materialProperties.mBlendMode | render::AssetCacheType::TopologyStateTriangle | render::AssetCacheType::RTVFormatRGBA8;
-            materialProperties.mShaderBuffer = render::AssetCacheType::ShaderBuffer | materialProperties.mVertexShader | materialProperties.mPixelShader;
+            auto psSection = json::GetValue(jasonBlock, "PixelShader", Section{});
+            materialTags.mPixelShader = vts.GetTag(psSection);
+
+            auto rasterizerState = json::GetValue(jasonBlock, "RasterizerState", render::AssetCacheType::RasterizerStateCounterClockwise);
+            auto blendMode = json::GetValue(jasonBlock, "BlendMode", render::AssetCacheType::BlendModeOpaque);
+            auto depthState = json::GetValue(jasonBlock, "DepthState", render::AssetCacheType::DepthStateNone);
+            auto topologyState = render::AssetCacheType::TopologyStateTriangle;
+            auto rtFormat = render::AssetCacheType::RTVFormatRGBA8;
+
+            size_t sigHash = 0;
+            conv::hash_combine(sigHash, materialTags.mVertexShader.mGuid, materialTags.mPixelShader.mGuid);
+
+            const std::string sigName = std::format("Signature-{}-{}", vsSection.mFilter, psSection.mFilter);
+            materialTags.mSignature = pipelineTags.ResolveTag(sigHash, sigName);
+
+            size_t psoHash = 0;
+            auto psoProperties = rasterizerState | blendMode | depthState | topologyState | rtFormat;
+            conv::hash_combine(psoHash, materialTags.mSignature.mGuid, psoProperties);
+
+            const std::string psoName = std::format("PSO-{}-{}", sigName, conv::ToString(psoProperties));
+            materialTags.mPSO = pipelineTags.ResolveTag(psoHash, psoName);
+
+            render::AssetCache::AddTagToType(materialTags.mPSO, psoProperties);
+
+            size_t constantHash = 0;
+            auto constantProperties = render::AssetCacheType::ShaderBuffer;
+            conv::hash_combine(constantHash, materialTags.mSignature.mGuid, constantProperties);
+
+            const std::string constantName = std::format("Constant-{}-{}-{}", vsSection.mFilter, psSection.mFilter, conv::ToString(constantProperties));
+            materialTags.mShaderBuffer = pipelineTags.ResolveTag(constantHash, constantName);
         }
         else
         {
             YLOG_ERROR("REND", "Did not load material '%s'.", assetTag.ResolveVTS().c_str());
         }
 
-        return materialProperties;
+        return materialTags;
     }
 
 }
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderMaterialProperties::RenderMaterialProperties(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
-    : CacheWatcher(vts, fileName)
+yaget::render::RenderMaterialProperties::RenderMaterialProperties(PipelineTags& pipelineTags, io::VirtualTransportSystem& vts)
+    : mPipelineTags(pipelineTags)
+    , mVTS(vts)
 {
 }
 
@@ -45,49 +73,53 @@ yaget::render::RenderMaterialProperties::RenderMaterialProperties(io::VirtualTra
 yaget::render::RenderMaterialProperties::~RenderMaterialProperties() = default;
 
 
-
 //-------------------------------------------------------------------------------------------------
-yaget::render::MaterialProperties yaget::render::RenderMaterialProperties::GetMaterial(const io::Tag& tag)
+yaget::render::MaterialPropertyTags yaget::render::RenderMaterialProperties::GetMaterial(const io::Tag& tag)
 {
     auto results = GetMaterials({ tag });
 
-    return !results.empty() ? *results.begin() : MaterialProperties{};
+    return !results.empty() ? *results.begin() : MaterialPropertyTags{};
 }
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::MaterialProperties> yaget::render::RenderMaterialProperties::GetMaterials(const io::Tags& tags)
+std::vector<yaget::render::MaterialPropertyTags> yaget::render::RenderMaterialProperties::GetMaterials(const io::Tags& tags)
 {
-    std::vector<MaterialProperties> results;
-
-    std::lock_guard mutexLocker(mMutex);
+    std::vector<MaterialPropertyTags> results;
 
     for (auto tag : tags)
     {
-        auto result = GetAsset(tag, [this, &results](auto tag, auto& cachedData)
         {
-            MaterialProperties* materialProperties = nullptr;
-            if (io::size_data(cachedData))
+            mt::ReadLock locker(mMutexTags);
+            if (auto it = mMaterialTags.find(tag); it != mMaterialTags.end())
             {
-                materialProperties = io::cast_data<MaterialProperties>(cachedData);
+                results.push_back(it->second);
+                continue;
             }
-            else
-            {
-                MaterialProperties materialData = ResolveAssetTag(tag, mVTS);
-                auto matBuffer = io::CreateBuffer(reinterpret_cast<const uint8_t*>(&materialData), sizeof(materialData));
-                cachedData = io::ResizeBuffer(cachedData, sizeof(materialData));
-                io::CopyBuffer(matBuffer, cachedData, 0);
+        }
 
-                materialProperties = io::cast_data<MaterialProperties>(cachedData);
-            }
+        mt::WriteLock locker(mMutexTags);
+        if (auto it = mMaterialTags.find(tag); it != mMaterialTags.end())
+        {
+            results.push_back(it->second);
+            continue;
+        }
 
-            return *materialProperties;
-        });
-        
-        results.push_back(result);
+        MaterialPropertyTags materialTags = ResolveAssetTag(tag, mPipelineTags, mVTS);
+        results.push_back(materialTags);
+
+        mMaterialTags[tag] = materialTags;
     }
 
     return results;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::RenderMaterialProperties::ClearCache(const io::Tag& tag)
+{
+    mt::WriteLock locker(mMutexTags);
+    mMaterialTags.erase(tag);
 }
 
 

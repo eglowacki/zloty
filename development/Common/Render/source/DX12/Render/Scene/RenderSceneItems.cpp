@@ -116,18 +116,6 @@ yaget::render::scene::SceneItemsStorage::SceneItemsStorage(RenderMaterialPropert
     , mGeometries{ geometriesResources }
     , mVTS{ vts }
 {
-    //ItemProperties itemProperties{
-    //    .mMaterial = "Materials@BasicTextureMaterial",
-    //    .mGeometry = "Geometry@Rectangle",
-    //    .mTextures = { Section("Images@Checker"), Section("Images@Red") }
-    //};
-
-    //nlohmann::json jsonBlock = itemProperties;
-    //auto textBlock = json::PrettyPrint(jsonBlock);
-    //textBlock;
-
-    //int z = 0;
-    //z;
 }
 
 
@@ -174,18 +162,15 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         auto geometryTag = mVTS.GetTag(itemProperties.mGeometry);
         auto texturesTags = mVTS.GetTags(itemProperties.mTextures);
 
-        auto materialProperties = mRenderMaterials.GetMaterial(materialTag);
+        MaterialPropertyTags materialProperties = mRenderMaterials.GetMaterial(materialTag);
         auto geometryData = mGeometries.GetResource(geometryTag);
         auto textures = mTextures.GetResourceViews(texturesTags);
 
-        io::Tag signatureTag = TypeToTag(materialProperties.mSignature, mVTS);
-        auto rootSig = mSignatures.GetSignature(signatureTag);
+        auto rootSig = mSignatures.GetSignature(materialProperties.mSignature);
 
-        io::Tag psoTag = TypeToTag(materialProperties.mPSO, mVTS);
-        auto pso = mPipelines.GetPipeline(psoTag);
+        auto pso = mPipelines.GetPipeline(materialProperties.mPSO);
 
-        io::Tag constantBufferTag = TypeToTag(materialProperties.mShaderBuffer, mVTS);
-        auto constantBuffer = mShaderBuffers.GetBuffer(constantBufferTag);
+        auto constantBuffer = mShaderBuffers.GetBuffer(materialProperties.mShaderBuffer);
 
         auto& sceneItem = mItems[tag];
         sceneItem.mRootSignature = rootSig;

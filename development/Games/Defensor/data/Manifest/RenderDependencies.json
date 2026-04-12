@@ -3,20 +3,9 @@
         "dependencies": [
             {
                 "dependencies": [
-                    {
-                        "dependencies": [
-                            {
-                                "dependencies": [
-                                    "VertexShaders@Basic",
-                                    "PixelShaders@Basic"
-                                ],
-                                "name": "Transient@BasicConstantBuffer"
-                            }
-                        ],
-                        "name": "Transient@BasicSig"
-                    }
+                    "Transient@Signature-BasicTexture-BasicTexture"
                 ],
-                "name": "Transient@BasicDepthStencilPipe"
+                "name": "Transient@PSO-Signature-Basic-Basic-BlendModeOpaque | RasterizerStateCounterClockwise | DepthStencilStateOn | TopologyStateTriangle | RTVFormatRGBA8"
             }
         ],
         "name": "Materials@BasicMaterial"
@@ -32,13 +21,13 @@
                                     "VertexShaders@BasicTexture",
                                     "PixelShaders@BasicTexture"
                                 ],
-                                "name": "Transient@BasicTextureConstantBuffer"
+                                "name": "Transient@Constant-BasicTexture-BasicTexture-ShaderBuffer"
                             }
                         ],
-                        "name": "Transient@BasicTextureSig"
+                        "name": "Transient@Signature-BasicTexture-BasicTexture"
                     }
                 ],
-                "name": "Transient@BasicTextureDepthBlendAlphaPipe"
+                "name": "Transient@PSO-Signature-BasicTexture-BasicTexture-BlendModeAlpha | RasterizerStateCounterClockwise | DepthStateOn | TopologyStateTriangle | RTVFormatRGBA8"
             }
         ],
         "name": "Materials@BasicTextureMaterial"
@@ -54,13 +43,13 @@
                                     "VertexShaders@BasicTexture",
                                     "PixelShaders@BasicTexture"
                                 ],
-                                "name": "Transient@BasicTextureConstantBuffer"
+                                "name": "Transient@Constant-BasicTexture-BasicTexture-ShaderBuffer"
                             }
                         ],
-                        "name": "Transient@BasicTextureSig"
+                        "name": "Transient@Signature-BasicTexture-BasicTexture"
                     }
                 ],
-                "name": "Transient@BasicTexturePipe"
+                "name": "Transient@PSO-Signature-BasicTexture-BasicTexture-BlendModeOpaque | RasterizerStateCounterClockwise | DepthStateNone | TopologyStateTriangle | RTVFormatRGBA8"
             }
         ],
         "name": "Materials@ScreenQuadMaterial"

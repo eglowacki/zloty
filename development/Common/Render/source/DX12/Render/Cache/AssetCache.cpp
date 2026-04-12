@@ -17,70 +17,20 @@ namespace
 }
 
 
-//-------------------------------------------------------------------------------------------------
-yaget::render::AssetCache::TypeToSectionMap yaget::render::AssetCache::TypeToSection =
-{
-    {BasicVertex, Section("VertexShaders@Basic")},
-    {BasicPixel, Section("PixelShaders@Basic")},
-    {BasicSignature, Section("Transient@BasicSig")},
-    {BasicPipeline, Section("Transient@BasicPipe")},
-};
+yaget::render::AssetCache::TagToAssetCacheTypeMap yaget::render::AssetCache::mTagToAssetCacheType = {};
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::io::Tag yaget::render::TypeToTag(AssetCacheType assetCacheType, const io::VirtualTransportSystem& vts)
+void yaget::render::AssetCache::PopulateMappings(const Section& /*fileName*/, io::VirtualTransportSystem& /*vts*/)
 {
-    auto section = yaget::render::AssetCache::operator[](assetCacheType);
-    if (section.mName.empty())
-    {
-        return {};
-    }
-
-    yaget::io::VirtualTransportSystem::Section querySection = section;
-    querySection.mMatch = yaget::io::VirtualTransportSystem::Section::FilterMatch::Exact;
-    auto tag = vts.AssureTag(querySection);
-    return tag;
+    //PopulateMap<TypeToSectionMap>(fileName, vts, TypeToSection);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::AssetCache::Section yaget::render::AssetCache::operator[](AssetCacheType typeFlag)
+void yaget::render::AssetCache::SaveMappings(const Section& /*fileName*/, io::VirtualTransportSystem& /*vts*/)
 {
-    if (auto it = TypeToSection.find(typeFlag); it != TypeToSection.end())
-    {
-        return it->second;
-    }
-    const auto& stackTrace = std::stacktrace::current(0, 5);
-    const auto stackText = std::to_string(stackTrace);
-    YLOG_ERROR("DEVI", "There is no asset section associated with AssetCacheType: '%s'\n%s", std::string(internal::CacheTypeToString(typeFlag)).c_str(), stackText.c_str());
-    return {};
-}
-
-
-//-------------------------------------------------------------------------------------------------
-yaget::render::AssetCacheType yaget::render::AssetCache::operator[](const Section& section)
-{
-    auto it = std::ranges::find_if(TypeToSection, [&section](auto element)
-        {
-            const bool result = section == element.second;
-            return result;
-        });
-
-    return it != TypeToSection.end() ? it->first : AssetCacheType::Empty;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void yaget::render::AssetCache::PopulateMappings(const Section& fileName, io::VirtualTransportSystem& vts)
-{
-    PopulateMap<TypeToSectionMap>(fileName, vts, TypeToSection);
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void yaget::render::AssetCache::SaveMappings(const Section& fileName, io::VirtualTransportSystem& vts)
-{
-    SaveMap(fileName, vts, TypeToSection);
+    //SaveMap(fileName, vts, TypeToSection);
 }
 
 
@@ -254,4 +204,23 @@ void yaget::render::AssetCache::ClearCachedAsset(const io::Tag& tag)
 {
     mCacheIndex.erase(tag.mGuid);
     mCacheStatus = ored(mCacheStatus, CacheStatus::Dirty);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::AssetCacheType yaget::render::AssetCache::TagToType(const io::Tag& tag)
+{
+    if (auto it = mTagToAssetCacheType.find(tag); it != mTagToAssetCacheType.end())
+    {
+        return it->second;
+    }
+
+    return AssetCacheType::Empty;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::AssetCache::AddTagToType(const io::Tag& tag, AssetCacheType assetCacheType)
+{
+    mTagToAssetCacheType[tag] = assetCacheType;
 }

@@ -131,9 +131,6 @@
     <CopyFileToFolders Include="data\Manifest\RenderDependencies.json">
       <Filter>Data Files\Manifest</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Manifest\TypeToSection.json">
-      <Filter>Data Files\Manifest</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="data\Manifest\ShaderCompileOptions.json">
       <Filter>Data Files\Manifest</Filter>
     </CopyFileToFolders>

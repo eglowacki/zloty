@@ -43,7 +43,7 @@ namespace defensor::render
 
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent);
         void PreloadAssets();
-        void RebindMaterial(const io::Tag& tag, yaget::render::MaterialProperties material);
+        void RebindMaterial(const io::Tag& tag, const yaget::render::MaterialPropertyTags& material);
         void HotRebindMaterial(const Guid& guid);
 
         void OnResetDevice(const app::WindowFrame& windowFrame, yaget::render::DeviceB::ResizeState resizeState);
@@ -65,6 +65,7 @@ namespace defensor::render
         yaget::render::RenderSignatures mRenderSignatures;
         yaget::render::RenderPipelines mRenderPipelines;
         yaget::render::RenderShaders mRenderShaders;
+        yaget::render::PipelineTags mPipelineTags;
         yaget::render::RenderMaterialProperties mRenderMaterials;
         yaget::render::RenderTextures mRenderTextures;
         yaget::render::TextureResources mTextureResources;
@@ -74,7 +75,6 @@ namespace defensor::render
         yaget::render::commands::RenderTargetStorage mRenderTargetStorage;
         yaget::render::scene::SceneItemsStorage mSceneItemsStorage;
         yaget::render::commands::RenderPasses mRenderPasses;
-        yaget::render::PipelineTags mPipelineTags;
         io::Tag mSwapChainRenderTargetTag{ .mName = "SwapChainRenderTarget", .mGuid = NewGuid() };
         io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTarget", .mGuid = NewGuid() };
 

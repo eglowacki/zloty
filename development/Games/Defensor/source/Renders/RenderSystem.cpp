@@ -38,7 +38,8 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
     , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"), GetDevice().GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat)
     , mRenderShaders(app.VTS(), GetSection("Shaders"))
-    , mRenderMaterials(app.VTS(), GetSection("Materials"))
+    , mPipelineTags{ app.VTS() }
+    , mRenderMaterials(mPipelineTags, app.VTS())
     , mRenderTextures(app.VTS(), GetSection("Textures"))
     , mTextureResources(GetDevice(), mRenderTextures)
     , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
@@ -53,7 +54,6 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
                          mGeometryResources,
                          app.VTS(), GetSection("SceneItems"))
     , mRenderPasses{ app.VTS() }
-    , mPipelineTags{ app.VTS() }
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
     //io::AttachTransientAsset(mSceneRenderTargetTag, app.VTS());
@@ -168,19 +168,6 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::PreloadAssets()
 {
-    //{
-    //    std::string testMessage = "This is some test data to be compressed and decompressed using zip library.";
-    //    auto testBuffer = io::CreateBuffer(testMessage);
-    //    auto compressedBuffer = compression::ZipBuffer(io::cast_to_view(testBuffer));
-
-    //    auto decompressedBuffer = compression::UnzipBuffer(io::cast_to_view(compressedBuffer));
-    //    std::string resultMessage(reinterpret_cast<const char*>(io::cast_data<uint8_t>(decompressedBuffer)), io::size_data(decompressedBuffer));
-
-    //    int z = 0;
-    //    z;
-    //}
-
-
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mApp.VTS();
 
@@ -219,22 +206,6 @@ void defensor::render::RenderSystem::PreloadAssets()
     auto sceneItemsTags = vts.GetTags(sceneItemsSection);
     mSceneItemsStorage.Preload(sceneItemsTags);
 
-    // let's try to load some textures here as a test
-
-    //io::SingleBLobLoader<io::TextureAsset> loader(vts, Section("Images@Red"));
-    //auto textureAsset = loader.GetAsset();
-
-    //auto savedImage = image::SaveImage(textureAsset->mBuffer, image::ImageType::PNG);
-    //auto result = io::file::SaveFile("c:/Development/zloty/development/Games/Defensor/data/Images/RedSaved.png", savedImage);
-    //result;
-
-    //auto imageBuffer = image::GetImage(Section("Images@Red"), vts);
-    //auto header = io::cast_data<image::Header>(imageBuffer);
-    //io::BufferView pixelData = io::cast_to_view(imageBuffer, sizeof(header));
-    //imageBuffer = image::GetImage(Section("Images@Green"), vts);
-    //imageBuffer = image::GetImage(Section("Images@Blue"), vts);
-    //imageBuffer = image::GetImage(Section("Images@White"), vts);
-
     platform::Sleep(1, time::kSecondUnit);
 
     SetTickEnabled(true);
@@ -242,15 +213,15 @@ void defensor::render::RenderSystem::PreloadAssets()
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget::render::MaterialProperties material)
+void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, const yaget::render::MaterialPropertyTags& material)
 {
     auto& vts = mApp.VTS();
 
-    auto vsTag = TypeToTag(material.mVertexShader, vts);
-    auto psTag = TypeToTag(material.mPixelShader, vts);
-    auto sigTag = TypeToTag(material.mSignature, vts);
-    auto psoTag = TypeToTag(material.mPSO, vts);
-    auto shaderBufferTag = TypeToTag(material.mShaderBuffer, vts);
+    auto vsTag = material.mVertexShader;
+    auto psTag = material.mPixelShader;
+    auto sigTag = material.mSignature;
+    auto psoTag = material.mPSO;
+    auto shaderBufferTag = material.mShaderBuffer;
     if (!vsTag.IsValid() || !psTag.IsValid() || !sigTag.IsValid() || !psoTag.IsValid() || !shaderBufferTag.IsValid())
     {
         YLOG_ERROR("REND", std::format("Material '{}' has invalid material tags. {}'",
@@ -258,15 +229,6 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, yaget
                        conv::ToString(material)).c_str());
         return;
     }
-
-#if 0
-    // new way of registering Signatures, Pipeline and ShaderBuffers
-    size_t sigHash = 0;
-    conv::hash_combine(sigHash, vsTag.mGuid, psTag.mGuid);
-
-    const std::string sigName = std::format("Signature-{}-{}", Section(vsTag).mFilter, Section(psTag).mFilter);
-    auto sigTag2 = mPipelineTags.ResolveTag(sigHash, sigName);
-#endif
 
     ID3D12RootSignature* signature = nullptr;
     mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &sigTag, &signature, &shaderBufferTag](const auto& descResult)
@@ -340,15 +302,15 @@ void defensor::render::RenderSystem::HotRebindMaterial(const Guid& guid)
     auto newMaterialText = conv::ToString(material);
     YLOG_INFO("REND", std::format("Rebinding material '{}':\n\t== Old '{}'\n\n\t== New '{}'", conv::ToString(matTag), oldMaterialText, newMaterialText).c_str());
 
-    auto vsTag = TypeToTag(material.mVertexShader, vts);
+    auto vsTag = material.mVertexShader;
     mRenderShaders.ClearCache(vsTag);
-    auto psTag = TypeToTag(material.mPixelShader, vts);
+    auto psTag = material.mPixelShader;
     mRenderShaders.ClearCache(psTag);
 
-    auto sigTag = TypeToTag(material.mSignature, vts);
+    auto sigTag = material.mSignature;
     mRenderSignatures.ClearCache(sigTag);
 
-    auto psoTag = TypeToTag(material.mPSO, vts);
+    auto psoTag = material.mPSO;
     mRenderPipelines.ClearCache(psoTag);
 
     RebindMaterial(matTag, material);

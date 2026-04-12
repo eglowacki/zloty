@@ -174,8 +174,10 @@ namespace yaget::render
         io::Buffer GetCachedAsset(const io::Tag& tag) const;
         void SaveCachedAsset(const io::Tag& tag, io::Buffer buffer);
         void ClearCachedAsset(const io::Tag& tag);
-        static Section operator[](AssetCacheType typeFlag);
-        static AssetCacheType operator[](const Section& section);
+
+        static AssetCacheType TagToType(const io::Tag& tag);
+        static void AddTagToType(const io::Tag& tag, AssetCacheType assetCacheType);
+
         static void PopulateMappings(const Section& fileName, io::VirtualTransportSystem& vts);
         static void SaveMappings(const Section& fileName, io::VirtualTransportSystem& vts);
 
@@ -203,8 +205,8 @@ namespace yaget::render
         CacheStatus mCacheStatus = CacheStatus::Clean;
         Section mCacheSection;
 
-        using TypeToSectionMap = std::map<AssetCacheType, io::VirtualTransportSystem::Section>;
-        static TypeToSectionMap TypeToSection;
+        using TagToAssetCacheTypeMap = std::map<io::Tag, AssetCacheType>;
+        static TagToAssetCacheTypeMap mTagToAssetCacheType;
     };
 
     namespace internal
@@ -260,10 +262,6 @@ namespace yaget::render
 
         cacheType = result;
     }
-
-
-    //----------------------------------------------------------------------------------------------------------------------------------
-    io::Tag TypeToTag(AssetCacheType assetCacheType, const io::VirtualTransportSystem& vts);
 
 }
 

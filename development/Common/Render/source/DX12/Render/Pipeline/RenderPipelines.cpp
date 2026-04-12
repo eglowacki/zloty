@@ -190,7 +190,7 @@ namespace
     {
         using namespace yaget;
 
-        auto assetType = render::AssetCache::operator[](tag);
+        auto assetType = render::AssetCache::TagToType(tag);
 
         D3D12_BLEND_DESC blendState = GetBlendState(assetType);
         D3D12_RASTERIZER_DESC rasterizerState = GetRasterizeState(assetType);
