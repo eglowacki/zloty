@@ -1,5 +1,5 @@
 {
-    "BlendMode": "BlendModeOpaque",
+    "BlendMode": "BlendModeAlpha",
     "DepthState": "DepthStateOn",
     "PixelShader": "PixelColor | PixelTexture0",
     "RasterizerState": "RasterizerStateCounterClockwise",

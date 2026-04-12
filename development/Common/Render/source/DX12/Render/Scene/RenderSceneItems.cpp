@@ -126,7 +126,8 @@ yaget::render::scene::SceneItem* yaget::render::scene::SceneItemsStorage::GetSce
 //-------------------------------------------------------------------------------------------------
 std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsStorage::GetSceneItems(const io::Tags& tags)
 {
-    std::vector<yaget::render::scene::SceneItem*> results;
+    std::vector<SceneItem*> results;
+
     for (const auto& tag : tags)
     {
         YAGET_ASSERT(tag.IsValid(), "Tag: '%s' is not valid.", yaget::conv::ToString(tag).c_str());

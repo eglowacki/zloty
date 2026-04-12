@@ -52,6 +52,10 @@
         "Transient@BasicTextureDepthPipe"
     ],
     [
+        "VertexPosition | VertexColor | VertexTexture0 | PixelColor | PixelTexture0 | RasterizerStateCounterClockwise | BlendModeAlpha | DepthStateOn | TopologyStateTriangle | RTVFormatRGBA8",
+        "Transient@BasicTextureDepthBlendAlphaPipe"
+    ],
+    [
         "VertexPosition | VertexColor | VertexTexture0 | PixelColor | PixelTexture0 | RasterizerStateCounterClockwise | BlendModeOpaque | DepthStencilStateOn | TopologyStateTriangle | RTVFormatRGBA8",
         "Transient@BasicTextureDepthStencilPipe"
     ],
