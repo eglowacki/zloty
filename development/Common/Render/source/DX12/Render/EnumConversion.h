@@ -16,7 +16,6 @@
 #include "Render/RenderCore.h"
 #include "Render/RenderStringHelpers.h"
 #include "Core/ErrorHandlers.h"
-#include "magic_enum/magic_enum.hpp"
 
 #include <d3dx12.h>
 

@@ -20,6 +20,7 @@
 #include "Streams/Buffers.h"
 #include "Streams/Guid.h"
 #include "Meta/CompilerAlgo.h"
+#include "magic_enum/magic_enum.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -696,6 +697,25 @@ namespace yaget
         {
             return Convertor<T>::FromString(value);
         }
+
+        template<typename E>
+        std::string FromEnumToString(E value)
+        {
+            return std::string{ magic_enum::enum_name(value) };
+        }
+
+        template<typename E>
+        E FromStringToEnum(const char* value)
+        {
+            auto enumValue = magic_enum::enum_cast<E>(value);
+            if (enumValue.has_value())
+            {
+                return enumValue.value();
+            }
+
+            return E{};
+        }
+
 
     } // namespace conv
 
