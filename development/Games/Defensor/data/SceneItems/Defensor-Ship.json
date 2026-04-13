@@ -1,6 +1,6 @@
 {
     "Geometry": "Geometry@Defensor-Ship",
-    "Material": "Materials@BasicTextureMaterial",
+    "Material": "Materials@DefensorShipMaterial",
     "RenderOrder": 1,
     "Textures": [
         "Images@HMS-Defensor"

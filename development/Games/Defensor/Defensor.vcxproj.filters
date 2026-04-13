@@ -137,9 +137,6 @@
     <CopyFileToFolders Include="data\Materials\BasicMaterial.json">
       <Filter>Data Files\Materials</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Shaders\Pixel\Basic.vs">
-      <Filter>Data Files\Shaders</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="data\Images\Blue.bmp">
       <Filter>Data Files\Images</Filter>
     </CopyFileToFolders>
@@ -159,9 +156,6 @@
       <Filter>Data Files\Materials</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Shaders\Pixel\BasicTexture.ps">
-      <Filter>Data Files\Shaders</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Shaders\Pixel\BasicTexture.vs">
       <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Images\Checker.jpg">
@@ -208,6 +202,15 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\SceneItems\SpaceBackground.json">
       <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\DefensorShipMaterial.json">
+      <Filter>Data Files\Materials</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\Basic.vs">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\BasicTexture.vs">
+      <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

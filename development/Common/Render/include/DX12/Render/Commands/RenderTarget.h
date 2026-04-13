@@ -94,20 +94,25 @@ namespace yaget::render::commands
         RenderTargetStorage(ID3D12Device* device, platform::SwapChain& swapChain, TextureResources& textureResources, io::VirtualTransportSystem& vts);
         ~RenderTargetStorage();
 
-        // create (or return existing) render target based on passed parameters
-        RenderTarget* GetRenderTarget(const io::Tag& tag, uint32_t sizeX, uint32_t sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource);
-        // Wrap RenderTarget around swapChain
-        RenderTarget* AliasRenderTarget(const io::Tag& tag, platform::SwapChain& swapChain);
         // If render target exists, return it, otherwise return nullptr
         RenderTarget* FindRenderTarget(const io::Tag& tag) const;
 
         void Preload(const io::Tags& tags);
         void ResetAll(const app::WindowFrame& windowFrame);
 
+        //-------------------------------------------------------------------------------------------------
+        // Return new RenderTarget based on swapChain size and format
+        RenderTarget* CreateRenderTargetFrom(const io::Tag& tag, const platform::SwapChain& swapChain);
+
         static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
         static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
 
     private:
+        // create (or return existing) render target based on passed parameters
+        RenderTarget* GetRenderTarget(const io::Tag& tag, uint32_t sizeX, uint32_t sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource);
+        // Wrap RenderTarget around swapChain
+        RenderTarget* AliasRenderTarget(const io::Tag& tag, platform::SwapChain& swapChain);
+
         struct RenderTargetData
         {
             size_t mHash{};
@@ -125,9 +130,4 @@ namespace yaget::render::commands
         RenderTargetMap mRenderTargetMap;
     };
 
-
-    //-------------------------------------------------------------------------------------------------
-    // Return new RenderTarget based on swapChain size and format
-    RenderTarget* CreateRenderTargetFrom(const io::Tag& tag, const platform::SwapChain& swapChain, RenderTargetStorage& renderTargetStorage);
-    
 }

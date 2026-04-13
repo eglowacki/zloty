@@ -313,7 +313,7 @@ void yaget::render::commands::RenderTargetStorage::Preload(const io::Tags& tags)
             }
             break;
             case TargetType::FromSwapChain:
-                renderTarget = CreateRenderTargetFrom(tag, mSwapChain, *this);
+                renderTarget = CreateRenderTargetFrom(tag, mSwapChain);
                 break;
             case TargetType::AliasSwapChain:
                 AliasRenderTarget(tag, mSwapChain);
@@ -369,14 +369,13 @@ yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStor
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::RenderTarget* yaget::render::commands::CreateRenderTargetFrom(const io::Tag& tag, const platform::SwapChain& swapChain, RenderTargetStorage& renderTargetStorage)
+yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStorage::CreateRenderTargetFrom(const io::Tag& tag, const platform::SwapChain& swapChain)
 {
     // this can be used to extract actual buffer size (window size)
     auto chainDesc = swapChain.GetDescription();
     auto depthStencilDesc = swapChain.GetDepthStencilDescription();
-    //ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource
     auto depthStencilDescriptorHeap = swapChain.GetDSVDescriptorHeap();
     auto depthStencilResource = swapChain.GetCurrentDepthStencil();
 
-    return renderTargetStorage.GetRenderTarget(tag, chainDesc.Width, chainDesc.Height, chainDesc.Format, depthStencilDesc.Format, depthStencilDescriptorHeap, depthStencilResource);
+    return GetRenderTarget(tag, chainDesc.Width, chainDesc.Height, chainDesc.Format, depthStencilDesc.Format, depthStencilDescriptorHeap, depthStencilResource);
 }

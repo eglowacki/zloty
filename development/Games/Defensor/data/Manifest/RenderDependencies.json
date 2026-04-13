@@ -3,9 +3,9 @@
         "dependencies": [
             {
                 "dependencies": [
-                    "Transient@Signature-BasicTexture-BasicTexture"
+                    "Transient@Signature=vertexBasicTexture-pixelBasicTexture"
                 ],
-                "name": "Transient@PSO-Signature-Basic-Basic-BlendModeOpaque | RasterizerStateCounterClockwise | DepthStencilStateOn | TopologyStateTriangle | RTVFormatRGBA8"
+                "name": "Transient@PSO=Signature=vertexBasicTexture-pixelBasicTexture=BlendModeOpaque-RasterizerStateCounterClockwise-DepthStencilStateOn-TopologyStateTriangle-RTVFormatRGBA8"
             }
         ],
         "name": "Materials@BasicMaterial"
@@ -21,16 +21,38 @@
                                     "VertexShaders@BasicTexture",
                                     "PixelShaders@BasicTexture"
                                 ],
-                                "name": "Transient@Constant-BasicTexture-BasicTexture-ShaderBuffer"
+                                "name": "Transient@Constant=vertexBasicTexture-pixelBasicTexture=ShaderBuffer"
                             }
                         ],
-                        "name": "Transient@Signature-BasicTexture-BasicTexture"
+                        "name": "Transient@Signature=vertexBasicTexture-pixelBasicTexture"
                     }
                 ],
-                "name": "Transient@PSO-Signature-BasicTexture-BasicTexture-BlendModeAlpha | RasterizerStateCounterClockwise | DepthStateOn | TopologyStateTriangle | RTVFormatRGBA8"
+                "name": "Transient@PSO=Signature=vertexBasicTexture-pixelBasicTexture=BlendModeAlpha-RasterizerStateCounterClockwise-DepthStateOn-TopologyStateTriangle-RTVFormatRGBA8"
             }
         ],
         "name": "Materials@BasicTextureMaterial"
+    },
+    "Materials@DefensorShipMaterial": {
+        "dependencies": [
+            {
+                "dependencies": [
+                    {
+                        "dependencies": [
+                            {
+                                "dependencies": [
+                                    "VertexShaders@BasicTexture",
+                                    "PixelShaders@BasicTexture"
+                                ],
+                                "name": "Transient@Constant=vertexBasicTexture-pixelBasicTexture=ShaderBuffer"
+                            }
+                        ],
+                        "name": "Transient@Signature=vertexBasicTexture-pixelBasicTexture"
+                    }
+                ],
+                "name": "Transient@PSO=Signature=vertexBasicTexture-pixelBasicTexture=BlendModeAlpha-RasterizerStateCounterClockwise-DepthStateOn-TopologyStateTriangle-RTVFormatRGBA8"
+            }
+        ],
+        "name": "Materials@DefensorShipMaterial"
     },
     "Materials@ScreenQuadMaterial": {
         "dependencies": [
@@ -43,13 +65,13 @@
                                     "VertexShaders@BasicTexture",
                                     "PixelShaders@BasicTexture"
                                 ],
-                                "name": "Transient@Constant-BasicTexture-BasicTexture-ShaderBuffer"
+                                "name": "Transient@Constant=vertexBasicTexture-pixelBasicTexture=ShaderBuffer"
                             }
                         ],
-                        "name": "Transient@Signature-BasicTexture-BasicTexture"
+                        "name": "Transient@Signature=vertexBasicTexture-pixelBasicTexture"
                     }
                 ],
-                "name": "Transient@PSO-Signature-BasicTexture-BasicTexture-BlendModeOpaque | RasterizerStateCounterClockwise | DepthStateNone | TopologyStateTriangle | RTVFormatRGBA8"
+                "name": "Transient@PSO=Signature=vertexBasicTexture-pixelBasicTexture=BlendModeOpaque-RasterizerStateCounterClockwise-DepthStateNone-TopologyStateTriangle-RTVFormatRGBA8"
             }
         ],
         "name": "Materials@ScreenQuadMaterial"

@@ -1,12 +1,9 @@
+#include "Render/RenderCore.h"
 #include "Compression/Zipper.h"
 #include "Render/Cache/AssetCache.h"
 #include "Render/Cache/CacheWatcher.h"
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
-
-#include <stacktrace>
-
-#include "Render/RenderCore.h"
 
 
 //-------------------------------------------------------------------------------------------------

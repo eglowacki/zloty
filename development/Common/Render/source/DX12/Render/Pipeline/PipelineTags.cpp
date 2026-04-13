@@ -27,6 +27,11 @@ yaget::io::Tag yaget::render::PipelineTags::ResolveTag(uint64_t hashValue, const
     }
     
     mt::WriteLock locker(mMutex);
+    if (auto it = mResolveTags.find(hashValue); it != mResolveTags.end())
+    {
+        return it->second;
+    }
+
     io::VirtualTransportSystem::Section section("Transient@" + tagName);
     auto tag = mVTS.AssureTag(section);
     std::shared_ptr<io::Asset> newAsset = io::ResolveAsset<io::BinAsset>({}, tag, mVTS);
