@@ -19,7 +19,7 @@ Material: SceneItems@SpaceBackground
 New Item
 Name: Player
 LocationComponent3: [x = 0.5, y = 0.1, z = 0.00];[x = 0.00, y = 0.00, z = 0.00, w = 1.00];[x = 1.00, y = 1.00, z = 1.00]
-Input: Move Left, Move Right
+Input: Move Left, Move Right, Shoot
 StageName: Boot
 Velocity: 
 Material: SceneItems@Defensor-Ship

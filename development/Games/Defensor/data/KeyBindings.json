@@ -76,6 +76,13 @@
         "Flags": "ButtonDown|ButtonUp",
         "Value": "ArrowRight"
     },
+    "Shoot": {
+        "Action": "Shoot",
+        "ContextName": "Game",
+        "DisplayName": "SPACE",
+        "Flags": "ButtonDown|ButtonUp",
+        "Value": " "
+    },
     "Wire Mode": {
         "Action": "Wire Mode",
         "ContextName": "Game",
