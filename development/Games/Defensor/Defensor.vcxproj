@@ -330,6 +330,20 @@
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\DefensorShip.ps">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Pixel</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Pixel</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\DefensorShip.vs">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+    </CopyFileToFolders>
     <None Include="Defensor.deployment" />
   </ItemGroup>
   <ItemGroup>

@@ -212,6 +212,12 @@
     <CopyFileToFolders Include="data\Shaders\Vertex\BasicTexture.vs">
       <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\DefensorShip.vs">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\DefensorShip.ps">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\MainGame.h">

@@ -1,6 +1,6 @@
 {
-    "VertexShader": "VertexShaders@BasicTexture",
-    "PixelShader": "PixelShaders@BasicTexture",
+    "VertexShader": "VertexShaders@DefensorShip",
+    "PixelShader": "PixelShaders@DefensorShip",
     "BlendMode": "BlendModeAlpha",
     "DepthState": "DepthStateOn",
     "RasterizerState": "RasterizerStateCounterClockwise"

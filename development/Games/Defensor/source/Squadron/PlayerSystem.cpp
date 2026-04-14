@@ -25,7 +25,7 @@ void defensor::game::PlayerSystem::OnUpdate(yaget::comp::Id_t id, const yaget::t
 
     if (isActionLeft || isActionRight)
     {
-        float speed = 0.2f; // units per second. This should come from unit/player speed component
+        float speed = 0.4f; // units per second. This should come from unit/player speed component
         auto position = locationComponent->GetValue<comp::db_location::Position>();
         float moveBy = gameClock.GetDeltaTimeSecond() * speed;
 

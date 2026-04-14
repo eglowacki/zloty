@@ -44,7 +44,10 @@ namespace defensor::render
         RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& sceneItemTag);
         ~RenderComponent();
 
+        void UpdateMatrix(const math3d::Matrix& matrix);
+
         math3d::Matrix mMatrix = math3d::Matrix::Identity;
+        math3d::Matrix mMatrixT = math3d::Matrix::Identity;
         io::Tag mSceneItemTag;
     };
 

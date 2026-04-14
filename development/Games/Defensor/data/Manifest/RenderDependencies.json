@@ -40,16 +40,16 @@
                         "dependencies": [
                             {
                                 "dependencies": [
-                                    "VertexShaders@BasicTexture",
-                                    "PixelShaders@BasicTexture"
+                                    "VertexShaders@DefensorShip",
+                                    "PixelShaders@DefensorShip"
                                 ],
-                                "name": "Transient@Constant=vertexBasicTexture-pixelBasicTexture=ShaderBuffer"
+                                "name": "Transient@Constant=vertexDefensorShip-pixelDefensorShip=ShaderBuffer"
                             }
                         ],
-                        "name": "Transient@Signature=vertexBasicTexture-pixelBasicTexture"
+                        "name": "Transient@Signature=vertexDefensorShip-pixelDefensorShip"
                     }
                 ],
-                "name": "Transient@PSO=Signature=vertexBasicTexture-pixelBasicTexture=BlendModeAlpha-RasterizerStateCounterClockwise-DepthStateOn-TopologyStateTriangle-RTVFormatRGBA8"
+                "name": "Transient@PSO=Signature=vertexDefensorShip-pixelDefensorShip=BlendModeAlpha-RasterizerStateCounterClockwise-DepthStateOn-TopologyStateTriangle-RTVFormatRGBA8"
             }
         ],
         "name": "Materials@DefensorShipMaterial"
