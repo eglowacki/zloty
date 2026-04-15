@@ -1,11 +1,9 @@
 #include "MainGame.h"
 
-#include "../resource.h"
 #include "DefensorGameCoordinator.h"
 #include "DefensorGameTypes.h"
 #include "DefensorRenderCoordinator.h"
 #include "Items/ItemsDirector.h"
-#include "Render/AdapterInfo.h"
 #include "Render/Cache/AssetCache.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Pipeline/RenderMaterialProperties.h"
@@ -13,11 +11,14 @@
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
+#include "Render/Scene/RenderSceneItems.h"
 #include "Script/luacpp.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
-#include <Debugging/DevConfiguration.h>
+#include "Debugging/DevConfiguration.h"
+
+#include "../resource.h"
 
 #if 0
 namespace yaget::app
@@ -78,6 +79,8 @@ namespace
         {&yaget::render::RenderShaders::PopulateReflectorMappings, &yaget::render::RenderShaders::SaveReflectorMappings, "Manifest@ShaderReflectionOptions"},
         {&yaget::render::RenderMaterialProperties::PopulateMappings, &yaget::render::RenderMaterialProperties::SaveMappings, "Manifest@RenderMaterialPropertyOptions"},
         {&yaget::render::RenderTextures::PopulateMappings, &yaget::render::RenderTextures::SaveMappings, "Manifest@RenderTextureOptions"},
+        {&yaget::render::scene::SceneItemsStorage::PopulateMappings, &yaget::render::scene::SceneItemsStorage::SaveMappings, "Manifest@RenderSceneItemOptions"},
+        {&yaget::render::commands::RenderTargetStorage::PopulateMappings, &yaget::render::commands::RenderTargetStorage::SaveMappings, "Manifest@RenderTargetOptions"},
     };
 
     struct Mappers

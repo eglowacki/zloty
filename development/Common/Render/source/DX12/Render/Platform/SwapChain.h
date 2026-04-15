@@ -13,18 +13,18 @@
 
 #pragma once
 
-
 #include "Render/RenderCore.h"
 #include "App/WindowFrame.h"
+#include <d3dx12.h>
 
 
-struct ID3D12CommandAllocator;
-struct ID3D12CommandQueue;
-struct ID3D12DescriptorHeap;
-struct ID3D12Device;
-struct ID3D12GraphicsCommandList;
-struct ID3D12Resource;
-struct IDXGIFactory;
+//struct ID3D12CommandAllocator;
+//struct ID3D12CommandQueue;
+//struct ID3D12DescriptorHeap;
+//struct ID3D12Device;
+//struct ID3D12GraphicsCommandList;
+//struct ID3D12Resource;
+//struct IDXGIFactory;
 struct IDXGISwapChain4;
 
 namespace yaget
@@ -53,7 +53,15 @@ namespace yaget::render::platform
 
         uint32_t GetCurrentBackBufferIndex() const { return mCurrentBackBufferIndex; }
         ID3D12Resource* GetCurrentRenderTarget() const;
+        ID3D12Resource* GetCurrentDepthStencil() const;
         ID3D12DescriptorHeap* GetRTVDescriptorHeap() const;
+        ID3D12DescriptorHeap* GetDSVDescriptorHeap() const;
+
+        DXGI_SWAP_CHAIN_DESC1 GetDescription() const;
+        D3D12_RESOURCE_DESC GetDepthStencilDescription() const;
+
+        static int DepthBufferFlag;
+        static int StencilBufferFlag;
 
     private:
         void UpdateRenderTargetViews();
@@ -67,6 +75,11 @@ namespace yaget::render::platform
 
         ComPtr<ID3D12DescriptorHeap> mRTVDescriptorHeap;
         std::vector<ComPtr<ID3D12Resource>> mBackBuffers;
+
+        DXGI_FORMAT mDepthStencilFormat;
+
+        ComPtr<ID3D12DescriptorHeap> mDSVDescriptorHeap;    // This is a heap for our depth/stencil buffer descriptor
+        ComPtr<ID3D12Resource> mDepthStencilBuffer;         // This is the memory for our depth buffer. it will also be used for a stencil buffer in a later tutorial
     };
 
 } // namespace yaget::render::platform

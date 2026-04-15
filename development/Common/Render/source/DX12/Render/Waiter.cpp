@@ -40,7 +40,7 @@ void yaget::render::Waiter::EndPause()
 {
     if (--mUsageCounter)
     {
-        YLOG_ERROR("DEVI", "Waiter EndPause() called recursevly, why?");
+        YLOG_ERROR("DEVI", "Waiter EndPause() called recursively, why?");
         return;
     }
 

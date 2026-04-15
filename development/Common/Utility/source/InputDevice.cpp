@@ -263,7 +263,7 @@ std::string input::InputDevice::Mouse::ToString() const
     {
         buttonsText += (!buttonsText.empty() ? "|" : "") + std::string("Mouse5");
     }
-    return std::format("Buttons: {}, Mouse: x:{}, y:{}, wheel: {}, {}", buttonsText, mPos.x, mPos.y, mZDelta, Record::ToString());
+    return std::format("Buttons: '{}', Mouse: x:{}, y:{}, wheel: {}, {}", buttonsText, mPos.x, mPos.y, mZDelta, Record::ToString());
 }
 
 
@@ -280,7 +280,7 @@ std::string input::InputDevice::Key::ToString() const
         }
     }
 
-    return std::format("Key: {}, {}", keyText, Record::ToString());
+    return std::format("Key: '{}', {}", keyText, Record::ToString());
 }
 
 
@@ -306,8 +306,7 @@ input::InputDevice::InputDevice(io::VirtualTransportSystem& vts)
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
-input::InputDevice::~InputDevice()
-{ }
+input::InputDevice::~InputDevice() = default;
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------

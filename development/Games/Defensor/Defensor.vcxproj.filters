@@ -38,6 +38,15 @@
     <Filter Include="Data Files\Geometry">
       <UniqueIdentifier>{bb51805f-26f5-4de7-891f-3c07e1707f48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\SceneItems">
+      <UniqueIdentifier>{44394fe7-c8d2-43b2-8485-0d80bd16b8f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\RenderTargets">
+      <UniqueIdentifier>{ee90d43e-647d-4b1d-b818-9ed477fa80bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files\RenderPasses">
+      <UniqueIdentifier>{aeb77277-cfea-4b13-8887-610c21492b3c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -122,17 +131,11 @@
     <CopyFileToFolders Include="data\Manifest\RenderDependencies.json">
       <Filter>Data Files\Manifest</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Manifest\TypeToSection.json">
-      <Filter>Data Files\Manifest</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="data\Manifest\ShaderCompileOptions.json">
       <Filter>Data Files\Manifest</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Materials\BasicMaterial.json">
       <Filter>Data Files\Materials</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Shaders\Pixel\Basic.vs">
-      <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Images\Blue.bmp">
       <Filter>Data Files\Images</Filter>
@@ -155,14 +158,65 @@
     <CopyFileToFolders Include="data\Shaders\Pixel\BasicTexture.ps">
       <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Shaders\Pixel\BasicTexture.vs">
-      <Filter>Data Files\Shaders</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="data\Images\Checker.jpg">
       <Filter>Data Files\Images</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Geometry\Rectangle.geom">
       <Filter>Data Files\Geometry</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\ScreenQuadMaterial.json">
+      <Filter>Data Files\Materials</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Geometry\ScreenQuad.geom">
+      <Filter>Data Files\Geometry</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\CheckerRectangle.json">
+      <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderTargets\SwapChain.json">
+      <Filter>Data Files\RenderTargets</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderTargets\Scene.json">
+      <Filter>Data Files\RenderTargets</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderTargets\Alfresco.json">
+      <Filter>Data Files\RenderTargets</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderPasses\GameScene.json">
+      <Filter>Data Files\RenderPasses</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\SpaceBackground.png">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\FinalRender.json">
+      <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\HMS-Defensor.png">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\Defensor-Ship.json">
+      <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Geometry\Defensor-Ship.geom">
+      <Filter>Data Files\Geometry</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\SpaceBackground.json">
+      <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\DefensorShipMaterial.json">
+      <Filter>Data Files\Materials</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\Basic.vs">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\BasicTexture.vs">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\DefensorShip.vs">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\DefensorShip.ps">
+      <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

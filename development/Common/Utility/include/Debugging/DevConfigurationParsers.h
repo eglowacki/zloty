@@ -152,8 +152,7 @@ namespace yaget::dev
 
     inline bool operator==(const Configuration::Graphics& lhs, const Configuration::Graphics& rhs)
     {
-        return lhs.mDevice == rhs.mDevice &&
-               lhs.mMemoryReport == rhs.mMemoryReport && 
+        return lhs.mMemoryReport == rhs.mMemoryReport && 
                lhs.mGPUTraceback == rhs.mGPUTraceback;
     }
 
@@ -365,13 +364,8 @@ namespace yaget::dev
     //------------------------------------------------------------------------------------------------------------------------------------------------------
     inline void to_json(nlohmann::json& j, const dev::Configuration::Init& init)
     {
-        //j["Flags"] = init.VSync;
-        //j["FullScreen"] = init.FullScreen;
-        //j["ResX"] = init.ResX;
-        //j["ResY"] = init.ResY;
-        //j["LogicTick"] = init.LogicTick;
-
         j["VSync"] = init.VSync;
+        j["DepthStencilFormat"] = init.DepthStencilFormat;
 
         j["VTS"] = init.mVTSConfig;
         j["Aliases"] = init.mEnvironmentList;
@@ -384,13 +378,8 @@ namespace yaget::dev
     //------------------------------------------------------------------------------------------------------------------------------------------------------
     inline void from_json(const nlohmann::json& j, dev::Configuration::Init& init)
     {
-        //init.VSync = json::GetValue(j, "VSync", init.VSync);
-        //init.FullScreen = json::GetValue(j, "FullScreen", init.FullScreen);
-        //init.ResX = json::GetValue(j, "ResX", init.ResX);
-        //init.ResY = json::GetValue(j, "ResY", init.ResY);
-        //init.LogicTick = json::GetValue(j, "LogicTick", init.LogicTick);
-
         init.VSync = json::GetValue(j, "VSync", init.VSync);
+        init.DepthStencilFormat = json::GetValue(j, "DepthStencilFormat", init.DepthStencilFormat);
 
         if (yaget::json::IsSectionValid(j, "VTS", ""))
         {
@@ -444,7 +433,6 @@ namespace yaget::dev
     //------------------------------------------------------------------------------------------------------------------------------------------------------
     inline void to_json(nlohmann::json& j, const dev::Configuration::Graphics& graphics)
     {
-        j["Device"] = graphics.mDevice;
         j["MemoryReport"] = graphics.mMemoryReport;
         j["GPUTraceback"] = graphics.mGPUTraceback;
     }
@@ -452,7 +440,6 @@ namespace yaget::dev
     //------------------------------------------------------------------------------------------------------------------------------------------------------
     inline void from_json(const nlohmann::json& j, dev::Configuration::Graphics& graphics)
     {
-        graphics.mDevice = json::GetValue(j, "Device", graphics.mDevice);
         graphics.mMemoryReport = json::GetValue(j, "MemoryReport", graphics.mMemoryReport);
         graphics.mGPUTraceback = json::GetValue(j, "GPUTraceback", graphics.mGPUTraceback);
     }

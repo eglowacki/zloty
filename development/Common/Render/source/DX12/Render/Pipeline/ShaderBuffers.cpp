@@ -21,7 +21,6 @@ yaget::render::ShaderBuffers::~ShaderBuffers() = default;
 void yaget::render::ShaderBuffers::MakeBuffers(const io::Tag& tag, const RenderShaders::IndexMap& indexMap)
 {
     ConstantBuffer::ShaderVariables shaderVariables;
-    //std::shared_ptr<ConstantBuffer> constantBuffer;
     auto allocator = mAdapter.GetAllocator();
 
     for (const auto& value : indexMap | std::views::values)
@@ -91,13 +90,11 @@ void yaget::render::ShaderBuffers::MakeBuffers(const io::Tag& tag, const RenderS
         {
             if (value.mType == constant_shader_types::ConstantTypes::Texture2d)
             {
-                //YAGET_ASSERT(false, "Table->Texture2d");
                 ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset);
                 shaderVariables.push_back(std::move(shaderVariable));
             }
             else if (value.mType == constant_shader_types::ConstantTypes::Sampler)
             {
-                //YAGET_ASSERT(false, "Table->Sampler");
                 ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset);
                 shaderVariables.push_back(std::move(shaderVariable));
             }

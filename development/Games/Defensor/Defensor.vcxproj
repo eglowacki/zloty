@@ -190,13 +190,6 @@
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Manifest</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Manifest</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Manifest\TypeToSection.json">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
-      <FileType>Document</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Manifest</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Manifest</DestinationFolders>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="data\Manifest\ShaderCompileOptions.json">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
       <FileType>Document</FileType>
@@ -210,13 +203,6 @@
       <FileType>Document</FileType>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Materials</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Materials</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Shaders\Pixel\Basic.vs">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
-      <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Manifest\ShaderReflectionOptions.json">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
@@ -239,19 +225,124 @@
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Pixel</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Pixel</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="data\Shaders\Pixel\BasicTexture.vs">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <FileType>Document</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="data\Geometry\Rectangle.geom">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
       <FileType>Document</FileType>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Geometry</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Geometry</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Geometry\ScreenQuad.geom">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Geometry</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Geometry</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\ScreenQuadMaterial.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Materials</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Materials</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\CheckerRectangle.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\SceneItems</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\SceneItems</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderTargets\Scene.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\RenderTargets</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\RenderTargets</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderTargets\SwapChain.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\RenderTargets</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\RenderTargets</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderTargets\Alfresco.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\RenderTargets</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\RenderTargets</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\RenderPasses\GameScene.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\RenderPasses</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\RenderPasses</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\FinalRender.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\SceneItems</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\SceneItems</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\Defensor-Ship.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\SceneItems</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\SceneItems</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Geometry\Defensor-Ship.geom">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Geometry</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Geometry</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\SpaceBackground.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\SceneItems</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\SceneItems</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\DefensorShipMaterial.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Materials</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Materials</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\Basic.vs">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\BasicTexture.vs">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\DefensorShip.ps">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Pixel</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Pixel</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\DefensorShip.vs">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Shaders\Vertex</DestinationFolders>
     </CopyFileToFolders>
     <None Include="Defensor.deployment" />
   </ItemGroup>
@@ -306,6 +397,12 @@
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Images</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Images</DestinationFolders>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\HMS-Defensor.png">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Images</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Images</DestinationFolders>
+    </CopyFileToFolders>
     <Image Include="data\Images\Icons\MainApp.ico" />
     <CopyFileToFolders Include="data\Images\Red.png">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
@@ -318,6 +415,12 @@
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Images</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Images</DestinationFolders>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\SpaceBackground.png">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)Data\Images</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)Data\Images</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

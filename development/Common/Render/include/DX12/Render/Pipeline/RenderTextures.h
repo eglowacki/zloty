@@ -28,6 +28,11 @@ struct ID3D12DescriptorHeap;
 
 namespace yaget::render
 {
+    namespace commands
+    {
+        class RenderTarget;
+    }
+
     class DeviceB;
 
     //-------------------------------------------------------------------------------------------------
@@ -54,9 +59,12 @@ namespace yaget::render
         TextureResources(DeviceB& device, RenderTextures& renderTextures);
         ~TextureResources();
 
-        ComPtr<ID3D12DescriptorHeap> GetResourceView(const io::Tag& tag);
-        ComPtr<ID3D12Resource> GetResource(const io::Tag& tag);
-        std::vector<ComPtr<ID3D12Resource>> GetResources(const io::Tags& tags);
+        ID3D12DescriptorHeap* GetResourceView(const io::Tag& tag) const;
+        std::vector<ID3D12DescriptorHeap*> GetResourceViews(const io::Tags& tags) const;
+        ID3D12Resource* GetResource(const io::Tag& tag);
+        std::vector<ID3D12Resource*> GetResources(const io::Tags& tags);
+
+        void AttachRenderTarget(const io::Tag& tag, const commands::RenderTarget* renderTarget);
 
         void Preload(const io::Tags& tags);
 
@@ -74,6 +82,6 @@ namespace yaget::render
         using ResourceMap = std::map<io::Tag, ResourceData>;
         ResourceMap mResources;
 
-        std::shared_mutex mSharedMutex;
+        mutable std::shared_mutex mSharedMutex;
     };
 }

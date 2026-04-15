@@ -165,10 +165,38 @@
                         "ReadOnly": false,
                         "Recursive": false
                     }
+                },
+                {
+                    "SceneItems": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(DataFolder)/Data/SceneItems" ],
+                        "ReadOnly": true,
+                        "Recursive": true
+                    }
+                },
+                {
+                    "RenderTargets": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(DataFolder)/Data/RenderTargets" ],
+                        "ReadOnly": true,
+                        "Recursive": true
+                    }
+                },
+                {
+                    "RenderPasses": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(DataFolder)/Data/RenderPasses" ],
+                        "ReadOnly": true,
+                        "Recursive": true
+                    }
                 }
             ],
             "WindowOptions": "UserOptions@WindowConfiguration",
             "VSync": false,
+            "DepthStencilFormat": 1,
             "StartingStage": "Boot",
             "ItemsFile": ""
         }

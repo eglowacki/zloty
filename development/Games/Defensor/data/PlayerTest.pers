@@ -11,12 +11,18 @@
 Version: 1
 
 New Item
-Name: Player
+Name: Background
 LocationComponent3: [x = 1.00, y = 2.00, z = 3.00];[x = 4.00, y = 5.00, z = 6.00, w = 7.00];[x = 8.00, y = 9.00, z = 10.00]
-Input: Move Left, Move Right
+StageName: Boot
+Material: SceneItems@SpaceBackground
+
+New Item
+Name: Player
+LocationComponent3: [x = 0.5, y = 0.1, z = 0.00];[x = 0.00, y = 0.00, z = 0.00, w = 1.00];[x = 1.00, y = 1.00, z = 1.00]
+Input: Move Left, Move Right, Shoot
 StageName: Boot
 Velocity: 
-Material: Materials@BasicMaterial
+Material: SceneItems@Defensor-Ship
 
 New Global Item
 StageComponent: Boot

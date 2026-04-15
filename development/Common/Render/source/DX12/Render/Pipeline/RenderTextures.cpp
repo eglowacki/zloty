@@ -1,16 +1,18 @@
 #include "Core/ErrorHandlers.h"
 #include "Json/JsonHelpers.h"
+#include "Render/Commands/RenderTarget.h"
 #include "Render/Device.h"
+#include "Render/Helpers/ResourceDescriptions.h"
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Platform/Adapter.h"
 #include "Render/Platform/D3D12MemAlloc.h"
+#include "Render/PlaceholderAssets/PlaceholderAssets.h"
 #include "Streams/Guid.h"
 #include "VTS/ResolvedAssets.h"
-#include "Render/Helpers/ResourceDescriptions.h"
-#include "Render\PlaceholderAssets\PlaceholderAssets.h"
 
 #include <d3dx12.h>
+
 
 namespace
 {
@@ -118,29 +120,41 @@ yaget::render::TextureResources::TextureResources(DeviceB& device, RenderTexture
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::TextureResources::~TextureResources()// = default;
-{
-    int z = 0;
-    z;
-}
+yaget::render::TextureResources::~TextureResources() = default;
 
-yaget::render::ComPtr<ID3D12DescriptorHeap> yaget::render::TextureResources::GetResourceView(const io::Tag& tag)
-{
-    mt::ReadLock readLocker(mSharedMutex);
-    if (auto it = mResources.find(tag); it != mResources.end())
-    {
-        return it->second.mDescriptorHeap;
-    }
 
-    YLOG_ERROR("REND", "Could not find texture resource view data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
-    return {};
+//-------------------------------------------------------------------------------------------------
+ID3D12DescriptorHeap* yaget::render::TextureResources::GetResourceView(const io::Tag& tag) const
+{
+    auto resources = GetResourceViews(io::Tags{ tag });
+
+    YLOG_CERROR("REND", !resources.empty(), "Could not find texture resource view data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
+    return !resources.empty() ? *resources.begin() : nullptr;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResources::GetResources(const io::Tags& tags)
+std::vector<ID3D12DescriptorHeap*> yaget::render::TextureResources::GetResourceViews(const io::Tags& tags) const
 {
-    std::vector<ComPtr<ID3D12Resource>> results;
+    std::vector<ID3D12DescriptorHeap*> results;
+
+    mt::ReadLock readLocker(mSharedMutex);
+    for (const auto& tag : tags)
+    {
+        if (auto it = mResources.find(tag); it != mResources.end())
+        {
+            results.push_back(it->second.mDescriptorHeap.Get());
+        }
+    }
+
+    return results;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+std::vector<ID3D12Resource*> yaget::render::TextureResources::GetResources(const io::Tags& tags)
+{
+    std::vector<ID3D12Resource*> results;
     io::Tags tagsToLoad;
     {
         mt::ReadLock readLocker(mSharedMutex);
@@ -148,7 +162,7 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
         {
             if (auto it = mResources.find(tag); it != mResources.end())
             {
-                results.push_back(it->second.mResource);
+                results.push_back(it->second.mResource.Get());
                 continue;
             }
 
@@ -173,7 +187,7 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
         // another thread loaded the same texture, so we need to check again if resource is already in map
         if (auto it = mResources.find(tag); it != mResources.end())
         {
-            results.push_back(it->second.mResource);
+            results.push_back(it->second.mResource.Get());
             continue;
         }
 
@@ -212,7 +226,7 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
         srvDesc.Texture2D.MipLevels = 1;
 
         auto d3dDevice = mDevice.GetAdapter().GetDevice();
-        auto srvHeap = CreateDescriptorHeap(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
+        auto srvHeap = helpers::CreateDescriptorHeap(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 
         ID3D12Resource* texture = gpuResourceResult.mGpuAllocation->GetResource();
         auto uploadAllocation = gpuResourceResult.mUploadAllocation;
@@ -233,6 +247,14 @@ std::vector<yaget::render::ComPtr<ID3D12Resource>> yaget::render::TextureResourc
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::render::TextureResources::AttachRenderTarget(const io::Tag& tag, const commands::RenderTarget* renderTarget)
+{
+    mt::WriteLock writeLocker(mSharedMutex);
+    mResources[tag] = ResourceData{ unique_obj<D3D12MA::Allocation>{}, renderTarget->Resource(), renderTarget->SRVDescriptorHeap() };
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::TextureResources::Preload(const io::Tags& tags)
 {
     GetResources(tags);
@@ -240,8 +262,8 @@ void yaget::render::TextureResources::Preload(const io::Tags& tags)
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::ComPtr<ID3D12Resource> yaget::render::TextureResources::GetResource(const io::Tag& tag)
+ID3D12Resource* yaget::render::TextureResources::GetResource(const io::Tag& tag)
 {
     auto resources = GetResources(io::Tags{ tag });
-    return !resources.empty() ? *resources.begin() : ComPtr<ID3D12Resource>{};
+    return !resources.empty() ? *resources.begin() : nullptr;
 }

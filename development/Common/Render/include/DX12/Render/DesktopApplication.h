@@ -27,7 +27,7 @@ namespace yaget::render
     class DesktopApplication : public WindowApplication
     {
     public:
-        DesktopApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options, const yaget::render::info::Adapter& selectedAdapter)
+        DesktopApplication(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options, const info::Adapter& selectedAdapter)
             : WindowApplication(title, director, vts, options)
             , mDevice(app::WindowFrame(*this), selectedAdapter)
         {

@@ -17,6 +17,7 @@
 
 #include "YagetCore.h"
 #include "nlohmann/json.hpp"
+#include "magic_enum/magic_enum.hpp"
 
 
 namespace yaget::json
@@ -82,6 +83,21 @@ namespace yaget::json
     inline T GetValue(const nlohmann::json& block)
     {
         return block.get<T>();
+    }
+
+    //-------------------------------------------------------------------------------------------------
+    template<typename E>
+    E from_json_enum(const nlohmann::json& j, const char* key, std::string_view defaultValue)
+    {
+        auto stringValue = yaget::json::GetValue(j, key, std::string{ defaultValue });
+        auto enumValue = magic_enum::enum_cast<E>(stringValue);
+        if (enumValue.has_value())
+        {
+            return enumValue.value();
+        }
+
+        YLOG_ERROR("REND", "There is no valid value: '%s' from key: '%s' for enum '%s' conversion.", defaultValue, key, yaget::meta::type_name_v<E>().c_str());
+        return E{};
     }
 
     //-------------------------------------------------------------------------------------------------------------------------------

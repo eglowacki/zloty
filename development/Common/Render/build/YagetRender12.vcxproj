@@ -153,11 +153,14 @@
     <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandList.h" />
     <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandListStates.h" />
     <ClInclude Include="..\include\DX12\Render\Commands\RenderCommandTypes.h" />
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderPasses.h" />
     <ClInclude Include="..\include\DX12\Render\Commands\RenderQueue.h" />
+    <ClInclude Include="..\include\DX12\Render\Commands\RenderTarget.h" />
     <ClInclude Include="..\include\DX12\Render\DesktopApplication.h" />
     <ClInclude Include="..\include\DX12\Render\Device.h" />
     <ClInclude Include="..\include\DX12\Render\Logger\RenderLogTags.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\ConstantBuffer.h" />
+    <ClInclude Include="..\include\DX12\Render\Pipeline\PipelineTags.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderGeometries.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\ShaderBuffers.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderMaterialProperties.h" />
@@ -169,6 +172,7 @@
     <ClInclude Include="..\include\DX12\Render\Platform\DeviceDebugger.h" />
     <ClInclude Include="..\include\DX12\Render\Polygons\RenderShape.h" />
     <ClInclude Include="..\include\DX12\Render\RenderCore.h" />
+    <ClInclude Include="..\include\DX12\Render\Scene\RenderSceneItems.h" />
     <ClInclude Include="..\include\DX12\Render\Waiter.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\backends\imgui_impl_dx12.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\backends\imgui_impl_win32.h" />
@@ -204,12 +208,15 @@
     <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandList.cpp" />
     <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandListStates.cpp" />
     <ClCompile Include="..\source\DX12\Render\Commands\RenderCommandTypes.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderPasses.cpp" />
     <ClCompile Include="..\source\DX12\Render\Commands\RenderQueue.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Commands\RenderTarget.cpp" />
     <ClCompile Include="..\source\DX12\Render\DesktopApplication.cpp" />
     <ClCompile Include="..\source\DX12\Render\Device.cpp" />
     <ClCompile Include="..\source\DX12\Render\Helpers\ResourceDescriptions.cpp" />
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\ConstantBuffer.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Pipeline\PipelineTags.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderGeometries.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\ShaderBuffers.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderMaterialProperties.cpp" />
@@ -230,6 +237,7 @@
     <ClCompile Include="..\source\DX12\Render\Platform\SwapChain.cpp" />
     <ClCompile Include="..\source\DX12\Render\Polygons\RenderShape.cpp" />
     <ClCompile Include="..\source\DX12\Render\RenderStringHelpers.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Scene\RenderSceneItems.cpp" />
     <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp" />
     <ClCompile Include="..\source\DX12\Render\UI\Layer.cpp" />
     <ClCompile Include="..\source\DX12\Render\Waiter.cpp" />

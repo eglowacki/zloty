@@ -1,7 +1,7 @@
 {
+    "VertexShader": "VertexShaders@Basic",
+    "PixelShader": "PixelShaders@Basic",
     "BlendMode": "BlendModeOpaque",
-    "DepthState": "DepthStateNone",
-    "PixelShader": "PixelColor",
-    "RasterizerState": "RasterizerStateCounterClockwise",
-    "VertexShader": "VertexPosition | VertexColor"
+    "DepthState": "DepthStencilStateOn",
+    "RasterizerState": "RasterizerStateCounterClockwise"
 }

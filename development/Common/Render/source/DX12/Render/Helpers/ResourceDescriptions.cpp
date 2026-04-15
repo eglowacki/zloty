@@ -1,10 +1,10 @@
 #include "Core/ErrorHandlers.h"
+#include "magic_enum/magic_enum.hpp"
+#include "Render/Cache/AssetCache.h"
 #include "Render/Helpers/ResourceDescriptions.h"
 #include "Render/Platform/D3D12MemAlloc.h"
 #include "Render/Platform/DeviceDebugger.h"
 #include "StringHelpers.h"
-
-#include "magic_enum/magic_enum.hpp"
 
 namespace
 {
@@ -150,4 +150,86 @@ yaget::render::helpers::GpuResourceResult yaget::render::helpers::CreateGpuResou
     UploadData(commandList, texture, uploadAllocation->GetResource(), parameters.mData, parameters.mStride, parameters.mSliceSize);
 
     return { .mGpuAllocation = allocation, .mUploadAllocation = uploadAllocation };
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::ComPtr<ID3D12DescriptorHeap> yaget::render::helpers::CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+{
+    D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+    desc.NumDescriptors = numDescriptors;
+    desc.Type = type;
+    switch (type)
+    {
+        case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:
+        case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:
+            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+            break;
+        case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
+            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            break;
+        case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
+            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            break;
+        default:
+            YAGET_ASSERT(false, std::format("Descriptor Type: '{}' not handled!!!", magic_enum::enum_name(type)).c_str());
+    }
+
+    ComPtr<ID3D12DescriptorHeap> descriptorHeap;
+    const HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap));
+    error_handlers::ThrowOnError(hr, "Could not create DX12 DescriptorHeap");
+
+    YAGET_RENDER_SET_DEBUG_NAME(descriptorHeap.Get(), std::format("DescriptorHeap-{}", magic_enum::enum_name(type)).c_str());
+
+    return descriptorHeap;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::ComPtr<ID3D12Resource> yaget::render::helpers::CreateDepthStencilBuffer(ID3D12Device* device, ID3D12DescriptorHeap* dsDescriptorHeap, size_t width, size_t height, DXGI_FORMAT depthStencilFormat)
+{
+    if (depthStencilFormat == DXGI_FORMAT_UNKNOWN)
+    {
+        return {};
+    }
+
+    YAGET_ASSERT(depthStencilFormat == DXGI_FORMAT_D32_FLOAT || depthStencilFormat == DXGI_FORMAT_D24_UNORM_S8_UINT,
+        std::format("Can not create Depth-Stencil Buffer with invalid format: '%s'.",
+            magic_enum::enum_name(depthStencilFormat)).c_str());
+
+    D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+    depthOptimizedClearValue.Format = depthStencilFormat;
+    depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+    depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+    D3D12_RESOURCE_DESC depthStencilDesc = {};
+    depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    depthStencilDesc.Alignment = 0;
+    depthStencilDesc.Width = width;
+    depthStencilDesc.Height = static_cast<uint32_t>(height);
+    depthStencilDesc.DepthOrArraySize = 1;
+    depthStencilDesc.MipLevels = 0;
+    depthStencilDesc.Format = depthStencilFormat;
+    depthStencilDesc.SampleDesc.Count = 1;
+    depthStencilDesc.SampleDesc.Quality = 0;
+    depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+    D3D12_HEAP_PROPERTIES heapProperties{};
+    heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+    yaget::render::ComPtr<ID3D12Resource> depthStencilBuffer;
+    HRESULT hr = device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &depthStencilDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthOptimizedClearValue, IID_PPV_ARGS(&depthStencilBuffer));
+    yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Depth Stencil buffer");
+
+    YAGET_RENDER_SET_DEBUG_NAME(depthStencilBuffer.Get(), "Depth Stencil Buffer");
+
+    D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
+    depthStencilViewDesc.Format = depthStencilFormat;
+    depthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+    depthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+    device->CreateDepthStencilView(depthStencilBuffer.Get(), &depthStencilViewDesc, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+
+    return depthStencilBuffer;
 }

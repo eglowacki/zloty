@@ -223,11 +223,11 @@ namespace yaget::io
     // This will load asset (blocking call) and will convert json data to T.
     // It checks for null asset, but it silently ignores.
     template <typename T>
-    T LoadBlob(VirtualTransportSystem& vts, const VirtualTransportSystem::Section& section)
+    T LoadBlob(VirtualTransportSystem& vts, const io::Tag& tag)
     {
-        SingleBLobLoader<JsonAsset> loader(vts, section);
+        SingleBLobLoader<JsonAsset> loader(vts, tag);
         
-        T result = loader.GetAsset<T>([&section](auto asset)
+        T result = loader.GetAsset<T>([&tag](auto asset)
         {
             T result{};
             if (asset)
@@ -239,7 +239,7 @@ namespace yaget::io
                 }
                 catch (nlohmann::json::exception& ex)
                 {
-                    YLOG_ERROR("ASET", "Could not convert json: '%s' to: '%s'. %s", section.ToString().c_str(), meta::type_name_v<T>().c_str(), ex.what());
+                    YLOG_ERROR("ASET", "Could not convert json: '%s' to: '%s'. %s", conv::ToString(tag).c_str(), meta::type_name_v<T>().c_str(), ex.what());
                 }
             }
 
@@ -247,6 +247,14 @@ namespace yaget::io
         });
 
         return result;
+    }
+
+    //-------------------------------------------------------------------------------------------------------------------------------
+    template <typename T>
+    T LoadBlob(VirtualTransportSystem& vts, const VirtualTransportSystem::Section& section)
+    {
+        auto tag = vts.GetTag(section);
+        return LoadBlob<T>(vts, tag);
     }
 
     //-------------------------------------------------------------------------------------------------------------------------------

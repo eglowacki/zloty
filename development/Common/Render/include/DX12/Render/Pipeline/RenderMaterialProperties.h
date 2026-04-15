@@ -23,50 +23,53 @@ namespace yaget
 
 namespace yaget::render
 {
-    struct MaterialProperties
-    {
-        AssetCacheType mVertexShader    = AssetCacheType::Empty;
-        AssetCacheType mPixelShader     = AssetCacheType::Empty;
-        AssetCacheType mRasterizerState = AssetCacheType::Empty;
-        AssetCacheType mBlendMode       = AssetCacheType::Empty;
-        AssetCacheType mDepthState      = AssetCacheType::Empty;
-        // this is calculated at run time after loading and reading above types
-        AssetCacheType mSignature       = AssetCacheType::Empty;
-        AssetCacheType mPSO             = AssetCacheType::Empty;
-        AssetCacheType mShaderBuffer    = AssetCacheType::Empty;
+    class PipelineTags;
 
-        bool operator == (MaterialProperties const&) const  = default;
+    struct MaterialPropertyTags
+    {
+        io::Tag mVertexShader;
+        io::Tag mPixelShader;
+        io::Tag mSignature;
+        io::Tag mPSO;
+        io::Tag mShaderBuffer;
     };
 
-    class RenderMaterialProperties : public CacheWatcher<MaterialProperties>
+    class RenderMaterialProperties
     {
     public:
-        RenderMaterialProperties(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
+        RenderMaterialProperties(PipelineTags& pipelineTags, io::VirtualTransportSystem& vts);
         ~RenderMaterialProperties();
 
-        MaterialProperties GetMaterial(const io::Tag& tag);
-        std::vector<MaterialProperties> GetMaterials(const io::Tags& tags);
+        MaterialPropertyTags GetMaterial(const io::Tag& tag);
+        std::vector<MaterialPropertyTags> GetMaterials(const io::Tags& tags);
+
+        void ClearCache(const io::Tag& tag);
 
         static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
         static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
+
+    private:
+        PipelineTags& mPipelineTags;
+        io::VirtualTransportSystem& mVTS;
+
+        using MaterialTags = std::map<io::Tag, MaterialPropertyTags>;
+        MaterialTags mMaterialTags;
+
+        std::shared_mutex mMutexTags;
     };
 }
 
 
-
 template<>
-struct yaget::conv::Convertor<yaget::render::MaterialProperties>
+struct yaget::conv::Convertor<yaget::render::MaterialPropertyTags>
 {
-    static std::string ToString(const yaget::render::MaterialProperties& value)
+    static std::string ToString(const yaget::render::MaterialPropertyTags& value)
     {
-        return std::format("Material Properties:\n\tvs:          '{}'\n\tps:          '{}'\n\tRasterizer:  '{}'\n\tBlend:       '{}'\n\tDepth:       '{}'\n\tSignature    '{}'\n\tPipeline     '{}'\n\tShaderBuffer '{}'.",
-                           render::internal::CacheTypeToString(value.mVertexShader),
-                           render::internal::CacheTypeToString(value.mPixelShader),
-                           render::internal::CacheTypeToString(value.mRasterizerState),
-                           render::internal::CacheTypeToString(value.mBlendMode),
-                           render::internal::CacheTypeToString(value.mDepthState),
-                           render::internal::CacheTypeToString(value.mSignature),
-                           render::internal::CacheTypeToString(value.mPSO),
-                           render::internal::CacheTypeToString(value.mShaderBuffer));
+        return std::format("Material Properties:\n\tvs:          '{}'\n\tps:          '{}'\n\tSignature    '{}'\n\tPipeline     '{}'\n\tShaderBuffer '{}'.",
+                           conv::ToString(value.mVertexShader),
+                           conv::ToString(value.mPixelShader),
+                           conv::ToString(value.mSignature),
+                           conv::ToString(value.mPSO),
+                           conv::ToString(value.mShaderBuffer));
     }
 };

@@ -51,7 +51,7 @@ namespace yaget::render::platform
 {
     inline void SetDebugName(ID3D12Object*, const std::string&, const char*, unsigned) {}
     inline std::string GetDebugName(ID3D12Object*) { return {}; }
-    inline void SetDebugName(ID3D12Object, D3D12MA::Allocation, std::string_view, std::string_view, const std::source_location& location = std::source_location::current()) { location; }
+    inline void SetDebugName(ID3D12Object*, D3D12MA::Allocation*, std::string_view, std::string_view, const std::source_location& location = std::source_location::current()) { location; }
 }
 
 #endif // YAGET_DEBUG_RENDER == 1

@@ -99,6 +99,7 @@ namespace yaget
                 int ResX = 1920;
                 int ResY = 1080;
                 int NumBackBuffers = 2;
+                int DepthStencilFormat = 1; // 0 - not depth stencil buffer, 1 - Depth buffer, 2 - Depth Stencil buffer
                 bool SoftwareRender = false;
                 bool EnableRenderDebugLayer = true;
                 uint32_t LogicTick = time::kFrames_60;  // specifies what is the logic game thread ticking at, defaults to 60
@@ -171,8 +172,6 @@ namespace yaget
             // Graphics related settings and configuration
             struct Graphics
             {
-                // asset file to initial device configuration (VTS.Section)
-                std::string mDevice;
                 bool mMemoryReport = false;
                 // activate GPU crash report
                 bool mGPUTraceback = false;

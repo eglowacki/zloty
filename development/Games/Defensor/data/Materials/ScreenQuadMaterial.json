@@ -1,0 +1,7 @@
+{
+    "VertexShader": "VertexShaders@BasicTexture",
+    "PixelShader": "PixelShaders@BasicTexture",
+    "BlendMode": "BlendModeOpaque",
+    "DepthState": "DepthStateNone",
+    "RasterizerState": "RasterizerStateCounterClockwise"
+}

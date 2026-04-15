@@ -1,3 +1,5 @@
+#include "D3D12MemAlloc.h"
+
 #include "Render/Platform/SwapChain.h"
 #include "StringHelpers.h"
 #include "Render/Platform/DeviceDebugger.h"
@@ -10,7 +12,9 @@
 #include <d3dx12.h>
 #include <dxgi1_6.h>
 
-namespace 
+#include "Render/Helpers/ResourceDescriptions.h"
+
+namespace
 {
     //-------------------------------------------------------------------------------------------------
     bool CheckTearingSupport(const Microsoft::WRL::ComPtr<IDXGIFactory>& factory)
@@ -33,7 +37,8 @@ namespace
 
 
     //-------------------------------------------------------------------------------------------------
-    yaget::render::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, const yaget::render::info::Adapter& adapterInfo, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue, uint32_t numBackBuffers, bool tearingSupported)
+    yaget::render::ComPtr<IDXGISwapChain4> CreateSwapChain(const yaget::app::WindowFrame& windowFrame, const yaget::render::info::Adapter& adapterInfo, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue,
+                                                           uint32_t numBackBuffers, bool tearingSupported)
     {
         const auto& adapterResolution = adapterInfo.GetSelectedResolution();
 
@@ -68,41 +73,31 @@ namespace
         return swapChain4;
     }
 
-
-    //-------------------------------------------------------------------------------------------------
-    yaget::render::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
-    {
-        yaget::render::ComPtr<ID3D12Device4> device4;
-        HRESULT hr = device->QueryInterface<ID3D12Device4>(&device4);
-        yaget::error_handlers::ThrowOnError(hr, "Could not create ID3D12Device4 interface");
-        
-        yaget::render::ComPtr<ID3D12GraphicsCommandList2> commandList;
-        hr = device4->CreateCommandList1(0, type, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&commandList));
-        yaget::error_handlers::ThrowOnError(hr, "Could not create DX12 Command List");
-
-        YAGET_RENDER_SET_DEBUG_NAME(commandList.Get(), "Yaget Command List");
-
-        return commandList;
-    }
-
 } // namespace
 
 
+int yaget::render::platform::SwapChain::DepthBufferFlag = 1 << 0;
+int yaget::render::platform::SwapChain::StencilBufferFlag = 1 << 1;
+
 //-------------------------------------------------------------------------------------------------
-yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, const yaget::render::info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue)
+yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, const info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue)
     : mWindowFrame{ std::move(windowFrame) }
     , mNumBackBuffers{ mWindowFrame.GetSurface().NumBackBuffers() }
     , mTearingSupported{ CheckTearingSupport(factory) }
     , mDevice{ device }
     , mSwapChain{ CreateSwapChain(mWindowFrame, adapterInfo, factory, commandQueue, mNumBackBuffers, mTearingSupported) }
     , mCurrentBackBufferIndex{ mSwapChain->GetCurrentBackBufferIndex() }
-    , mRTVDescriptorHeap{ CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, mNumBackBuffers) }
+    , mRTVDescriptorHeap{ helpers::CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, mNumBackBuffers) }
     , mBackBuffers(mNumBackBuffers, nullptr)
+    , mDepthStencilFormat{ static_cast<DXGI_FORMAT>(adapterInfo.GetSelectedResolution().mDepthStencilFormat) }
+    , mDSVDescriptorHeap{ mDepthStencilFormat == DXGI_FORMAT_UNKNOWN ? ComPtr<ID3D12DescriptorHeap>{} : helpers::CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1) }
+    , mDepthStencilBuffer{ helpers::CreateDepthStencilBuffer(mDevice, mDSVDescriptorHeap.Get(), mWindowFrame.GetSurface().GetSizeX<size_t>(), mWindowFrame.GetSurface().GetSizeY<size_t>(), mDepthStencilFormat) }
 {
     UpdateRenderTargetViews();
     Resize();
 
-    YLOG_INFO("DEVI", "Swap Chain created with '%d' Back Buffers, VSync: '%s' and Tearing Supported: '%s'.", mNumBackBuffers, conv::ToBool(mWindowFrame.GetSurface().VSync()).c_str(), conv::ToBool(mTearingSupported).c_str());
+    YLOG_INFO("DEVI", "Swap Chain created with '%d' Back Buffers, VSync: '%s' and Tearing Supported: '%s'.", mNumBackBuffers, conv::ToBool(mWindowFrame.GetSurface().VSync()).c_str(),
+              conv::ToBool(mTearingSupported).c_str());
 }
 
 
@@ -113,6 +108,9 @@ yaget::render::platform::SwapChain::~SwapChain() = default;
 //-------------------------------------------------------------------------------------------------
 void yaget::render::platform::SwapChain::Resize()
 {
+    mDepthStencilBuffer.Reset();
+    mDSVDescriptorHeap.Reset();
+
     for (int i = 0; i < mNumBackBuffers; ++i)
     {
         // Any references to the back buffers must be released
@@ -135,6 +133,12 @@ void yaget::render::platform::SwapChain::Resize()
 
     mCurrentBackBufferIndex = mSwapChain->GetCurrentBackBufferIndex();
     UpdateRenderTargetViews();
+
+    if (mDepthStencilFormat != DXGI_FORMAT_UNKNOWN)
+    {
+        mDSVDescriptorHeap = helpers::CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
+        mDepthStencilBuffer = helpers::CreateDepthStencilBuffer(mDevice, mDSVDescriptorHeap.Get(), chainDesc.Width, chainDesc.Height, mDepthStencilFormat);
+    }
 }
 
 
@@ -146,9 +150,46 @@ ID3D12Resource* yaget::render::platform::SwapChain::GetCurrentRenderTarget() con
 
 
 //-------------------------------------------------------------------------------------------------
+ID3D12Resource* yaget::render::platform::SwapChain::GetCurrentDepthStencil() const
+{
+    return mDepthStencilBuffer.Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
 ID3D12DescriptorHeap* yaget::render::platform::SwapChain::GetRTVDescriptorHeap() const
 {
     return mRTVDescriptorHeap.Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+ID3D12DescriptorHeap* yaget::render::platform::SwapChain::GetDSVDescriptorHeap() const
+{
+    return mDSVDescriptorHeap.Get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+DXGI_SWAP_CHAIN_DESC1 yaget::render::platform::SwapChain::GetDescription() const
+{
+    DXGI_SWAP_CHAIN_DESC1 chainDesc = {};
+    HRESULT hr = mSwapChain->GetDesc1(&chainDesc);
+    error_handlers::ThrowOnError(hr, "Could not get DX12 swap chain description");
+
+    return chainDesc;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+D3D12_RESOURCE_DESC yaget::render::platform::SwapChain::GetDepthStencilDescription() const
+{
+    if (mDepthStencilBuffer)
+    {
+        return mDepthStencilBuffer->GetDesc();
+    }
+
+    return {};
 }
 
 
@@ -182,7 +223,7 @@ void yaget::render::platform::SwapChain::UpdateRenderTargetViews()
         const HRESULT hr = mSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer));
         error_handlers::ThrowOnError(hr, "Could not get DX12 SwapChain Back Buffer");
 
-        YAGET_RENDER_SET_DEBUG_NAME(backBuffer.Get(), std::format("Yaget Back Buffer {}", i));
+        YAGET_RENDER_SET_DEBUG_NAME(backBuffer.Get(), std::format("Back Buffer {}", i));
 
         mDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
         mBackBuffers[i] = backBuffer;
