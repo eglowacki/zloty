@@ -15,8 +15,9 @@
 //! \file
 #pragma once
 
-//#include "YagetCore.h"
 #include "Components/SystemsCoordinator.h"
+
+#include "Squadron/BulletSystem.h"
 #include "Squadron/MenuSystem.h"
 #include "Squadron/PlayerSystem.h"
 #include "Squadron/SquadronSystem.h"
@@ -27,7 +28,7 @@
 
 namespace defensor::game
 {
-    class DefensorSystemsCoordinator : public yaget::comp::gs::SystemsCoordinator<GameCoordinatorSet, Messaging, Application, ProcessInputSystem, MenuSystem, PlayerSystem, SquadronSystem, DefensorStagerSystem, ClearInputSystem, FrameStateCollectorSystem>
+    class DefensorSystemsCoordinator : public yaget::comp::gs::SystemsCoordinator<GameCoordinatorSet, Messaging, Application, ProcessInputSystem, MenuSystem, PlayerSystem, BulletSystem, SquadronSystem, DefensorStagerSystem, ClearInputSystem, FrameStateCollectorSystem>
     {
     public:
         DefensorSystemsCoordinator(Messaging& m, Application& app);

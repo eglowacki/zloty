@@ -41,16 +41,7 @@ namespace defensor::game
 
         void SaveAction(const std::string& actionName, uint64_t timeStamp, int32_t mouseX, int32_t mouseY, uint32_t flags);
 
-        struct ActionInput
-        {
-            std::string mName;
-            uint64_t mTimeStamp;
-            int32_t mMouseX;
-            int32_t mMouseY;
-            uint32_t mFlags;
-        };
-
-        std::map<std::string, ActionInput> mActionInputs;
+        std::map<std::string, comp::InputComponent::ActionInput> mActionInputs;
 
         std::string mActiveContextName;
     };

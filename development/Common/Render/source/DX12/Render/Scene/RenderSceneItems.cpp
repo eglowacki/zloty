@@ -87,9 +87,16 @@ uint64_t yaget::render::scene::SceneItem::GetRenderOrder() const
     uint64_t order{};
     uint32_t propertiesOrder = 0;
 
-    order = (static_cast<uint64_t>(mRenderPassOrder) << 32) | propertiesOrder;
+    order = (static_cast<uint64_t>(mTags.mRenderPassOrder) << 32) | propertiesOrder;
 
     return order;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+const yaget::render::scene::SceneItem::Tags& yaget::render::scene::SceneItem::GetTags() const
+{
+    return mTags;
 }
 
 
@@ -177,8 +184,16 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         sceneItem.mPipelineState = pso;
         sceneItem.mConstantBuffer = constantBuffer;
         sceneItem.mGeometryData = geometryData;
-        sceneItem.mRenderPassOrder = itemProperties.mRenderOrder;
         std::ranges::copy(textures.begin(), textures.end(), std::back_inserter(sceneItem.mTextureResources));
+
+        sceneItem.mTags = 
+        {
+            .mMaterialTag = materialTag,
+            .mGeometryTag = geometryTag,
+            .mTexturesTags = {},
+            .mRenderPassOrder =  itemProperties.mRenderOrder
+        };
+        std::ranges::copy(texturesTags.begin(), texturesTags.end(), std::back_inserter(sceneItem.mTags.mTexturesTags));
 
         results.push_back(&sceneItem);
     }
@@ -209,6 +224,14 @@ void yaget::render::scene::SceneItemsStorage::ResetAll(const app::WindowFrame& /
 {
     mt::WriteLock locker(mMutex);
     mItems.clear();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::scene::SceneItemsStorage::ClearItem(const io::Tag& tag)
+{
+    mt::WriteLock locker(mMutex);
+    mItems.erase(tag);
 }
 
 

@@ -78,6 +78,7 @@ namespace yaget::render
         //BlendMode...            = 1ULL << 34,
 
         // describe pipeline state rasterizer, uses MaskRasterizerState
+        RasterizerStateNone             = 1ULL << 34,
         RasterizerStateClockwise        = 1ULL << 35,
         RasterizerStateCounterClockwise = 1ULL << 36,
         RasterizerStateWireframe        = 1ULL << 37,

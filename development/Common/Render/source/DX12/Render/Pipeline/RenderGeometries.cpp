@@ -13,7 +13,6 @@
 
 namespace
 {
-    size_t GeometryBufferVersion = 1;
     //-------------------------------------------------------------------------------------------------
     yaget::render::AssetCacheType GetVertexFormat(const yaget::Strings& stringsAsset)
     {
@@ -126,33 +125,6 @@ namespace
 
 
     //-------------------------------------------------------------------------------------------------
-    template<typename V, typename I>
-    yaget::io::Buffer SerializeToBuffer(yaget::render::AssetCacheType vertexFormat, const V& vertices, const I& indices)
-    {
-        size_t bufferSize = yaget::render::geom::HeaderBufferSize + vertices.size() * sizeof(V::value_type) + indices.size() * sizeof(I::value_type);
-
-        yaget::render::YagetFileSignature signature;
-        signature.Version = GeometryBufferVersion;
-
-        yaget::render::geom::Header header;
-        header.mVertexFormat = vertexFormat;
-        header.mVertexFormatSize = sizeof(V::value_type);
-        header.mIndexFormatSize = sizeof(I::value_type);
-        header.mNumVertices = vertices.size();
-        header.mNumIndices = indices.size();
-
-        yaget::io::MessagingBuffer messagingBuffer(bufferSize);
-        messagingBuffer.WriteDataChunk(&signature, sizeof(signature));
-        messagingBuffer.WriteDataChunk(&header, sizeof(header));
-
-        messagingBuffer.WriteDataChunk(static_cast<const void*>(vertices.data()), vertices.size() * sizeof(V::value_type));
-        messagingBuffer.WriteDataChunk(static_cast<const void*>(indices.data()), indices.size() * sizeof(I::value_type));
-
-        return messagingBuffer.mBuffer;
-    }
-
-
-    //-------------------------------------------------------------------------------------------------
     struct GeometryResourceResult
     {
         yaget::render::helpers::GpuResourceResult mVertices;
@@ -223,9 +195,9 @@ namespace
 bool yaget::render::geom::ValidateDataLayout(const io::Buffer& buffer)
 {
     const YagetFileSignature* signature = io::cast_data<const YagetFileSignature>(buffer);
-    if (!signature->IsValid(GeometryBufferVersion))
+    if (!signature->IsValid(GeometriesResources::GeometryBufferVersion))
     {
-        YLOG_ERROR("DEVI", "Invalid geometry buffer signature '%d'. Expected 'GLOW' with version <= %d.", signature->Version, GeometryBufferVersion);
+        YLOG_ERROR("DEVI", "Invalid geometry buffer signature '%d'. Expected 'GLOW' with version <= %d.", signature->Version, GeometriesResources::GeometryBufferVersion);
         return false;
     }
 
@@ -291,6 +263,14 @@ void yaget::render::RenderGeometries::Preload(const io::Tags& tags)
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::render::RenderGeometries::AttachGeometry(const io::Tag& tag, io::Buffer buffer)
+{
+    std::lock_guard mutexLocker(mMutex);
+    mAssets[tag] = buffer;
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::RenderGeometries::PopulateMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
 {
 }
@@ -347,6 +327,10 @@ yaget::io::Buffer yaget::render::RenderGeometries::LoadGeometry(const io::Tag& t
 
     return buffer;
 }
+
+
+//-------------------------------------------------------------------------------------------------
+size_t yaget::render::GeometriesResources::GeometryBufferVersion = 1;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -505,6 +489,12 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
     framerHandler.EndFrame();
 
     return results;
+}
+
+void yaget::render::GeometriesResources::ClearResource(const io::Tag& tag)
+{
+    mt::WriteLock writeLocker(mSharedMutex);
+    mResources.erase(tag);
 }
 
 

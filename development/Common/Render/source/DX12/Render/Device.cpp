@@ -116,6 +116,13 @@ yaget::render::platform::SwapChain& yaget::render::DeviceB::GetSwapChain() const
 
 
 //-------------------------------------------------------------------------------------------------
+const yaget::app::WindowFrame& yaget::render::DeviceB::GetWindowFrame() const
+{
+    return mWindowFrame;
+}
+
+
+//-------------------------------------------------------------------------------------------------
 size_t yaget::render::DeviceB::RegisterResizeCallback(ResizeCallback callback)
 {
     mNextResizeCallbackId++;

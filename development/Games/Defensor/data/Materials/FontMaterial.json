@@ -1,0 +1,6 @@
+{
+    "VertexShader": "VertexShaders@Font",
+    "PixelShader": "PixelShaders@Font",
+    "BlendMode": "BlendModeOpaque",
+    "DepthState": "DepthStateNone"
+}

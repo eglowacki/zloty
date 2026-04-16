@@ -26,6 +26,11 @@ namespace defensor::game
         PlayerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet);
 
     private:
+        using Section = io::VirtualTransportSystem::Section;
+
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, comp::LocationComponent3* locationComponent, const comp::InputComponent* inputComponent);
+        void AddPlayerBullet(comp::Id_t id, const std::string& itemName, const Section& materialSection, math3d::Vector3 bulletPosition);
+
+        bool mBulletActive = false;
     };
 }

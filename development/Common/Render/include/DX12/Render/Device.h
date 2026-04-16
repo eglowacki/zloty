@@ -100,6 +100,7 @@ namespace yaget::render
         const platform::Adapter& GetAdapter() const { return *mAdapter.get(); }
         platform::SwapChain& GetSwapChain() const;
         const info::Adapter& GetSelectedAdapter() const { return mSelectedAdapter; }
+        const app::WindowFrame& GetWindowFrame() const;
 
         // this allows us to register for device resizing, so dependent resource
         // cna be reset and recreated.

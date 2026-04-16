@@ -32,6 +32,28 @@
         ],
         "name": "Materials@BasicTextureMaterial"
     },
+    "Materials@DefensorBulletMaterial": {
+        "dependencies": [
+            {
+                "dependencies": [
+                    {
+                        "dependencies": [
+                            {
+                                "dependencies": [
+                                    "VertexShaders@DefensorBullet",
+                                    "PixelShaders@DefensorShip"
+                                ],
+                                "name": "Transient@Constant=vertexDefensorBullet-pixelDefensorShip=ShaderBuffer"
+                            }
+                        ],
+                        "name": "Transient@Signature=vertexDefensorBullet-pixelDefensorShip"
+                    }
+                ],
+                "name": "Transient@PSO=Signature=vertexDefensorBullet-pixelDefensorShip=BlendModeAlpha-RasterizerStateCounterClockwise-DepthStateOn-TopologyStateTriangle-RTVFormatRGBA8"
+            }
+        ],
+        "name": "Materials@DefensorBulletMaterial"
+    },
     "Materials@DefensorShipMaterial": {
         "dependencies": [
             {
@@ -53,6 +75,28 @@
             }
         ],
         "name": "Materials@DefensorShipMaterial"
+    },
+    "Materials@FontMaterial": {
+        "dependencies": [
+            {
+                "dependencies": [
+                    {
+                        "dependencies": [
+                            {
+                                "dependencies": [
+                                    "VertexShaders@Font",
+                                    "PixelShaders@Font"
+                                ],
+                                "name": "Transient@Constant=vertexFont-pixelFont=ShaderBuffer"
+                            }
+                        ],
+                        "name": "Transient@Signature=vertexFont-pixelFont"
+                    }
+                ],
+                "name": "Transient@PSO=Signature=vertexFont-pixelFont=BlendModeOpaque-RasterizerStateNone-DepthStateNone-TopologyStateTriangle-RTVFormatRGBA8"
+            }
+        ],
+        "name": "Materials@FontMaterial"
     },
     "Materials@ScreenQuadMaterial": {
         "dependencies": [

@@ -546,8 +546,9 @@ void yaget::render::ResourceReflector::GenerateSignature(RootParameters& rootPar
 
                 // NOTE(eg) we may want to consider having path for small (one matrix?) root const buffer
                 CD3DX12_ROOT_PARAMETER1 rootParameter = {};
+                constexpr size_t MaxConstantVariableSize = 4;
 
-                if (constantBufferDesc.Variables * constantBufferDesc.Size <= sizeof(float) * 4)
+                if (constantBufferDesc.Variables * constantBufferDesc.Size <= sizeof(float) * MaxConstantVariableSize)
                 {
                     rootParameter.InitAsConstants(constantBufferDesc.Size / 4, shaderInputBindDesc.BindPoint, shaderInputBindDesc.Space, mShaderVisibility);
                 }

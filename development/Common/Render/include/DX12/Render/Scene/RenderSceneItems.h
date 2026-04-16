@@ -17,6 +17,7 @@
 #include "VTS/VirtualTransportSystem.h"
 #include "Render/Pipeline/RenderGeometries.h"
 #include "Render/Polygons/RenderShape.h"
+#include "Render/Pipeline/RenderShaders.h"
 
 namespace yaget::app
 {
@@ -56,6 +57,14 @@ namespace yaget::render::scene
     public:
         static inline uint32_t PassOrderIndependent = 0;
 
+        struct Tags
+        {
+            io::Tag mMaterialTag;
+            io::Tag mGeometryTag;
+            io::Tags mTexturesTags;
+            uint32_t mRenderPassOrder{ PassOrderIndependent };
+        };
+
         SceneItem();
         ~SceneItem();
 
@@ -71,6 +80,7 @@ namespace yaget::render::scene
         // are combination of properties, like root, pipeline, constants, geometry data and texture resources.
         // That means the lower value of mRenderPassOrder will be rendered 'first'
         uint64_t GetRenderOrder() const;
+        const Tags& GetTags() const;
 
     private:
         friend SceneItemsStorage;
@@ -85,8 +95,8 @@ namespace yaget::render::scene
         std::vector<ID3D12DescriptorHeap*> mTextureResources{};
 
         RenderShape mRenderShape;
-
-        uint32_t mRenderPassOrder{ PassOrderIndependent };
+        Tags mTags;
+        //uint32_t mRenderPassOrder{ PassOrderIndependent };
     };
 
 
@@ -114,6 +124,8 @@ namespace yaget::render::scene
 
         void Preload(const io::Tags& tags);
         void ResetAll(const app::WindowFrame& windowFrame);
+
+        void ClearItem(const io::Tag& tag);
 
         static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
         static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);

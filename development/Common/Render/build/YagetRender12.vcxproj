@@ -173,6 +173,7 @@
     <ClInclude Include="..\include\DX12\Render\Polygons\RenderShape.h" />
     <ClInclude Include="..\include\DX12\Render\RenderCore.h" />
     <ClInclude Include="..\include\DX12\Render\Scene\RenderSceneItems.h" />
+    <ClInclude Include="..\include\DX12\Render\UI\FontRender.h" />
     <ClInclude Include="..\include\DX12\Render\Waiter.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\backends\imgui_impl_dx12.h" />
     <ClInclude Include="..\source\DX12\imgui-docking\backends\imgui_impl_win32.h" />
@@ -239,6 +240,7 @@
     <ClCompile Include="..\source\DX12\Render\RenderStringHelpers.cpp" />
     <ClCompile Include="..\source\DX12\Render\Scene\RenderSceneItems.cpp" />
     <ClCompile Include="..\source\DX12\Render\Triangle\Triangle.cpp" />
+    <ClCompile Include="..\source\DX12\Render\UI\FontRender.cpp" />
     <ClCompile Include="..\source\DX12\Render\UI\Layer.cpp" />
     <ClCompile Include="..\source\DX12\Render\Waiter.cpp" />
   </ItemGroup>

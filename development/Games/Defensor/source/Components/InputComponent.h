@@ -31,16 +31,26 @@ namespace yaget::comp
     class InputComponent : public db::PersistentBaseComponent<db_input::ValueTypes>
     {
     public:
+        struct ActionInput
+        {
+            std::string mName;
+            uint64_t mTimeStamp;
+            int32_t mMouseX;
+            int32_t mMouseY;
+            uint32_t mFlags;
+        };
+
         InputComponent(Id_t id, const db_input::ActionNames::Types& event = {})
             : PersistentBaseComponent(id, std::tie(event))
         {}
 
         bool IsAction(const std::string& actionName) const
         {
-            return mTriggeredAction.find(actionName) != mTriggeredAction.end();
+            return mTriggeredAction.contains(actionName);
         }
 
-        std::set<std::string> mTriggeredAction;
+        std::map<std::string, ActionInput> mTriggeredAction;
+        //std::set<std::string> mTriggeredAction;
     };
 
 } // namespace yaget::comp

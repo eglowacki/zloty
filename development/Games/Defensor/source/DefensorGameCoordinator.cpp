@@ -290,17 +290,24 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     else
     {
         constexpr auto stageId = comp::GLOBAL_ID_MARKER;
-        auto stageComponent = LoadComponent<items::StageComponent>(stageId);
-
-        const auto& startingStage = dev::CurrentConfiguration().mInit.mStartingStage;
-        if (!startingStage.empty())
+        if (auto stageComponent = LoadComponent<items::StageComponent>(stageId))
         {
-            stageComponent->SetValue<items::db_stage::Name>(startingStage);
-        }
+            const auto& startingStage = dev::CurrentConfiguration().mInit.mStartingStage;
+            if (!startingStage.empty())
+            {
+                stageComponent->SetValue<items::db_stage::Name>(startingStage);
+            }
 
-        auto& inputSystem = GetGameSystem<ProcessInputSystem>();
-        inputSystem.SetContext("Game");
-        app.Input().PushContext("Game");
+            auto& inputSystem = GetGameSystem<ProcessInputSystem>();
+            inputSystem.SetContext("Game");
+            app.Input().PushContext("Game");
+        }
+        else
+        {
+            auto& inputSystem = GetGameSystem<ProcessInputSystem>();
+            inputSystem.SetContext("Edit");
+            app.Input().PushContext("Edit");
+        }
     }
 }
 

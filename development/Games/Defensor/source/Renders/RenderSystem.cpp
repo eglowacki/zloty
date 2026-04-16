@@ -1,11 +1,12 @@
 #include "MemoryManager/NewAllocator.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Device.h"
-#include "Render/Pipeline/ConstantBuffer.h"
+//#include "Render/Pipeline/ConstantBuffer.h"
 #include "Render/Pipeline/ShaderBuffers.h"
 #include "Render/Platform/Adapter.h"
 #include "Renders/RenderSystem.h"
-#include "Render/Cache/AssetCache.h"
+//#include "Render/Cache/AssetCache.h"
+#include "Render/UI/FontRender.h"
 
 #include <ranges>
 
@@ -53,10 +54,11 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
                          mTextureResources,
                          mGeometryResources,
                          app.VTS(), GetSection("SceneItems"))
+    , mFontStorage(mRenderGeometries, mGeometryResources, mSceneItemsStorage, app.VTS())
     , mRenderPasses{ app.VTS() }
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
-    //io::AttachTransientAsset(mSceneRenderTargetTag, app.VTS());
+    mFontTag.mGuid = NewGuid();
 
     mApp.PoolThread().AddTask([this]()
     {
@@ -82,6 +84,22 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     if (id == comp::END_ID_MARKER)
     {
         memory::StartRecordAllocations();
+        auto fontTag = mApp.VTS().GetTag(Section{ "SceneItems@MediumFont" });
+
+        constexpr float FpsAlpha = 0.5f;
+        // let's show frame rate here, using stb library for generating text
+        mFramesThisSecond++;
+        mCurrentCalcTime += gameClock.GetDeltaTimeSecond();
+        if (mCurrentCalcTime > 1.0f)
+        {
+            mAverageFps = FpsAlpha * mAverageFps + (1.0f - FpsAlpha) * mFramesThisSecond;
+            auto framePerSecond = std::format("FPS: {}", static_cast<uint32_t>(mAverageFps));
+            colors::Color textColor(colors::Red);
+            mFontStorage.UpdateText(fontTag, framePerSecond, 10, 10, 3.0f, &textColor);
+
+            mCurrentCalcTime -= 1.0f;
+            mFramesThisSecond = 0;
+        }
 
         const auto& renderPasses = mRenderPasses.GetPasses();
 
@@ -90,39 +108,45 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
         for (const auto& renderPass: renderPasses)
         {
+            struct ItemToRender
+            {
+                scene::SceneItem* mItem{};
+                math3d::Matrix mWorldViewProj;
+                float mTime{};
+            };
+
+            std::vector<ItemToRender> itemsToRender;
             auto renderTarget = mRenderTargetStorage.FindRenderTarget(renderPass.mRenderTargetTag);
 
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
             auto commandList = frameCommands.BeginFrame(&color);
+            auto viewMatrix = renderPass.GetViewMatrix();
+            auto orthoMatrix = renderPass.GetProjectionMatrix();
 
             if (renderPass.mSceneItemTags.empty())
             {
-                std::vector<scene::SceneItem*> itemsToRender;
-                coordinator.ForEach<RenderEntity>([&itemsToRender, this](comp::Id_t /*id*/, const auto& row)
+                coordinator.ForEach<RenderEntity>([&itemsToRender, &viewMatrix, &orthoMatrix, this](comp::Id_t /*id*/, const auto& row)
                 {
                     auto renderComponent = std::get<RenderComponent*>(row);
-
-                    Section section(renderComponent->mSceneItemTag);
-                    if (section.mFilter == "Defensor-Ship")
-                    {
-                        const auto& matrix = renderComponent->mMatrix;
-                        YLOG_WARNING("REND", std::format("============= Ship Position: {}", conv::ToString(matrix.Translation())).c_str());
-                    }
-
                     auto sceneItem = mSceneItemsStorage.GetSceneItem(renderComponent->mSceneItemTag);
 
+                    auto worldViewProj = (renderComponent->mMatrix * viewMatrix * orthoMatrix).Transpose();
+                    //sceneItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, worldViewProj);
+
                     float timeData = 1.0f;
-                    sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
-                    itemsToRender.push_back(sceneItem);
+                    //sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+                    itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = worldViewProj, .mTime = timeData });
 
                     return true;
                 });
 
-                scene::SceneItemsStorage::SortSceneItems(itemsToRender);
-                std::ranges::for_each(itemsToRender, [commandList](scene::SceneItem* item)
-                {
-                    item->Render(commandList);
-                });
+                auto fontItem = mSceneItemsStorage.GetSceneItem(fontTag);
+                const auto& windowSize = GetDevice().GetWindowFrame().GetSurface().GetSize<float>();
+                auto projectionMatrix = math3d::Matrix::CreateOrthographicOffCenter(0,  std::get<0>(windowSize), std::get<1>(windowSize), 0, 0, 1);
+
+                auto worldViewProj = projectionMatrix.Transpose();
+                //fontItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, worldViewProj);
+                itemsToRender.push_back({ .mItem = fontItem, .mWorldViewProj = worldViewProj, .mTime = 1.0f });
             }
             else
             {
@@ -131,10 +155,24 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                     auto sceneItem = mSceneItemsStorage.GetSceneItem(sceneItemTag);
 
                     float timeData = 1.0f;
-                    sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
-                    sceneItem->Render(commandList);
+                    //sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+                    itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = math3d::Matrix::Identity, .mTime = timeData });
                 }
             }
+
+            std::ranges::sort(itemsToRender, [](const ItemToRender& item1, const ItemToRender& item2)
+            {
+                return item1.mItem->GetRenderOrder() < item2.mItem->GetRenderOrder();
+            });
+
+            //scene::SceneItemsStorage::SortSceneItems(itemsToRender);
+            std::ranges::for_each(itemsToRender, [commandList](ItemToRender& item)
+            {
+                item.mItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, item.mWorldViewProj);
+                item.mItem->UpdateData(constant_shader_types::ConstantTypes::Time, item.mTime);
+                item.mItem->Render(commandList);
+            });
+
             frameCommands.EndFrame();
         }
 
@@ -151,7 +189,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             if (auto data = sceneComponent->FindState(id))
             {
                 auto renderComponent = std::get<RenderComponent*>(row);
-                renderComponent->mMatrix = math3d::Matrix(data->mMatrix);
+                renderComponent->UpdateMatrix(math3d::Matrix(data->mMatrix));
 
                 if (renderComponent->mSceneItemTag.mGuid != Guid(data->mAssetGuid))
                 {

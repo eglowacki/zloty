@@ -130,6 +130,9 @@ namespace yaget::render
 
         void Preload(const io::Tags& tags);
 
+        // This provides option to attach buffer without going through the VTS, loading strings and parsing
+        void AttachGeometry(const io::Tag& tag, io::Buffer buffer);
+
         static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
         static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
 
@@ -143,6 +146,8 @@ namespace yaget::render
     class GeometriesResources
     {
     public:
+        static size_t GeometryBufferVersion;
+
         GeometriesResources(DeviceB& device, RenderGeometries& renderTextures);
         ~GeometriesResources();
 
@@ -156,6 +161,8 @@ namespace yaget::render
 
         GeometryData GetResource(const io::Tag& tag);
         std::vector<GeometryData> GetResources(const io::Tags& tags);
+
+        void ClearResource(const io::Tag& tag);
 
         void Preload(const io::Tags& tags);
 
@@ -179,5 +186,32 @@ namespace yaget::render
 
         std::shared_mutex mSharedMutex;
     };
+
+
+    //-------------------------------------------------------------------------------------------------
+    template<typename V, typename I>
+    io::Buffer SerializeToBuffer(AssetCacheType vertexFormat, const V& vertices, const I& indices)
+    {
+        size_t bufferSize = geom::HeaderBufferSize + vertices.size() * sizeof(V::value_type) + indices.size() * sizeof(I::value_type);
+
+        YagetFileSignature signature;
+        signature.Version = GeometriesResources::GeometryBufferVersion;
+
+        geom::Header header;
+        header.mVertexFormat = vertexFormat;
+        header.mVertexFormatSize = sizeof(V::value_type);
+        header.mIndexFormatSize = sizeof(I::value_type);
+        header.mNumVertices = vertices.size();
+        header.mNumIndices = indices.size();
+
+        io::MessagingBuffer messagingBuffer(bufferSize);
+        messagingBuffer.WriteDataChunk(&signature, sizeof(signature));
+        messagingBuffer.WriteDataChunk(&header, sizeof(header));
+
+        messagingBuffer.WriteDataChunk(static_cast<const void*>(vertices.data()), vertices.size() * sizeof(V::value_type));
+        messagingBuffer.WriteDataChunk(static_cast<const void*>(indices.data()), indices.size() * sizeof(I::value_type));
+
+        return messagingBuffer.mBuffer;
+    }
 
 }

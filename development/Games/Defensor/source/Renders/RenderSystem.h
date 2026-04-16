@@ -28,6 +28,7 @@
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Pipeline/ShaderBuffers.h"
 #include "Render/Scene/RenderSceneItems.h"
+#include "Render/UI/FontRender.h"
 
 
 namespace defensor::render
@@ -74,6 +75,7 @@ namespace defensor::render
         yaget::render::GeometriesResources mGeometryResources;
         yaget::render::commands::RenderTargetStorage mRenderTargetStorage;
         yaget::render::scene::SceneItemsStorage mSceneItemsStorage;
+        yaget::render::ui::FontStorage mFontStorage;
         yaget::render::commands::RenderPasses mRenderPasses;
         io::Tag mSwapChainRenderTargetTag{ .mName = "SwapChainRenderTarget", .mGuid = NewGuid() };
         io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTarget", .mGuid = NewGuid() };
@@ -81,6 +83,13 @@ namespace defensor::render
         size_t mResizeCallbackId{};
 
         RenderState mCurrentRenderState;
+
+        io::Tag mFontTag;
+
+        // frame rate calculations
+        float mFramesThisSecond = 1;
+        float mAverageFps = 1.0f;
+        float mCurrentCalcTime = 0.0f;
     };
 
 }
