@@ -1,6 +1,14 @@
 #include "Render/Pipeline/ConstantBuffer.h"
+#include "Render/Pipeline/ShaderBuffers.h"
 #include "Render/Platform/D3D12MemAlloc.h"
 #include "Render/Platform/DeviceDebugger.h"
+
+
+//--------------------------------------------------------------------------------------------------
+yaget::render::ComPtr<ID3D12Resource> yaget::render::ConstantBuffer::ShaderVariable::GetResource(uint32_t bufferIndex, size_t dataSize) const
+{
+    return mShaderBuffers->GetNextResource(bufferIndex, dataSize);
+}
 
 
 //--------------------------------------------------------------------------------------------------
@@ -30,7 +38,7 @@ yaget::render::ConstantBuffer::~ConstantBuffer()
 
 
 //--------------------------------------------------------------------------------------------------
-bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize)
+bool yaget::render::ConstantBuffer::UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize)
 {
     if (auto variable = FindVariable(constantTypes))
     {
@@ -47,6 +55,8 @@ bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTy
         }
         else if (variable->mRootType == constant_shader_types::RootType::ConstantBufferView)
         {
+            variable->mResource = variable->GetResource(bufferIndex, dataSize);
+
             D3D12_RANGE emptyRange = { 0, 0 };
             void* mappedPtr = nullptr;
             HRESULT hr = variable->mResource->Map(0, &emptyRange, &mappedPtr);
@@ -81,20 +91,6 @@ bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTy
     }
 
     return true;
-}
-
-
-//--------------------------------------------------------------------------------------------------
-bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTypes constantTypes, ID3D12DescriptorHeap* resourceView)
-{
-    return UpdateData<ID3D12DescriptorHeap*>(constantTypes, resourceView);
-}
-
-
-//--------------------------------------------------------------------------------------------------
-bool yaget::render::ConstantBuffer::UpdateData(constant_shader_types::ConstantTypes constantTypes, const void* data, size_t dataSize)
-{
-    return UpdateData(constantTypes, static_cast<const uint8_t*>(data), dataSize);
 }
 
 

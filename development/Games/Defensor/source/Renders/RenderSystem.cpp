@@ -1,11 +1,9 @@
 #include "MemoryManager/NewAllocator.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Device.h"
-//#include "Render/Pipeline/ConstantBuffer.h"
 #include "Render/Pipeline/ShaderBuffers.h"
 #include "Render/Platform/Adapter.h"
 #include "Renders/RenderSystem.h"
-//#include "Render/Cache/AssetCache.h"
 #include "Render/UI/FontRender.h"
 
 #include <ranges>
@@ -43,7 +41,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mRenderMaterials(mPipelineTags, app.VTS())
     , mRenderTextures(app.VTS(), GetSection("Textures"))
     , mTextureResources(GetDevice(), mRenderTextures)
-    , mShaderBuffers(GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
+    , mShaderBuffers(GetDevice().GetWindowFrame().GetSurface().NumBackBuffers(), GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
     , mRenderGeometries(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Geometries"))
     , mGeometryResources(GetDevice(), mRenderGeometries)
     , mRenderTargetStorage(GetDevice().GetAdapter().GetDevice(), GetDevice().GetSwapChain(), mTextureResources, app.VTS())
@@ -119,6 +117,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             auto renderTarget = mRenderTargetStorage.FindRenderTarget(renderPass.mRenderTargetTag);
 
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
+            auto currentFrameIndex = frameCommands.GetFrameIndex();
             auto commandList = frameCommands.BeginFrame(&color);
             auto viewMatrix = renderPass.GetViewMatrix();
             auto orthoMatrix = renderPass.GetProjectionMatrix();
@@ -166,11 +165,11 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             });
 
             //scene::SceneItemsStorage::SortSceneItems(itemsToRender);
-            std::ranges::for_each(itemsToRender, [commandList](ItemToRender& item)
+            std::ranges::for_each(itemsToRender, [commandList, currentFrameIndex](ItemToRender& item)
             {
-                item.mItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, item.mWorldViewProj);
-                item.mItem->UpdateData(constant_shader_types::ConstantTypes::Time, item.mTime);
-                item.mItem->Render(commandList);
+                item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::WorldViewProjection, item.mWorldViewProj);
+                item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::Time, item.mTime);
+                item.mItem->Render(currentFrameIndex, commandList);
             });
 
             frameCommands.EndFrame();

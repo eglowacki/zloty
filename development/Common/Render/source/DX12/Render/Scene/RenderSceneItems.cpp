@@ -54,7 +54,7 @@ yaget::render::scene::SceneItem::~SceneItem() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::scene::SceneItem::Render(commands::CommandList* commandList)
+void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, commands::CommandList* commandList)
 {
     auto deviceCommandList = commandList->GetDeviceCommandList();
 
@@ -71,7 +71,7 @@ void yaget::render::scene::SceneItem::Render(commands::CommandList* commandList)
 
     for (size_t i = 0; i < mTextureResources.size(); ++i)
     {
-        mConstantBuffer->UpdateData(textureTypes[i], mTextureResources[i]);
+        mConstantBuffer->UpdateData(bufferIndex, textureTypes[i], mTextureResources[i]);
     }
 
     mConstantBuffer->Bind(deviceCommandList);
@@ -101,9 +101,9 @@ const yaget::render::scene::SceneItem::Tags& yaget::render::scene::SceneItem::Ge
 
 
 //-------------------------------------------------------------------------------------------------
-bool yaget::render::scene::SceneItem::UpdateData(constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize)
+bool yaget::render::scene::SceneItem::UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize)
 {
-    return mConstantBuffer->UpdateData(constantTypes, data, dataSize);
+    return mConstantBuffer->UpdateData(bufferIndex, constantTypes, data, dataSize);
 }
 
 

@@ -125,6 +125,7 @@ namespace yaget::render
             // This returns first CommandList.
             commands::CommandList* BeginFrame(const colors::Color* color);
             void EndFrame();
+            uint32_t GetFrameIndex() const { return mFrameIndex; }
 
             // This will return next available CommandList
             commands::CommandList* GetAvailableCommandList(commands::Type commandType);

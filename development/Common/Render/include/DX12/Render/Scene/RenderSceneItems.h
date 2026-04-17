@@ -68,12 +68,12 @@ namespace yaget::render::scene
         SceneItem();
         ~SceneItem();
 
-        void Render(commands::CommandList* commandList);
+        void Render(uint32_t bufferIndex, commands::CommandList* commandList);
 
         template <typename T>
-        bool UpdateData(constant_shader_types::ConstantTypes constantTypes, const T& data)
+        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const T& data)
         {
-            return UpdateData(constantTypes, reinterpret_cast<const uint8_t*>(&data), sizeof(T));
+            return UpdateData(bufferIndex, constantTypes, reinterpret_cast<const uint8_t*>(&data), sizeof(T));
         }
 
         // mRenderPassOrder is upper 32 bits and lower 32 bits
@@ -85,7 +85,7 @@ namespace yaget::render::scene
     private:
         friend SceneItemsStorage;
 
-        bool UpdateData(constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize);
+        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize);
 
         ID3D12RootSignature* mRootSignature{};
         ID3D12PipelineState* mPipelineState{};
@@ -96,7 +96,6 @@ namespace yaget::render::scene
 
         RenderShape mRenderShape;
         Tags mTags;
-        //uint32_t mRenderPassOrder{ PassOrderIndependent };
     };
 
 

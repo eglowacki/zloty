@@ -1,41 +1,56 @@
 #include "Core/ErrorHandlers.h"
 
 #include "Render/Pipeline/ShaderBuffers.h"
+#include "Render/Helpers/ResourceDescriptions.h"
 #include "Render/Pipeline/ConstantBuffer.h"
 #include "Render/Platform/Adapter.h"
 #include "Render/Platform/D3D12MemAlloc.h"
 
 
 //--------------------------------------------------------------------------------------------------
-yaget::render::ShaderBuffers::ShaderBuffers(const platform::Adapter& adapter, io::VirtualTransportSystem& /*vts*/, io::VirtualTransportSystem::Section /*fileName*/)
+yaget::render::ShaderBuffers::ShaderBuffers(int numBuffers, const platform::Adapter& adapter, io::VirtualTransportSystem& /*vts*/, io::VirtualTransportSystem::Section /*fileName*/)
     : mAdapter(adapter)
 {
+    for (int i = 0; i < numBuffers; ++i)
+    {
+        mConstantResources[i] = {};
+    }
 }
 
 
 //--------------------------------------------------------------------------------------------------
-yaget::render::ShaderBuffers::~ShaderBuffers() = default;
+yaget::render::ShaderBuffers::~ShaderBuffers()
+{
+    mt::WriteLock locker(mMutex);
+
+    std::ranges::for_each(mConstantResources, [](auto& element)
+    {
+        std::ranges::for_each(element.second, [](auto& entry)
+        {
+            entry.mResource.Reset();
+            entry.mAllocation->Release();
+        });
+    });
+}
 
 
 //--------------------------------------------------------------------------------------------------
 void yaget::render::ShaderBuffers::MakeBuffers(const io::Tag& tag, const RenderShaders::IndexMap& indexMap)
 {
+    mt::WriteLock locker(mMutex);
+
     ConstantBuffer::ShaderVariables shaderVariables;
-    auto allocator = mAdapter.GetAllocator();
+    //auto allocator = mAdapter.GetAllocator();
 
     for (const auto& value : indexMap | std::views::values)
     {
         if (value.mRootType == constant_shader_types::RootType::Constant)
         {
-            ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset);
+            ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset, this);
             shaderVariables.push_back(std::move(shaderVariable));
         }
         else if (value.mRootType == constant_shader_types::RootType::ConstantBufferView)
         {
-            D3D12MA::ALLOCATION_DESC allocationDesc = {};
-            allocationDesc.Flags = D3D12MA::ALLOCATION_FLAG_NONE;   // D3D12MA::ALLOCATION_FLAG_WITHIN_BUDGET;
-            allocationDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;       // ALLOCATION_FLAG_WITHIN_BUDGET
-
             size_t dataWidth = 0;
             if (value.mType == constant_shader_types::ConstantTypes::WorldViewProjection && value.mLayout == constant_shader_types::ConstantLayout::Matrix4x4)
             {
@@ -57,45 +72,21 @@ void yaget::render::ShaderBuffers::MakeBuffers(const io::Tag& tag, const RenderS
                 YAGET_ASSERT(false, std::format("Unsupported DataWidth for constant buffer, Type: '{}', Layout: '{}'", magic_enum::enum_name(value.mType), magic_enum::enum_name(value.mLayout)).c_str());
             }
 
-            D3D12_RESOURCE_DESC1 resourceDesc = {};
-            resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-            resourceDesc.Alignment = 0;
-            resourceDesc.Width = dataWidth;
-            resourceDesc.Height = 1;
-            resourceDesc.DepthOrArraySize = 1;
-            resourceDesc.MipLevels = 1;
-            resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-            resourceDesc.SampleDesc.Count = 1;
-            resourceDesc.SampleDesc.Quality = 0;
-            resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-            resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+            AddConstantResource(tag, dataWidth);
 
-            D3D12MA::Allocation* allocation = nullptr;
-            ComPtr<ID3D12Resource> resource;
-            HRESULT hr = allocator->CreateResource2(
-                &allocationDesc,
-                &resourceDesc,
-                D3D12_RESOURCE_STATE_GENERIC_READ,
-                nullptr,
-                &allocation,
-                IID_PPV_ARGS(&resource));
-
-            error_handlers::ThrowOnError(hr, std::format("Could not allocate constant buffer for tag: {}", conv::ToString(tag)));
-            platform::SetDebugName(resource.Get(), allocation, "ConstantBuffer", value.mVariableName.c_str());
-
-            ConstantBuffer::ShaderVariable shaderVariable(allocation, resource, value.mRootType, value.mType, value.mLayout, value.mOffset);
+            ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset, this);
             shaderVariables.push_back(std::move(shaderVariable));
         }
         else if (value.mRootType == constant_shader_types::RootType::Table)
         {
             if (value.mType == constant_shader_types::ConstantTypes::Texture2d)
             {
-                ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset);
+                ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset, this);
                 shaderVariables.push_back(std::move(shaderVariable));
             }
             else if (value.mType == constant_shader_types::ConstantTypes::Sampler)
             {
-                ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset);
+                ConstantBuffer::ShaderVariable shaderVariable(nullptr, nullptr, value.mRootType, value.mType, value.mLayout, value.mOffset, this);
                 shaderVariables.push_back(std::move(shaderVariable));
             }
             else
@@ -116,6 +107,8 @@ void yaget::render::ShaderBuffers::MakeBuffers(const io::Tag& tag, const RenderS
 //--------------------------------------------------------------------------------------------------
 yaget::render::ConstantBuffer* yaget::render::ShaderBuffers::GetBuffer(const io::Tag& tag)
 {
+    mt::ReadLock locker(mMutex);
+
     if (auto it = mBuffersMap.find(tag); it != mBuffersMap.end())
     {
         return it->second.get();
@@ -123,4 +116,76 @@ yaget::render::ConstantBuffer* yaget::render::ShaderBuffers::GetBuffer(const io:
 
     YLOG_ERROR("REND", std::format("Could not find constant buffer for tag: '{}'", conv::ToString(tag)).c_str());
     return {};
+}
+
+
+//--------------------------------------------------------------------------------------------------
+yaget::render::ComPtr<ID3D12Resource> yaget::render::ShaderBuffers::GetNextResource(uint32_t bufferIndex, size_t dataSize)
+{
+    mt::WriteLock locker(mMutex);
+
+    if (mCurrentIndexBuffer != bufferIndex)
+    {
+        mCurrentIndexBuffer = bufferIndex;
+        std::ranges::for_each(mConstantResources[mCurrentIndexBuffer], [](auto& element)
+        {
+            element.mUsed = false;
+        });
+    }
+
+    auto it = std::ranges::find_if(mConstantResources[mCurrentIndexBuffer], [dataSize](auto& element)
+    {
+        if (!element.mUsed && element.mSize == dataSize)
+        {
+            element.mUsed = true;
+            return true;
+        }
+
+        return false;
+    });
+
+    YAGET_ASSERT(it != mConstantResources[mCurrentIndexBuffer].end(), "There is no available Constant Resource for index: '%d' with size: '%d'.", bufferIndex, dataSize);
+
+    return it->mResource;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+void yaget::render::ShaderBuffers::AddConstantResource(const io::Tag& tag, size_t size)
+{
+    size_t numConstantResources = 50;
+
+    mNumberOfResources[size]++;;
+
+    size_t numResources = 0;
+    std::ranges::for_each(mConstantResources, [&numResources, size](const auto& element)
+    {
+        numResources += std::ranges::count_if(element.second, [size](const auto& item)
+        {
+            return item.mSize == size;
+        });
+    });
+
+    if (mNumberOfResources[size] * numConstantResources > numConstantResources)
+    {
+        numResources = 0;
+    }
+
+    if (numResources == 0)
+    {
+        auto allocator = mAdapter.GetAllocator();
+
+        std::ranges::for_each(mConstantResources, [tag, size, allocator, numConstantResources](auto& element)
+        {
+            auto& resources = element.second;
+
+            for (size_t i = 0; i < numConstantResources; ++i)
+            {
+                D3D12MA::Allocation* allocation = helpers::CreateUploadHeap(tag, size, allocator);
+                ComPtr<ID3D12Resource> resource = allocation->GetResource();
+
+                resources.push_back({ .mAllocation = allocation, .mResource = resource, .mSize = size, .mUsed = false });
+            }
+        });
+    }
 }
