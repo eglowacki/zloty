@@ -141,23 +141,74 @@ namespace
         render::geom::DataLayout<VF> dataLayout(buffer);
 
         size_t verticesBufferSize = dataLayout.mHeader->VertexBufferSize();
-        render::helpers::SourceGpuParameters verticesGpuParameters = render::helpers::MakeVertexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mVertices), verticesBufferSize);
 
-        render::helpers::GpuResourceResult gpuVerticesResult = render::helpers::CreateGpuResource(tag, verticesGpuParameters, commandList, allocator);
-
-        render::helpers::GpuResourceResult gpuIndicesResult{};
-        if (dataLayout.mHeader->mNumIndices && dataLayout.mIndices)
+        if (dataLayout.mHeader->mUpdateType == render::geom::Header::UpdateType::CpuUpload)
         {
-            size_t indicesBufferSize = dataLayout.mHeader->IndexBufferSize();
-            render::helpers::SourceGpuParameters indicesGpuParameters = render::helpers::MakeIndexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mIndices), indicesBufferSize);
+            D3D12MA::Allocation* verticesAllocation = render::helpers::CreateUploadHeap(tag, verticesBufferSize, allocator);
+            ID3D12Resource* verticesResource = verticesAllocation->GetResource();
 
-            gpuIndicesResult = render::helpers::CreateGpuResource(tag, indicesGpuParameters, commandList, allocator);
+            D3D12_RANGE emptyRange = { 0, 0 };
+            void* mappedPtr = nullptr;
+            HRESULT hr = verticesResource->Map(0, &emptyRange, &mappedPtr);
+            if (FAILED(hr))
+            {
+                auto debugName = YAGET_RENDER_GET_DEBUG_NAME(verticesResource);
+                YLOG_ERROR("REND", "Did not mapped vertices resource '%s' for updating data for Tag: '%s'.", debugName.c_str(), conv::ToString(tag).c_str());
+
+                return {};
+            }
+
+            memcpy(mappedPtr, reinterpret_cast<const uint8_t*>(dataLayout.mVertices), verticesBufferSize);
+            verticesResource->Unmap(0, nullptr);
+
+            GeometryResourceResult results;
+            results.mVertices.mGpuAllocation = verticesAllocation;
+
+            if (dataLayout.mHeader->mNumIndices && dataLayout.mIndices)
+            {
+                size_t indicesBufferSize = dataLayout.mHeader->IndexBufferSize();
+                D3D12MA::Allocation* indicesAllocation = render::helpers::CreateUploadHeap(tag, indicesBufferSize, allocator);
+                ID3D12Resource* indicesResource = indicesAllocation->GetResource();
+
+                //D3D12_RANGE emptyRange = { 0, 0 };
+                mappedPtr = nullptr;
+                HRESULT hr = indicesResource->Map(0, &emptyRange, &mappedPtr);
+                if (FAILED(hr))
+                {
+                    auto debugName = YAGET_RENDER_GET_DEBUG_NAME(indicesResource);
+                    YLOG_ERROR("REND", "Did not mapped indices resource '%s' for updating data for Tag: '%s'.", debugName.c_str(), conv::ToString(tag).c_str());
+
+                    return {};
+                }
+
+                memcpy(mappedPtr, reinterpret_cast<const uint8_t*>(dataLayout.mIndices), indicesBufferSize);
+                indicesResource->Unmap(0, nullptr);
+
+                results.mIndices.mGpuAllocation = indicesAllocation;
+            }
+
+            return results;
         }
+        else
+        {
+            render::helpers::SourceGpuParameters verticesGpuParameters = render::helpers::MakeVertexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mVertices), verticesBufferSize);
 
-        return { 
-            .mVertices ={ .mGpuAllocation = gpuVerticesResult.mGpuAllocation, .mUploadAllocation = gpuVerticesResult.mUploadAllocation },
-            .mIndices ={ .mGpuAllocation = gpuIndicesResult.mGpuAllocation, .mUploadAllocation = gpuIndicesResult.mUploadAllocation }
-        };
+            render::helpers::GpuResourceResult gpuVerticesResult = render::helpers::CreateGpuResource(tag, verticesGpuParameters, commandList, allocator);
+
+            render::helpers::GpuResourceResult gpuIndicesResult{};
+            if (dataLayout.mHeader->mNumIndices && dataLayout.mIndices)
+            {
+                size_t indicesBufferSize = dataLayout.mHeader->IndexBufferSize();
+                render::helpers::SourceGpuParameters indicesGpuParameters = render::helpers::MakeIndexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mIndices), indicesBufferSize);
+
+                gpuIndicesResult = render::helpers::CreateGpuResource(tag, indicesGpuParameters, commandList, allocator);
+            }
+
+            return {
+                .mVertices = {.mGpuAllocation = gpuVerticesResult.mGpuAllocation, .mUploadAllocation = gpuVerticesResult.mUploadAllocation },
+                .mIndices = {.mGpuAllocation = gpuIndicesResult.mGpuAllocation, .mUploadAllocation = gpuIndicesResult.mUploadAllocation }
+            };
+        }
     }
 
 
@@ -168,7 +219,7 @@ namespace
         auto vertices = GetVertices<V>(strings);
         auto indices = GetIndices<I>(strings);
 
-        auto buffer = SerializeToBuffer(vertexFormat, vertices, indices);
+        auto buffer = SerializeToBuffer(vertexFormat, vertices, indices, yaget::render::geom::Header::UpdateType::GpuUpload);
 
         return buffer;
     }
@@ -437,9 +488,14 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
                 YAGET_ASSERT(false, "Geometry: '%s' Vertex Format: '%s' is not handled!!!", yaget::conv::ToString(tag).c_str(), conv::ToString(vertexFormat).c_str());
             }
 
+            auto useGpuUpload = header->mUpdateType == render::geom::Header::UpdateType::GpuUpload;
+
             //-------------------------------------------------------------------------------------------------
             // extract vertex data
-            allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ resourceResult.mVertices.mUploadAllocation });
+            if (useGpuUpload)
+            {
+                allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ resourceResult.mVertices.mUploadAllocation });
+            }
             D3D12MA::Allocation* verticesGpuAllocation = resourceResult.mVertices.mGpuAllocation;
 
             ComPtr<ID3D12Resource> verticesGpuGeometry = verticesGpuAllocation->GetResource();
@@ -452,7 +508,10 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
 
             if (header->mNumIndices)
             {
-                allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ resourceResult.mIndices.mUploadAllocation });
+                if (useGpuUpload)
+                {
+                    allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ resourceResult.mIndices.mUploadAllocation });
+                }
                 D3D12MA::Allocation* indicesGpuAllocation = resourceResult.mIndices.mGpuAllocation;
 
                 indicesGpuGeometry = indicesGpuAllocation->GetResource();

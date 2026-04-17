@@ -41,12 +41,19 @@ namespace yaget::render
 
         struct Header
         {
+            // this allows us to specify how we want to update geometry.
+            // GpuUpload - use copy command list and let the gpu copy data from source buffer to its memory.
+            // CpuUpload - use map and Unmap functions and copy source data using cpu memcpy.
+            enum class UpdateType { GpuUpload, CpuUpload };
+
             AssetCacheType mVertexFormat = AssetCacheType::Empty;
             size_t mVertexFormatSize{}; // size of the vertex structure in bytes
             size_t mIndexFormatSize{};  // size of the index element in bytes
             size_t mNumVertices{};      // number of total vertices in the vertex buffer
             size_t mNumIndices{};       // number of total indices in the index buffer. If this is 0, then the geometry is non-indexed
                                         // and number of triangles is mNumVertices/3, otherwise mNumIndices/3
+
+            UpdateType mUpdateType = UpdateType::GpuUpload;
 
             bool IsValid() const
             {
@@ -190,7 +197,7 @@ namespace yaget::render
 
     //-------------------------------------------------------------------------------------------------
     template<typename V, typename I>
-    io::Buffer SerializeToBuffer(AssetCacheType vertexFormat, const V& vertices, const I& indices)
+    io::Buffer SerializeToBuffer(AssetCacheType vertexFormat, const V& vertices, const I& indices, geom::Header::UpdateType updateType)
     {
         size_t bufferSize = geom::HeaderBufferSize + vertices.size() * sizeof(V::value_type) + indices.size() * sizeof(I::value_type);
 
@@ -203,6 +210,7 @@ namespace yaget::render
         header.mIndexFormatSize = sizeof(I::value_type);
         header.mNumVertices = vertices.size();
         header.mNumIndices = indices.size();
+        header.mUpdateType = updateType;
 
         io::MessagingBuffer messagingBuffer(bufferSize);
         messagingBuffer.WriteDataChunk(&signature, sizeof(signature));

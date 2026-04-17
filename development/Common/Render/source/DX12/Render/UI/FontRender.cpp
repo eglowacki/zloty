@@ -72,7 +72,7 @@ yaget::io::Buffer yaget::render::ui::GetText(const std::string& text, int x, int
     }
 
     auto vertexFormat = AssetCacheType::VertexPosition | AssetCacheType::VertexColor;
-    auto fontBuffer = SerializeToBuffer(vertexFormat, vertices, indices);
+    auto fontBuffer = SerializeToBuffer(vertexFormat, vertices, indices, geom::Header::UpdateType::CpuUpload);
 
     return fontBuffer;
 }
