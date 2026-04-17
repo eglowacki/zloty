@@ -133,6 +133,26 @@ namespace
 
 
     //-------------------------------------------------------------------------------------------------
+    template<typename T>
+    void UpdateResourceBuffer(ID3D12Resource* resource, const T* data, size_t dataSize)
+    {
+        D3D12_RANGE emptyRange = { 0, 0 };
+        void* mappedPtr = nullptr;
+        HRESULT hr = resource->Map(0, &emptyRange, &mappedPtr);
+        if (FAILED(hr))
+        {
+            auto debugName = YAGET_RENDER_GET_DEBUG_NAME(resource);
+            YLOG_ERROR("REND", "Did not mapped resource '%s' for updating data.", debugName.c_str());
+
+            return;
+        }
+
+        memcpy(mappedPtr, reinterpret_cast<const uint8_t*>(data), dataSize);
+        resource->Unmap(0, nullptr);
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
     template<typename VF>
     GeometryResourceResult CreateGeometryResource(const yaget::io::Tag& tag, const yaget::io::Buffer& buffer, ID3D12GraphicsCommandList* commandList, D3D12MA::Allocator* allocator)
     {
@@ -147,19 +167,7 @@ namespace
             D3D12MA::Allocation* verticesAllocation = render::helpers::CreateUploadHeap(tag, verticesBufferSize, allocator);
             ID3D12Resource* verticesResource = verticesAllocation->GetResource();
 
-            D3D12_RANGE emptyRange = { 0, 0 };
-            void* mappedPtr = nullptr;
-            HRESULT hr = verticesResource->Map(0, &emptyRange, &mappedPtr);
-            if (FAILED(hr))
-            {
-                auto debugName = YAGET_RENDER_GET_DEBUG_NAME(verticesResource);
-                YLOG_ERROR("REND", "Did not mapped vertices resource '%s' for updating data for Tag: '%s'.", debugName.c_str(), conv::ToString(tag).c_str());
-
-                return {};
-            }
-
-            memcpy(mappedPtr, reinterpret_cast<const uint8_t*>(dataLayout.mVertices), verticesBufferSize);
-            verticesResource->Unmap(0, nullptr);
+            UpdateResourceBuffer(verticesResource, dataLayout.mVertices, verticesBufferSize);
 
             GeometryResourceResult results;
             results.mVertices.mGpuAllocation = verticesAllocation;
@@ -170,19 +178,7 @@ namespace
                 D3D12MA::Allocation* indicesAllocation = render::helpers::CreateUploadHeap(tag, indicesBufferSize, allocator);
                 ID3D12Resource* indicesResource = indicesAllocation->GetResource();
 
-                //D3D12_RANGE emptyRange = { 0, 0 };
-                mappedPtr = nullptr;
-                HRESULT hr = indicesResource->Map(0, &emptyRange, &mappedPtr);
-                if (FAILED(hr))
-                {
-                    auto debugName = YAGET_RENDER_GET_DEBUG_NAME(indicesResource);
-                    YLOG_ERROR("REND", "Did not mapped indices resource '%s' for updating data for Tag: '%s'.", debugName.c_str(), conv::ToString(tag).c_str());
-
-                    return {};
-                }
-
-                memcpy(mappedPtr, reinterpret_cast<const uint8_t*>(dataLayout.mIndices), indicesBufferSize);
-                indicesResource->Unmap(0, nullptr);
+                UpdateResourceBuffer(indicesResource, dataLayout.mIndices, indicesBufferSize);
 
                 results.mIndices.mGpuAllocation = indicesAllocation;
             }
@@ -405,15 +401,8 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
         mt::ReadLock readLocker(mSharedMutex);
         for (const auto& tag : tags)
         {
-            if (auto it = mResources.find(tag); it != mResources.end())
+            if (auto geometryData = FindGeometryData(tag); geometryData.mHeader.IsValid())
             {
-                GeometryData geometryData
-                {
-                    .mHeader = it->second.mHeader,
-                    .mVerticesResource = it->second.mVerticesResource.Get(),
-                    .mIndicesResource = it->second.mIndicesResource.Get()
-                };
-
                 results.push_back(geometryData);
                 continue;
             }
@@ -437,15 +426,8 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
     {
         // it's possible that between the time we released read lock and acquired write lock, 
         // another thread loaded the same texture, so we need to check again if resource is already in map
-        if (auto it = mResources.find(tag); it != mResources.end())
+        if (auto geometryData = FindGeometryData(tag); geometryData.mHeader.IsValid())
         {
-            const auto& element = it->second;
-            GeometryData geometryData
-            {
-                .mHeader = element.mHeader,
-                .mVerticesResource = element.mVerticesResource.Get(),
-                .mIndicesResource = element.mIndicesResource.Get()
-            };
             results.push_back(geometryData);
             continue;
         }
@@ -550,6 +532,41 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
     return results;
 }
 
+
+//-------------------------------------------------------------------------------------------------
+bool yaget::render::GeometriesResources::UpdateResourceData(const io::Tag& tag, const io::Buffer& buffer)
+{
+    {
+        mt::WriteLock writeLocker(mSharedMutex);
+
+        mRenderGeometries.AttachGeometry(tag, buffer);
+        geom::DataLayout<uint8_t, uint32_t> dataLayout(buffer);
+
+        if (auto geometryData = FindGeometryData(tag); geometryData.mHeader.IsValid() && dataLayout.mHeader->mUpdateType == geom::Header::UpdateType::CpuUpload)
+        {
+            const bool sameVertexFormat = geometryData.mHeader.mVertexFormatSize == dataLayout.mHeader->mVertexFormatSize;
+            const bool verticesSizeFits = geometryData.mHeader.mNumVertices >= dataLayout.mHeader->mNumVertices;
+            const bool sameIndexFormat = geometryData.mHeader.mIndexFormatSize == dataLayout.mHeader->mIndexFormatSize;
+            const bool indicesSizeFits = geometryData.mHeader.mNumIndices >= dataLayout.mHeader->mNumIndices;
+
+            if (sameVertexFormat && verticesSizeFits && sameIndexFormat && indicesSizeFits)
+            {
+                UpdateResourceBuffer(geometryData.mVerticesResource, dataLayout.mVertices, dataLayout.mHeader->VertexBufferSize());
+                UpdateResourceBuffer(geometryData.mIndicesResource, dataLayout.mIndices, dataLayout.mHeader->IndexBufferSize());
+
+                mResources[tag].mHeader = *dataLayout.mHeader;
+
+                return true;
+            }
+        }
+    }
+
+    ClearResource(tag);
+    return false;
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::GeometriesResources::ClearResource(const io::Tag& tag)
 {
     mt::WriteLock writeLocker(mSharedMutex);
@@ -561,6 +578,26 @@ void yaget::render::GeometriesResources::ClearResource(const io::Tag& tag)
 void yaget::render::GeometriesResources::Preload(const io::Tags& tags)
 {
     GetResources(tags);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::GeometriesResources::GeometryData yaget::render::GeometriesResources::FindGeometryData(const io::Tag& tag) const
+{
+    if (auto it = mResources.find(tag); it != mResources.end())
+    {
+        const auto& element = it->second;
+        GeometryData geometryData
+        {
+            .mHeader = element.mHeader,
+            .mVerticesResource = element.mVerticesResource.Get(),
+            .mIndicesResource = element.mIndicesResource.Get()
+        };
+
+        return geometryData;
+    }
+
+    return {};
 }
 
 

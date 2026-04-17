@@ -36,7 +36,8 @@ namespace yaget::render
             Texture2dFourth,
             Texture3d,
             Texture2dNormal,
-            Sampler
+            Sampler, 
+            GeometryData
         };
 
         enum class ConstantLayout

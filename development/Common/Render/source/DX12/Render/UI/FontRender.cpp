@@ -10,7 +10,7 @@
 
 namespace
 {
-    constexpr size_t BytesPerCharacter = 280;
+    constexpr size_t BytesPerCharacter = 300;
 
     //-------------------------------------------------------------------------------------------------
     struct CharacterGeometryData
@@ -35,11 +35,12 @@ yaget::io::Buffer yaget::render::ui::GetText(const std::string& text, int x, int
 
     math3d::Color textColor = color ? *color : math3d::Color(colors::White);
     std::vector<DirectX::VertexPositionColor> vertices(numQuads * 4);
-    std::vector<uint16_t> indices(numQuads * 6);
+    std::vector<uint32_t> indices(numQuads * 6);
 
     uint16_t currentIndexValue = 0;
     auto vertex = vertices.data();
     auto index = indices.data();
+
     auto quad = reinterpret_cast<CharacterGeometryData*>(buffer.data());
     for (int i = 0; i < numQuads; ++i)
     {
@@ -97,17 +98,24 @@ void yaget::render::ui::FontStorage::UpdateText(const io::Tag& tag, const std::s
 {
     auto textBuffer = ui::GetText(text, x, y, size, color);
 
+    geom::DataLayout<uint8_t> dataLayout(textBuffer);
+
     if (auto sceneItem = mSceneItemsStorage.GetSceneItem(tag))
     {
         const auto& geometryTag = sceneItem->GetTags().mGeometryTag;
-        mRenderGeometries.AttachGeometry(geometryTag, textBuffer);
-        mGeometryResources.ClearResource(geometryTag);
-        mSceneItemsStorage.ClearItem(tag);
+
+        if (mGeometryResources.UpdateResourceData(geometryTag, textBuffer))
+        {
+            auto geometryData = mGeometryResources.GetResource(geometryTag);
+            sceneItem->UpdateData(0,constant_shader_types::ConstantTypes::GeometryData, geometryData);
+        }
+        else
+        {
+            mSceneItemsStorage.ClearItem(tag);
+        }
     }
     else
     {
         YLOG_ERROR("REND", "Missing Font Asset: '%s'.", conv::ToString(tag));
     }
 }
-
-

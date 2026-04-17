@@ -110,7 +110,7 @@ namespace yaget::render
             DataLayout(const io::Buffer& buffer)
                 : mHeader{ reinterpret_cast<const Header*>(io::cast_data<const char>(buffer) + sizeof(YagetFileSignature)) }
                 , mVertices{ reinterpret_cast<const V*>(io::cast_data<const char>(buffer) + HeaderBufferSize) }
-                , mIndices{ reinterpret_cast<const I*>(io::cast_data<const char>(buffer) + HeaderBufferSize + sizeof(V) * mHeader->mNumVertices) }
+                , mIndices{ reinterpret_cast<const I*>(io::cast_data<const char>(buffer) + HeaderBufferSize + mHeader->VertexBufferSize()) }
             {
                 if (!ValidateDataLayout(buffer))
                 {
@@ -155,7 +155,7 @@ namespace yaget::render
     public:
         static size_t GeometryBufferVersion;
 
-        GeometriesResources(DeviceB& device, RenderGeometries& renderTextures);
+        GeometriesResources(DeviceB& device, RenderGeometries& renderGeometries);
         ~GeometriesResources();
 
         struct GeometryData
@@ -169,11 +169,16 @@ namespace yaget::render
         GeometryData GetResource(const io::Tag& tag);
         std::vector<GeometryData> GetResources(const io::Tags& tags);
 
+        // if current resource was updated with buffer without resizing, 
+        // return true otherwise return false
+        bool UpdateResourceData(const io::Tag& tag, const io::Buffer& buffer);
         void ClearResource(const io::Tag& tag);
 
         void Preload(const io::Tags& tags);
 
     private:
+        GeometryData FindGeometryData(const io::Tag& tag) const;
+
         DeviceB& mDevice;
         RenderGeometries& mRenderGeometries;
 

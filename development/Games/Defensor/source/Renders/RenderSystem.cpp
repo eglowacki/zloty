@@ -86,12 +86,14 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
         constexpr float FpsAlpha = 0.5f;
         // let's show frame rate here, using stb library for generating text
+        static bool flipper = false;
         mFramesThisSecond++;
         mCurrentCalcTime += gameClock.GetDeltaTimeSecond();
         if (mCurrentCalcTime > 1.0f)
         {
             mAverageFps = FpsAlpha * mAverageFps + (1.0f - FpsAlpha) * mFramesThisSecond;
             auto framePerSecond = std::format("FPS: {}", static_cast<uint32_t>(mAverageFps));
+
             colors::Color textColor(colors::Red);
             mFontStorage.UpdateText(fontTag, framePerSecond, 10, 10, 3.0f, &textColor);
 

@@ -103,6 +103,13 @@ const yaget::render::scene::SceneItem::Tags& yaget::render::scene::SceneItem::Ge
 //-------------------------------------------------------------------------------------------------
 bool yaget::render::scene::SceneItem::UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize)
 {
+    if (constantTypes == constant_shader_types::ConstantTypes::GeometryData)
+    {
+        const auto geomData = reinterpret_cast<const GeometriesResources::GeometryData*>(data);
+        mGeometryData = *geomData;
+        return true;
+    }
+
     return mConstantBuffer->UpdateData(bufferIndex, constantTypes, data, dataSize);
 }
 
