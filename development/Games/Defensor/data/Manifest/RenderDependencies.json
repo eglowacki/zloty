@@ -49,7 +49,7 @@
                         "name": "Transient@Signature=vertexDefensorBullet-pixelDefensorShip"
                     }
                 ],
-                "name": "Transient@PSO=Signature=vertexDefensorBullet-pixelDefensorShip=BlendModeAlpha-RasterizerStateCounterClockwise-DepthStateOn-TopologyStateTriangle-RTVFormatRGBA8"
+                "name": "Transient@PSO=Signature=vertexDefensorBullet-pixelDefensorShip=BlendModeAdditive-RasterizerStateCounterClockwise-DepthStateNone-TopologyStateTriangle-RTVFormatRGBA8"
             }
         ],
         "name": "Materials@DefensorBulletMaterial"
@@ -71,7 +71,7 @@
                         "name": "Transient@Signature=vertexDefensorShip-pixelDefensorShip"
                     }
                 ],
-                "name": "Transient@PSO=Signature=vertexDefensorShip-pixelDefensorShip=BlendModeAlpha-RasterizerStateCounterClockwise-DepthStateOn-TopologyStateTriangle-RTVFormatRGBA8"
+                "name": "Transient@PSO=Signature=vertexDefensorShip-pixelDefensorShip=BlendModeAdditive-RasterizerStateCounterClockwise-DepthStateOn-TopologyStateTriangle-RTVFormatRGBA8"
             }
         ],
         "name": "Materials@DefensorShipMaterial"

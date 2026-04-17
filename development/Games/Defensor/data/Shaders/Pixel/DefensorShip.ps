@@ -13,9 +13,9 @@ struct PSInput
 float4 PSMain(PSInput input) : SV_TARGET
 {
     float4 sampledColor = ShipHullTexture.Sample(ShipHullSampler, input.uv) * input.color;
-    if (sampledColor.a < 0.01f)
-    {
-        discard;
-    }
+    //if (sampledColor.a < 0.01f)
+    //{
+    //    discard;
+    //}
     return sampledColor;
 }

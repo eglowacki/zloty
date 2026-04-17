@@ -40,7 +40,6 @@ void yaget::render::ShaderBuffers::MakeBuffers(const io::Tag& tag, const RenderS
     mt::WriteLock locker(mMutex);
 
     ConstantBuffer::ShaderVariables shaderVariables;
-    //auto allocator = mAdapter.GetAllocator();
 
     for (const auto& value : indexMap | std::views::values)
     {
@@ -133,7 +132,23 @@ yaget::render::ComPtr<ID3D12Resource> yaget::render::ShaderBuffers::GetNextResou
         });
     }
 
-    auto it = std::ranges::find_if(mConstantResources[mCurrentIndexBuffer], [dataSize](auto& element)
+    auto resource = FindNextFreeResource(bufferIndex, dataSize);
+    if (!resource)
+    {
+        YLOG_WARNING("REND", "There is no available Constant Resource for index: '%d' with size: '%d', adding more...", bufferIndex, dataSize);
+        AddConstantResource({}, dataSize);
+        resource = FindNextFreeResource(bufferIndex, dataSize);
+    }
+
+    YAGET_ASSERT(resource, "Could not get available Constant Resource for index: '%d' with size: '%d'.", bufferIndex, dataSize);
+    return resource;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+yaget::render::ComPtr<ID3D12Resource> yaget::render::ShaderBuffers::FindNextFreeResource(uint32_t bufferIndex, size_t dataSize)
+{
+    auto it = std::ranges::find_if(mConstantResources[bufferIndex], [dataSize](auto& element)
     {
         if (!element.mUsed && element.mSize == dataSize)
         {
@@ -144,16 +159,19 @@ yaget::render::ComPtr<ID3D12Resource> yaget::render::ShaderBuffers::GetNextResou
         return false;
     });
 
-    YAGET_ASSERT(it != mConstantResources[mCurrentIndexBuffer].end(), "There is no available Constant Resource for index: '%d' with size: '%d'.", bufferIndex, dataSize);
+    if (it != mConstantResources[bufferIndex].end())
+    {
+        return it->mResource;
+    }
 
-    return it->mResource;
+    return {};
 }
 
 
 //--------------------------------------------------------------------------------------------------
 void yaget::render::ShaderBuffers::AddConstantResource(const io::Tag& tag, size_t size)
 {
-    size_t numConstantResources = 50;
+    size_t numConstantResources = 10;
 
     mNumberOfResources[size]++;;
 

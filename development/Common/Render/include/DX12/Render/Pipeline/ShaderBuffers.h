@@ -46,6 +46,7 @@ namespace yaget::render
 
     private:
         void AddConstantResource(const io::Tag& tag, size_t size);
+        ComPtr<ID3D12Resource> FindNextFreeResource(uint32_t bufferIndex, size_t dataSize);
 
         std::shared_mutex mMutex;
         const platform::Adapter& mAdapter;
