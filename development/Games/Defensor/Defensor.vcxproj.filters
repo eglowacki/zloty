@@ -251,6 +251,12 @@
     <CopyFileToFolders Include="data\Shaders\Vertex\DefensorBullet.vs">
       <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\DefensorBullet2.png">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Geometry\Defensor-Bullet.geom">
+      <Filter>Data Files\Geometry</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\MainGame.h">
