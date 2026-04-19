@@ -8,6 +8,7 @@
 #include "Render/Pipeline/RenderShaders.h"
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Platform/SwapChain.h"
+#include "Debugging/DevConfigurationParsers.h"
 
 
 namespace
@@ -26,18 +27,8 @@ namespace
         uint32_t mSizeY{};
         DXGI_FORMAT mRenderFormat;
         DXGI_FORMAT mDepthStencilFormat;
+        colors::Color mClearColor{colors::Black};
     };
-
-
-    //-------------------------------------------------------------------------------------------------
-    void to_json(nlohmann::json& j, const TargetData& targetData)
-    {
-        j["Type"] = magic_enum::enum_name(targetData.mType);
-        j["SizeX"] = targetData.mSizeX;
-        j["SizeY"] = targetData.mSizeY;
-        j["RenderFormat"] = magic_enum::enum_name(targetData.mRenderFormat);
-        j["DepthStencilFormat"] = magic_enum::enum_name(targetData.mDepthStencilFormat);
-    }
 
 
     //-------------------------------------------------------------------------------------------------
@@ -48,6 +39,7 @@ namespace
         targetData.mSizeY = yaget::json::GetValue(j, "SizeY", targetData.mSizeY);
         targetData.mRenderFormat = yaget::json::from_json_enum<DXGI_FORMAT>(j, "RenderFormat", "DXGI_FORMAT_UNKNOWN");
         targetData.mDepthStencilFormat = yaget::json::from_json_enum<DXGI_FORMAT>(j, "DepthStencilFormat", "DXGI_FORMAT_UNKNOWN");
+        targetData.mClearColor = yaget::json::GetValue<colors::Color>(j, "ClearColor", colors::Color(colors::Black));
     }
     
 
@@ -81,7 +73,7 @@ namespace
 
 
     //-------------------------------------------------------------------------------------------------
-    yaget::render::ComPtr<ID3D12Resource> SetupRenderResource(ID3D12Device* device, int sizeX, int sizeY, DXGI_FORMAT renderTargetFormat, D3D12_RESOURCE_STATES state, ID3D12DescriptorHeap* rtvHeap, ID3D12DescriptorHeap* srvHeap)
+    yaget::render::ComPtr<ID3D12Resource> SetupRenderResource(ID3D12Device* device, int sizeX, int sizeY, DXGI_FORMAT renderTargetFormat, D3D12_RESOURCE_STATES state, ID3D12DescriptorHeap* rtvHeap, ID3D12DescriptorHeap* srvHeap, colors::Color clearColor)
     {
         yaget::render::ComPtr<ID3D12Resource> renderTargetResource;
         D3D12_HEAP_PROPERTIES heapProperties{};
@@ -102,11 +94,7 @@ namespace
 
         D3D12_CLEAR_VALUE optimizedClearValue = {};
         optimizedClearValue.Format = renderTargetFormat;
-        //optimizedClearValue.Color[0] = 0.0f;
-        //optimizedClearValue.Color[1] = 1.0f;
-        //optimizedClearValue.Color[2] = 0.0f;
-        //optimizedClearValue.Color[3] = 1.0f;
-        memcpy(optimizedClearValue.Color, colors::Aqua, sizeof(optimizedClearValue.Color));
+        memcpy(optimizedClearValue.Color, clearColor, sizeof(optimizedClearValue.Color));
 
         HRESULT hr = device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &renderTargetDesc, state, &optimizedClearValue, IID_PPV_ARGS(&renderTargetResource));
         yaget::error_handlers::ThrowOnError(hr, std::format("Could not create render target for texture format: '{}' with sizeX: '{}', sizeY: '{}'.", magic_enum::enum_name(renderTargetFormat), sizeX, sizeY).c_str());
@@ -118,9 +106,7 @@ namespace
         device->CreateShaderResourceView(renderTargetResource.Get(), nullptr, srvCpuDescriptorHandle);
 
         return renderTargetResource;
-        
     }
-
 
 }
     
@@ -131,10 +117,10 @@ yaget::render::commands::RenderTarget::RenderTarget(ID3D12Device* device, int si
     , mRTVDescriptorHeap{ helpers::CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1) }
     , mDSVDescriptorHeap{ SetupDepthStencilDescriptorHeap(device, depthStencilFormat, depthStencilDescriptorHeap) }
     , mRenderTargetFormat{ renderTargetFormat }
-    , mDepthStencilResource{ SetupDepthStencilResource(device, sizeX, sizeY, depthStencilFormat, mDSVDescriptorHeap.Get(), depthStencilResource) }
     , mState{ D3D12_RESOURCE_STATE_COMMON }
     , mClearColor{ colors::Aqua }
-    , mRenderTargetResource{ SetupRenderResource(device, sizeX, sizeY, mRenderTargetFormat, mState, mRTVDescriptorHeap.Get(), mSRVDescriptorHeap.Get()) }
+    , mRenderTargetResource{ SetupRenderResource(device, sizeX, sizeY, mRenderTargetFormat, mState, mRTVDescriptorHeap.Get(), mSRVDescriptorHeap.Get(), mClearColor) }
+    , mDepthStencilResource{ SetupDepthStencilResource(device, sizeX, sizeY, depthStencilFormat, mDSVDescriptorHeap.Get(), depthStencilResource) }
     , mSwapChain{ nullptr }
 {
 }
@@ -145,10 +131,11 @@ yaget::render::commands::RenderTarget::RenderTarget(platform::SwapChain& swapCha
     : mSRVDescriptorHeap{}
     , mRTVDescriptorHeap{ swapChain.GetRTVDescriptorHeap() }
     , mDSVDescriptorHeap{ swapChain.GetDSVDescriptorHeap() }
-    , mRenderTargetResource{ nullptr }
     , mRenderTargetFormat{ swapChain.GetDescription().Format }
     , mState{ D3D12_RESOURCE_STATE_PRESENT }
     , mClearColor{ colors::Aqua }
+    , mRenderTargetResource{ nullptr }
+    , mDepthStencilResource{}
     , mSwapChain{ &swapChain }
 {
 }
@@ -159,7 +146,7 @@ yaget::render::commands::RenderTarget::~RenderTarget() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::commands::RenderTarget::BeginFrame(const CommandList* commandList)
+void yaget::render::commands::RenderTarget::BeginFrame(const CommandList* commandList, const colors::Color* clearColor, const DepthStencilClear* clearDepthStencil)
 {
     uint32_t frameIndex = mSwapChain ? mSwapChain->GetCurrentBackBufferIndex() : 0;
     if (mSwapChain)
@@ -169,10 +156,29 @@ void yaget::render::commands::RenderTarget::BeginFrame(const CommandList* comman
 
     mState = commands::TransitionToRenderTarget(commandList, mState, mRenderTargetResource.Get(), mRTVDescriptorHeap.Get(), mDSVDescriptorHeap.Get(), frameIndex);
 
-    commands::ClearRenderTarget(commandList, mClearColor, mRenderTargetResource.Get(), mRTVDescriptorHeap.Get(), frameIndex);
-    if (mDSVDescriptorHeap)
+    if (clearColor)
     {
-        commands::ClearDepthStencil(commandList, 1.0f, 0, mDSVDescriptorHeap.Get());
+        // texture render target cna only use optimized clear color set at the creation time,
+        // otherwise use passed clear color for swap chain render target
+        colors::Color rtClearColor;
+        if (clearColor)
+        {
+            if (mSwapChain)
+            {
+                rtClearColor = *clearColor;
+            }
+            else
+            {
+                rtClearColor = mClearColor;
+            }
+        }
+
+        commands::ClearRenderTarget(commandList, rtClearColor, mRenderTargetResource.Get(), mRTVDescriptorHeap.Get(), frameIndex);
+    }
+
+    if (mDSVDescriptorHeap && clearDepthStencil)
+    {
+        commands::ClearDepthStencil(commandList, clearDepthStencil->mDepth, clearDepthStencil->mStencil, mDSVDescriptorHeap.Get());
     }
 }
 

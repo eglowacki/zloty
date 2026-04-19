@@ -120,7 +120,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
             auto currentFrameIndex = frameCommands.GetFrameIndex();
-            auto commandList = frameCommands.BeginFrame(&color);
+            auto commandList = frameCommands.BeginFrame(&color, nullptr);
             auto viewMatrix = renderPass.GetViewMatrix();
             auto orthoMatrix = renderPass.GetProjectionMatrix();
 

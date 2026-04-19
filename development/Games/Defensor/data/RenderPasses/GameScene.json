@@ -2,7 +2,9 @@
     {
         "Name": "Background",
         "RenderTarget": "RenderTargets@Scene",
-        "SceneItems": [ "SceneItems@SpaceBackground" ]
+        "SceneItems": [ "SceneItems@SpaceBackground" ],
+        "ClearColor": "0.0, 0.0, 0.0, 1.0",
+        "ClearDepthStencil": "{1, 0}"
     },
     {
         "Name": "Scene",

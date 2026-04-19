@@ -16,15 +16,33 @@
 
 #include "Streams/Buffers.h"
 #include "VTS/VirtualTransportSystem.h"
+#include "Render/Commands/RenderTarget.h"
 
 namespace yaget::render::commands
 {
+    //struct DepthStencilClear;
+
     struct ScenePassData
     {
         std::string mName;
         io::VirtualTransportSystem::Section mRenderTargetSection;
         // this is filled in on file load based on mRenderTargetSection value
         io::Tag mRenderTargetTag;
+
+        // we can specify clear color clear and depth-stencil clear values.
+        struct ClearValues
+        {
+            bool mUseClearColor = false;
+            math3d::Color mColor;
+
+            bool mUseClearDepth = false;
+            DepthStencilClear mDepthStencil;
+        };
+        
+        ClearValues mClearValues;
+
+        const math3d::Color* GetClearColor() const;
+        const DepthStencilClear* GetDepthStencilClear() const;
 
         // optional, this can be used to specify which SceneItems to use for rendering.
         // If none specified, then render this as is 

@@ -177,7 +177,7 @@ std::vector<ID3D12Resource*> yaget::render::TextureResources::GetResources(const
 
     std::vector<unique_obj<D3D12MA::Allocation>> allocationsToKeepAlive;
     auto framerHandler = mDevice.GetCopyCommands();
-    auto commandList = framerHandler.BeginFrame(nullptr);
+    auto commandList = framerHandler.BeginFrame(nullptr, nullptr);
     auto preloadCommandList = commandList->GetDeviceCommandList();
 
     mt::WriteLock writeLocker(mSharedMutex);

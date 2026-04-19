@@ -226,7 +226,7 @@ yaget::render::DeviceB::FrameCommands::~FrameCommands()
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::BeginFrame(const colors::Color* /*color*/)
+yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::BeginFrame(const colors::Color* color, const commands::DepthStencilClear* clearDepthStencil)
 {
     auto commandType = GetCommandType(mFrameType);
     auto commandList = GetAvailableCommandList(commandType);
@@ -235,7 +235,7 @@ yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::Beg
     {
         YAGET_ASSERT(mSelectedRenderTarget, "FrameType Render must have valid mSelectedRenderTarget.");
 
-        mSelectedRenderTarget->BeginFrame(commandList);
+        mSelectedRenderTarget->BeginFrame(commandList, color, clearDepthStencil);
     }
 
     return commandList;

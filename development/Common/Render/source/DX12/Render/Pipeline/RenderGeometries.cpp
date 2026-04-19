@@ -418,7 +418,7 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
 
     std::vector<unique_obj<D3D12MA::Allocation>> allocationsToKeepAlive;
     auto framerHandler = mDevice.GetCopyCommands();
-    auto commandList = framerHandler.BeginFrame(nullptr);
+    auto commandList = framerHandler.BeginFrame(nullptr, nullptr);
     auto preloadCommandList = commandList->GetDeviceCommandList();
 
     mt::WriteLock writeLocker(mSharedMutex);

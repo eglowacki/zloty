@@ -51,6 +51,13 @@ namespace yaget::render::commands
 {
     class CommandList;
 
+    struct DepthStencilClear
+    {
+        float mDepth = 1.0f;
+        uint8_t mStencil = 0;
+    };
+
+
     //-------------------------------------------------------------------------------------------------
     class RenderTarget
     {
@@ -65,7 +72,7 @@ namespace yaget::render::commands
         ID3D12DescriptorHeap* SRVDescriptorHeap() const { return mSRVDescriptorHeap.Get(); }
         ID3D12DescriptorHeap* RTVDescriptorHeap() const { return mRTVDescriptorHeap.Get(); }
 
-        void BeginFrame(const CommandList* commandList);
+        void BeginFrame(const CommandList* commandList, const colors::Color* clearColor, const DepthStencilClear* clearDepthStencil);
         void EndFrame(const CommandList* commandList);
 
         bool Present(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/);

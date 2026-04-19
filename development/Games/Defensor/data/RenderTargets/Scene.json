@@ -1,3 +1,4 @@
 {
-    "Type": "FromSwapChain"
+    "Type": "FromSwapChain",
+    "ClearColor": "0.0, 0.0, 0.0, 1.0"
 }

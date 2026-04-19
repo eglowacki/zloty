@@ -68,6 +68,7 @@ namespace yaget::render
 {
     namespace commands
     {
+        struct DepthStencilClear;
         class RenderTarget;
         class CommandListStorage;
         class AllocatorStorage;
@@ -123,7 +124,7 @@ namespace yaget::render
             ~FrameCommands();
 
             // This returns first CommandList.
-            commands::CommandList* BeginFrame(const colors::Color* color);
+            commands::CommandList* BeginFrame(const colors::Color* color, const commands::DepthStencilClear* clearDepthStencil);
             void EndFrame();
             uint32_t GetFrameIndex() const { return mFrameIndex; }
 
