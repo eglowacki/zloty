@@ -1,4 +1,5 @@
 {
     "Type": "FromSwapChain",
-    "ClearColor": "0.0, 0.0, 0.0, 1.0"
+    "ColorClear": "{ 0, 0, 0, 1 }",
+    "DepthStencilClear": "{ 1, 0 }"
 }

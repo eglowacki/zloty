@@ -19,6 +19,8 @@
 #include <d3dx12.h>
 #include <VertexTypes.h>
 
+#include <nlohmann/json.hpp>
+
 
 namespace yaget::conv
 {
@@ -158,6 +160,11 @@ namespace yaget::conv
 
             return vertex;
         }
+
+        static std::string ToString(const DirectX::XMFLOAT2& value)
+        {
+            return std::format("{{ {:.4f}, {:.4f} }}", value.x, value.y);
+        }
     };
 
 
@@ -188,6 +195,11 @@ namespace yaget::conv
             }
 
             return vertex;
+        }
+
+        static std::string ToString(const DirectX::XMFLOAT3& value)
+        {
+            return std::format("{{ {:.4f}, {:.4f}, {:.4f} }}", value.x, value.y, value.z);
         }
     };
 
@@ -222,6 +234,11 @@ namespace yaget::conv
             }
 
             return vertex;
+        }
+
+        static std::string ToString(const DirectX::XMFLOAT4& value)
+        {
+            return std::format("{{ {:.4f}, {:.4f}, {:.4f}, {:.4f} }}", value.x, value.y, value.z, value.w);
         }
     };
 
@@ -322,3 +339,137 @@ namespace yaget::conv
 
 
 } // namespace yaget::conv
+
+
+namespace DirectX
+{
+    //-------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------
+    inline void to_json(nlohmann::json& j, const XMFLOAT2& value)
+    {
+        j = yaget::conv::ToString(value);
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    inline void from_json(const nlohmann::json& j, XMFLOAT2& value)
+    {
+        std::string source;
+        j.get_to(source);
+
+        value = yaget::conv::FromString<XMFLOAT2>(source.c_str());
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------
+    inline void to_json(nlohmann::json& j, const XMFLOAT3& value)
+    {
+        j = yaget::conv::ToString(value);
+    }
+
+    inline void from_json(const nlohmann::json& j, XMFLOAT3& value)
+    {
+        std::string source;
+        j.get_to(source);
+
+        value = yaget::conv::FromString<XMFLOAT3>(source.c_str());
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------
+    inline void to_json(nlohmann::json& j, const XMFLOAT4& value)
+    {
+        j = yaget::conv::ToString(value);
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    inline void from_json(const nlohmann::json& j, XMFLOAT4& value)
+    {
+        std::string source;
+        j.get_to(source);
+
+        value = yaget::conv::FromString<XMFLOAT4>(source.c_str());
+    }
+    
+}
+
+
+namespace math3d
+{
+    //-------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------
+    inline void to_json(nlohmann::json& j, const Vector2& value)
+    {
+        to_json(j, static_cast<const DirectX::XMFLOAT2&>(value));
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    inline void from_json(const nlohmann::json& j, Vector2& value)
+    {
+        from_json(j, static_cast<DirectX::XMFLOAT2&>(value));
+    }
+    
+    //-------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------
+    inline void to_json(nlohmann::json& j, const Vector3& value)
+    {
+        to_json(j, static_cast<const DirectX::XMFLOAT3&>(value));
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    inline void from_json(const nlohmann::json& j, Vector3& value)
+    {
+        from_json(j, static_cast<DirectX::XMFLOAT3&>(value));
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------
+    inline void to_json(nlohmann::json& j, const Vector4& value)
+    {
+        to_json(j, static_cast<const DirectX::XMFLOAT4&>(value));
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    inline void from_json(const nlohmann::json& j, Vector4& value)
+    {
+        from_json(j, static_cast<DirectX::XMFLOAT4&>(value));
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------
+    inline void to_json(nlohmann::json& j, const Color& value)
+    {
+        to_json(j, static_cast<const DirectX::XMFLOAT4&>(value));
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    inline void from_json(const nlohmann::json& j, Color& value)
+    {
+        from_json(j, static_cast<DirectX::XMFLOAT4&>(value));
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------
+    inline void to_json(nlohmann::json& j, const Quaternion& value)
+    {
+        to_json(j, static_cast<const DirectX::XMFLOAT4&>(value));
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    inline void from_json(const nlohmann::json& j, Quaternion& value)
+    {
+        from_json(j, static_cast<DirectX::XMFLOAT4&>(value));
+    }
+
+}
