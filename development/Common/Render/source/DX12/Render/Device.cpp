@@ -226,7 +226,7 @@ yaget::render::DeviceB::FrameCommands::~FrameCommands()
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::BeginFrame(const colors::Color* color, const commands::DepthStencilClear* clearDepthStencil)
+yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::BeginFrame(const math3d::Color* color, const commands::DepthStencilClear* clearDepthStencil)
 {
     auto commandType = GetCommandType(mFrameType);
     auto commandList = GetAvailableCommandList(commandType);

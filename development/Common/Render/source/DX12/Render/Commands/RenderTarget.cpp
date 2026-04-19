@@ -143,7 +143,8 @@ yaget::render::commands::RenderTarget::RenderTarget(const RenderTargetSetup& ren
     , mDSVDescriptorHeap{ SetupDepthStencilDescriptorHeap(device, renderTargetSetup.mDepthStencilFormat, depthStencilDescriptorHeap) }
     , mRenderTargetFormat{ renderTargetSetup.mRenderFormat }
     , mState{ D3D12_RESOURCE_STATE_COMMON }
-    , mClearColor{ colors::Aqua }
+    , mClearColor{ renderTargetSetup.mColorClear }
+    , mDepthStencilClear{ renderTargetSetup.mDepthStencilClear }
     , mRenderTargetResource{ SetupRenderResource(device, renderTargetSetup.mSizeX, renderTargetSetup.mSizeY, mRenderTargetFormat, mState, mRTVDescriptorHeap.Get(), mSRVDescriptorHeap.Get(), mClearColor) }
     , mDepthStencilResource{ SetupDepthStencilResource(device, renderTargetSetup.mSizeX, renderTargetSetup.mSizeY, renderTargetSetup.mDepthStencilFormat, mDSVDescriptorHeap.Get(), depthStencilResource) }
     , mSwapChain{ nullptr }
@@ -159,6 +160,7 @@ yaget::render::commands::RenderTarget::RenderTarget(platform::SwapChain& swapCha
     , mRenderTargetFormat{ swapChain.GetDescription().Format }
     , mState{ D3D12_RESOURCE_STATE_PRESENT }
     , mClearColor{ colors::Aqua }
+    , mDepthStencilClear{ 1.0f, 0 }
     , mRenderTargetResource{ nullptr }
     , mDepthStencilResource{}
     , mSwapChain{ &swapChain }
@@ -171,7 +173,7 @@ yaget::render::commands::RenderTarget::~RenderTarget() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::commands::RenderTarget::BeginFrame(const CommandList* commandList, const colors::Color* clearColor, const DepthStencilClear* clearDepthStencil)
+void yaget::render::commands::RenderTarget::BeginFrame(const CommandList* commandList, const math3d::Color* clearColor, const DepthStencilClear* clearDepthStencil)
 {
     uint32_t frameIndex = mSwapChain ? mSwapChain->GetCurrentBackBufferIndex() : 0;
     if (mSwapChain)
@@ -203,7 +205,16 @@ void yaget::render::commands::RenderTarget::BeginFrame(const CommandList* comman
 
     if (mDSVDescriptorHeap && clearDepthStencil)
     {
-        commands::ClearDepthStencil(commandList, clearDepthStencil->mDepth, clearDepthStencil->mStencil, mDSVDescriptorHeap.Get());
+        DepthStencilClear rtDepthStencilClear;
+        if (mSwapChain)
+        {
+            rtDepthStencilClear = *clearDepthStencil;
+        }
+        else
+        {
+            rtDepthStencilClear = mDepthStencilClear;
+        }
+        commands::ClearDepthStencil(commandList, rtDepthStencilClear.mDepth, rtDepthStencilClear.mStencil, mDSVDescriptorHeap.Get());
     }
 }
 

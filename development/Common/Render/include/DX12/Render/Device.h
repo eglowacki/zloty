@@ -124,7 +124,7 @@ namespace yaget::render
             ~FrameCommands();
 
             // This returns first CommandList.
-            commands::CommandList* BeginFrame(const colors::Color* color, const commands::DepthStencilClear* clearDepthStencil);
+            commands::CommandList* BeginFrame(const math3d::Color* color, const commands::DepthStencilClear* clearDepthStencil);
             void EndFrame();
             uint32_t GetFrameIndex() const { return mFrameIndex; }
 

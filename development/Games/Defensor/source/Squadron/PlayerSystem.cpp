@@ -59,7 +59,7 @@ void defensor::game::PlayerSystem::OnUpdate(yaget::comp::Id_t id, const yaget::t
             auto bulletId = idspace::get_persistent(mApp.IdCache);
             auto playerPosition = locationComponent->GetValue<comp::db_location::Position>();
 
-            AddPlayerBullet(bulletId, "PlayerShipBullet", Section{ "SceneItems@PlayerShipBullet" }, playerPosition + math3d::Vector3{ 0, 0.1f, 0 });
+            AddPlayerBullet(bulletId, "PlayerShipBullet", Section{ "SceneItems@PlayerShipBullet" }, playerPosition + math3d::Vector3{ 0, 0.05f, 0 });
         }
         else if (mBulletActive && (inputData.mFlags & input::kButtonUp))
         {

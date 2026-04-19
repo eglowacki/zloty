@@ -75,7 +75,7 @@ namespace yaget::render::commands
         ID3D12DescriptorHeap* SRVDescriptorHeap() const { return mSRVDescriptorHeap.Get(); }
         ID3D12DescriptorHeap* RTVDescriptorHeap() const { return mRTVDescriptorHeap.Get(); }
 
-        void BeginFrame(const CommandList* commandList, const colors::Color* clearColor, const DepthStencilClear* clearDepthStencil);
+        void BeginFrame(const CommandList* commandList, const math3d::Color* clearColor, const DepthStencilClear* clearDepthStencil);
         void EndFrame(const CommandList* commandList);
 
         bool Present(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/);
@@ -96,7 +96,8 @@ namespace yaget::render::commands
 
         DXGI_FORMAT mRenderTargetFormat;
         D3D12_RESOURCE_STATES mState;
-        colors::Color mClearColor;
+        math3d::Color mClearColor;
+        DepthStencilClear mDepthStencilClear;
         ComPtr<ID3D12Resource> mRenderTargetResource;
         ComPtr<ID3D12Resource> mDepthStencilResource;
         platform::SwapChain* mSwapChain;

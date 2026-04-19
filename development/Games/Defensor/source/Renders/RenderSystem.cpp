@@ -102,12 +102,13 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         }
 
         const auto& renderPasses = mRenderPasses.GetPasses();
-
-        const colors::Color color = mColorInterpolator.GetValue(gameClock);
         auto& device = GetDevice();
 
         for (const auto& renderPass: renderPasses)
         {
+            auto clearColor = renderPass.GetClearColor();
+            auto depthClearValue = renderPass.GetDepthStencilClear();
+
             struct ItemToRender
             {
                 scene::SceneItem* mItem{};
@@ -120,7 +121,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
             auto currentFrameIndex = frameCommands.GetFrameIndex();
-            auto commandList = frameCommands.BeginFrame(&color, nullptr);
+            auto commandList = frameCommands.BeginFrame(clearColor, depthClearValue);
             auto viewMatrix = renderPass.GetViewMatrix();
             auto orthoMatrix = renderPass.GetProjectionMatrix();
 
