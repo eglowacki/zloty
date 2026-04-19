@@ -138,7 +138,6 @@ namespace
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::commands::RenderTarget::RenderTarget(const RenderTargetSetup& renderTargetSetup, ID3D12Device* device, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource)
-    //: RenderTarget(device, renderTargetSetup.mSizeX, renderTargetSetup.mSizeY, renderTargetSetup.mRenderFormat, renderTargetSetup.mDepthStencilFormat, depthStencilDescriptorHeap, depthStencilResource)
     : mSRVDescriptorHeap{ helpers::CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1) }
     , mRTVDescriptorHeap{ helpers::CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1) }
     , mDSVDescriptorHeap{ SetupDepthStencilDescriptorHeap(device, renderTargetSetup.mDepthStencilFormat, depthStencilDescriptorHeap) }
