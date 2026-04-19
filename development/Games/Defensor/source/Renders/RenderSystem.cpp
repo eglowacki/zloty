@@ -106,9 +106,6 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
         for (const auto& renderPass: renderPasses)
         {
-            auto clearColor = renderPass.GetClearColor();
-            auto depthClearValue = renderPass.GetDepthStencilClear();
-
             struct ItemToRender
             {
                 scene::SceneItem* mItem{};
@@ -118,10 +115,12 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
             std::vector<ItemToRender> itemsToRender;
             auto renderTarget = mRenderTargetStorage.FindRenderTarget(renderPass.mRenderTargetTag);
+            auto colorClear = renderPass.GetColorClear(renderTarget);
+            auto depthClearValue = renderPass.GetDepthStencilClear(renderTarget);
 
             auto frameCommands = device.GetFrameCommands(*renderTarget, gameClock, channel);
             auto currentFrameIndex = frameCommands.GetFrameIndex();
-            auto commandList = frameCommands.BeginFrame(clearColor, depthClearValue);
+            auto commandList = frameCommands.BeginFrame(colorClear, depthClearValue);
             auto viewMatrix = renderPass.GetViewMatrix();
             auto orthoMatrix = renderPass.GetProjectionMatrix();
 

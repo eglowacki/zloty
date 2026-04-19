@@ -33,16 +33,13 @@ namespace yaget::render::commands
         struct ClearValues
         {
             bool mUseClearColor = false;
-            math3d::Color mColor;
-
             bool mUseClearDepth = false;
-            DepthStencilClear mDepthStencil;
         };
         
         ClearValues mClearValues;
 
-        const math3d::Color* GetClearColor() const;
-        const DepthStencilClear* GetDepthStencilClear() const;
+        const math3d::Color* GetColorClear(const RenderTarget* renderTarget) const;
+        const DepthStencilClear* GetDepthStencilClear(const RenderTarget* renderTarget) const;
 
         // optional, this can be used to specify which SceneItems to use for rendering.
         // If none specified, then render this as is 

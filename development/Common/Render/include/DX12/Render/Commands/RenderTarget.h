@@ -80,6 +80,9 @@ namespace yaget::render::commands
 
         bool Present(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/);
 
+        const math3d::Color& GetColorClear() const { return mClearColor; }
+        const DepthStencilClear& GetDepthStencilClear() const { return mDepthStencilClear; }
+
     private:
         friend RenderTargetStorage;
 

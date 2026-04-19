@@ -3,8 +3,8 @@
         "Name": "Background",
         "RenderTarget": "RenderTargets@Scene",
         "SceneItems": [ "SceneItems@SpaceBackground" ],
-        "ClearColor": "0.0, 0.0, 0.0, 1.0",
-        "ClearDepthStencil": "{1, 0}"
+        "ColorClear": true,
+        "DepthStencilClear": true
     },
     {
         "Name": "Scene",

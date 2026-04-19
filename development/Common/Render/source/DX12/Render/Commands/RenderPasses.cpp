@@ -48,29 +48,8 @@ namespace yaget::render::commands
         passData.mRenderTargetSection = j.value("RenderTarget", io::VirtualTransportSystem::Section{});
         passData.mSceneItemSections = j.value("SceneItems", io::VirtualTransportSystem::Sections{});
 
-        if (json::IsSectionValid(j, "ClearColor", ""))
-        {
-            passData.mClearValues.mUseClearColor = true;
-            passData.mClearValues.mColor = json::GetValue<math3d::Color>(j, "ClearColor", math3d::Color(colors::Black));
-        }
-        else
-        {
-            passData.mClearValues.mUseClearColor = false;
-        }
-
-        if (json::IsSectionValid(j, "ClearDepthStencil", ""))
-        {
-            passData.mClearValues.mUseClearDepth = true;
-            auto clearString = json::GetValue(j, "ClearDepthStencil", std::string{"{1, 0}"});
-            auto clearValue = conv::FromString<DirectX::XMFLOAT2>(clearString.c_str());
-            passData.mClearValues.mDepthStencil.mDepth = clearValue.x;
-            passData.mClearValues.mDepthStencil.mStencil = static_cast<uint8_t>(clearValue.y);
-        }
-        else
-        {
-            passData.mClearValues.mUseClearDepth = false;
-        }
-
+        passData.mClearValues.mUseClearColor = json::GetValue(j, "ColorClear", false);
+        passData.mClearValues.mUseClearDepth = json::GetValue(j, "DepthStencilClear", false);
 
         if (json::IsSectionValid(j, "LookAt", ""))
         {
@@ -159,11 +138,11 @@ namespace yaget::render::commands
 
 
 //-------------------------------------------------------------------------------------------------
-const math3d::Color* yaget::render::commands::ScenePassData::GetClearColor() const
+const math3d::Color* yaget::render::commands::ScenePassData::GetColorClear(const RenderTarget* renderTarget) const
 {
-    if (mClearValues.mUseClearColor)
+    if (mClearValues.mUseClearColor && renderTarget)
     {
-        return &mClearValues.mColor;
+        return &renderTarget->GetColorClear();
     }
 
     return nullptr;
@@ -171,11 +150,11 @@ const math3d::Color* yaget::render::commands::ScenePassData::GetClearColor() con
 
 
 //-------------------------------------------------------------------------------------------------
-const yaget::render::commands::DepthStencilClear* yaget::render::commands::ScenePassData::GetDepthStencilClear() const
+const yaget::render::commands::DepthStencilClear* yaget::render::commands::ScenePassData::GetDepthStencilClear(const RenderTarget* renderTarget) const
 {
-    if (mClearValues.mUseClearDepth)
+    if (mClearValues.mUseClearDepth && renderTarget)
     {
-        return &mClearValues.mDepthStencil;
+        return &renderTarget->GetDepthStencilClear();
     }
 
     return nullptr;
