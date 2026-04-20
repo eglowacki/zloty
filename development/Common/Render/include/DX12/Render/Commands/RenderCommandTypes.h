@@ -32,6 +32,18 @@ namespace yaget::render::commands
 
     struct FenceValues
     {
+        void Initialize(Type queueType)
+        {
+            mLastCompletedFenceValue = static_cast<uint64_t>(queueType) << QueueTypeOffset;
+            mNextFenceValue = mLastCompletedFenceValue + 1;
+        }
+
+        uint64_t PollCurrentFenceValue(UINT64 completedFenceValue)
+        {
+            mLastCompletedFenceValue = std::max(mLastCompletedFenceValue, completedFenceValue);
+            return mLastCompletedFenceValue;
+        }
+
         uint64_t mLastCompletedFenceValue{};
         uint64_t mNextFenceValue{};
     };

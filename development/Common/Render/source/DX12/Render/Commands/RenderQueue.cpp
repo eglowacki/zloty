@@ -56,8 +56,7 @@ yaget::render::commands::Queue::Queue(ID3D12Device* device, Type commandType, Fe
     , mFenceValues{ fenceValues }
     , mFenceEventHandle{ nullptr }
 {
-    mFenceValues.mLastCompletedFenceValue = static_cast<uint64_t>(mQueueType) << QueueTypeOffset;
-    mFenceValues.mNextFenceValue = mFenceValues.mLastCompletedFenceValue + 1;
+    mFenceValues.Initialize(mQueueType);
 
     HRESULT hr = mFence->Signal(mFenceValues.mLastCompletedFenceValue);
     error_handlers::ThrowOnError(hr, "Could not Signal DX12 CommandQueue.Fence");
@@ -155,8 +154,7 @@ ID3D12CommandQueue* yaget::render::commands::Queue::GetDeviceCommandQueue() cons
 //-------------------------------------------------------------------------------------------------
 uint64_t yaget::render::commands::Queue::PollCurrentFenceValue()
 {
-    mFenceValues.mLastCompletedFenceValue = std::max(mFenceValues.mLastCompletedFenceValue, mFence->GetCompletedValue());
-    return mFenceValues.mLastCompletedFenceValue;
+    return mFenceValues.PollCurrentFenceValue(mFence->GetCompletedValue());
 }
 
 
