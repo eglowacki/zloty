@@ -41,7 +41,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mRenderMaterials(mPipelineTags, app.VTS())
     , mRenderTextures(app.VTS(), GetSection("Textures"))
     , mTextureResources(GetDevice(), mRenderTextures)
-    , mShaderBuffers(GetDevice().GetWindowFrame().GetSurface().NumBackBuffers(), GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"))
+    , mShaderBuffers(GetDevice().GetWindowFrame().GetSurface().NumBackBuffers(), GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"), GetDevice().GetQueueFenceValues())
     , mRenderGeometries(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Geometries"))
     , mGeometryResources(GetDevice(), mRenderGeometries)
     , mRenderTargetStorage(GetDevice().GetAdapter().GetDevice(), GetDevice().GetSwapChain(), mTextureResources, app.VTS())
@@ -95,7 +95,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             auto framePerSecond = std::format("FPS: {}", static_cast<uint32_t>(mAverageFps));
 
             colors::Color textColor(colors::Red);
-            mFontStorage.UpdateText(fontTag, framePerSecond, 10, 10, 3.0f, &textColor);
+            mFontStorage.UpdateText(fontTag, framePerSecond, 10, 10, 3.0f, &textColor, commands::Type::Direct);
 
             mCurrentCalcTime -= 1.0f;
             mFramesThisSecond = 0;
@@ -123,6 +123,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             auto commandList = frameCommands.BeginFrame(colorClear, depthClearValue);
             auto viewMatrix = renderPass.GetViewMatrix();
             auto orthoMatrix = renderPass.GetProjectionMatrix();
+            auto commandType = commandList->GetType();
 
             if (renderPass.mSceneItemTags.empty())
             {
@@ -167,10 +168,10 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             });
 
             //scene::SceneItemsStorage::SortSceneItems(itemsToRender);
-            std::ranges::for_each(itemsToRender, [commandList, currentFrameIndex](ItemToRender& item)
+            std::ranges::for_each(itemsToRender, [commandList, currentFrameIndex, commandType](ItemToRender& item)
             {
-                item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::WorldViewProjection, item.mWorldViewProj);
-                item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::Time, item.mTime);
+                item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::WorldViewProjection, item.mWorldViewProj, commandType);
+                item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::Time, item.mTime, commandType);
                 item.mItem->Render(currentFrameIndex, commandList);
             });
 

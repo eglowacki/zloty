@@ -69,9 +69,10 @@ void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, commands::Com
         constant_shader_types::ConstantTypes::Texture2dFourth
     };
 
+    auto commandType = commandList->GetType();
     for (size_t i = 0; i < mTextureResources.size(); ++i)
     {
-        mConstantBuffer->UpdateData(bufferIndex, textureTypes[i], mTextureResources[i]);
+        mConstantBuffer->UpdateData(bufferIndex, textureTypes[i], mTextureResources[i], commandType);
     }
 
     mConstantBuffer->Bind(deviceCommandList);
@@ -101,7 +102,7 @@ const yaget::render::scene::SceneItem::Tags& yaget::render::scene::SceneItem::Ge
 
 
 //-------------------------------------------------------------------------------------------------
-bool yaget::render::scene::SceneItem::UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize)
+bool yaget::render::scene::SceneItem::UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize, commands::Type commandType)
 {
     if (constantTypes == constant_shader_types::ConstantTypes::GeometryData)
     {
@@ -110,7 +111,7 @@ bool yaget::render::scene::SceneItem::UpdateData(uint32_t bufferIndex, constant_
         return true;
     }
 
-    return mConstantBuffer->UpdateData(bufferIndex, constantTypes, data, dataSize);
+    return mConstantBuffer->UpdateData(bufferIndex, constantTypes, data, dataSize, commandType);
 }
 
 

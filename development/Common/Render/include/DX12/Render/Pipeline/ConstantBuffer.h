@@ -15,6 +15,7 @@
 
 
 #include "RenderShaders.h"
+#include "Render/Commands/RenderCommandList.h"
 
 struct ID3D12Resource;
 
@@ -50,7 +51,7 @@ namespace yaget::render
             {
             }
 
-            ComPtr<ID3D12Resource> GetResource(uint32_t bufferIndex, size_t dataSize) const;
+            ComPtr<ID3D12Resource> GetResource(uint32_t bufferIndex, size_t dataSize, commands::Type commandType) const;
 
             D3D12MA::Allocation* mAllocation;
             mutable ComPtr<ID3D12Resource> mResource;
@@ -68,12 +69,12 @@ namespace yaget::render
         ~ConstantBuffer();
 
         void Bind(ID3D12GraphicsCommandList* commandList) const;
-        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize);
+        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize, commands::Type commandType);
 
         template <typename T>
-        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const T& data)
+        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const T& data, commands::Type commandType)
         {
-            return UpdateData(bufferIndex, constantTypes, reinterpret_cast<const uint8_t*>(&data), sizeof(T));
+            return UpdateData(bufferIndex, constantTypes, reinterpret_cast<const uint8_t*>(&data), sizeof(T), commandType);
         }
 
     private:

@@ -15,6 +15,7 @@
 
 
 #include "RenderShaders.h"
+#include "Render/Commands/RenderCommandTypes.h"
 #include "VTS/VirtualTransportSystem.h"
 
 
@@ -36,13 +37,13 @@ namespace yaget::render
     class ShaderBuffers
     {
     public:
-        ShaderBuffers(int numBuffers, const platform::Adapter& adapter, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
+        ShaderBuffers(int numBuffers, const platform::Adapter& adapter, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, commands::QueueFenceValues& queueFenceValues);
         ~ShaderBuffers();
 
         void MakeBuffers(const io::Tag& tag, const RenderShaders::IndexMap& indexMap);
         ConstantBuffer* GetBuffer(const io::Tag& tag);
 
-        ComPtr<ID3D12Resource> GetNextResource(uint32_t bufferIndex, size_t dataSize);
+        ComPtr<ID3D12Resource> GetNextResource(uint32_t bufferIndex, size_t dataSize, commands::Type commandType);
 
     private:
         void AddConstantResource(const io::Tag& tag, size_t size);
@@ -69,5 +70,7 @@ namespace yaget::render
 
         // this is used to make sure that we have enough constant buffers for the number of ConstantResources.
         std::map<size_t, int> mNumberOfResources;
+
+        commands::QueueFenceValues& mQueueFenceValues;
     };
 }

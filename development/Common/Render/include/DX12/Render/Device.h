@@ -115,6 +115,8 @@ namespace yaget::render
         size_t RegisterResizeCallback(ResizeCallback callback);
         void UnregisterResizeCallback(size_t callbackId);
 
+        commands::QueueFenceValues& GetQueueFenceValues() { return mQueueFenceValues; }
+
         //--------------------------------
         // Some refactor for DX12 command classes
         struct FrameCommands

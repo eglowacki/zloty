@@ -8,8 +8,9 @@
 
 
 //--------------------------------------------------------------------------------------------------
-yaget::render::ShaderBuffers::ShaderBuffers(int numBuffers, const platform::Adapter& adapter, io::VirtualTransportSystem& /*vts*/, io::VirtualTransportSystem::Section /*fileName*/)
+yaget::render::ShaderBuffers::ShaderBuffers(int numBuffers, const platform::Adapter& adapter, io::VirtualTransportSystem& /*vts*/, io::VirtualTransportSystem::Section /*fileName*/, commands::QueueFenceValues& queueFenceValues)
     : mAdapter(adapter)
+    , mQueueFenceValues(queueFenceValues)
 {
     for (int i = 0; i < numBuffers; ++i)
     {
@@ -119,7 +120,7 @@ yaget::render::ConstantBuffer* yaget::render::ShaderBuffers::GetBuffer(const io:
 
 
 //--------------------------------------------------------------------------------------------------
-yaget::render::ComPtr<ID3D12Resource> yaget::render::ShaderBuffers::GetNextResource(uint32_t bufferIndex, size_t dataSize)
+yaget::render::ComPtr<ID3D12Resource> yaget::render::ShaderBuffers::GetNextResource(uint32_t bufferIndex, size_t dataSize, commands::Type commandType)
 {
     mt::WriteLock locker(mMutex);
 
@@ -136,6 +137,10 @@ yaget::render::ComPtr<ID3D12Resource> yaget::render::ShaderBuffers::GetNextResou
     if (!resource)
     {
         YLOG_WARNING("REND", "There is no available Constant Resource for index: '%d' with size: '%d', adding more...", bufferIndex, dataSize);
+
+        auto& fenceValues = mQueueFenceValues.mFenceValues[static_cast<uint32_t>(commandType)];
+        fenceValues;
+
         AddConstantResource({}, dataSize);
         resource = FindNextFreeResource(bufferIndex, dataSize);
     }

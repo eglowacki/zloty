@@ -16,6 +16,7 @@
 #include "MathFacade.h"
 
 #include "Render/RenderCore.h"
+#include "Render/Commands/RenderCommandTypes.h"
 #include "Streams/Buffers.h"
 
 
@@ -49,7 +50,7 @@ namespace yaget::render::ui
         ~FontStorage();
 
         // if color is nullptr, then it will default to white
-        void UpdateText(const io::Tag& tag, const std::string& text, int x, int y, float size, const math3d::Color* color = nullptr);
+        void UpdateText(const io::Tag& tag, const std::string& text, int x, int y, float size, const math3d::Color* color, commands::Type commandType);
 
     private:
         RenderGeometries& mRenderGeometries;

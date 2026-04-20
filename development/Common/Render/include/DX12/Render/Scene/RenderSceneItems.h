@@ -18,6 +18,7 @@
 #include "Render/Pipeline/RenderGeometries.h"
 #include "Render/Polygons/RenderShape.h"
 #include "Render/Pipeline/RenderShaders.h"
+#include "Render/Commands/RenderCommandTypes.h"
 
 namespace yaget::app
 {
@@ -71,9 +72,9 @@ namespace yaget::render::scene
         void Render(uint32_t bufferIndex, commands::CommandList* commandList);
 
         template <typename T>
-        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const T& data)
+        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const T& data, commands::Type commandType)
         {
-            return UpdateData(bufferIndex, constantTypes, reinterpret_cast<const uint8_t*>(&data), sizeof(T));
+            return UpdateData(bufferIndex, constantTypes, reinterpret_cast<const uint8_t*>(&data), sizeof(T), commandType);
         }
 
         // mRenderPassOrder is upper 32 bits and lower 32 bits
@@ -85,7 +86,7 @@ namespace yaget::render::scene
     private:
         friend SceneItemsStorage;
 
-        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize);
+        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize, commands::Type commandType);
 
         ID3D12RootSignature* mRootSignature{};
         ID3D12PipelineState* mPipelineState{};

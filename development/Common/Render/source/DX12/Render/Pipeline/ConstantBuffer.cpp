@@ -5,9 +5,9 @@
 
 
 //--------------------------------------------------------------------------------------------------
-yaget::render::ComPtr<ID3D12Resource> yaget::render::ConstantBuffer::ShaderVariable::GetResource(uint32_t bufferIndex, size_t dataSize) const
+yaget::render::ComPtr<ID3D12Resource> yaget::render::ConstantBuffer::ShaderVariable::GetResource(uint32_t bufferIndex, size_t dataSize, commands::Type commandType) const
 {
-    return mShaderBuffers->GetNextResource(bufferIndex, dataSize);
+    return mShaderBuffers->GetNextResource(bufferIndex, dataSize, commandType);
 }
 
 
@@ -38,7 +38,7 @@ yaget::render::ConstantBuffer::~ConstantBuffer()
 
 
 //--------------------------------------------------------------------------------------------------
-bool yaget::render::ConstantBuffer::UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize)
+bool yaget::render::ConstantBuffer::UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize, commands::Type commandType)
 {
     if (auto variable = FindVariable(constantTypes))
     {
@@ -55,7 +55,7 @@ bool yaget::render::ConstantBuffer::UpdateData(uint32_t bufferIndex, constant_sh
         }
         else if (variable->mRootType == constant_shader_types::RootType::ConstantBufferView)
         {
-            variable->mResource = variable->GetResource(bufferIndex, dataSize);
+            variable->mResource = variable->GetResource(bufferIndex, dataSize, commandType);
 
             D3D12_RANGE emptyRange = { 0, 0 };
             void* mappedPtr = nullptr;

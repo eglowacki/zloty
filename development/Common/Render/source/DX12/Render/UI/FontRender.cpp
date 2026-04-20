@@ -94,7 +94,7 @@ yaget::render::ui::FontStorage::~FontStorage() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::ui::FontStorage::UpdateText(const io::Tag& tag, const std::string& text, int x, int y, float size, const math3d::Color* color)
+void yaget::render::ui::FontStorage::UpdateText(const io::Tag& tag, const std::string& text, int x, int y, float size, const math3d::Color* color, commands::Type commandType)
 {
     auto textBuffer = ui::GetText(text, x, y, size, color);
 
@@ -107,7 +107,7 @@ void yaget::render::ui::FontStorage::UpdateText(const io::Tag& tag, const std::s
         if (mGeometryResources.UpdateResourceData(geometryTag, textBuffer))
         {
             auto geometryData = mGeometryResources.GetResource(geometryTag);
-            sceneItem->UpdateData(0,constant_shader_types::ConstantTypes::GeometryData, geometryData);
+            sceneItem->UpdateData(0,constant_shader_types::ConstantTypes::GeometryData, geometryData, commandType);
         }
         else
         {
