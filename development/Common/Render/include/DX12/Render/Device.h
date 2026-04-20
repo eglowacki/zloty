@@ -162,6 +162,8 @@ namespace yaget::render
         FrameCommands GetCopyCommands();
 
     private:
+        commands::QueueFenceValues mQueueFenceValues;
+
         struct MemoryTrackerReporter
         {
             MemoryTrackerReporter() = default;

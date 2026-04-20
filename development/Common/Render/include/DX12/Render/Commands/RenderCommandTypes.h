@@ -30,5 +30,17 @@ namespace yaget::render::commands
         Max             // used to create an array of last fence values in Device
     };
 
+    struct FenceValues
+    {
+        uint64_t mLastCompletedFenceValue{};
+        uint64_t mNextFenceValue{};
+    };
+
+    struct QueueFenceValues
+    {
+        FenceValues mFenceValues[static_cast<uint32_t>(Type::Max)] = {};
+    };
+
+
 
 }

@@ -42,7 +42,7 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const render::info
     : mWindowFrame{ windowFrame }
     , mNumBackBuffers{ mWindowFrame.GetSurface().NumBackBuffers() }
     , mAdapter{ std::make_unique<platform::Adapter>(mWindowFrame, adapterInfo) }
-    , mQueueStorage{ std::make_unique<commands::QueueStorage>(mAdapter->GetDevice()) }
+    , mQueueStorage{ std::make_unique<commands::QueueStorage>(mAdapter->GetDevice(), mQueueFenceValues) }
     , mAllocatorStorage{ std::make_unique<commands::AllocatorStorage>(mAdapter->GetDevice(), mNumBackBuffers) }
     , mCommandListStorage{ std::make_unique<commands::CommandListStorage>(mAdapter->GetDevice(), mNumBackBuffers) }
     , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory(), mQueueStorage->GetQueue(commands::Type::Direct)->GetDeviceCommandQueue()) }
