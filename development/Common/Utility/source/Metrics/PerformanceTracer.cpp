@@ -49,6 +49,10 @@ namespace
         return result ? traceFile : "";
     }
 
+    //std::map<yaget::metrics::TraceRecord::Event, int> TracesCounters;
+    //std::map<std::string, int> TracesNames;
+
+
     void SaveTraceRecord(const yaget::metrics::TraceRecord& profileStamp, std::ofstream& file)
     {
         file << std::setprecision(3) << std::fixed;
@@ -80,8 +84,11 @@ namespace
             break;
         case yaget::metrics::TraceRecord::Event::Instant:
             file << ",\"s\":\"" << S[static_cast<int>(profileStamp.mMessageScope)] << "\"";;
+
             break;
         }
+
+        //TracesCounters[profileStamp.mEvent]++;
 
         file << "}";
     }
@@ -166,6 +173,16 @@ void yaget::metrics::TraceCollector::AddProfileStamp(yaget::metrics::TraceRecord
         std::size_t num = 0;
         {
             std::unique_lock<std::mutex> mutexLock(mmProfileStampMutex);
+
+            //if (result.mEvent == TraceRecord::Event::Begin)
+            //{
+            //    TracesNames[result.mName]++;
+            //}
+            //else if (result.mEvent == TraceRecord::Event::End)
+            //{
+            //    TracesNames[result.mName]--;
+            //}
+
             mProfileStamps.emplace_back(std::move(result));
             num = mProfileStamps.size();
         }

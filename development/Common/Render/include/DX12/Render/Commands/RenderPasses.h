@@ -77,6 +77,11 @@ namespace yaget::render::commands
         void BindAsset(const io::Tag& tag);
         const ScenePasses& GetPasses() const { return mPasses; }
 
+        // Return true if the given tag should be rendered in this pass. This is calculated based
+        // on previous passes if any have tag in mSceneItemTags, which means do not render this pass,
+        // since that tag was already rendered.
+        bool RenderThisPass(const io::Tag& tag, const ScenePassData& pass) const;
+
     private:
         io::VirtualTransportSystem& mVTS;
         io::Tag mSceneTag;

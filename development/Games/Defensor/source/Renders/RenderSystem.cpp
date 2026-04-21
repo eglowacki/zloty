@@ -127,17 +127,20 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
             if (renderPass.mSceneItemTags.empty())
             {
-                coordinator.ForEach<RenderEntity>([&itemsToRender, &viewMatrix, &orthoMatrix, this](comp::Id_t /*id*/, const auto& row)
+                coordinator.ForEach<RenderEntity>([&itemsToRender, &viewMatrix, &orthoMatrix, &renderPass, this](comp::Id_t /*id*/, const auto& row)
                 {
                     auto renderComponent = std::get<RenderComponent*>(row);
-                    auto sceneItem = mSceneItemsStorage.GetSceneItem(renderComponent->mSceneItemTag);
+                    if (mRenderPasses.RenderThisPass(renderComponent->mSceneItemTag, renderPass))
+                    {
+                        auto sceneItem = mSceneItemsStorage.GetSceneItem(renderComponent->mSceneItemTag);
 
-                    auto worldViewProj = (renderComponent->mMatrix * viewMatrix * orthoMatrix).Transpose();
-                    //sceneItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, worldViewProj);
+                        auto worldViewProj = (renderComponent->mMatrix * viewMatrix * orthoMatrix).Transpose();
+                        //sceneItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, worldViewProj);
 
-                    float timeData = 1.0f;
-                    //sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
-                    itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = worldViewProj, .mTime = timeData });
+                        float timeData = 1.0f;
+                        //sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+                        itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = worldViewProj, .mTime = timeData });
+                    }
 
                     return true;
                 });

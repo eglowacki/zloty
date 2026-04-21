@@ -252,3 +252,18 @@ void yaget::render::commands::RenderPasses::BindAsset(const io::Tag& tag)
         });
     }
 }
+
+
+//-------------------------------------------------------------------------------------------------
+bool yaget::render::commands::RenderPasses::RenderThisPass(const io::Tag& tag, const ScenePassData& pass) const
+{
+    auto results = mPasses | std::views::take_while([&pass](const auto& element)
+    {
+        return pass.mName != element.mName;
+    }) | std::views::filter([tag](const auto& element)
+    {
+        return std::ranges::find(element.mSceneItemTags, tag) != element.mSceneItemTags.end();
+    });
+
+    return results.empty();
+}
