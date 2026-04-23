@@ -54,12 +54,19 @@ yaget::render::scene::SceneItem::~SceneItem() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, commands::CommandList* commandList)
+void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, const commands::CommandList* commandList, commands::RenderPassState& currentRenderPassState)
 {
     auto deviceCommandList = commandList->GetDeviceCommandList();
 
-    deviceCommandList->SetGraphicsRootSignature(mRootSignature);
-    deviceCommandList->SetPipelineState(mPipelineState);
+    if (currentRenderPassState.CheckHash(mRootSignature, commands::RenderPassState::HashType::RootSignature))
+    {
+        deviceCommandList->SetGraphicsRootSignature(mRootSignature);
+    }
+
+    if (currentRenderPassState.CheckHash(mPipelineState, commands::RenderPassState::HashType::PipelineState))
+    {
+        deviceCommandList->SetPipelineState(mPipelineState);
+    }
 
     constexpr constant_shader_types::ConstantTypes textureTypes[4] =
     {

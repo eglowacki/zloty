@@ -106,6 +106,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
         for (const auto& renderPass: renderPasses)
         {
+            mCurrentRenderPassState = {};
+
             struct ItemToRender
             {
                 scene::SceneItem* mItem{};
@@ -171,11 +173,11 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             });
 
             //scene::SceneItemsStorage::SortSceneItems(itemsToRender);
-            std::ranges::for_each(itemsToRender, [commandList, currentFrameIndex, commandType](ItemToRender& item)
+            std::ranges::for_each(itemsToRender, [commandList, currentFrameIndex, commandType, this](ItemToRender& item)
             {
                 item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::WorldViewProjection, item.mWorldViewProj, commandType);
                 item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::Time, item.mTime, commandType);
-                item.mItem->Render(currentFrameIndex, commandList);
+                item.mItem->Render(currentFrameIndex, commandList, mCurrentRenderPassState);
             });
 
             frameCommands.EndFrame();

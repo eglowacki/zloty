@@ -69,7 +69,7 @@ namespace yaget::render::scene
         SceneItem();
         ~SceneItem();
 
-        void Render(uint32_t bufferIndex, commands::CommandList* commandList);
+        void Render(uint32_t bufferIndex, const commands::CommandList* commandList, commands::RenderPassState& currentRenderPassState);
 
         template <typename T>
         bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const T& data, commands::Type commandType)

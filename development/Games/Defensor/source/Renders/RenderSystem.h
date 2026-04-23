@@ -49,16 +49,6 @@ namespace defensor::render
 
         void OnResetDevice(const app::WindowFrame& windowFrame, yaget::render::DeviceB::ResizeState resizeState);
 
-        // This structure is used to keep track of what assets are used for rendering particular entity. 
-        // It is used to track changes in assets and update them accordingly.
-        struct RenderState
-        {
-            Guid mSignatureGuid;
-            Guid mPipelineGuid;
-            Guid mVertexShaderGuid;
-            Guid mPixelShaderGuid;
-        };
-
         math3d::Interpolator<colors::Color> mColorInterpolator;
         math3d::Interpolator<float> mMatrixInterpolator;
 
@@ -82,7 +72,7 @@ namespace defensor::render
 
         size_t mResizeCallbackId{};
 
-        RenderState mCurrentRenderState;
+        yaget::render::commands::RenderPassState mCurrentRenderPassState;
 
         io::Tag mFontTag;
 
