@@ -457,10 +457,20 @@ namespace yaget::comp
 
                 if (!coordinatorFound)
                 {
+                    C* foo{};
+                    foo;
+                    int z = 0;
+                    z;
+
                     if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
                     {
                         auto& coordinator = GetCoordinator<coordinatorIndex>();
-                        result = coordinator.template RemoveComponent<C>(id);
+
+                        if (auto component = coordinator.template FindComponent<C>(id))
+                        {
+                            result = coordinator.RemoveComponent(id, component);
+                        }
+
                         coordinatorFound = true;
                     }
                 }
@@ -498,7 +508,10 @@ namespace yaget::comp
             meta::for_each_type<TT>([this, &result, id]<typename T0>(const T0&)
             {
                 using BaseType = meta::strip_qualifiers_t<T0>;
-                RemoveComponent<BaseType*>(id);
+
+                BaseType* foo{};
+                foo;
+                RemoveComponent<BaseType>(id);
             });
 
             return result;

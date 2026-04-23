@@ -56,10 +56,10 @@ namespace yaget::items
 
             ~Stager()
             {
-                for (const auto& id : mItemIds)
-                {
-                    mStagerSystem.GetCS().RemoveItem(id);
-                }
+                //for (const auto& id : mItemIds)
+                //{
+                //    mStagerSystem.GetCS().RemoveItem(id);
+                //}
             }
 
             db_stage::Name::Types mCurrentStage;

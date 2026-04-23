@@ -27,6 +27,8 @@ namespace defensor::game
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent, comp::BulletComponent* bulletComponent);
+
+        comp::ItemIds mBulletsToRemove;
     };
 
 }

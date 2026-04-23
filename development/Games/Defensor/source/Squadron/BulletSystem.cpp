@@ -14,8 +14,14 @@ void defensor::game::BulletSystem::OnUpdate(yaget::comp::Id_t id, const yaget::t
     //id; gameClock; channel;
     if (id == comp::END_ID_MARKER)
     {
-        int z = 0;
-        z;
+        auto& coordinatorSet = GetCS();
+
+        for (auto id : mBulletsToRemove)
+        {
+            coordinatorSet.RemoveItem(id);
+        }
+
+        mBulletsToRemove.clear();
     }
     else
     {
@@ -25,7 +31,11 @@ void defensor::game::BulletSystem::OnUpdate(yaget::comp::Id_t id, const yaget::t
         float moveBy = gameClock.GetDeltaTimeSecond() * speed;
 
         bulletPosition.y += moveBy;
-        bulletPosition.y = std::clamp(bulletPosition.y, 0.0f, 0.8f);
+        if (bulletPosition.y > 0.8f)
+        {
+            mBulletsToRemove.insert(id);
+        }
+        //bulletPosition.y = std::clamp(bulletPosition.y, 0.0f, 0.8f);
         locationComponent->SetValue<comp::db_location::Position>(bulletPosition);
     }
 }
