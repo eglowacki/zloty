@@ -14,29 +14,24 @@ void defensor::game::BulletSystem::OnUpdate(yaget::comp::Id_t id, const yaget::t
     //id; gameClock; channel;
     if (id == comp::END_ID_MARKER)
     {
-        auto& coordinatorSet = GetCS();
-
-        for (auto id : mBulletsToRemove)
-        {
-            coordinatorSet.RemoveItem(id);
-        }
-
-        mBulletsToRemove.clear();
     }
     else
     {
         float speed = 0.8f; // units per second. This should come from unit/player speed component
         auto bulletPosition = locationComponent->GetValue<comp::db_location::Position>();
-        auto position = locationComponent->GetValue<comp::db_location::Position>();
         float moveBy = gameClock.GetDeltaTimeSecond() * speed;
 
         bulletPosition.y += moveBy;
         if (bulletPosition.y > 0.8f)
         {
-            mBulletsToRemove.insert(id);
+            auto& coordinatorSet = GetCS();
+            coordinatorSet.RemoveItem(id);
         }
-        //bulletPosition.y = std::clamp(bulletPosition.y, 0.0f, 0.8f);
-        locationComponent->SetValue<comp::db_location::Position>(bulletPosition);
+        else
+        {
+            locationComponent->SetValue<comp::db_location::Position>(bulletPosition);
+        }
+
     }
 }
 
