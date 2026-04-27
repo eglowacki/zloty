@@ -153,9 +153,6 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             }
             else
             {
-                auto viewMatrix = renderPass.GetViewMatrix();
-                auto orthoMatrix = renderPass.GetProjectionMatrix();
-
                 for (const auto& sceneItemTag : renderPass.mSceneItemTags)
                 {
                     auto sceneItem = mSceneItemsStorage.GetSceneItem(sceneItemTag);

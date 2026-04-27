@@ -619,7 +619,7 @@ std::string platform::GetCurrentDateTime(const char* format)
     char dateString[256];
     time_t t;
     ::time(&t);
-    tm* tmp = ::localtime(&t);
+    tm* tmp = localtime(&t);
     ::strftime(dateString, sizeof(dateString), validFormat, tmp);
 
     return dateString;
