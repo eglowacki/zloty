@@ -13,7 +13,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(YAGET_ROOT_FOLDER)\Common\include;$(YAGET_ROOT_FOLDER)\Common\Utility\include;$(YAGET_ROOT_FOLDER)\Common\Utility\source\vld;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(YAGET_ROOT_FOLDER)\Common\include;$(YAGET_ROOT_FOLDER)\Common\Utility\include;$(YAGET_ROOT_FOLDER)\Common\Utility\source\vld;$(YAGET_ROOT_FOLDER)\Common\Utility\source\ImageLoaders\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>Precompiled.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
       <FloatingPointModel>Fast</FloatingPointModel>

@@ -15,17 +15,19 @@
 //! \file
 #pragma once
 
+#include "Components/BulletComponent.h"
 #include "Components/ComponentTypes.h"
 #include "Components/InputComponent.h"
 #include "Components/LocationComponent.h"
+#include "Components/MaterialComponent.h"
 #include "Components/MenuComponent.h"
 #include "Components/NameComponent.h"
 #include "Components/PayloadStager.h"
 #include "Components/ScriptComponent.h"
 #include "Components/SystemsCoordinator.h"
 #include "Components/UnitComponent.h"
+#include "Components/TextComponent.h"
 #include "Components/VelocityComponent.h"
-#include "Components/MaterialComponent.h"
 #include "Items/StageComponent.h"
 #include "Renders/RenderComponent.h"
 #include "Renders/SceneComponent.h"
@@ -42,7 +44,7 @@ namespace defensor::game
     struct StateCollectorComponent { static constexpr int Capacity = 64; };
 
     using GlobalEntity = comp::GlobalRowPolicy<comp::MenuComponent*, items::StageComponent*, StateCollectorComponent*>;
-    using Entity = comp::RowPolicy<comp::LocationComponent3*, comp::InputComponent*, comp::UnitComponent*, comp::ScriptComponent*, comp::NameComponent*, comp::VelocityComponent*, comp::MaterialComponent*>;
+    using Entity = comp::RowPolicy<comp::LocationComponent3*, comp::InputComponent*, comp::UnitComponent*, comp::ScriptComponent*, comp::NameComponent*, comp::VelocityComponent*, comp::MaterialComponent*, comp::BulletComponent*, comp::TextComponent*>;
 
     using GlobalCoordinator = comp::Coordinator<GlobalEntity>;
     using EntityCoordinator = comp::Coordinator<Entity>;

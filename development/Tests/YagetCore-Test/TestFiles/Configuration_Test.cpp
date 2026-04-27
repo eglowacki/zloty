@@ -382,13 +382,13 @@ namespace json_blocks
     //------------------------------------------------------------------------------------------------------------------------------------------------------
     const nlohmann::json graphics =
     {
-        { "Device", "Garbage" },
-        { "MemoryReport", true }
+        { "MemoryReport", true },
+        { "GPUTraceback", true }
     };
 
     const Configuration::Graphics expectedGraphics =
     {
-        "Garbage",
+        true,
         true
     };
 

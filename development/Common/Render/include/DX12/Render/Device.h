@@ -68,6 +68,7 @@ namespace yaget::render
 {
     namespace commands
     {
+        struct DepthStencilClear;
         class RenderTarget;
         class CommandListStorage;
         class AllocatorStorage;
@@ -100,6 +101,7 @@ namespace yaget::render
         const platform::Adapter& GetAdapter() const { return *mAdapter.get(); }
         platform::SwapChain& GetSwapChain() const;
         const info::Adapter& GetSelectedAdapter() const { return mSelectedAdapter; }
+        const app::WindowFrame& GetWindowFrame() const;
 
         // this allows us to register for device resizing, so dependent resource
         // cna be reset and recreated.
@@ -113,6 +115,8 @@ namespace yaget::render
         size_t RegisterResizeCallback(ResizeCallback callback);
         void UnregisterResizeCallback(size_t callbackId);
 
+        commands::QueueFenceValues& GetQueueFenceValues() { return mQueueFenceValues; }
+
         //--------------------------------
         // Some refactor for DX12 command classes
         struct FrameCommands
@@ -122,8 +126,9 @@ namespace yaget::render
             ~FrameCommands();
 
             // This returns first CommandList.
-            commands::CommandList* BeginFrame(const colors::Color* color);
+            commands::CommandList* BeginFrame(const math3d::Color* color, const commands::DepthStencilClear* clearDepthStencil);
             void EndFrame();
+            uint32_t GetFrameIndex() const { return mFrameIndex; }
 
             // This will return next available CommandList
             commands::CommandList* GetAvailableCommandList(commands::Type commandType);
@@ -159,6 +164,8 @@ namespace yaget::render
         FrameCommands GetCopyCommands();
 
     private:
+        commands::QueueFenceValues mQueueFenceValues;
+
         struct MemoryTrackerReporter
         {
             MemoryTrackerReporter() = default;

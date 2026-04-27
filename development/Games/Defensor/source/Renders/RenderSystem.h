@@ -28,6 +28,7 @@
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Pipeline/ShaderBuffers.h"
 #include "Render/Scene/RenderSceneItems.h"
+#include "Render/UI/FontRender.h"
 
 
 namespace defensor::render
@@ -48,16 +49,6 @@ namespace defensor::render
 
         void OnResetDevice(const app::WindowFrame& windowFrame, yaget::render::DeviceB::ResizeState resizeState);
 
-        // This structure is used to keep track of what assets are used for rendering particular entity. 
-        // It is used to track changes in assets and update them accordingly.
-        struct RenderState
-        {
-            Guid mSignatureGuid;
-            Guid mPipelineGuid;
-            Guid mVertexShaderGuid;
-            Guid mPixelShaderGuid;
-        };
-
         math3d::Interpolator<colors::Color> mColorInterpolator;
         math3d::Interpolator<float> mMatrixInterpolator;
 
@@ -74,13 +65,21 @@ namespace defensor::render
         yaget::render::GeometriesResources mGeometryResources;
         yaget::render::commands::RenderTargetStorage mRenderTargetStorage;
         yaget::render::scene::SceneItemsStorage mSceneItemsStorage;
+        yaget::render::ui::FontStorage mFontStorage;
         yaget::render::commands::RenderPasses mRenderPasses;
         io::Tag mSwapChainRenderTargetTag{ .mName = "SwapChainRenderTarget", .mGuid = NewGuid() };
         io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTarget", .mGuid = NewGuid() };
 
         size_t mResizeCallbackId{};
 
-        RenderState mCurrentRenderState;
+        yaget::render::commands::RenderPassState mCurrentRenderPassState;
+
+        io::Tag mFontTag;
+
+        // frame rate calculations
+        float mFramesThisSecond = 1;
+        float mAverageFps = 1.0f;
+        float mCurrentCalcTime = 0.0f;
     };
 
 }

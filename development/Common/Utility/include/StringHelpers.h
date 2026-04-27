@@ -151,55 +151,16 @@ namespace yaget
         } unused_marker_t;
 
         //----------------------------------------------------------------------------------------------------------------------------------
+        // forward declarations
+        template<typename T>
+        std::string ToString(const T& value);
+
+        template<typename T>
+        T FromString(const char* value);
+
+        //----------------------------------------------------------------------------------------------------------------------------------
         template <typename T>
         struct Convertor;
-
-        namespace internal
-        {
-            // Format for parsing, r, g, b and a is not used in parsing,
-            // it looks only for []=,
-            // it works with 1 or more elements
-            // [r = { :.2f }, g = { :.2f }, b = { :.2f }, a = { :.2f }]
-            template<typename T>
-            std::vector<T> ParseValues(const std::string& text)
-            {
-                using R = std::vector<T>;
-                using size_type = std::string::size_type;
-                constexpr auto npos = std::string::npos;
-
-                R results;
-
-                if (!text.empty() && text.front() == '[' && text.back() == ']')
-                {
-                    size_type startingPosition = 0;
-                    do
-                    {
-                        const size_type startNumber = text.find('=', startingPosition);
-                        size_type endNumber = text.find(',', startNumber);
-                        if (startNumber != npos && endNumber == npos)
-                        {
-                            endNumber = text.find(']', startNumber);
-                        }
-
-                        if (startNumber == npos || endNumber == npos)
-                        {
-                            break;
-                        }
-
-                        std::string value(text.begin() + startNumber + 1, text.begin() + endNumber);
-
-                        results.push_back(yaget::conv::Convertor<T>::FromString(value.c_str()));
-
-                        startingPosition = endNumber;
-
-                    } while (true);
-
-                }
-
-                return results;
-            }
-
-        } // namespace internal
 
         //----------------------------------------------------------------------------------------------------------------------------------
         inline std::string ToLower(const std::string& source)
@@ -497,13 +458,11 @@ namespace yaget
         {
             static math3d::Vector3 FromString(const char* value)
             {
-                const std::vector<float> values = internal::ParseValues<float>(value ? value : "");
-                const math3d::Vector3 v(&values[0]);
-                return v;
+                return conv::FromString<DirectX::XMFLOAT3>(value);
             }
             static std::string ToString(const math3d::Vector3& value)
             {
-                return std::format("[x = {:.2f}, y = {:.2f}, z = {:.2f}]", value.x, value.y, value.z);
+                return conv::ToString(static_cast<DirectX::XMFLOAT3>(value));
             }
         };
 
@@ -513,13 +472,11 @@ namespace yaget
         {
             static math3d::Vector2 FromString(const char* value)
             {
-                const std::vector<float> values = internal::ParseValues<float>(value ? value : "");
-                const math3d::Vector2 v(&values[0]);
-                return v;
+                return conv::FromString<DirectX::XMFLOAT2>(value);
             }
             static std::string ToString(const math3d::Vector2& value)
             {
-                return std::format("[x = {:.2f}, y = {:.2f}]", value.x, value.y);
+                return conv::ToString(static_cast<DirectX::XMFLOAT2>(value));
             }
         };
 
@@ -529,13 +486,11 @@ namespace yaget
         {
             static math3d::Quaternion FromString(const char* value)
             {
-                const std::vector<float> values = internal::ParseValues<float>(value ? value : "");
-                const math3d::Quaternion v(&values[0]);
-                return v;
+                return conv::FromString<DirectX::XMFLOAT4>(value);
             }
             static std::string ToString(const math3d::Quaternion& value)
             {
-                return std::format("[x = {:.2f}, y = {:.2f}, z = {:.2f}, w = {:.2f}]", value.x, value.y, value.z, value.w);
+                return conv::ToString(static_cast<DirectX::XMFLOAT4>(value));
             }
         };
 
@@ -561,11 +516,11 @@ namespace yaget
                 const Strings tokens = conv::Split(text, "x", true);
                 if (!tokens.empty())
                 {
-                    v.first = Convertor<V1>::FromString(tokens[0].c_str());
+                    v.first = conv::FromString<V1>(tokens[0].c_str());
 
                     if (tokens.size() > 1)
                     {
-                        v.second = Convertor<V2>::FromString(tokens[1].c_str());
+                        v.second = conv::FromString<V2>(tokens[1].c_str());
                     }
                 }
 
@@ -573,7 +528,7 @@ namespace yaget
             }
             static std::string ToString(const ValueT& value)
             {
-                return Convertor<V1>::ToString(value.first) + "x" + Convertor<V2>::ToString(value.second);
+                return conv::ToString(value.first) + "x" + conv::ToString(value.second);
             }
         };
 
@@ -598,7 +553,7 @@ namespace yaget
                     if (elementIndex < tokens.size())
                     {
                         const auto& paramString = tokens[elementIndex];
-                        paramValue = conv::Convertor<ElementType>::FromString(paramString.c_str());
+                        paramValue = conv::FromString<ElementType>(paramString.c_str());
                     }
 
 
@@ -618,7 +573,7 @@ namespace yaget
                     using ElementType = std::tuple_element_t<elementIndex, ValueT>;
                     const auto& elementValue = std::get<elementIndex>(value);
 
-                    auto stringResult = Convertor<ElementType>::ToString(elementValue);
+                    auto stringResult = conv::ToString(elementValue);
                     stringValues.push_back(stringResult);
                 });
 
@@ -627,19 +582,126 @@ namespace yaget
             }
         };
 
+
+        //-------------------------------------------------------------------------------------------------
+        template <>
+        struct Convertor<DirectX::XMFLOAT2>
+        {
+            // format: { 1.0f, 1.0f }
+            static DirectX::XMFLOAT2 FromString(const char* value)
+            {
+                std::string strValue(value);
+                std::erase(strValue, '{');
+                std::erase(strValue, '}');
+
+                DirectX::XMFLOAT2 vertex{};
+                auto tokens = Split(strValue, ",", true);
+                switch (tokens.size())
+                {
+                    case 2:
+                        vertex.y = conv::FromString<float>(tokens[1].c_str());
+                        [[fallthrough]];
+                    case 1:
+                        vertex.x = conv::FromString<float>(tokens[0].c_str());
+                        [[fallthrough]];
+                }
+
+                return vertex;
+            }
+
+            static std::string ToString(const DirectX::XMFLOAT2& value)
+            {
+                return std::format("{{ {:.4f}, {:.4f} }}", value.x, value.y);
+            }
+        };
+
+
+        //-------------------------------------------------------------------------------------------------
+        template <>
+        struct Convertor<DirectX::XMFLOAT3>
+        {
+            // format: { 1.0f, 1.0f, 1.0f }
+            static DirectX::XMFLOAT3 FromString(const char* value)
+            {
+                std::string strValue(value);
+                std::erase(strValue, '{');
+                std::erase(strValue, '}');
+
+                DirectX::XMFLOAT3 vertex{};
+                auto tokens = Split(strValue, ",", true);
+                switch (tokens.size())
+                {
+                    case 3:
+                        vertex.z = conv::FromString<float>(tokens[2].c_str());
+                        [[fallthrough]];
+                    case 2:
+                        vertex.y = conv::FromString<float>(tokens[1].c_str());
+                        [[fallthrough]];
+                    case 1:
+                        vertex.x = conv::FromString<float>(tokens[0].c_str());
+                        [[fallthrough]];
+                }
+
+                return vertex;
+            }
+
+            static std::string ToString(const DirectX::XMFLOAT3& value)
+            {
+                return std::format("{{ {:.4f}, {:.4f}, {:.4f} }}", value.x, value.y, value.z);
+            }
+        };
+
+
+        //-------------------------------------------------------------------------------------------------
+        template <>
+        struct Convertor<DirectX::XMFLOAT4>
+        {
+            // format: { 1.0f, 1.0f, 1.0f, 1.0f }
+            static DirectX::XMFLOAT4 FromString(const char* value)
+            {
+                std::string strValue(value);
+                std::erase(strValue, '{');
+                std::erase(strValue, '}');
+
+                DirectX::XMFLOAT4 vertex{};
+                auto tokens = Split(strValue, ",", true);
+                switch (tokens.size())
+                {
+                    case 4:
+                        vertex.w = conv::FromString<float>(tokens[3].c_str());
+                        [[fallthrough]];
+                    case 3:
+                        vertex.z = conv::FromString<float>(tokens[2].c_str());
+                        [[fallthrough]];
+                    case 2:
+                        vertex.y = conv::FromString<float>(tokens[1].c_str());
+                        [[fallthrough]];
+                    case 1:
+                        vertex.x = conv::FromString<float>(tokens[0].c_str());
+                        [[fallthrough]];
+                }
+
+                return vertex;
+            }
+
+            static std::string ToString(const DirectX::XMFLOAT4& value)
+            {
+                return std::format("{{ {:.4f}, {:.4f}, {:.4f}, {:.4f} }}", value.x, value.y, value.z, value.w);
+            }
+        };
+
+
         //----------------------------------------------------------------------------------------------------------------------------------
         template<> 
         struct Convertor<math3d::Color>
         {
             static math3d::Color FromString(const char* value)
             {
-                const std::vector<float> values = internal::ParseValues<float>(value ? value : "");
-                const math3d::Color v(&values[0]);
-                return v;
+                return conv::FromString<DirectX::XMFLOAT4>(value);
             }
             static std::string ToString(const math3d::Color& value)
             {
-                return std::format("[r = {:.2f}, g = {:.2f}, b = {:.2f}, a = {:.2f}]", value.x, value.y, value.z, value.w);
+                return conv::ToString<DirectX::XMFLOAT4>(value);
             }
         };
 
@@ -689,33 +751,34 @@ namespace yaget
         template<typename T>
         std::string ToString(const T& value)
         {
-            return Convertor<T>::ToString(value);
+            if constexpr (std::is_enum_v<T>)
+            {
+                return std::string{ magic_enum::enum_name(value) };
+            }
+            else
+            {
+                return Convertor<T>::ToString(value);
+            }
         }
 
         template<typename T>
         T FromString(const char* value)
         {
-            return Convertor<T>::FromString(value);
-        }
-
-        template<typename E>
-        std::string FromEnumToString(E value)
-        {
-            return std::string{ magic_enum::enum_name(value) };
-        }
-
-        template<typename E>
-        E FromStringToEnum(const char* value)
-        {
-            auto enumValue = magic_enum::enum_cast<E>(value);
-            if (enumValue.has_value())
+            if constexpr (std::is_enum_v<T>)
             {
-                return enumValue.value();
+                auto enumValue = magic_enum::enum_cast<T>(value);
+                if (enumValue.has_value())
+                {
+                    return enumValue.value();
+                }
+
+                return T{};
             }
-
-            return E{};
+            else
+            {
+                return Convertor<T>::FromString(value);
+            }
         }
-
 
     } // namespace conv
 

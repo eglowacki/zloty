@@ -35,7 +35,7 @@ namespace yaget::render::commands
     class Queue
     {
     public:
-        Queue(ID3D12Device* device, Type commandType);
+        Queue(ID3D12Device* device, Type commandType, FenceValues& fenceValues);
         ~Queue();
 
         ID3D12CommandQueue* GetDeviceCommandQueue() const;
@@ -67,8 +67,7 @@ namespace yaget::render::commands
         std::mutex mEventMutex;
 
         ComPtr<ID3D12Fence> mFence;
-        uint64_t mNextFenceValue;
-        uint64_t mLastCompletedFenceValue;
+        FenceValues& mFenceValues;
         HANDLE mFenceEventHandle;
     };
     
@@ -77,7 +76,7 @@ namespace yaget::render::commands
     class QueueStorage
     {
     public:
-        QueueStorage(ID3D12Device* device);
+        QueueStorage(ID3D12Device* device, QueueFenceValues& queueFenceValues);
         ~QueueStorage();
 
         Queue* GetQueue(Type commandType);

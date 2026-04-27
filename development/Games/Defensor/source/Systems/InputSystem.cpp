@@ -5,7 +5,7 @@
 defensor::game::ProcessInputSystem::ProcessInputSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
     : GameSystem("ProcessInputSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, true)
 {
-    app.Input().RegisterActionCallback("*", [this](const std::string& contextName, const std::string& actionName, uint64_t timeStamp, int32_t mouseX, int32_t mouseY, uint32_t flags)
+    mApp.Input().RegisterActionCallback("*", [this](const std::string& contextName, const std::string& actionName, uint64_t timeStamp, int32_t mouseX, int32_t mouseY, uint32_t flags)
     {
         if (!mActiveContextName.empty() && contextName == mActiveContextName)
         {
@@ -40,9 +40,9 @@ void defensor::game::ProcessInputSystem::OnUpdate(comp::Id_t id, const time::Gam
             // in this case we need store that info on inputComponent,
             // which allows other components/systems to query for "player"
             // actions
-            inputComponent->mTriggeredAction.insert(element);
+            inputComponent->mTriggeredAction[element] = it->second;
 
-            YLOG_DEBUG("GSYS", "============ Input Component action '%s', flags: '%d' added.", element.c_str(), it->second.mFlags);
+            //YLOG_INFO("REND", "============ Input Component action '%s', flags: '%d' added.", element.c_str(), it->second.mFlags);
         }
     }
 }
@@ -52,6 +52,7 @@ void defensor::game::ProcessInputSystem::OnUpdate(comp::Id_t id, const time::Gam
 void defensor::game::ProcessInputSystem::SaveAction(const std::string& actionName, uint64_t timeStamp, int32_t mouseX, int32_t mouseY, uint32_t flags)
 {
     mActionInputs[actionName] = {actionName, timeStamp, mouseX, mouseY, flags};
+    //YLOG_INFO("REND", "============ Added Action Name: '%s'.", actionName.c_str());
 }
 
 
@@ -69,4 +70,5 @@ void defensor::game::ClearInputSystem::OnUpdate(yaget::comp::Id_t id, const yage
     id; gameClock; channel;
 
     inputComponent->mTriggeredAction.clear();
+    //YLOG_INFO("REND", "============ Cleared Actions.");
 }

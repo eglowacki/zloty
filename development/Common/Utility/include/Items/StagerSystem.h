@@ -56,10 +56,12 @@ namespace yaget::items
 
             ~Stager()
             {
-                for (const auto& id : mItemIds)
-                {
-                    mStagerSystem.GetCS().RemoveItem(id);
-                }
+                int z = 0;
+                z;
+                //for (const auto& id : mItemIds)
+                //{
+                //    mStagerSystem.GetCS().RemoveItem(id);
+                //}
             }
 
             db_stage::Name::Types mCurrentStage;
@@ -86,6 +88,7 @@ namespace yaget::items
         {
             // ok at this point we need to know if any current items will be removed or will they stay to be merged with incoming (new) ones.
             // we could go even further and try to support updating component of existing ones.
+
             const auto items = mDirector.GetStageItems(requestedStageName);
             if (!items.empty())
             {
@@ -94,7 +97,7 @@ namespace yaget::items
                 // here we have choices on how to load requested stage
                 //  leave current items loaded
                 //  and load requested ones
-                mStagersStack.push({ requestedStageName, stageComponent->GetValue<db_stage::Blend>(), *this });
+                mStagersStack.push(Stager{ requestedStageName, stageComponent->GetValue<db_stage::Blend>(), *this });
             }
         }
     }

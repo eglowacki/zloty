@@ -1,0 +1,8 @@
+{
+    "Geometry": "Geometry@Defensor-Bullet",
+    "Material": "Materials@DefensorBulletMaterial",
+    "RenderOrder": 1,
+    "Textures": [
+        "Images@DefensorBullet2"
+    ]
+}

@@ -49,15 +49,16 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::Queue::Queue(ID3D12Device* device, Type commandType)
+yaget::render::commands::Queue::Queue(ID3D12Device* device, Type commandType, FenceValues& fenceValues)
     : mQueueType(commandType)
     , mCommandQueue{ CreateCommandQueue(device, mQueueType) }
     , mFence{ CreateCommandQueueFence(device, mQueueType) }
-    , mNextFenceValue{ (static_cast<uint64_t>(mQueueType) << QueueTypeOffset) + 1 }
-    , mLastCompletedFenceValue{ static_cast<uint64_t>(mQueueType) << QueueTypeOffset }
+    , mFenceValues{ fenceValues }
     , mFenceEventHandle{ nullptr }
 {
-    HRESULT hr = mFence->Signal(mLastCompletedFenceValue);
+    mFenceValues.Initialize(mQueueType);
+
+    HRESULT hr = mFence->Signal(mFenceValues.mLastCompletedFenceValue);
     error_handlers::ThrowOnError(hr, "Could not Signal DX12 CommandQueue.Fence");
  
     mFenceEventHandle = CreateEventEx(nullptr, L"CommandQueue.Event", false, EVENT_ALL_ACCESS);
@@ -75,12 +76,12 @@ yaget::render::commands::Queue::~Queue()
 //-------------------------------------------------------------------------------------------------
 bool yaget::render::commands::Queue::IsFenceComplete(uint64_t fenceValue)
 {
-    if (fenceValue > mLastCompletedFenceValue)
+    if (fenceValue > mFenceValues.mLastCompletedFenceValue)
     {
         PollCurrentFenceValue();
     }
 
-    return fenceValue <= mLastCompletedFenceValue;
+    return fenceValue <= mFenceValues.mLastCompletedFenceValue;
 }
 
 
@@ -112,9 +113,9 @@ size_t yaget::render::commands::Queue::Signal()
 {
     std::lock_guard lockGuard(mFenceMutex);
  
-    mCommandQueue->Signal(mFence.Get(), mNextFenceValue);
+    mCommandQueue->Signal(mFence.Get(), mFenceValues.mNextFenceValue);
  
-    return mNextFenceValue++;
+    return mFenceValues.mNextFenceValue++;
 }
 
 
@@ -132,14 +133,14 @@ void yaget::render::commands::Queue::WaitForFenceCPUBlocking(uint64_t fenceValue
     error_handlers::ThrowOnError(hr, "Could not set Fence Event On Completion");
 
     WaitForSingleObjectEx(mFenceEventHandle, INFINITE, false);
-    mLastCompletedFenceValue = fenceValue;
+    mFenceValues.mLastCompletedFenceValue = fenceValue;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::commands::Queue::WaitForIdle()
 {
-    WaitForFenceCPUBlocking(mNextFenceValue - 1);
+    WaitForFenceCPUBlocking(mFenceValues.mNextFenceValue - 1);
 }
 
 
@@ -153,22 +154,21 @@ ID3D12CommandQueue* yaget::render::commands::Queue::GetDeviceCommandQueue() cons
 //-------------------------------------------------------------------------------------------------
 uint64_t yaget::render::commands::Queue::PollCurrentFenceValue()
 {
-    mLastCompletedFenceValue = std::max(mLastCompletedFenceValue, mFence->GetCompletedValue());
-    return mLastCompletedFenceValue;
+    return mFenceValues.PollCurrentFenceValue(mFence->GetCompletedValue());
 }
 
 
 //-------------------------------------------------------------------------------------------------
 uint64_t yaget::render::commands::Queue::GetLastCompletedFence() const
 {
-    return mLastCompletedFenceValue;
+    return mFenceValues.mLastCompletedFenceValue;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 uint64_t yaget::render::commands::Queue::GetNextFenceValue() const
 {
-    return mNextFenceValue;
+    return mFenceValues.mNextFenceValue;
 }
 
 
@@ -209,11 +209,11 @@ void yaget::render::commands::Queue::ExecuteCommandLists(const CommandLists& com
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::QueueStorage::QueueStorage(ID3D12Device* device)
+yaget::render::commands::QueueStorage::QueueStorage(ID3D12Device* device, QueueFenceValues& queueFenceValues)
 {
-    mQueueMap[Type::Direct] = std::make_unique<Queue>(device, Type::Direct);
-    mQueueMap[Type::Compute] = std::make_unique<Queue>(device, Type::Compute);
-    mQueueMap[Type::Copy] = std::make_unique<Queue>(device, Type::Copy);
+    mQueueMap[Type::Direct] = std::make_unique<Queue>(device, Type::Direct, queueFenceValues.mFenceValues[static_cast<uint32_t>(Type::Direct)]);
+    mQueueMap[Type::Compute] = std::make_unique<Queue>(device, Type::Compute, queueFenceValues.mFenceValues[static_cast<uint32_t>(Type::Compute)]);
+    mQueueMap[Type::Copy] = std::make_unique<Queue>(device, Type::Copy, queueFenceValues.mFenceValues[static_cast<uint32_t>(Type::Copy)]);
 }
 
 

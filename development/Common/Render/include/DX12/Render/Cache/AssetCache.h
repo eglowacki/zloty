@@ -78,6 +78,7 @@ namespace yaget::render
         //BlendMode...            = 1ULL << 34,
 
         // describe pipeline state rasterizer, uses MaskRasterizerState
+        RasterizerStateNone             = 1ULL << 34,
         RasterizerStateClockwise        = 1ULL << 35,
         RasterizerStateCounterClockwise = 1ULL << 36,
         RasterizerStateWireframe        = 1ULL << 37,
@@ -310,4 +311,20 @@ struct yaget::conv::Convertor<yaget::render::AssetCacheType>
         return result;
     }
 };
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+template<>
+inline std::string yaget::conv::ToString(const render::AssetCacheType& value)
+{
+    return conv::Convertor<render::AssetCacheType>::ToString(value);
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+template<>
+inline yaget::render::AssetCacheType yaget::conv::FromString(const char* value)
+{
+    return conv::Convertor<render::AssetCacheType>::FromString(value);
+}
 

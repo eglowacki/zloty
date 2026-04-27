@@ -1,4 +1,5 @@
 ﻿#include "PlayerSystem.h"
+#include "Components/BulletComponent.h"
 
 
 //-------------------------------------------------------------------------------------------------
@@ -11,7 +12,10 @@ defensor::game::PlayerSystem::PlayerSystem(Messaging& messaging, Application& ap
 //-------------------------------------------------------------------------------------------------
 void defensor::game::PlayerSystem::OnUpdate(yaget::comp::Id_t id, const yaget::time::GameClock& gameClock, yaget::metrics::Channel& channel, yaget::comp::LocationComponent3* locationComponent, const comp::InputComponent* inputComponent)
 {
-    id; gameClock; channel; locationComponent; inputComponent;
+    id; channel;
+
+    auto strippedId = comp::StripQualifiers(id);
+    strippedId;
 
     // NOTE: do we need this part in script?
     // Move have some kind of speed, ? based on entity type, modifiers, etc
@@ -42,5 +46,35 @@ void defensor::game::PlayerSystem::OnUpdate(yaget::comp::Id_t id, const yaget::t
         locationComponent->SetValue<comp::db_location::Position>(position);
     }
 
-    //YLOG_DEBUG("GSYS", "============ Player Position: '%f'", locationComponent->GetValue<comp::db_location::Position>().x);
+    const bool isActionShoot = inputComponent->IsAction("Shoot");
+    if (isActionShoot)
+    {
+        const auto& inputData = inputComponent->mTriggeredAction.at("Shoot");
+        if (!mBulletActive && (inputData.mFlags & input::kButtonDown))
+        {
+            mBulletActive = true;
+            YLOG_INFO("REND", "============ Player Shoots");
+
+            // create the bullet now...
+            auto bulletId = idspace::get_persistent(mApp.IdCache);
+            auto playerPosition = locationComponent->GetValue<comp::db_location::Position>();
+
+            AddPlayerBullet(bulletId, "PlayerShipBullet", Section{ "SceneItems@PlayerShipBullet" }, playerPosition + math3d::Vector3{ 0, 0.05f, 0 });
+        }
+        else if (mBulletActive && (inputData.mFlags & input::kButtonUp))
+        {
+            mBulletActive = false;
+        }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+void defensor::game::PlayerSystem::AddPlayerBullet(comp::Id_t id, const std::string& itemName, const Section& materialSection, math3d::Vector3 bulletPosition)
+{
+    auto& coordinatorSet = GetCS();
+
+    coordinatorSet.AddComponent<comp::NameComponent>(id, itemName);
+    coordinatorSet.AddComponent<comp::BulletComponent>(id);
+    coordinatorSet.AddComponent<comp::MaterialComponent>(id, materialSection);
+    coordinatorSet.AddComponent<comp::LocationComponent3>(id, bulletPosition);
 }

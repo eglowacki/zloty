@@ -130,7 +130,7 @@ namespace yaget
         {
             static void Bind(sqlite3* database, sqlite3_stmt* statement, T value, int index)
             {
-                StatementBinder<std::string>::Bind(database, statement, conv::Convertor<T>::ToString(value), index);
+                StatementBinder<std::string>::Bind(database, statement, conv::ToString(value), index);
             }
         };
 
@@ -231,7 +231,7 @@ namespace yaget
                 size_t index = 0;
                 meta::for_each(row, [values, &index]<typename T0>(T0& element)
                 {
-                    element = conv::Convertor<T0>::FromString(values[index]);
+                    element = conv::FromString<T0>(values[index]);
                     ++index;
                 });
 

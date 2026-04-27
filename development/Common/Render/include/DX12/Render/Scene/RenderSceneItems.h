@@ -17,6 +17,8 @@
 #include "VTS/VirtualTransportSystem.h"
 #include "Render/Pipeline/RenderGeometries.h"
 #include "Render/Polygons/RenderShape.h"
+#include "Render/Pipeline/RenderShaders.h"
+#include "Render/Commands/RenderCommandTypes.h"
 
 namespace yaget::app
 {
@@ -56,26 +58,35 @@ namespace yaget::render::scene
     public:
         static inline uint32_t PassOrderIndependent = 0;
 
+        struct Tags
+        {
+            io::Tag mMaterialTag;
+            io::Tag mGeometryTag;
+            io::Tags mTexturesTags;
+            uint32_t mRenderPassOrder{ PassOrderIndependent };
+        };
+
         SceneItem();
         ~SceneItem();
 
-        void Render(commands::CommandList* commandList);
+        void Render(uint32_t bufferIndex, const commands::CommandList* commandList, commands::RenderPassState& currentRenderPassState);
 
         template <typename T>
-        bool UpdateData(constant_shader_types::ConstantTypes constantTypes, const T& data)
+        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const T& data, commands::Type commandType)
         {
-            return UpdateData(constantTypes, reinterpret_cast<const uint8_t*>(&data), sizeof(T));
+            return UpdateData(bufferIndex, constantTypes, reinterpret_cast<const uint8_t*>(&data), sizeof(T), commandType);
         }
 
         // mRenderPassOrder is upper 32 bits and lower 32 bits
         // are combination of properties, like root, pipeline, constants, geometry data and texture resources.
         // That means the lower value of mRenderPassOrder will be rendered 'first'
         uint64_t GetRenderOrder() const;
+        const Tags& GetTags() const;
 
     private:
         friend SceneItemsStorage;
 
-        bool UpdateData(constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize);
+        bool UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize, commands::Type commandType);
 
         ID3D12RootSignature* mRootSignature{};
         ID3D12PipelineState* mPipelineState{};
@@ -85,8 +96,7 @@ namespace yaget::render::scene
         std::vector<ID3D12DescriptorHeap*> mTextureResources{};
 
         RenderShape mRenderShape;
-
-        uint32_t mRenderPassOrder{ PassOrderIndependent };
+        Tags mTags;
     };
 
 
@@ -114,6 +124,8 @@ namespace yaget::render::scene
 
         void Preload(const io::Tags& tags);
         void ResetAll(const app::WindowFrame& windowFrame);
+
+        void ClearItem(const io::Tag& tag);
 
         static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
         static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);

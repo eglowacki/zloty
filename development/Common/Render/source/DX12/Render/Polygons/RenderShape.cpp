@@ -1,6 +1,5 @@
 #include "Render/Polygons/RenderShape.h"
 #include "Render/Platform/D3D12MemAlloc.h"
-#include <d3dx12.h>
 
 
 namespace
@@ -30,7 +29,17 @@ yaget::render::RenderShape::~RenderShape() = default;
 //-------------------------------------------------------------------------------------------------
 void yaget::render::RenderShape::Bind(GeometriesResources::GeometryData geometryData)
 {
-    mGeometryData = std::move(geometryData);
+    if (geometryData != mGeometryData && geometryData.mHeader.IsValid())
+    {
+        mGeometryData = std::move(geometryData);
+
+        mVertexBufferView = {};
+        mIndexBufferView = {};
+        mNumTriangles = 0;
+        mHasIndices = false;
+
+        UpdateGeometryData();
+    }
 }
 
 
@@ -39,32 +48,38 @@ void yaget::render::RenderShape::Render(ID3D12GraphicsCommandList* commandList) 
 {
     if (mGeometryData.mHeader.IsValid())
     {
-        D3D12_VERTEX_BUFFER_VIEW vertexDataView{};
-        vertexDataView.BufferLocation = mGeometryData.mVerticesResource->GetGPUVirtualAddress();
-        vertexDataView.SizeInBytes = mGeometryData.mHeader.VertexBufferSize();
-        vertexDataView.StrideInBytes = mGeometryData.mHeader.VertexStride();
-
-
-        auto numTriangles = mGeometryData.mHeader.NumTriangles();
-
         commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        commandList->IASetVertexBuffers(0, 1, &vertexDataView);
+        commandList->IASetVertexBuffers(0, 1, &mVertexBufferView);
 
-        if (mGeometryData.mHeader.mNumIndices)
+        if (mHasIndices)
         {
-            auto indexFormat = GetIndexFormat(mGeometryData.mHeader.mIndexFormatSize);
-
-            D3D12_INDEX_BUFFER_VIEW indexDataView{};
-            indexDataView.BufferLocation = mGeometryData.mIndicesResource->GetGPUVirtualAddress();
-            indexDataView.Format = indexFormat;
-            indexDataView.SizeInBytes = mGeometryData.mHeader.IndexBufferSize();
-
-             commandList->IASetIndexBuffer(&indexDataView);
+             commandList->IASetIndexBuffer(&mIndexBufferView);
              commandList->DrawIndexedInstanced(static_cast<uint32_t>(mGeometryData.mHeader.mNumIndices), 1, 0, 0, 0);
         }
         else
         {
-            commandList->DrawInstanced(3 * numTriangles, 1, 0, 0);
+            commandList->DrawInstanced(3 * mNumTriangles, 1, 0, 0);
         }
     }
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::RenderShape::UpdateGeometryData()
+{
+    mVertexBufferView.BufferLocation = mGeometryData.mVerticesResource->GetGPUVirtualAddress();
+    mVertexBufferView.SizeInBytes = mGeometryData.mHeader.VertexBufferSize();
+    mVertexBufferView.StrideInBytes = mGeometryData.mHeader.VertexStride();
+
+    if (mGeometryData.mHeader.mNumIndices)
+    {
+        mHasIndices = true;
+        auto indexFormat = GetIndexFormat(mGeometryData.mHeader.mIndexFormatSize);
+
+        mIndexBufferView.BufferLocation = mGeometryData.mIndicesResource->GetGPUVirtualAddress();
+        mIndexBufferView.Format = indexFormat;
+        mIndexBufferView.SizeInBytes = mGeometryData.mHeader.IndexBufferSize();
+    }
+
+    mNumTriangles = mGeometryData.mHeader.NumTriangles();
 }

@@ -23,7 +23,7 @@ namespace
             auto psSection = json::GetValue(jasonBlock, "PixelShader", Section{});
             materialTags.mPixelShader = vts.GetTag(psSection);
 
-            auto rasterizerState = json::GetValue(jasonBlock, "RasterizerState", render::AssetCacheType::RasterizerStateCounterClockwise);
+            auto rasterizerState = json::GetValue(jasonBlock, "RasterizerState", render::AssetCacheType::RasterizerStateNone);
             auto blendMode = json::GetValue(jasonBlock, "BlendMode", render::AssetCacheType::BlendModeOpaque);
             auto depthState = json::GetValue(jasonBlock, "DepthState", render::AssetCacheType::DepthStateNone);
             auto topologyState = render::AssetCacheType::TopologyStateTriangle;

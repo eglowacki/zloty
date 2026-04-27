@@ -54,12 +54,19 @@ yaget::render::scene::SceneItem::~SceneItem() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::scene::SceneItem::Render(commands::CommandList* commandList)
+void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, const commands::CommandList* commandList, commands::RenderPassState& currentRenderPassState)
 {
     auto deviceCommandList = commandList->GetDeviceCommandList();
 
-    deviceCommandList->SetGraphicsRootSignature(mRootSignature);
-    deviceCommandList->SetPipelineState(mPipelineState);
+    if (currentRenderPassState.CheckHash(mRootSignature, commands::RenderPassState::HashType::RootSignature))
+    {
+        deviceCommandList->SetGraphicsRootSignature(mRootSignature);
+    }
+
+    if (currentRenderPassState.CheckHash(mPipelineState, commands::RenderPassState::HashType::PipelineState))
+    {
+        deviceCommandList->SetPipelineState(mPipelineState);
+    }
 
     constexpr constant_shader_types::ConstantTypes textureTypes[4] =
     {
@@ -69,9 +76,10 @@ void yaget::render::scene::SceneItem::Render(commands::CommandList* commandList)
         constant_shader_types::ConstantTypes::Texture2dFourth
     };
 
+    auto commandType = commandList->GetType();
     for (size_t i = 0; i < mTextureResources.size(); ++i)
     {
-        mConstantBuffer->UpdateData(textureTypes[i], mTextureResources[i]);
+        mConstantBuffer->UpdateData(bufferIndex, textureTypes[i], mTextureResources[i], commandType);
     }
 
     mConstantBuffer->Bind(deviceCommandList);
@@ -87,16 +95,30 @@ uint64_t yaget::render::scene::SceneItem::GetRenderOrder() const
     uint64_t order{};
     uint32_t propertiesOrder = 0;
 
-    order = (static_cast<uint64_t>(mRenderPassOrder) << 32) | propertiesOrder;
+    order = (static_cast<uint64_t>(mTags.mRenderPassOrder) << 32) | propertiesOrder;
 
     return order;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-bool yaget::render::scene::SceneItem::UpdateData(constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize)
+const yaget::render::scene::SceneItem::Tags& yaget::render::scene::SceneItem::GetTags() const
 {
-    return mConstantBuffer->UpdateData(constantTypes, data, dataSize);
+    return mTags;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+bool yaget::render::scene::SceneItem::UpdateData(uint32_t bufferIndex, constant_shader_types::ConstantTypes constantTypes, const uint8_t* data, size_t dataSize, commands::Type commandType)
+{
+    if (constantTypes == constant_shader_types::ConstantTypes::GeometryData)
+    {
+        const auto geomData = reinterpret_cast<const GeometriesResources::GeometryData*>(data);
+        mGeometryData = *geomData;
+        return true;
+    }
+
+    return mConstantBuffer->UpdateData(bufferIndex, constantTypes, data, dataSize, commandType);
 }
 
 
@@ -177,8 +199,16 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         sceneItem.mPipelineState = pso;
         sceneItem.mConstantBuffer = constantBuffer;
         sceneItem.mGeometryData = geometryData;
-        sceneItem.mRenderPassOrder = itemProperties.mRenderOrder;
         std::ranges::copy(textures.begin(), textures.end(), std::back_inserter(sceneItem.mTextureResources));
+
+        sceneItem.mTags = 
+        {
+            .mMaterialTag = materialTag,
+            .mGeometryTag = geometryTag,
+            .mTexturesTags = {},
+            .mRenderPassOrder =  itemProperties.mRenderOrder
+        };
+        std::ranges::copy(texturesTags.begin(), texturesTags.end(), std::back_inserter(sceneItem.mTags.mTexturesTags));
 
         results.push_back(&sceneItem);
     }
@@ -209,6 +239,14 @@ void yaget::render::scene::SceneItemsStorage::ResetAll(const app::WindowFrame& /
 {
     mt::WriteLock locker(mMutex);
     mItems.clear();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::scene::SceneItemsStorage::ClearItem(const io::Tag& tag)
+{
+    mt::WriteLock locker(mMutex);
+    mItems.erase(tag);
 }
 
 

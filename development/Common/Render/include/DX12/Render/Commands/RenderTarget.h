@@ -21,6 +21,7 @@
 #include <d3dx12.h>
 #include <shared_mutex>
 
+
 namespace yaget::render
 {
     class TextureResources;
@@ -46,31 +47,49 @@ namespace yaget::render::platform
     class SwapChain;
 }
 
+namespace
+{
+    struct RenderTargetSetup;
+}
+
 
 namespace yaget::render::commands
 {
     class CommandList;
+    class RenderTargetStorage;
+
+    struct DepthStencilClear
+    {
+        float mDepth = 1.0f;
+        uint8_t mStencil = 0;
+    };
+
 
     //-------------------------------------------------------------------------------------------------
     class RenderTarget
     {
     public:
-        // if depthStencilFormat != DXGI_FORMAT_UNKNOWN then use that to create depth-stencil buffer of the size of render target
-        // otherwise if depthStencilDescriptorHeap and depthStencilResource non-null, just use that.
-        RenderTarget(ID3D12Device* device, int sizeX, int sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource);
-        RenderTarget(platform::SwapChain& swapChain);
         ~RenderTarget();
 
         ID3D12Resource* Resource() const { return mRenderTargetResource.Get(); }
         ID3D12DescriptorHeap* SRVDescriptorHeap() const { return mSRVDescriptorHeap.Get(); }
         ID3D12DescriptorHeap* RTVDescriptorHeap() const { return mRTVDescriptorHeap.Get(); }
 
-        void BeginFrame(const CommandList* commandList);
+        void BeginFrame(const CommandList* commandList, const math3d::Color* clearColor, const DepthStencilClear* clearDepthStencil);
         void EndFrame(const CommandList* commandList);
 
         bool Present(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/);
 
+        const math3d::Color& GetColorClear() const { return mClearColor; }
+        const DepthStencilClear& GetDepthStencilClear() const { return mDepthStencilClear; }
+
     private:
+        friend RenderTargetStorage;
+
+        // if depthStencilFormat != DXGI_FORMAT_UNKNOWN then use that to create depth-stencil buffer of the size of render target
+        RenderTarget(const RenderTargetSetup& renderTargetData, ID3D12Device* device, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource);
+        RenderTarget(platform::SwapChain& swapChain);
+
         // this is used in pixel shader as source texture
         ComPtr<ID3D12DescriptorHeap> mSRVDescriptorHeap{};
         // this is used as render target texture
@@ -80,7 +99,8 @@ namespace yaget::render::commands
 
         DXGI_FORMAT mRenderTargetFormat;
         D3D12_RESOURCE_STATES mState;
-        colors::Color mClearColor;
+        math3d::Color mClearColor;
+        DepthStencilClear mDepthStencilClear;
         ComPtr<ID3D12Resource> mRenderTargetResource;
         ComPtr<ID3D12Resource> mDepthStencilResource;
         platform::SwapChain* mSwapChain;
@@ -109,7 +129,7 @@ namespace yaget::render::commands
 
     private:
         // create (or return existing) render target based on passed parameters
-        RenderTarget* GetRenderTarget(const io::Tag& tag, uint32_t sizeX, uint32_t sizeY, DXGI_FORMAT renderTargetFormat, DXGI_FORMAT depthStencilFormat, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource);
+        RenderTarget* GetRenderTarget(const io::Tag& tag, const RenderTargetSetup& renderTargetSetup, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource);
         // Wrap RenderTarget around swapChain
         RenderTarget* AliasRenderTarget(const io::Tag& tag, platform::SwapChain& swapChain);
 

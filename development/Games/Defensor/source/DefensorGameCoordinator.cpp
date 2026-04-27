@@ -124,7 +124,12 @@ namespace
                     if (line.starts_with("StageName"))
                     {
                         const auto& value = GetValue(line);
-                        mStageItems[value].insert(itemId);
+                        const auto stageNames = GetStagesToBelong(value);
+
+                        for (auto stageName : stageNames)
+                        {
+                            mStageItems[stageName].insert(itemId);
+                        }
                     }
                     else
                     {
@@ -189,6 +194,11 @@ namespace
             }
 
             return result;
+        }
+
+        yaget::Strings GetStagesToBelong(const std::string& line) const
+        {
+            return yaget::conv::Split(line, ",", true);
         }
 
         yaget::Strings PruneLines(const yaget::Strings& lines)
@@ -256,12 +266,24 @@ namespace
 }
 
 
+enum class FooStuffEnum
+{
+    Hello,
+    World
+};
+
+
 //-------------------------------------------------------------------------------------------------
 defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging& m, Application& app)
     : SystemsCoordinator(m, app)
 {
     //Bar(BindConstructor<comp::VelocityComponent>());
     //"Persistance@PlayerTest"
+
+    auto s = conv::ToString(FooStuffEnum::Hello);
+    s;
+    auto i = conv::ToString(10);
+    i;
 
     const auto& itemsFile = dev::CurrentConfiguration().mInit.mItemsFile;
     if (!itemsFile.empty())
@@ -290,17 +312,24 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     else
     {
         constexpr auto stageId = comp::GLOBAL_ID_MARKER;
-        auto stageComponent = LoadComponent<items::StageComponent>(stageId);
-
-        const auto& startingStage = dev::CurrentConfiguration().mInit.mStartingStage;
-        if (!startingStage.empty())
+        if (auto stageComponent = LoadComponent<items::StageComponent>(stageId))
         {
-            stageComponent->SetValue<items::db_stage::Name>(startingStage);
-        }
+            const auto& startingStage = dev::CurrentConfiguration().mInit.mStartingStage;
+            if (!startingStage.empty())
+            {
+                stageComponent->SetValue<items::db_stage::Name>(startingStage);
+            }
 
-        auto& inputSystem = GetGameSystem<ProcessInputSystem>();
-        inputSystem.SetContext("Game");
-        app.Input().PushContext("Game");
+            auto& inputSystem = GetGameSystem<ProcessInputSystem>();
+            inputSystem.SetContext("Game");
+            app.Input().PushContext("Game");
+        }
+        else
+        {
+            auto& inputSystem = GetGameSystem<ProcessInputSystem>();
+            inputSystem.SetContext("Edit");
+            app.Input().PushContext("Edit");
+        }
     }
 }
 

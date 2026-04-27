@@ -13,7 +13,6 @@
 
 namespace
 {
-    size_t GeometryBufferVersion = 1;
     //-------------------------------------------------------------------------------------------------
     yaget::render::AssetCacheType GetVertexFormat(const yaget::Strings& stringsAsset)
     {
@@ -126,38 +125,31 @@ namespace
 
 
     //-------------------------------------------------------------------------------------------------
-    template<typename V, typename I>
-    yaget::io::Buffer SerializeToBuffer(yaget::render::AssetCacheType vertexFormat, const V& vertices, const I& indices)
-    {
-        size_t bufferSize = yaget::render::geom::HeaderBufferSize + vertices.size() * sizeof(V::value_type) + indices.size() * sizeof(I::value_type);
-
-        yaget::render::YagetFileSignature signature;
-        signature.Version = GeometryBufferVersion;
-
-        yaget::render::geom::Header header;
-        header.mVertexFormat = vertexFormat;
-        header.mVertexFormatSize = sizeof(V::value_type);
-        header.mIndexFormatSize = sizeof(I::value_type);
-        header.mNumVertices = vertices.size();
-        header.mNumIndices = indices.size();
-
-        yaget::io::MessagingBuffer messagingBuffer(bufferSize);
-        messagingBuffer.WriteDataChunk(&signature, sizeof(signature));
-        messagingBuffer.WriteDataChunk(&header, sizeof(header));
-
-        messagingBuffer.WriteDataChunk(static_cast<const void*>(vertices.data()), vertices.size() * sizeof(V::value_type));
-        messagingBuffer.WriteDataChunk(static_cast<const void*>(indices.data()), indices.size() * sizeof(I::value_type));
-
-        return messagingBuffer.mBuffer;
-    }
-
-
-    //-------------------------------------------------------------------------------------------------
     struct GeometryResourceResult
     {
         yaget::render::helpers::GpuResourceResult mVertices;
         yaget::render::helpers::GpuResourceResult mIndices;
     };
+
+
+    //-------------------------------------------------------------------------------------------------
+    template<typename T>
+    void UpdateResourceBuffer(ID3D12Resource* resource, const T* data, size_t dataSize)
+    {
+        D3D12_RANGE emptyRange = { 0, 0 };
+        void* mappedPtr = nullptr;
+        HRESULT hr = resource->Map(0, &emptyRange, &mappedPtr);
+        if (FAILED(hr))
+        {
+            auto debugName = YAGET_RENDER_GET_DEBUG_NAME(resource);
+            YLOG_ERROR("REND", "Did not mapped resource '%s' for updating data.", debugName.c_str());
+
+            return;
+        }
+
+        memcpy(mappedPtr, reinterpret_cast<const uint8_t*>(data), dataSize);
+        resource->Unmap(0, nullptr);
+    }
 
 
     //-------------------------------------------------------------------------------------------------
@@ -169,23 +161,50 @@ namespace
         render::geom::DataLayout<VF> dataLayout(buffer);
 
         size_t verticesBufferSize = dataLayout.mHeader->VertexBufferSize();
-        render::helpers::SourceGpuParameters verticesGpuParameters = render::helpers::MakeVertexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mVertices), verticesBufferSize);
 
-        render::helpers::GpuResourceResult gpuVerticesResult = render::helpers::CreateGpuResource(tag, verticesGpuParameters, commandList, allocator);
-
-        render::helpers::GpuResourceResult gpuIndicesResult{};
-        if (dataLayout.mHeader->mNumIndices && dataLayout.mIndices)
+        if (dataLayout.mHeader->mUpdateType == render::geom::Header::UpdateType::CpuUpload)
         {
-            size_t indicesBufferSize = dataLayout.mHeader->IndexBufferSize();
-            render::helpers::SourceGpuParameters indicesGpuParameters = render::helpers::MakeIndexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mIndices), indicesBufferSize);
+            D3D12MA::Allocation* verticesAllocation = render::helpers::CreateUploadHeap(tag, verticesBufferSize, allocator);
+            ID3D12Resource* verticesResource = verticesAllocation->GetResource();
 
-            gpuIndicesResult = render::helpers::CreateGpuResource(tag, indicesGpuParameters, commandList, allocator);
+            UpdateResourceBuffer(verticesResource, dataLayout.mVertices, verticesBufferSize);
+
+            GeometryResourceResult results;
+            results.mVertices.mGpuAllocation = verticesAllocation;
+
+            if (dataLayout.mHeader->mNumIndices && dataLayout.mIndices)
+            {
+                size_t indicesBufferSize = dataLayout.mHeader->IndexBufferSize();
+                D3D12MA::Allocation* indicesAllocation = render::helpers::CreateUploadHeap(tag, indicesBufferSize, allocator);
+                ID3D12Resource* indicesResource = indicesAllocation->GetResource();
+
+                UpdateResourceBuffer(indicesResource, dataLayout.mIndices, indicesBufferSize);
+
+                results.mIndices.mGpuAllocation = indicesAllocation;
+            }
+
+            return results;
         }
+        else
+        {
+            render::helpers::SourceGpuParameters verticesGpuParameters = render::helpers::MakeVertexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mVertices), verticesBufferSize);
 
-        return { 
-            .mVertices ={ .mGpuAllocation = gpuVerticesResult.mGpuAllocation, .mUploadAllocation = gpuVerticesResult.mUploadAllocation },
-            .mIndices ={ .mGpuAllocation = gpuIndicesResult.mGpuAllocation, .mUploadAllocation = gpuIndicesResult.mUploadAllocation }
-        };
+            render::helpers::GpuResourceResult gpuVerticesResult = render::helpers::CreateGpuResource(tag, verticesGpuParameters, commandList, allocator);
+
+            render::helpers::GpuResourceResult gpuIndicesResult{};
+            if (dataLayout.mHeader->mNumIndices && dataLayout.mIndices)
+            {
+                size_t indicesBufferSize = dataLayout.mHeader->IndexBufferSize();
+                render::helpers::SourceGpuParameters indicesGpuParameters = render::helpers::MakeIndexBufferParameters(reinterpret_cast<const uint8_t*>(dataLayout.mIndices), indicesBufferSize);
+
+                gpuIndicesResult = render::helpers::CreateGpuResource(tag, indicesGpuParameters, commandList, allocator);
+            }
+
+            return {
+                .mVertices = {.mGpuAllocation = gpuVerticesResult.mGpuAllocation, .mUploadAllocation = gpuVerticesResult.mUploadAllocation },
+                .mIndices = {.mGpuAllocation = gpuIndicesResult.mGpuAllocation, .mUploadAllocation = gpuIndicesResult.mUploadAllocation }
+            };
+        }
     }
 
 
@@ -196,7 +215,7 @@ namespace
         auto vertices = GetVertices<V>(strings);
         auto indices = GetIndices<I>(strings);
 
-        auto buffer = SerializeToBuffer(vertexFormat, vertices, indices);
+        auto buffer = SerializeToBuffer(vertexFormat, vertices, indices, yaget::render::geom::Header::UpdateType::GpuUpload);
 
         return buffer;
     }
@@ -223,9 +242,9 @@ namespace
 bool yaget::render::geom::ValidateDataLayout(const io::Buffer& buffer)
 {
     const YagetFileSignature* signature = io::cast_data<const YagetFileSignature>(buffer);
-    if (!signature->IsValid(GeometryBufferVersion))
+    if (!signature->IsValid(GeometriesResources::GeometryBufferVersion))
     {
-        YLOG_ERROR("DEVI", "Invalid geometry buffer signature '%d'. Expected 'GLOW' with version <= %d.", signature->Version, GeometryBufferVersion);
+        YLOG_ERROR("DEVI", "Invalid geometry buffer signature '%d'. Expected 'GLOW' with version <= %d.", signature->Version, GeometriesResources::GeometryBufferVersion);
         return false;
     }
 
@@ -291,6 +310,14 @@ void yaget::render::RenderGeometries::Preload(const io::Tags& tags)
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::render::RenderGeometries::AttachGeometry(const io::Tag& tag, io::Buffer buffer)
+{
+    std::lock_guard mutexLocker(mMutex);
+    mAssets[tag] = buffer;
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::RenderGeometries::PopulateMappings(io::VirtualTransportSystem::Section /*fileName*/, io::VirtualTransportSystem& /*vts*/)
 {
 }
@@ -350,6 +377,10 @@ yaget::io::Buffer yaget::render::RenderGeometries::LoadGeometry(const io::Tag& t
 
 
 //-------------------------------------------------------------------------------------------------
+size_t yaget::render::GeometriesResources::GeometryBufferVersion = 1;
+
+
+//-------------------------------------------------------------------------------------------------
 yaget::render::GeometriesResources::GeometriesResources(DeviceB& device, RenderGeometries& renderGeometries)
     : mDevice(device)
     , mRenderGeometries(renderGeometries)
@@ -370,15 +401,8 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
         mt::ReadLock readLocker(mSharedMutex);
         for (const auto& tag : tags)
         {
-            if (auto it = mResources.find(tag); it != mResources.end())
+            if (auto geometryData = FindGeometryData(tag); geometryData.mHeader.IsValid())
             {
-                GeometryData geometryData
-                {
-                    .mHeader = it->second.mHeader,
-                    .mVerticesResource = it->second.mVerticesResource.Get(),
-                    .mIndicesResource = it->second.mIndicesResource.Get()
-                };
-
                 results.push_back(geometryData);
                 continue;
             }
@@ -394,7 +418,7 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
 
     std::vector<unique_obj<D3D12MA::Allocation>> allocationsToKeepAlive;
     auto framerHandler = mDevice.GetCopyCommands();
-    auto commandList = framerHandler.BeginFrame(nullptr);
+    auto commandList = framerHandler.BeginFrame(nullptr, nullptr);
     auto preloadCommandList = commandList->GetDeviceCommandList();
 
     mt::WriteLock writeLocker(mSharedMutex);
@@ -402,15 +426,8 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
     {
         // it's possible that between the time we released read lock and acquired write lock, 
         // another thread loaded the same texture, so we need to check again if resource is already in map
-        if (auto it = mResources.find(tag); it != mResources.end())
+        if (auto geometryData = FindGeometryData(tag); geometryData.mHeader.IsValid())
         {
-            const auto& element = it->second;
-            GeometryData geometryData
-            {
-                .mHeader = element.mHeader,
-                .mVerticesResource = element.mVerticesResource.Get(),
-                .mIndicesResource = element.mIndicesResource.Get()
-            };
             results.push_back(geometryData);
             continue;
         }
@@ -453,9 +470,14 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
                 YAGET_ASSERT(false, "Geometry: '%s' Vertex Format: '%s' is not handled!!!", yaget::conv::ToString(tag).c_str(), conv::ToString(vertexFormat).c_str());
             }
 
+            auto useGpuUpload = header->mUpdateType == render::geom::Header::UpdateType::GpuUpload;
+
             //-------------------------------------------------------------------------------------------------
             // extract vertex data
-            allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ resourceResult.mVertices.mUploadAllocation });
+            if (useGpuUpload)
+            {
+                allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ resourceResult.mVertices.mUploadAllocation });
+            }
             D3D12MA::Allocation* verticesGpuAllocation = resourceResult.mVertices.mGpuAllocation;
 
             ComPtr<ID3D12Resource> verticesGpuGeometry = verticesGpuAllocation->GetResource();
@@ -468,7 +490,10 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
 
             if (header->mNumIndices)
             {
-                allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ resourceResult.mIndices.mUploadAllocation });
+                if (useGpuUpload)
+                {
+                    allocationsToKeepAlive.push_back(unique_obj<D3D12MA::Allocation>{ resourceResult.mIndices.mUploadAllocation });
+                }
                 D3D12MA::Allocation* indicesGpuAllocation = resourceResult.mIndices.mGpuAllocation;
 
                 indicesGpuGeometry = indicesGpuAllocation->GetResource();
@@ -509,9 +534,70 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
 
 
 //-------------------------------------------------------------------------------------------------
+bool yaget::render::GeometriesResources::UpdateResourceData(const io::Tag& tag, const io::Buffer& buffer)
+{
+    {
+        mt::WriteLock writeLocker(mSharedMutex);
+
+        mRenderGeometries.AttachGeometry(tag, buffer);
+        geom::DataLayout<uint8_t, uint32_t> dataLayout(buffer);
+
+        if (auto geometryData = FindGeometryData(tag); geometryData.mHeader.IsValid() && dataLayout.mHeader->mUpdateType == geom::Header::UpdateType::CpuUpload)
+        {
+            const bool sameVertexFormat = geometryData.mHeader.mVertexFormatSize == dataLayout.mHeader->mVertexFormatSize;
+            const bool verticesSizeFits = geometryData.mHeader.mNumVertices >= dataLayout.mHeader->mNumVertices;
+            const bool sameIndexFormat = geometryData.mHeader.mIndexFormatSize == dataLayout.mHeader->mIndexFormatSize;
+            const bool indicesSizeFits = geometryData.mHeader.mNumIndices >= dataLayout.mHeader->mNumIndices;
+
+            if (sameVertexFormat && verticesSizeFits && sameIndexFormat && indicesSizeFits)
+            {
+                UpdateResourceBuffer(geometryData.mVerticesResource, dataLayout.mVertices, dataLayout.mHeader->VertexBufferSize());
+                UpdateResourceBuffer(geometryData.mIndicesResource, dataLayout.mIndices, dataLayout.mHeader->IndexBufferSize());
+
+                mResources[tag].mHeader = *dataLayout.mHeader;
+
+                return true;
+            }
+        }
+    }
+
+    ClearResource(tag);
+    return false;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::GeometriesResources::ClearResource(const io::Tag& tag)
+{
+    mt::WriteLock writeLocker(mSharedMutex);
+    mResources.erase(tag);
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::GeometriesResources::Preload(const io::Tags& tags)
 {
     GetResources(tags);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::GeometriesResources::GeometryData yaget::render::GeometriesResources::FindGeometryData(const io::Tag& tag) const
+{
+    if (auto it = mResources.find(tag); it != mResources.end())
+    {
+        const auto& element = it->second;
+        GeometryData geometryData
+        {
+            .mHeader = element.mHeader,
+            .mVerticesResource = element.mVerticesResource.Get(),
+            .mIndicesResource = element.mIndicesResource.Get()
+        };
+
+        return geometryData;
+    }
+
+    return {};
 }
 
 

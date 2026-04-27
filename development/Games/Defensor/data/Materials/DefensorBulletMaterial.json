@@ -1,0 +1,7 @@
+{
+    "VertexShader": "VertexShaders@DefensorBullet",
+    "PixelShader": "PixelShaders@DefensorShip",
+    "BlendMode": "BlendModeAdditive",
+    "DepthState": "DepthStateNone",
+    "RasterizerState": "RasterizerStateCounterClockwise"
+}

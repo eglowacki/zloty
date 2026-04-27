@@ -109,6 +109,12 @@
     <ClCompile Include="source\Renders\RenderMaterial.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\Components\BulletComponent.cpp">
+      <Filter>Source Files\Components Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Squadron\BulletSystem.cpp">
+      <Filter>Source Files\Squadron Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Defensor.deployment">
@@ -218,6 +224,39 @@
     <CopyFileToFolders Include="data\Shaders\Pixel\DefensorShip.ps">
       <Filter>Data Files\Shaders</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Pixel\Font.ps">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\Font.vs">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\MediumFont.json">
+      <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\FontMaterial.json">
+      <Filter>Data Files\Materials</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Geometry\MediumFont.geom">
+      <Filter>Data Files\Geometry</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\DefensorBullet.png">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\SceneItems\PlayerShipBullet.json">
+      <Filter>Data Files\SceneItems</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Materials\DefensorBulletMaterial.json">
+      <Filter>Data Files\Materials</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Shaders\Vertex\DefensorBullet.vs">
+      <Filter>Data Files\Shaders</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\DefensorBullet2.png">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Geometry\Defensor-Bullet.geom">
+      <Filter>Data Files\Geometry</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\MainGame.h">
@@ -283,6 +322,12 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="source\Renders\RenderMaterial.h">
       <Filter>Source Files\Renders Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\BulletComponent.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Squadron\BulletSystem.h">
+      <Filter>Source Files\Squadron Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

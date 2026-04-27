@@ -42,7 +42,7 @@ yaget::render::DeviceB::DeviceB(app::WindowFrame windowFrame, const render::info
     : mWindowFrame{ windowFrame }
     , mNumBackBuffers{ mWindowFrame.GetSurface().NumBackBuffers() }
     , mAdapter{ std::make_unique<platform::Adapter>(mWindowFrame, adapterInfo) }
-    , mQueueStorage{ std::make_unique<commands::QueueStorage>(mAdapter->GetDevice()) }
+    , mQueueStorage{ std::make_unique<commands::QueueStorage>(mAdapter->GetDevice(), mQueueFenceValues) }
     , mAllocatorStorage{ std::make_unique<commands::AllocatorStorage>(mAdapter->GetDevice(), mNumBackBuffers) }
     , mCommandListStorage{ std::make_unique<commands::CommandListStorage>(mAdapter->GetDevice(), mNumBackBuffers) }
     , mSwapChain{ std::make_unique<platform::SwapChain>(mWindowFrame, adapterInfo, mAdapter->GetDevice(), mAdapter->GetFactory(), mQueueStorage->GetQueue(commands::Type::Direct)->GetDeviceCommandQueue()) }
@@ -112,6 +112,13 @@ void yaget::render::DeviceB::Shutdown()
 yaget::render::platform::SwapChain& yaget::render::DeviceB::GetSwapChain() const
 {
     return *mSwapChain.get();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+const yaget::app::WindowFrame& yaget::render::DeviceB::GetWindowFrame() const
+{
+    return mWindowFrame;
 }
 
 
@@ -219,7 +226,7 @@ yaget::render::DeviceB::FrameCommands::~FrameCommands()
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::BeginFrame(const colors::Color* /*color*/)
+yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::BeginFrame(const math3d::Color* color, const commands::DepthStencilClear* clearDepthStencil)
 {
     auto commandType = GetCommandType(mFrameType);
     auto commandList = GetAvailableCommandList(commandType);
@@ -228,7 +235,7 @@ yaget::render::commands::CommandList* yaget::render::DeviceB::FrameCommands::Beg
     {
         YAGET_ASSERT(mSelectedRenderTarget, "FrameType Render must have valid mSelectedRenderTarget.");
 
-        mSelectedRenderTarget->BeginFrame(commandList);
+        mSelectedRenderTarget->BeginFrame(commandList, color, clearDepthStencil);
     }
 
     return commandList;

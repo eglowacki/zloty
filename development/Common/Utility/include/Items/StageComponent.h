@@ -22,6 +22,7 @@
 
 namespace yaget::items
 {
+    //-------------------------------------------------------------------------------------------------
     namespace db_stage
     {
         struct Name { using Types = std::string; };
@@ -34,9 +35,10 @@ namespace yaget::items
 
         using ValueTypes = std::tuple<Name, Blend>;
 
-    } // namespace db_stage
+    }
 
 
+    //-------------------------------------------------------------------------------------------------
     class StageComponent : public comp::db::PersistentObserverComponent<db_stage::ValueTypes, comp::GlobalPoolSize>
     {
     public:
@@ -45,63 +47,4 @@ namespace yaget::items
         {}
     };
 
-} // namespace yaget::items
-
-namespace yaget::conv
-{
-    //----------------------------------------------------------------------------------------------------------------------------------
-    template <>
-    struct Convertor<items::db_stage::BlendOp>
-    {
-        static items::db_stage::BlendOp FromString(const char* value)
-        {
-            items::db_stage::BlendOp result = items::db_stage::BlendOp::Replace;
-
-            if (value)
-            {
-                if (std::strcmp(value, "Replace") == 0)
-                {
-                    result = items::db_stage::BlendOp::Replace;
-                }
-                else if (strcmp(value, "MergeSame") == 0)
-                {
-                    result = items::db_stage::BlendOp::MergeSame;
-                }
-                else if (strcmp(value, "MergeAll") == 0)
-                {
-                    result = items::db_stage::BlendOp::MergeAll;
-                }
-                else
-                {
-                    error_handlers::Throw("enum BlendOp is out of range");
-                }
-            }
-            return result;
-        }
-
-        static std::string ToString(items::db_stage::BlendOp value)
-        {
-            std::string result;
-
-            switch (value)
-            {
-            case items::db_stage::BlendOp::Replace:
-                result = "Replace";
-                break;
-            case items::db_stage::BlendOp::MergeSame:
-                result = "MergeSame";
-                break;
-            case items::db_stage::BlendOp::MergeAll:
-                result = "MergeAll";
-                break;
-            default:
-                error_handlers::Throw("enum BlendOp is out of range");
-
-            }
-
-            return result;
-        }
-    };
-    
 }
-

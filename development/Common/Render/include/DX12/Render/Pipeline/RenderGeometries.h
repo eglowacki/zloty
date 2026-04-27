@@ -41,12 +41,19 @@ namespace yaget::render
 
         struct Header
         {
+            // this allows us to specify how we want to update geometry.
+            // GpuUpload - use copy command list and let the gpu copy data from source buffer to its memory.
+            // CpuUpload - use map and Unmap functions and copy source data using cpu memcpy.
+            enum class UpdateType { GpuUpload, CpuUpload };
+
             AssetCacheType mVertexFormat = AssetCacheType::Empty;
             size_t mVertexFormatSize{}; // size of the vertex structure in bytes
             size_t mIndexFormatSize{};  // size of the index element in bytes
             size_t mNumVertices{};      // number of total vertices in the vertex buffer
             size_t mNumIndices{};       // number of total indices in the index buffer. If this is 0, then the geometry is non-indexed
                                         // and number of triangles is mNumVertices/3, otherwise mNumIndices/3
+
+            UpdateType mUpdateType = UpdateType::GpuUpload;
 
             bool IsValid() const
             {
@@ -77,6 +84,8 @@ namespace yaget::render
             {
                 return static_cast<uint32_t>(mNumIndices * mIndexFormatSize);
             }
+
+            auto operator<=>(const Header&) const = default;
         };
 
         constexpr size_t HeaderBufferSize = sizeof(YagetFileSignature) + sizeof(Header);
@@ -103,7 +112,7 @@ namespace yaget::render
             DataLayout(const io::Buffer& buffer)
                 : mHeader{ reinterpret_cast<const Header*>(io::cast_data<const char>(buffer) + sizeof(YagetFileSignature)) }
                 , mVertices{ reinterpret_cast<const V*>(io::cast_data<const char>(buffer) + HeaderBufferSize) }
-                , mIndices{ reinterpret_cast<const I*>(io::cast_data<const char>(buffer) + HeaderBufferSize + sizeof(V) * mHeader->mNumVertices) }
+                , mIndices{ reinterpret_cast<const I*>(io::cast_data<const char>(buffer) + HeaderBufferSize + mHeader->VertexBufferSize()) }
             {
                 if (!ValidateDataLayout(buffer))
                 {
@@ -130,6 +139,9 @@ namespace yaget::render
 
         void Preload(const io::Tags& tags);
 
+        // This provides option to attach buffer without going through the VTS, loading strings and parsing
+        void AttachGeometry(const io::Tag& tag, io::Buffer buffer);
+
         static void PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
         static void SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts);
 
@@ -143,7 +155,9 @@ namespace yaget::render
     class GeometriesResources
     {
     public:
-        GeometriesResources(DeviceB& device, RenderGeometries& renderTextures);
+        static size_t GeometryBufferVersion;
+
+        GeometriesResources(DeviceB& device, RenderGeometries& renderGeometries);
         ~GeometriesResources();
 
         struct GeometryData
@@ -152,14 +166,23 @@ namespace yaget::render
 
             ID3D12Resource* mVerticesResource{};
             ID3D12Resource* mIndicesResource{};
+
+            auto operator<=>(const GeometryData&) const = default;
         };
 
         GeometryData GetResource(const io::Tag& tag);
         std::vector<GeometryData> GetResources(const io::Tags& tags);
 
+        // if current resource was updated with buffer without resizing, 
+        // return true otherwise return false
+        bool UpdateResourceData(const io::Tag& tag, const io::Buffer& buffer);
+        void ClearResource(const io::Tag& tag);
+
         void Preload(const io::Tags& tags);
 
     private:
+        GeometryData FindGeometryData(const io::Tag& tag) const;
+
         DeviceB& mDevice;
         RenderGeometries& mRenderGeometries;
 
@@ -179,5 +202,33 @@ namespace yaget::render
 
         std::shared_mutex mSharedMutex;
     };
+
+
+    //-------------------------------------------------------------------------------------------------
+    template<typename V, typename I>
+    io::Buffer SerializeToBuffer(AssetCacheType vertexFormat, const V& vertices, const I& indices, geom::Header::UpdateType updateType)
+    {
+        size_t bufferSize = geom::HeaderBufferSize + vertices.size() * sizeof(V::value_type) + indices.size() * sizeof(I::value_type);
+
+        YagetFileSignature signature;
+        signature.Version = GeometriesResources::GeometryBufferVersion;
+
+        geom::Header header;
+        header.mVertexFormat = vertexFormat;
+        header.mVertexFormatSize = sizeof(V::value_type);
+        header.mIndexFormatSize = sizeof(I::value_type);
+        header.mNumVertices = vertices.size();
+        header.mNumIndices = indices.size();
+        header.mUpdateType = updateType;
+
+        io::MessagingBuffer messagingBuffer(bufferSize);
+        messagingBuffer.WriteDataChunk(&signature, sizeof(signature));
+        messagingBuffer.WriteDataChunk(&header, sizeof(header));
+
+        messagingBuffer.WriteDataChunk(static_cast<const void*>(vertices.data()), vertices.size() * sizeof(V::value_type));
+        messagingBuffer.WriteDataChunk(static_cast<const void*>(indices.data()), indices.size() * sizeof(I::value_type));
+
+        return messagingBuffer.mBuffer;
+    }
 
 }

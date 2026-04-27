@@ -158,7 +158,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
             {
                 DXGI_ADAPTER_DESC1 desc;
                 hr = adapter->GetDesc1(&desc);
-                error_handlers::ThrowOnError(hr, "Could not get DX12 adapter descritpion");
+                error_handlers::ThrowOnError(hr, "Could not get DX12 adapter description");
 
                 // do we want to keep this adapter?
                 if (!filters.IsAdapter(conv::wide_to_utf8(desc.Description)))
@@ -173,7 +173,7 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
                 {
                     DXGI_OUTPUT_DESC outputDesc{};
                     hr =  output->GetDesc(&outputDesc);
-                    error_handlers::ThrowOnError(hr, "Could not get adapter output descritpion");
+                    error_handlers::ThrowOnError(hr, "Could not get adapter output description");
 
                     // do we want to keep this output?
                     if (!filters.IsOutput(conv::wide_to_utf8(outputDesc.DeviceName)))
@@ -376,41 +376,41 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
 
     CD3DX12FeatureSupport featureSupport;
     hr = featureSupport.Init(hardwareDevice.Get());
-    error_handlers::ThrowOnError(hr, "Could not get feature supprt class created.");
+    error_handlers::ThrowOnError(hr, "Could not get feature support class created.");
 
     optionsText += "    Video Memory: " + conv::ToThousandsSep(infoLocal.Budget) + " bytes\n";
     optionsText += "    RAM Memory:   " + conv::ToThousandsSep(infoNonLocal.Budget) + " bytes\n";
 
     auto bindingTier = featureSupport.ResourceBindingTier();
-    optionsText += "    " + conv::Convertor<D3D12_RESOURCE_BINDING_TIER>::ToString(bindingTier) + "\n";
+    optionsText += "    " + conv::ToString(bindingTier) + "\n";
 
     auto heapTier = featureSupport.ResourceHeapTier();
-    optionsText += "    " + conv::Convertor<D3D12_RESOURCE_HEAP_TIER>::ToString(heapTier) + "\n";
+    optionsText += "    " + conv::ToString(heapTier) + "\n";
 
     auto maxFeatureLevel = featureSupport.MaxSupportedFeatureLevel();
     optionsText += "    " + conv::Convertor<D3D_FEATURE_LEVEL>::ToString(maxFeatureLevel) + "\n";
 
     auto shaderModel = featureSupport.HighestShaderModel();
-    optionsText += "    " + conv::Convertor<D3D_SHADER_MODEL>::ToString(shaderModel) + "\n";
+    optionsText += "    " + conv::ToString(shaderModel) + "\n";
 
     auto meshShaderTier = featureSupport.MeshShaderTier();
-    optionsText += "    " + conv::Convertor<D3D12_MESH_SHADER_TIER>::ToString(meshShaderTier) + "\n";
+    optionsText += "    " + conv::ToString(meshShaderTier) + "\n";
 
     auto signatureVersion = featureSupport.HighestRootSignatureVersion();
-    optionsText += "    " + conv::Convertor<D3D_ROOT_SIGNATURE_VERSION>::ToString(signatureVersion) + "\n";
+    optionsText += "    " + conv::ToString(signatureVersion) + "\n";
 
     auto passesTier = featureSupport.RenderPassesTier();
-    optionsText += "    " + conv::Convertor<D3D12_RENDER_PASS_TIER>::ToString(passesTier) + "\n";
+    optionsText += "    " + conv::ToString(passesTier) + "\n";
 
     auto raytracingTier = featureSupport.RaytracingTier();
-    optionsText += "    " + conv::Convertor<D3D12_RAYTRACING_TIER>::ToString(raytracingTier) + "\n";
+    optionsText += "    " + conv::ToString(raytracingTier) + "\n";
 
     auto backgroundSupported = featureSupport.BackgroundProcessingSupported();
-    optionsText += "    Background Processing: " + conv::Convertor<bool>::ToString(backgroundSupported);
+    optionsText += "    Background Processing: " + conv::ToString(backgroundSupported);
 
     YLOG_INFO("DEVI", "D3D Features:\n%s", optionsText.c_str());
 
-    error_handlers::ThrowOnCheck(signatureVersion >= D3D_ROOT_SIGNATURE_VERSION_1_1, std::format("Minimum Root Signature version needed: '1.1', current version: '{}'", conv::Convertor<D3D_ROOT_SIGNATURE_VERSION>::ToString(signatureVersion)));
+    error_handlers::ThrowOnCheck(signatureVersion >= D3D_ROOT_SIGNATURE_VERSION_1_1, std::format("Minimum Root Signature version needed: '1.1', current version: '{}'", conv::ToString(signatureVersion)));
 
     return { hardwareDevice, hardwareAdapter, factory };
 }
