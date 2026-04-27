@@ -14,8 +14,6 @@
 #pragma once
 
 #include "MathFacade.h"
-
-#include "Render/RenderCore.h"
 #include "Render/Commands/RenderCommandTypes.h"
 #include "Streams/Buffers.h"
 
@@ -39,7 +37,20 @@ namespace yaget::io
 namespace yaget::render::ui
 {
     //-------------------------------------------------------------------------------------------------
-    yaget::io::Buffer GetText(const std::string& text, int x, int y, float size, const math3d::Color* color = nullptr);
+    struct TextPrinter
+    {
+        static inline int PreviousValue = std::numeric_limits<int>::max();
+
+        std::string mText;
+        int mX;
+        int mY;
+        float mSize;
+        math3d::Color mColor;
+    };
+    using TextPrinters = std::vector<TextPrinter>;
+
+    //-------------------------------------------------------------------------------------------------
+    io::Buffer GetText(const TextPrinters& textPrinters);
 
 
     //-------------------------------------------------------------------------------------------------
@@ -49,8 +60,7 @@ namespace yaget::render::ui
         FontStorage(RenderGeometries& renderGeometries, GeometriesResources& geometryResources, scene::SceneItemsStorage& sceneItemsStorage, io::VirtualTransportSystem& vts);
         ~FontStorage();
 
-        // if color is nullptr, then it will default to white
-        void UpdateText(const io::Tag& tag, const std::string& text, int x, int y, float size, const math3d::Color* color, commands::Type commandType);
+        void UpdateText(const io::Tag& tag, const TextPrinters& textPrinters, commands::Type commandType);
 
     private:
         RenderGeometries& mRenderGeometries;

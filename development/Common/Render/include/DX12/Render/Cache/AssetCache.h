@@ -312,3 +312,19 @@ struct yaget::conv::Convertor<yaget::render::AssetCacheType>
     }
 };
 
+
+//----------------------------------------------------------------------------------------------------------------------------------
+template<>
+inline std::string yaget::conv::ToString(const render::AssetCacheType& value)
+{
+    return conv::Convertor<render::AssetCacheType>::ToString(value);
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+template<>
+inline yaget::render::AssetCacheType yaget::conv::FromString(const char* value)
+{
+    return conv::Convertor<render::AssetCacheType>::FromString(value);
+}
+

@@ -22,60 +22,106 @@ namespace
     };
 
 
+    //-------------------------------------------------------------------------------------------------
+    void UpdateVertexText(std::vector<DirectX::VertexPositionColor>& vertices, std::vector<uint32_t>& indices, const CharacterGeometryData* quad, size_t numQuads, math3d::Color textColor, uint32_t currentIndexValue, const math3d::Matrix& vertexMatrix)
+    {
+        auto vertex = vertices.data();
+        auto index = indices.data();
+
+        for (int i = 0; i < numQuads; ++i)
+        {
+            for (int v = 0; v < 4; ++v)
+            {
+                vertex->position.x = quad->x;
+                vertex->position.y = quad->y;
+                vertex->position.z = 0;
+                vertex->position = math3d::Vector3::Transform(vertex->position, vertexMatrix);
+
+                vertex->color = textColor;
+
+                vertex++;
+                quad++;
+            }
+
+            index[0] = currentIndexValue + 0;
+            index[1] = currentIndexValue + 1;
+            index[2] = currentIndexValue + 2;
+            index[3] = currentIndexValue + 0;
+            index[4] = currentIndexValue + 2;
+            index[5] = currentIndexValue + 3;
+
+            currentIndexValue += 4;
+            index += 6;
+        }
+    }
+
+
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::io::Buffer yaget::render::ui::GetText(const std::string& text, int x, int y, float size, const math3d::Color* color)
+yaget::io::Buffer yaget::render::ui::GetText(const TextPrinters& textPrinters)
 {
-    size_t sizeNeeded = text.size() * BytesPerCharacter;
-    std::vector<char> buffer(sizeNeeded);
-
-    auto numQuads = stb_easy_font_print(0, 0, const_cast<char*>(text.c_str()), nullptr, buffer.data(), static_cast<int>(buffer.size()));
-
-    math3d::Color textColor = color ? *color : math3d::Color(colors::White);
-    std::vector<DirectX::VertexPositionColor> vertices(numQuads * 4);
-    std::vector<uint32_t> indices(numQuads * 6);
-
-    uint16_t currentIndexValue = 0;
-    auto vertex = vertices.data();
-    auto index = indices.data();
-
-    auto quad = reinterpret_cast<CharacterGeometryData*>(buffer.data());
-    for (int i = 0; i < numQuads; ++i)
+    size_t sizeNeeded = std::accumulate(textPrinters.begin(), textPrinters.end(), 0uz, [](size_t currentSize, const TextPrinter& textPrinter)
     {
-        for (int v = 0; v < 4; ++v)
+        return currentSize + textPrinter.mText.size() * BytesPerCharacter;
+    });
+
+    io::Buffer result;
+
+    if (sizeNeeded)
+    {
+        std::vector<char> buffer(sizeNeeded);
+
+        std::vector<DirectX::VertexPositionColor> finalVertices;
+        std::vector<uint32_t> finalIndices;
+
+        const auto& textPrinterValues = textPrinters.front();
+        auto x = textPrinterValues.mX;
+        auto y = textPrinterValues.mY;
+        auto size = textPrinterValues.mSize;
+        auto textColor = textPrinterValues.mColor;
+        
+        uint32_t currentIndexValue = 0;
+        char* bufferPtr = buffer.data();
+        int bufferSize = static_cast<int>(buffer.size());
+        int textOffsetX = 0;
+
+        for (const auto& textPrinter : textPrinters)
         {
-            vertex->position.x = quad->x;
-            vertex->position.y = quad->y;
-            vertex->position.z = 0;
+            x = textPrinter.mX == TextPrinter::PreviousValue ? x + textOffsetX : textPrinter.mX;
+            y = textPrinter.mY == TextPrinter::PreviousValue ? y : textPrinter.mY;
+            size = textPrinter.mSize == -1 ? size : textPrinter.mSize;
+            textColor = textPrinter.mColor;
+
+            textOffsetX += stb_easy_font_width(const_cast<char*>(textPrinter.mText.c_str()));
+
+            auto numQuads = stb_easy_font_print(0, 0, const_cast<char*>(textPrinter.mText.c_str()), nullptr, bufferPtr, bufferSize);
+
+            std::vector<DirectX::VertexPositionColor> vertices(numQuads * 4);
+            std::vector<uint32_t> indices(numQuads * 6);
+
+            auto quad = reinterpret_cast<CharacterGeometryData*>(buffer.data());
 
             auto scaleMatrix = math3d::Matrix::CreateScale(size);
             auto positionMatrix = math3d::Matrix::CreateTranslation(static_cast<float>(x), static_cast<float>(y), 0.0f);
             auto vertexMatrix = scaleMatrix * positionMatrix;
-            vertex->position = math3d::Vector3::Transform(vertex->position, vertexMatrix);
 
-            vertex->color = textColor;
+            UpdateVertexText(vertices, indices, quad, numQuads, textColor, currentIndexValue, vertexMatrix);
 
-            vertex++;
-            quad++;
+            finalVertices.insert(finalVertices.end(), vertices.begin(), vertices.end());
+            finalIndices.insert(finalIndices.end(), indices.begin(), indices.end());
+
+            currentIndexValue += static_cast<uint32_t>(numQuads * 4);
+            bufferPtr += numQuads * sizeof(CharacterGeometryData);
+            bufferSize -= numQuads * sizeof(CharacterGeometryData);
         }
 
-        index[0] = currentIndexValue + 0;
-        index[1] = currentIndexValue + 1;
-        index[2] = currentIndexValue + 2;
-        index[3] = currentIndexValue + 0;
-        index[4] = currentIndexValue + 2;
-        index[5] = currentIndexValue + 3;
-
-        currentIndexValue += 4;
-        index += 6;
+        auto vertexFormat = AssetCacheType::VertexPosition | AssetCacheType::VertexColor;
+        result = SerializeToBuffer(vertexFormat, finalVertices, finalIndices, geom::Header::UpdateType::CpuUpload);
     }
 
-    auto vertexFormat = AssetCacheType::VertexPosition | AssetCacheType::VertexColor;
-    auto fontBuffer = SerializeToBuffer(vertexFormat, vertices, indices, geom::Header::UpdateType::CpuUpload);
-
-    return fontBuffer;
+    return result;
 }
 
 
@@ -94,9 +140,9 @@ yaget::render::ui::FontStorage::~FontStorage() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::ui::FontStorage::UpdateText(const io::Tag& tag, const std::string& text, int x, int y, float size, const math3d::Color* color, commands::Type commandType)
+void yaget::render::ui::FontStorage::UpdateText(const io::Tag& tag, const TextPrinters& textPrinters, commands::Type commandType)
 {
-    auto textBuffer = ui::GetText(text, x, y, size, color);
+    auto textBuffer = ui::GetText(textPrinters);
 
     geom::DataLayout<uint8_t> dataLayout(textBuffer);
 

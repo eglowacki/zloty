@@ -5,7 +5,7 @@
 defensor::game::ProcessInputSystem::ProcessInputSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
     : GameSystem("ProcessInputSystem", messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, true)
 {
-    app.Input().RegisterActionCallback("*", [this](const std::string& contextName, const std::string& actionName, uint64_t timeStamp, int32_t mouseX, int32_t mouseY, uint32_t flags)
+    mApp.Input().RegisterActionCallback("*", [this](const std::string& contextName, const std::string& actionName, uint64_t timeStamp, int32_t mouseX, int32_t mouseY, uint32_t flags)
     {
         if (!mActiveContextName.empty() && contextName == mActiveContextName)
         {

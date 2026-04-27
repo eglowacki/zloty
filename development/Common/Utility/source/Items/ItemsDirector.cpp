@@ -42,8 +42,8 @@ namespace
         if (reset)
         {
             std::error_code ec;
-            std::uintmax_t result = fs::remove(fs::path(fileName), ec);
-            if (result == static_cast<std::uintmax_t>(-1))
+            auto result = fs::remove(fs::path(fileName), ec);
+            if (!result)
             {
                 const std::string message = std::format("DIRE", "Delete database file '{}' from disk failed with error: '{}: {}'.", fileName, ec.value(), ec.message());
                 yaget::error_handlers::Throw("DIRE", message);

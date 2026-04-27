@@ -13,11 +13,8 @@
 //! \file
 #pragma once
 
-//#include <d3d12.h>
-
-#include "Render/RenderCore.h"
 #include "Render/Pipeline/RenderGeometries.h"
-#include "Streams/Buffers.h"
+#include <d3dx12.h>
 
 struct ID3D12GraphicsCommandList;
 struct ID3D12Resource;
@@ -41,7 +38,13 @@ namespace yaget::render
         void Render(ID3D12GraphicsCommandList* commandList) const;
 
     private:
+        void UpdateGeometryData();
+
         GeometriesResources::GeometryData mGeometryData{};
+        D3D12_VERTEX_BUFFER_VIEW mVertexBufferView{};
+        D3D12_INDEX_BUFFER_VIEW mIndexBufferView{};
+        uint32_t mNumTriangles{};
+        bool mHasIndices = false;
     };
 
 }

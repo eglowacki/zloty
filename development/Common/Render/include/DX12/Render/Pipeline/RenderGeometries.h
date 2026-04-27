@@ -84,6 +84,8 @@ namespace yaget::render
             {
                 return static_cast<uint32_t>(mNumIndices * mIndexFormatSize);
             }
+
+            auto operator<=>(const Header&) const = default;
         };
 
         constexpr size_t HeaderBufferSize = sizeof(YagetFileSignature) + sizeof(Header);
@@ -164,6 +166,8 @@ namespace yaget::render
 
             ID3D12Resource* mVerticesResource{};
             ID3D12Resource* mIndicesResource{};
+
+            auto operator<=>(const GeometryData&) const = default;
         };
 
         GeometryData GetResource(const io::Tag& tag);

@@ -39,7 +39,7 @@ namespace DirectX::SimpleMath
 
     inline void to_json(nlohmann::json& j, const math3d::Color& color)
     {
-        j = std::format("{}, {}, {}, {}", color.R(), color.G(), color.B(), color.A());
+        j = yaget::conv::ToString(color);
     }
 
     inline void from_json(const nlohmann::json& j, math3d::Color& color)
@@ -47,15 +47,7 @@ namespace DirectX::SimpleMath
         std::string source;
         j.get_to(source);
 
-        const auto values = yaget::conv::Split(source, ",");
-        if (values.size() == 4)
-        {
-            const float r = yaget::conv::AtoN<float>(values[0].c_str());
-            const float g = yaget::conv::AtoN<float>(values[1].c_str());
-            const float b = yaget::conv::AtoN<float>(values[2].c_str());
-            const float a = yaget::conv::AtoN<float>(values[3].c_str());
-            color = math3d::Color(r, g, b, a);
-        }
+        color = yaget::conv::FromString<math3d::Color>(source.c_str());
     }
 
 } // namespace DirectX::SimpleMath
