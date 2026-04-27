@@ -93,11 +93,12 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         {
             mAverageFps = FpsAlpha * mAverageFps + (1.0f - FpsAlpha) * mFramesThisSecond;
             auto framePerSecond = std::format("FPS: {} ", static_cast<uint32_t>(mAverageFps));
+            auto milliPerFrame = std::format("Ms: {:.4f} ", 1000.0f / mAverageFps);
 
             ui::TextPrinters textPrinters
             {
-                { .mText = framePerSecond, .mX = 10, .mY = 10, .mSize = 3.0f, .mColor = math3d::Color{ colors::Red } },
-                //{ .mText = "Milliseconds", .mX = ui::TextPrinter::PreviousValue, .mY = ui::TextPrinter::PreviousValue, .mSize = -1, .mColor = math3d::Color{ colors::Green } }
+                { .mText = framePerSecond, .mX = 10, .mY = 10, .mSize = 2.0f, .mColor = math3d::Color{ colors::Red } },
+                { .mText = milliPerFrame, .mColor = math3d::Color{ colors::Yellow } }
             };
 
             mFontStorage.UpdateText(fontTag, textPrinters, commands::Type::Direct);

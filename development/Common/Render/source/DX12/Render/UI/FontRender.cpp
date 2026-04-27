@@ -86,22 +86,24 @@ yaget::io::Buffer yaget::render::ui::GetText(const TextPrinters& textPrinters)
         char* bufferPtr = buffer.data();
         int bufferSize = static_cast<int>(buffer.size());
         int textOffsetX = 0;
+        int textOffsetY = 0;
 
         for (const auto& textPrinter : textPrinters)
         {
-            x = textPrinter.mX == TextPrinter::PreviousValue ? x + textOffsetX : textPrinter.mX;
-            y = textPrinter.mY == TextPrinter::PreviousValue ? y : textPrinter.mY;
             size = textPrinter.mSize == -1 ? size : textPrinter.mSize;
-            textColor = textPrinter.mColor;
+            x = textPrinter.mX == TextPrinter::PreviousValue ? static_cast<int>(x + textOffsetX * size): textPrinter.mX;
+            y = textPrinter.mY == TextPrinter::PreviousValue ? static_cast<int>(y + textOffsetY * size) : textPrinter.mY;
+            textColor = textPrinter.mColor == TextPrinter::PreviousColor ? textColor : textPrinter.mColor;
 
             textOffsetX += stb_easy_font_width(const_cast<char*>(textPrinter.mText.c_str()));
+            //textOffsetY += stb_easy_font_width(const_cast<char*>(textPrinter.mText.c_str()));
 
             auto numQuads = stb_easy_font_print(0, 0, const_cast<char*>(textPrinter.mText.c_str()), nullptr, bufferPtr, bufferSize);
 
             std::vector<DirectX::VertexPositionColor> vertices(numQuads * 4);
             std::vector<uint32_t> indices(numQuads * 6);
 
-            auto quad = reinterpret_cast<CharacterGeometryData*>(buffer.data());
+            auto quad = reinterpret_cast<CharacterGeometryData*>(bufferPtr);
 
             auto scaleMatrix = math3d::Matrix::CreateScale(size);
             auto positionMatrix = math3d::Matrix::CreateTranslation(static_cast<float>(x), static_cast<float>(y), 0.0f);
@@ -113,8 +115,8 @@ yaget::io::Buffer yaget::render::ui::GetText(const TextPrinters& textPrinters)
             finalIndices.insert(finalIndices.end(), indices.begin(), indices.end());
 
             currentIndexValue += static_cast<uint32_t>(numQuads * 4);
-            bufferPtr += numQuads * sizeof(CharacterGeometryData);
-            bufferSize -= numQuads * sizeof(CharacterGeometryData);
+            bufferPtr += numQuads * sizeof(CharacterGeometryData) * 4;
+            bufferSize -= numQuads * sizeof(CharacterGeometryData) * 4;
         }
 
         auto vertexFormat = AssetCacheType::VertexPosition | AssetCacheType::VertexColor;

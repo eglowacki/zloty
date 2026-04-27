@@ -40,12 +40,13 @@ namespace yaget::render::ui
     struct TextPrinter
     {
         static inline int PreviousValue = std::numeric_limits<int>::max();
+        static inline math3d::Color PreviousColor = { -1, -1, -1, -1 };
 
         std::string mText;
-        int mX;
-        int mY;
-        float mSize;
-        math3d::Color mColor;
+        int mX{ PreviousValue };
+        int mY{ PreviousValue };
+        float mSize{ - 1 };
+        math3d::Color mColor{ PreviousColor };
     };
     using TextPrinters = std::vector<TextPrinter>;
 
