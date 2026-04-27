@@ -2,6 +2,7 @@
 #include "VTS/ResolvedAssets.h"
 #include "Debugging/DevConfigurationParsers.h"
 #include "Render/RenderStringHelpers.h"
+#include "App/WindowFrame.h"
 
 namespace
 {
@@ -34,6 +35,59 @@ namespace
         }
 
         return projectionType;
+    }
+
+
+    uint32_t cast_to_int(auto enumType)
+    {
+        return static_cast<uint32_t>(enumType);
+    }
+
+
+    void ReadProjectionValue(const nlohmann::json& j, const char* key, yaget::render::commands::ScenePassData& passData, auto projectionValues, float defaultValue)
+    {
+        using namespace yaget;
+
+        auto projectionIndex = cast_to_int(projectionValues);
+
+        if (json::IsSectionValid(j, key, ""))
+        {
+            if (j[key].is_string())
+            {
+                auto enumValue = conv::FromString<render::commands::ScenePassData::ProjectionCalculationType>(j.value(key, "None").c_str());
+                passData.mProjectionCalculationType[projectionIndex] = enumValue;
+                passData.mProjection[projectionIndex] = -1;
+            }
+            else
+            {
+                passData.mProjection[projectionIndex] = j.value(key, defaultValue);
+            }
+        }
+        else
+        {
+            passData.mProjection[projectionIndex] = defaultValue;
+        }
+    }
+
+    void UpdateProjectionValue(auto projectionType, float* newValues, const float* oldValues, auto projectionCalculationType, const yaget::app::WindowFrame* windowFrame)
+    {
+        using namespace yaget;
+
+        auto projectionIndex = cast_to_int(projectionType);
+
+        if (projectionCalculationType[projectionIndex] == render::commands::ScenePassData::ProjectionCalculationType::WindowSizeX)
+        {
+            newValues[projectionIndex] = windowFrame->GetSurface().GetSizeX<float>();
+        }
+        else if (projectionCalculationType[projectionIndex] == render::commands::ScenePassData::ProjectionCalculationType::WindowSizeY)
+        {
+            newValues[projectionIndex] = windowFrame->GetSurface().GetSizeY<float>();
+        }
+        else
+        {
+            newValues[projectionIndex] = oldValues[projectionIndex];
+
+        }
     }
 
 }
@@ -76,63 +130,65 @@ namespace yaget::render::commands
             case ScenePassData::ProjectionType::Orthographic:
             {
                 auto orthographicSection = j["Orthographic"];
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues1::Width)] = orthographicSection.value("Width", 1.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues1::Height)] = orthographicSection.value("Height", 1.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues1::Near)] = orthographicSection.value("Near", 0.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues1::Far)] = orthographicSection.value("Far", 1.f);
+
+                ReadProjectionValue(orthographicSection, "Width", passData, ScenePassData::ProjectionValues1::Width, 1.0f);
+                ReadProjectionValue(orthographicSection, "Height", passData, ScenePassData::ProjectionValues1::Height, 1.0f);
+                ReadProjectionValue(orthographicSection, "Near", passData, ScenePassData::ProjectionValues1::Near, 0.0f);
+                ReadProjectionValue(orthographicSection, "Far", passData, ScenePassData::ProjectionValues1::Far, 1.0f);
+
                 break;
             }
             case ScenePassData::ProjectionType::OrthographicOffCenter:
             {
                 auto orthographicOffCenter = j["OrthographicOffCenter"];
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Left)] = orthographicOffCenter.value("Left", 0.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Right)] = orthographicOffCenter.value("Right", 1.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Top)] = orthographicOffCenter.value("Top", 0.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Bottom)] = orthographicOffCenter.value("Bottom", 1.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Near)] = orthographicOffCenter.value("Near", 0.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Far)] = orthographicOffCenter.value("Far", 1.f);
+
+                ReadProjectionValue(orthographicOffCenter, "Left", passData, ScenePassData::ProjectionValues::Left, 0.0f);
+                ReadProjectionValue(orthographicOffCenter, "Right", passData, ScenePassData::ProjectionValues::Right, 1.0f);
+                ReadProjectionValue(orthographicOffCenter, "Top", passData, ScenePassData::ProjectionValues::Top, 0.0f);
+                ReadProjectionValue(orthographicOffCenter, "Bottom", passData, ScenePassData::ProjectionValues::Bottom, 1.0f);
+                ReadProjectionValue(orthographicOffCenter, "Near", passData, ScenePassData::ProjectionValues::Near, 0.0f);
+                ReadProjectionValue(orthographicOffCenter, "Far", passData, ScenePassData::ProjectionValues::Far, 1.0f);
+
                 break;
             }
             case ScenePassData::ProjectionType::PerspectiveFOV:
             {
                 auto perspectiveFOVSection = j["PerspectiveFOV"];
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues2::FOV)] = perspectiveFOVSection.value("FOV", 45.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues2::AspectRatio)] = perspectiveFOVSection.value("AspectRatio", 1.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues2::Near)] = perspectiveFOVSection.value("Near", 0.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues2::Far)] = perspectiveFOVSection.value("Far", 1.f);
+
+
+                ReadProjectionValue(perspectiveFOVSection, "FOV", passData, ScenePassData::ProjectionValues2::FOV, 45.0f);
+                ReadProjectionValue(perspectiveFOVSection, "AspectRatio", passData, ScenePassData::ProjectionValues2::AspectRatio, 1.0f);
+                ReadProjectionValue(perspectiveFOVSection, "Near", passData, ScenePassData::ProjectionValues2::Near, 0.0f);
+                ReadProjectionValue(perspectiveFOVSection, "Far", passData, ScenePassData::ProjectionValues2::Far, 1.0f);
+
                 break;
             }
             case ScenePassData::ProjectionType::Perspective:
             {
                 auto perspectiveSection = j["Perspective"];
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues1::Width)] = perspectiveSection.value("Width", 1.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues1::Height)] = perspectiveSection.value("Height", 1.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues1::Near)] = perspectiveSection.value("Near", 0.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues1::Far)] = perspectiveSection.value("Far", 1.f);
+
+                ReadProjectionValue(perspectiveSection, "Width", passData, ScenePassData::ProjectionValues1::Width, 1.0f);
+                ReadProjectionValue(perspectiveSection, "Height", passData, ScenePassData::ProjectionValues1::Height, 1.0f);
+                ReadProjectionValue(perspectiveSection, "Near", passData, ScenePassData::ProjectionValues1::Near, 0.0f);
+                ReadProjectionValue(perspectiveSection, "Far", passData, ScenePassData::ProjectionValues1::Far, 1.0f);
+
                 break;
             }
             case ScenePassData::ProjectionType::PerspectiveOffCenter:
             {
                 auto perspectiveOffCenterSection = j["PerspectiveOffCenter"];
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Left)] = perspectiveOffCenterSection.value("Left", 0.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Right)] = perspectiveOffCenterSection.value("Right", 1.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Top)] = perspectiveOffCenterSection.value("Top", 0.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Bottom)] = perspectiveOffCenterSection.value("Bottom", 1.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Near)] = perspectiveOffCenterSection.value("Near", 0.f);
-                passData.mProjection[static_cast<uint32_t>(ScenePassData::ProjectionValues::Far)] = perspectiveOffCenterSection.value("Far", 1.f);
+
+                ReadProjectionValue(perspectiveOffCenterSection, "Left", passData, ScenePassData::ProjectionValues::Left, 0.0f);
+                ReadProjectionValue(perspectiveOffCenterSection, "Right", passData, ScenePassData::ProjectionValues::Right, 1.0f);
+                ReadProjectionValue(perspectiveOffCenterSection, "Top", passData, ScenePassData::ProjectionValues::Top, 0.0f);
+                ReadProjectionValue(perspectiveOffCenterSection, "Bottom", passData, ScenePassData::ProjectionValues::Bottom, 1.0f);
+                ReadProjectionValue(perspectiveOffCenterSection, "Near", passData, ScenePassData::ProjectionValues::Near, 0.0f);
+                ReadProjectionValue(perspectiveOffCenterSection, "Far", passData, ScenePassData::ProjectionValues::Far, 1.0f);
+
                 break;
             }
         }
     }
-
-
-    ////-------------------------------------------------------------------------------------------------
-    //void to_json(nlohmann::json& j, const ScenePassData& passData)
-    //{
-    //    j["Name"] = passData.mName;
-    //    j["RenderTarget"] = passData.mRenderTargetSection.ToString();
-    //    j["SceneItems"] = passData.mSceneItemSections;
-    //}
 
 }
 
@@ -179,42 +235,85 @@ math3d::Matrix yaget::render::commands::ScenePassData::GetViewMatrix() const
 math3d::Matrix yaget::render::commands::ScenePassData::GetProjectionMatrix() const
 {
     math3d::Matrix projectionMatrix = math3d::Matrix::Identity;
+    YAGET_ASSERT(mWindowFrame, "There is no valid window frame.");
+    float projectionValues[NumElementsInProjection] = {};
 
     switch (mProjectionType)
     {
         case ProjectionType::Orthographic:
-            projectionMatrix = math3d::Matrix::CreateOrthographic(mProjection[static_cast<uint32_t>(ProjectionValues1::Width)],
-                                                                  mProjection[static_cast<uint32_t>(ProjectionValues1::Height)],
-                                                                  mProjection[static_cast<uint32_t>(ProjectionValues1::Near)],
-                                                                  mProjection[static_cast<uint32_t>(ProjectionValues1::Far)]);
+        {
+            UpdateProjectionValue(ProjectionValues1::Width, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues1::Height, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues1::Near, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues1::Far, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+
+            projectionMatrix = math3d::Matrix::CreateOrthographic(projectionValues[static_cast<uint32_t>(ProjectionValues1::Width)],
+                                                                  projectionValues[static_cast<uint32_t>(ProjectionValues1::Height)],
+                                                                  projectionValues[static_cast<uint32_t>(ProjectionValues1::Near)],
+                                                                  projectionValues[static_cast<uint32_t>(ProjectionValues1::Far)]);
+        }
+
             break;
         case ProjectionType::OrthographicOffCenter:
-            projectionMatrix = math3d::Matrix::CreateOrthographicOffCenter(mProjection[static_cast<uint32_t>(ProjectionValues::Left)],
-                                                                           mProjection[static_cast<uint32_t>(ProjectionValues::Right)],
-                                                                           mProjection[static_cast<uint32_t>(ProjectionValues::Bottom)],
-                                                                           mProjection[static_cast<uint32_t>(ProjectionValues::Top)],
-                                                                           mProjection[static_cast<uint32_t>(ProjectionValues::Near)],
-                                                                           mProjection[static_cast<uint32_t>(ProjectionValues::Far)]);
+        {
+            UpdateProjectionValue(ProjectionValues::Left, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues::Right, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues::Bottom, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues::Top, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues::Near, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues::Far, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+
+            projectionMatrix = math3d::Matrix::CreateOrthographicOffCenter(projectionValues[static_cast<uint32_t>(ProjectionValues::Left)],
+                                                                           projectionValues[static_cast<uint32_t>(ProjectionValues::Right)],
+                                                                           projectionValues[static_cast<uint32_t>(ProjectionValues::Bottom)],
+                                                                           projectionValues[static_cast<uint32_t>(ProjectionValues::Top)],
+                                                                           projectionValues[static_cast<uint32_t>(ProjectionValues::Near)],
+                                                                           projectionValues[static_cast<uint32_t>(ProjectionValues::Far)]);
+        }
             break;
         case ProjectionType::PerspectiveFOV:
-            projectionMatrix = math3d::Matrix::CreatePerspectiveFieldOfView(mProjection[static_cast<uint32_t>(ProjectionValues2::FOV)],
-                                                                            mProjection[static_cast<uint32_t>(ProjectionValues2::AspectRatio)],
-                                                                            mProjection[static_cast<uint32_t>(ProjectionValues2::Near)],
-                                                                            mProjection[static_cast<uint32_t>(ProjectionValues2::Far)]);
+        {
+            UpdateProjectionValue(ProjectionValues2::FOV, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues2::AspectRatio, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues2::Near, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues2::Far, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            
+            projectionMatrix = math3d::Matrix::CreatePerspectiveFieldOfView(projectionValues[static_cast<uint32_t>(ProjectionValues2::FOV)],
+                                                                            projectionValues[static_cast<uint32_t>(ProjectionValues2::AspectRatio)],
+                                                                            projectionValues[static_cast<uint32_t>(ProjectionValues2::Near)],
+                                                                            projectionValues[static_cast<uint32_t>(ProjectionValues2::Far)]);
+        }
             break;
         case ProjectionType::Perspective:
-            projectionMatrix = math3d::Matrix::CreatePerspective(mProjection[static_cast<uint32_t>(ProjectionValues1::Width)],
-                                                                 mProjection[static_cast<uint32_t>(ProjectionValues1::Height)],
-                                                                 mProjection[static_cast<uint32_t>(ProjectionValues1::Near)],
-                                                                 mProjection[static_cast<uint32_t>(ProjectionValues1::Far)]);
+        {
+            UpdateProjectionValue(ProjectionValues1::Width, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues1::Height, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues1::Near, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues1::Far, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+
+            
+            projectionMatrix = math3d::Matrix::CreatePerspective(projectionValues[static_cast<uint32_t>(ProjectionValues1::Width)],
+                                                                 projectionValues[static_cast<uint32_t>(ProjectionValues1::Height)],
+                                                                 projectionValues[static_cast<uint32_t>(ProjectionValues1::Near)],
+                                                                 projectionValues[static_cast<uint32_t>(ProjectionValues1::Far)]);
+        }
             break;
         case ProjectionType::PerspectiveOffCenter:
-            projectionMatrix = math3d::Matrix::CreatePerspectiveOffCenter(mProjection[static_cast<uint32_t>(ProjectionValues::Left)],
-                                                                          mProjection[static_cast<uint32_t>(ProjectionValues::Right)],
-                                                                          mProjection[static_cast<uint32_t>(ProjectionValues::Bottom)],
-                                                                          mProjection[static_cast<uint32_t>(ProjectionValues::Top)],
-                                                                          mProjection[static_cast<uint32_t>(ProjectionValues::Near)],
-                                                                          mProjection[static_cast<uint32_t>(ProjectionValues::Far)]);
+        {
+            UpdateProjectionValue(ProjectionValues::Left, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues::Right, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues::Bottom, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues::Top, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues::Near, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+            UpdateProjectionValue(ProjectionValues::Far, projectionValues, mProjection, mProjectionCalculationType, mWindowFrame);
+
+            projectionMatrix = math3d::Matrix::CreatePerspectiveOffCenter(projectionValues[static_cast<uint32_t>(ProjectionValues::Left)],
+                                                                          projectionValues[static_cast<uint32_t>(ProjectionValues::Right)],
+                                                                          projectionValues[static_cast<uint32_t>(ProjectionValues::Bottom)],
+                                                                          projectionValues[static_cast<uint32_t>(ProjectionValues::Top)],
+                                                                          projectionValues[static_cast<uint32_t>(ProjectionValues::Near)],
+                                                                          projectionValues[static_cast<uint32_t>(ProjectionValues::Far)]);
+        }
             break;
     }
 
@@ -222,8 +321,9 @@ math3d::Matrix yaget::render::commands::ScenePassData::GetProjectionMatrix() con
 }
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::commands::RenderPasses::RenderPasses(io::VirtualTransportSystem& vts)
-    : mVTS(vts)
+yaget::render::commands::RenderPasses::RenderPasses(io::VirtualTransportSystem& vts, const app::WindowFrame& windowFrame)
+    : mVTS{ vts }
+    , mWindowFrame{ windowFrame }
 {
 }
 
@@ -242,6 +342,7 @@ void yaget::render::commands::RenderPasses::BindAsset(const io::Tag& tag)
 
         std::ranges::for_each(mPasses, [This = this](auto& passData)
         {
+            passData.mWindowFrame = &This->mWindowFrame;
             passData.mRenderTargetTag = This->mVTS.GetTag(passData.mRenderTargetSection);
             auto& itemsTags = passData.mSceneItemTags;
 

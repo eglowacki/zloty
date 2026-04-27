@@ -53,7 +53,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
                          mGeometryResources,
                          app.VTS(), GetSection("SceneItems"))
     , mFontStorage(mRenderGeometries, mGeometryResources, mSceneItemsStorage, app.VTS())
-    , mRenderPasses{ app.VTS() }
+    , mRenderPasses{ app.VTS(), GetDevice().GetWindowFrame() }
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
     mFontTag.mGuid = NewGuid();
@@ -143,33 +143,27 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                         auto sceneItem = mSceneItemsStorage.GetSceneItem(renderComponent->mSceneItemTag);
 
                         auto worldViewProj = (renderComponent->mMatrix * viewMatrix * orthoMatrix).Transpose();
-                        //sceneItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, worldViewProj);
-
                         float timeData = 1.0f;
-                        //sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
+
                         itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = worldViewProj, .mTime = timeData });
                     }
 
                     return true;
                 });
-
-                auto fontItem = mSceneItemsStorage.GetSceneItem(fontTag);
-                const auto& windowSize = GetDevice().GetWindowFrame().GetSurface().GetSize<float>();
-                auto projectionMatrix = math3d::Matrix::CreateOrthographicOffCenter(0,  std::get<0>(windowSize), std::get<1>(windowSize), 0, 0, 1);
-
-                auto worldViewProj = projectionMatrix.Transpose();
-                //fontItem->UpdateData(constant_shader_types::ConstantTypes::WorldViewProjection, worldViewProj);
-                itemsToRender.push_back({ .mItem = fontItem, .mWorldViewProj = worldViewProj, .mTime = 1.0f });
             }
             else
             {
+                auto viewMatrix = renderPass.GetViewMatrix();
+                auto orthoMatrix = renderPass.GetProjectionMatrix();
+
                 for (const auto& sceneItemTag : renderPass.mSceneItemTags)
                 {
                     auto sceneItem = mSceneItemsStorage.GetSceneItem(sceneItemTag);
 
+                    auto worldViewProj = (viewMatrix * orthoMatrix).Transpose();
                     float timeData = 1.0f;
-                    //sceneItem->UpdateData(constant_shader_types::ConstantTypes::Time, timeData);
-                    itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = math3d::Matrix::Identity, .mTime = timeData });
+
+                    itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = worldViewProj, .mTime = timeData });
                 }
             }
 

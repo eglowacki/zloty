@@ -60,10 +60,17 @@ namespace yaget::render::commands
         enum class ProjectionValues1 { Width, Height, Near, Far };
         enum class ProjectionValues2 { FOV, AspectRatio, Near, Far };
 
-        float mProjection[6];
+        constexpr static inline size_t NumElementsInProjection = 6;
+
+        float mProjection[NumElementsInProjection];
+
+        enum class ProjectionCalculationType { None, WindowSizeX, WindowSizeY };
+        ProjectionCalculationType mProjectionCalculationType[NumElementsInProjection] = {};
 
         math3d::Matrix GetViewMatrix() const;
         math3d::Matrix GetProjectionMatrix() const;
+
+        const app::WindowFrame* mWindowFrame{};
     };
     using ScenePasses = std::vector<ScenePassData>;
 
@@ -71,7 +78,7 @@ namespace yaget::render::commands
     class RenderPasses
     {
     public:
-        RenderPasses(io::VirtualTransportSystem& vts);
+        RenderPasses(io::VirtualTransportSystem& vts, const app::WindowFrame& windowFrame);
         ~RenderPasses();
 
         void BindAsset(const io::Tag& tag);
@@ -84,6 +91,7 @@ namespace yaget::render::commands
 
     private:
         io::VirtualTransportSystem& mVTS;
+        const app::WindowFrame& mWindowFrame;
         io::Tag mSceneTag;
 
         ScenePasses mPasses;

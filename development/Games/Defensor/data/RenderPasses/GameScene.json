@@ -25,6 +25,19 @@
         }
     },
     {
+        "Name": "Text",
+        "RenderTarget": "RenderTargets@Scene",
+        "SceneItems": [ "SceneItems@MediumFont" ],
+        "OrthographicOffCenter": {
+            "Left": 0.0,
+            "Right": "WindowSizeX",
+            "Bottom": "WindowSizeY",
+            "Top": 0.0,
+            "Near": 0.0,
+            "Far": 1.0
+        }
+    },
+    {
         "Name": "BackBuffer",
         "RenderTarget": "RenderTargets@SwapChain",
         "SceneItems": ["SceneItems@FinalRender"]
