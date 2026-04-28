@@ -586,16 +586,6 @@ void input::InputDevice::RegisterActionCallback(const std::string& actionName, i
             action->second.mCallbacks.push_back(actionCallback);
         }
     }
-
-    //ActionsMap::iterator it = mActionMap.find(actionName);
-    //if (it != mActionMap.end())
-    //{
-    //    it->second.mCallbacks.push_back(actionCallback);
-    //}
-    //else
-    //{
-    //    YLOG_ERROR("INPT", "Action '%s' is not registered with input system, ignoring RegisterActionCallback", actionName.c_str());
-    //}
 }
 
 
