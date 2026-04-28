@@ -377,7 +377,7 @@ void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
 
     try
     {
-        std::unique_lock<std::mutex> locker(mActionMapMutex);
+        mt::WriteLock locker(mActionMapMutex);
 
         mActionMap.clear();
         for (const auto& rootElement : root)
@@ -420,7 +420,7 @@ void input::InputDevice::LoadConfigFiles(io::VirtualTransportSystem& vts)
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::KeyRecord(uint32_t flags, int keyValue, yaget::time::Microsecond_t timeStamp /*= platform::GetRealTime(time::kMicroSecondUnit)*/)
 {
-    metrics::UniqueLock locker(mPendingInputsMutex, "KeyRecord");
+    mt::WriteLock locker(mPendingInputsMutex);
 
     auto record = std::make_shared<Key>(timeStamp, flags, static_cast<unsigned char>(keyValue));
     YLOG_DEBUG("INPT", "Generated Key (%d) Record: '%s'.' at time (ms): '%d'.", keyValue, record->ToString().c_str(), time::FromTo<uint32_t>(timeStamp, time::kMicrosecondUnit, time::kMilisecondUnit));
@@ -448,7 +448,7 @@ void input::InputDevice::KeyRecord(uint32_t flags, int keyValue, yaget::time::Mi
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::MouseRecord(uint32_t flags, const InputDevice::Mouse::Buttons& buttons, int zDelta, const InputDevice::Mouse::Location& pos, yaget::time::Microsecond_t timeStamp /*= platform::GetRealTime(time::kMicroSecondUnit)*/)
 {
-    metrics::UniqueLock locker(mPendingInputsMutex, "MouseRecord");
+    mt::WriteLock locker(mPendingInputsMutex);
 
     auto record = std::make_shared<Mouse>(timeStamp, flags, buttons, zDelta, pos);
     YLOG_DEBUG("INPT", "Generated Mouse Record: '%s' at time (ms): '%d'.", record->ToString().c_str(), time::FromTo<uint32_t>(timeStamp, time::kMicrosecondUnit, time::kMilisecondUnit));
@@ -459,7 +459,7 @@ void input::InputDevice::MouseRecord(uint32_t flags, const InputDevice::Mouse::B
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::ProcessRecord(const Record& record)
 {
-    metrics::UniqueLock locker(mActionMapMutex, "ProcessRecord");
+    mt::ReadLock locker(mActionMapMutex);
 
     const std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
 
@@ -489,7 +489,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
     // only process input up to this time
     time::Microsecond_t maxInputTime = gameClock.GetLogicTime();
     {
-        metrics::UniqueLock locker(mPendingInputsMutex, "Input.Pending");
+        mt::WriteLock locker(mPendingInputsMutex);
 
         if (!mPendingInputs.empty())
         {
@@ -527,7 +527,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
         if (deferMessages)
         {
             // we run out of time to process our messages and based on policy we defer remaining messages to next frame
-            metrics::UniqueLock locker(mPendingInputsMutex, "DeferInput");
+            mt::WriteLock locker(mPendingInputsMutex);
 
             while (!inputsToProcess.empty())
             {
@@ -544,8 +544,7 @@ uint32_t input::InputDevice::Tick(const time::GameClock& gameClock, const metric
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::TriggerAction(const std::string& actionName, int32_t mouseX, int32_t mouseY, time::Microsecond_t timeStamp /*= platform::GetRealTime(time::kMicroSecondUnit)*/)
 {
-    //std::unique_lock<std::mutex> locker(mActionMapMutex);
-    metrics::UniqueLock locker(mActionMapMutex, std::format("TriggerAction-{}", actionName).c_str());
+    mt::ReadLock locker(mActionMapMutex);
 
     std::string currentContextName = mContextStack.empty() ? "" : mContextStack.top();
 
@@ -573,7 +572,7 @@ void input::InputDevice::RegisterActionCallback(const std::string& actionName, i
 {
     YAGET_ASSERT(actionCallback, "Registration for action: '%s' is not valid with empty actionCallback", actionName.c_str());
 
-    std::unique_lock<std::mutex> locker(mActionMapMutex);
+    mt::WriteLock locker(mActionMapMutex);
     const auto& actionNames = GetActionNames(mActionMap);
 
     const auto& matchedActionNames = GetActionNameMatch(actionName, actionNames);
@@ -603,7 +602,7 @@ void input::InputDevice::RegisterActionCallback(const std::string& actionName, i
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 bool input::InputDevice::IsAction(const std::string& actionName) const
 {
-    std::unique_lock<std::mutex> locker(mActionMapMutex);
+    mt::ReadLock locker(mActionMapMutex);
     return mActionMap.contains(actionName);
 }
 
@@ -611,7 +610,7 @@ bool input::InputDevice::IsAction(const std::string& actionName) const
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 std::string input::InputDevice::ActionToString(const std::string& actionName) const
 {
-    std::unique_lock<std::mutex> locker(mActionMapMutex);
+    mt::ReadLock locker(mActionMapMutex);
     ActionsMap::const_iterator it = mActionMap.find(actionName);
     if (it != mActionMap.end())
     {
@@ -723,16 +722,25 @@ bool input::InputDevice::ActionMap::Is(const Record* record, const std::string& 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 void input::InputDevice::PushContext(const std::string& newContextName)
 {
-    std::unique_lock<std::mutex> locker(mActionMapMutex);
+    mt::WriteLock locker(mActionMapMutex);
 
     mContextStack.push(newContextName);
 }
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
+std::string input::InputDevice::GetCurrentContext() const
+{
+    mt::ReadLock locker(mActionMapMutex);
+
+    return mContextStack.empty() ? "" : mContextStack.top();
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
 std::string input::InputDevice::PopContext()
 {
-    std::unique_lock<std::mutex> locker(mActionMapMutex);
+    mt::WriteLock locker(mActionMapMutex);
 
     std::string topOfContext;
     if (!mContextStack.empty())

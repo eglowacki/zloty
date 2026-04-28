@@ -74,8 +74,6 @@ namespace defensor::render
 
         yaget::render::commands::RenderPassState mCurrentRenderPassState;
 
-        io::Tag mFontTag;
-
         // frame rate calculations
         float mFramesThisSecond = 1;
         float mAverageFps = 1.0f;

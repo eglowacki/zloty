@@ -56,8 +56,6 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mRenderPasses{ app.VTS(), GetDevice().GetWindowFrame() }
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
-    mFontTag.mGuid = NewGuid();
-
     mApp.PoolThread().AddTask([this]()
     {
         PreloadAssets();

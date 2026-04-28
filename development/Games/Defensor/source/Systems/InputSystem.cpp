@@ -7,18 +7,12 @@ defensor::game::ProcessInputSystem::ProcessInputSystem(Messaging& messaging, App
 {
     mApp.Input().RegisterActionCallback("*", [this](const std::string& contextName, const std::string& actionName, uint64_t timeStamp, int32_t mouseX, int32_t mouseY, uint32_t flags)
     {
-        if (!mActiveContextName.empty() && contextName == mActiveContextName)
+        auto currentContextName = mApp.Input().GetCurrentContext();
+        if (!currentContextName.empty() && contextName == currentContextName)
         {
             SaveAction(actionName, timeStamp, mouseX, mouseY, flags);
         }
     });
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void defensor::game::ProcessInputSystem::SetContext(const std::string& contextName)
-{
-    mActiveContextName = contextName;
 }
 
 
