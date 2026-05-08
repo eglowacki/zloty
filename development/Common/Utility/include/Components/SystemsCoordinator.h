@@ -181,7 +181,7 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
         constexpr std::size_t index = T0;
         using ComponentType = meta::strip_qualifiers_t<std::tuple_element_t<index, typename CoordinatorSet::FullRow>>;
 
-        if constexpr (has_component_types<ComponentType>)
+        if constexpr (is_component_persistent<ComponentType>)
         {
             const auto componentName = db::ResolveName<ComponentType>();
             using ParamTypes = typename ComponentType::Types;
