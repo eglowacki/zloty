@@ -457,11 +457,6 @@ namespace yaget::comp
 
                 if (!coordinatorFound)
                 {
-                    C* foo{};
-                    foo;
-                    int z = 0;
-                    z;
-
                     if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
                     {
                         auto& coordinator = GetCoordinator<coordinatorIndex>();
