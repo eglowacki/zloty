@@ -30,6 +30,8 @@ namespace defensor::render
         DefensorSystemsCoordinator(Messaging& m, yaget::Application& app);
         ~DefensorSystemsCoordinator();
 
+        void Tick(const time::GameClock& gameClock, metrics::Channel& channel);
+
     private:
         yaget::render::DesktopApplication& mApplication;
     };

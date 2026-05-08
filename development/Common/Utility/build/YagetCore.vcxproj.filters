@@ -359,6 +359,9 @@
     <ClCompile Include="..\source\Components\TextComponent.cpp">
       <Filter>Component Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\GameSystem\tinyevents\tinyevents.cpp">
+      <Filter>GameSystem Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -796,6 +799,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Components\TextComponent.h">
       <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GameSystem\tinyevents\tinyevents.h">
+      <Filter>GameSystem Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

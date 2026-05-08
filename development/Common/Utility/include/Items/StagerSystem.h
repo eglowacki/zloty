@@ -33,19 +33,20 @@ namespace yaget::items
         StagerSystem(const char* niceName, M& messaging, Application& app, CS& coordinatorSet, bool tickEnabled)
             : comp::gs::GameSystem<CS, comp::gs::NoEndMarker, M, StageComponent*>(niceName, messaging, app, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, tickEnabled)
             , mDirector(app.Director())
-        {}
+        {
+        }
 
     private:
-        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, StageComponent* stageComponent);
+        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const StageComponent* stageComponent);
 
         class Stager
         {
         public:
-            Stager(const db_stage::Name::Types& stageName, const db_stage::Blend::Types& blend, StagerSystem& stagerSystem)
+            Stager(const db_stage::Name::Types& stageName, const db_stage::Blend::Types& blend, const comp::ItemIds& itemIds, StagerSystem& stagerSystem)
                 : mCurrentStage(stageName)
                 , mBlend(blend)
+                , mItemIds(itemIds)
                 , mStagerSystem(stagerSystem)
-                , mItemIds(mStagerSystem.mDirector.GetStageItems(mCurrentStage))
             {
 
                 for (const auto& id : mItemIds)
@@ -56,34 +57,40 @@ namespace yaget::items
 
             ~Stager()
             {
-                int z = 0;
-                z;
-                //for (const auto& id : mItemIds)
-                //{
-                //    mStagerSystem.GetCS().RemoveItem(id);
-                //}
+                for (const auto& id : mItemIds)
+                {
+                    mStagerSystem.GetCS().RemoveItem(id);
+                }
             }
 
             db_stage::Name::Types mCurrentStage;
             db_stage::Blend::Types mBlend;
+            comp::ItemIds mItemIds;
             StagerSystem& mStagerSystem;
-            yaget::comp::ItemIds mItemIds;
         };
 
         items::Director& mDirector;
 
-        using StagersStack = std::stack<Stager>;
+        using StagersStack = std::stack<std::unique_ptr<Stager>>;
         StagersStack mStagersStack;
     };
 
     // --------------------------------------------------------------------
     // impl methods
     template <typename CS, typename M>
-    void StagerSystem<CS, M>::OnUpdate(comp::Id_t /*id*/, const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/, StageComponent* stageComponent)
+    void StagerSystem<CS, M>::OnUpdate(comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& /*channel*/, const StageComponent* stageComponent)
     {
-        const auto& requestedStageName = stageComponent->GetValue<db_stage::Name>();
+        gameClock;
+        const auto requestedStageName = stageComponent->GetValue<db_stage::Name>();
 
-        const auto currentStage = mStagersStack.empty() ? "" : mStagersStack.top().mCurrentStage;
+        const auto currentStage = mStagersStack.empty() ? "" : mStagersStack.top()->mCurrentStage;
+
+        bool isNameSet = !requestedStageName.empty();
+        bool isNameDifferent = requestedStageName != currentStage;
+
+        isNameSet;
+        isNameDifferent;
+
         if (!requestedStageName.empty() && requestedStageName != currentStage)
         {
             // ok at this point we need to know if any current items will be removed or will they stay to be merged with incoming (new) ones.
@@ -92,12 +99,31 @@ namespace yaget::items
             const auto items = mDirector.GetStageItems(requestedStageName);
             if (!items.empty())
             {
+                for (const auto& id : items)
+                {
+                    auto item = comp::gs::GameSystem<CS, comp::gs::NoEndMarker, M, StageComponent*>::GetCS().LoadItem(id);
+                    item;
+                    int z = 0;
+                    z;
+
+
+                }
+
                 const auto blend = stageComponent->GetValue<db_stage::Blend>();
+                if (blend == db_stage::BlendOp::Replace)
+                {
+                    if (!mStagersStack.empty())
+                    {
+                        mStagersStack.pop();
+                    }
+
+                    mStagersStack.push(std::make_unique<Stager>(requestedStageName, blend, items, *this));
+                }
 
                 // here we have choices on how to load requested stage
                 //  leave current items loaded
                 //  and load requested ones
-                mStagersStack.push(Stager{ requestedStageName, stageComponent->GetValue<db_stage::Blend>(), *this });
+                //mStagersStack.push(Stager{ requestedStageName, stageComponent->GetValue<db_stage::Blend>(), *this });
             }
         }
     }

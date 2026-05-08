@@ -248,6 +248,8 @@ void defensor::render::RenderSystem::PreloadAssets()
 
     platform::Sleep(1, time::kSecondUnit);
 
+    mMessaging.Queue(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
+
     SetTickEnabled(true);
 }
 

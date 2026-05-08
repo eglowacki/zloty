@@ -42,9 +42,17 @@ namespace yaget::items
     class StageComponent : public comp::db::PersistentObserverComponent<db_stage::ValueTypes, comp::GlobalPoolSize>
     {
     public:
-        StageComponent(comp::Id_t id, const db_stage::Name::Types& name, const db_stage::Blend::Types& blend = db_stage::Blend::Types::Replace)
+        StageComponent(comp::Id_t id, const db_stage::Name::Types& name, const db_stage::Blend::Types& blend)
             : PersistentObserverComponent(id, std::tie(name, blend))
         {}
+    };
+
+
+    //-------------------------------------------------------------------------------------------------
+    struct StageEvent
+    {
+        db_stage::Name::Types mName;
+        db_stage::Blend::Types mBlend;
     };
 
 }

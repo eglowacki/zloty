@@ -37,15 +37,13 @@
 
 namespace defensor::game
 {
-    class FrameStateCollectorSystem : public comp::gs::GameSystem<GameCoordinatorSet, comp::gs::GenerateEndMarker, defensor::game::Messaging, comp::LocationComponent3*, comp::MaterialComponent*>
+    class FrameStateCollectorSystem : public comp::gs::GameSystem<GameCoordinatorSet, comp::gs::GenerateEndMarker, defensor::game::Messaging>
     {
     public:
         FrameStateCollectorSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet);
 
     private:
-        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const comp::LocationComponent3* locationComponent, comp::MaterialComponent* materialComponent);
-
-        MessagingPayload mCurrentFrameState;
+        void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel);
     };
 
 }

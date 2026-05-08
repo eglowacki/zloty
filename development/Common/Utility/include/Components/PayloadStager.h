@@ -17,6 +17,7 @@
 #pragma once
 
 #include "YagetCore.h"
+#include "GameSystem/tinyevents/tinyevents.h"
 #include <memory>
 
 
@@ -41,6 +42,52 @@ namespace yaget::comp
         ConstPayload GetPayload() const;
         // Returns active payload and clears current one to empty
         ConstPayload ConsumePayload();
+
+        enum class DispatcherType
+        {
+            Render,
+            Logic
+        };
+
+        template <typename T>
+        std::uint64_t Listen(const std::function<void(const T&)>& listener, DispatcherType dispatcherType)
+        {
+            std::lock_guard lock(mDispatcherMutex);
+            return mDispatcher[static_cast<int>(dispatcherType)].Listen(listener);
+        }
+
+        template <typename T>
+        void Queue(T&& msg, DispatcherType dispatcherType)
+        {
+            std::lock_guard lock(mDispatcherMutex);
+            mDispatcher[static_cast<int>(dispatcherType)].Queue(std::forward<T>(msg));
+        }
+
+        void Process(DispatcherType dispatcherType)
+        {
+            std::lock_guard lock(mDispatcherMutex);
+            mDispatcher[static_cast<int>(dispatcherType)].Process();
+        }
+
+        template <typename T>
+        void Dispatch(const T& msg, DispatcherType dispatcherType)
+        {
+            std::lock_guard lock(mDispatcherMutex);
+            return mDispatcher[static_cast<int>(dispatcherType)].Dispatch(std::forward<T>(msg));
+        }
+
+        void Remove(const std::uint64_t handle, DispatcherType dispatcherType)
+        {
+            std::lock_guard lock(mDispatcherMutex);
+            mDispatcher[static_cast<int>(dispatcherType)].Remove(handle);
+        }
+
+        //tinyevents::Token GetToken(const std::uint64_t handle, DispatcherType dispatcherType)
+        //{
+        //    std::lock_guard lock(mDispatcherMutex);
+        //    tinyevents::Token token(mDispatcher[static_cast<int>(dispatcherType)], handle);
+        //    return token;
+        //}
     
     private:
         // return blank payload, ready to be filled 
@@ -51,6 +98,9 @@ namespace yaget::comp
         // current payload returned by GetPayload and ConsumePayload
         // and set by SetPayload
         std::atomic<Payload> mActivePayload;
+        
+        std::mutex mDispatcherMutex;
+        tinyevents::Dispatcher mDispatcher[2];
     };
     
     

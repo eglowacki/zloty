@@ -331,5 +331,7 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
 //-------------------------------------------------------------------------------------------------
 void defensor::game::DefensorSystemsCoordinator::Tick(const time::GameClock& gameClock, metrics::Channel& channel)
 {
+    mMessaging.Process(Messaging::DispatcherType::Logic);
+
     SystemsCoordinator::Tick(gameClock, channel);
 }

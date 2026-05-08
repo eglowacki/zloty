@@ -1,4 +1,14 @@
-﻿
-#include "StagerSystem.h"
+﻿#include "StagerSystem.h"
 
-DISREGARD_LINKER_4221(COMPILER_VERIFICATION_StagerSystem_h)
+
+//-------------------------------------------------------------------------------------------------
+void defensor::game::DefensorStagerSystem::UpdateStageComponent(const items::db_stage::Name::Types& stageName, items::db_stage::Blend::Types stageBlend)
+{
+    CoordinatorSet& cs = GetCS();
+    constexpr auto stageId = comp::GLOBAL_ID_MARKER;
+    if (auto stageComponent = cs.LoadComponent<items::StageComponent>(stageId))
+    {
+        stageComponent->SetValue<items::db_stage::Name>(stageName);
+        stageComponent->SetValue<items::db_stage::Blend>(stageBlend);
+    }
+}

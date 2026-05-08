@@ -36,6 +36,12 @@ namespace yaget::comp::gs
                 using BaseSystemType = std::tuple_element_t<T0, S>;
                 using SystemRow = typename BaseSystemType::Row;
 
+                if constexpr (std::tuple_size_v<std::remove_reference_t<SystemRow>> == 0)
+                {
+                    // if system does not have any components, then it can be used with any coordinator
+                    return;
+                }
+
                 using RequestedRow = tuple_get_union_t<SystemRow, typename R::FullRow>;
 
                 if (result)
@@ -104,10 +110,12 @@ namespace yaget::comp::gs
         // Returns true of componentName does exist, otherwise false
         bool IsComponentTyped(const std::string& componentName) const;
 
+    protected:
+        Messaging& mMessaging;
+
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
-        Messaging& mMessaging;
         A& mApp;
         CoordinatorSet mCoordinatorSet;
         ManagedSystems mSystems;

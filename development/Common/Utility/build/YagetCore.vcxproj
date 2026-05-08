@@ -53,6 +53,7 @@
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</InlineFunctionExpansion>
     </ClCompile>
     <ClCompile Include="..\source\GameSystem\Messaging.cpp" />
+    <ClCompile Include="..\source\GameSystem\tinyevents\tinyevents.cpp" />
     <ClCompile Include="..\source\IdGameCache.cpp" />
     <ClCompile Include="..\source\ImageLoaders\ImageProcessor.cpp" />
     <ClCompile Include="..\source\InputDevice.cpp" />
@@ -214,6 +215,7 @@
     <ClInclude Include="..\include\Debugging\DevConfigurationParsers.h" />
     <ClInclude Include="..\include\Exception\Exception.h" />
     <ClInclude Include="..\include\GameSystem\Messaging.h" />
+    <ClInclude Include="..\include\GameSystem\tinyevents\tinyevents.h" />
     <ClInclude Include="..\include\HashUtilities.h" />
     <ClInclude Include="..\include\IdGameCache.h" />
     <ClInclude Include="..\include\ImageLoaders\ImageProcessor.h" />

@@ -24,8 +24,17 @@ namespace defensor::game
     {
     public:
         DefensorStagerSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-            : yaget::items::StagerSystem<GameCoordinatorSet, Messaging>("DefensorStagerSystem", messaging, app, coordinatorSet, true)
-        {}
+            : StagerSystem<GameCoordinatorSet, Messaging>("DefensorStagerSystem", messaging, app, coordinatorSet, true)
+        {
+            mMessaging.Listen<items::StageEvent>([this](const auto& event)
+            {
+                UpdateStageComponent(event.mName, event.mBlend);
+
+            }, Messaging::DispatcherType::Logic);
+        }
+
+    private:
+        void UpdateStageComponent(const items::db_stage::Name::Types& stageName, items::db_stage::Blend::Types stageBlend);
     };
 
 }
