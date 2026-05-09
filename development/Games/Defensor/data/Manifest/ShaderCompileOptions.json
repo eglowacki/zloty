@@ -3,14 +3,14 @@
         "Vertex",
         {
             "EntryPoint": "VSMain",
-            "Target": "vs_6_5"
+            "Target": "vs_6_8"
         }
     ],
     [
         "Pixel",
         {
             "EntryPoint": "PSMain",
-            "Target": "ps_6_5"
+            "Target": "ps_6_8"
         }
     ],
     [

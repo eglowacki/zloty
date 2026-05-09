@@ -117,7 +117,7 @@ namespace yaget::render::commands
         // If render target exists, return it, otherwise return nullptr
         RenderTarget* FindRenderTarget(const io::Tag& tag) const;
 
-        void Preload(const io::Tags& tags);
+        void Preload(const io::Tags& tags, std::atomic_uint32_t& counter);
         void ResetAll(const app::WindowFrame& windowFrame);
 
         //-------------------------------------------------------------------------------------------------

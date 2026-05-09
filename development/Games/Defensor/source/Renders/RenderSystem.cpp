@@ -8,6 +8,8 @@
 
 #include <ranges>
 
+extern "C" { __declspec(dllexport) extern const UINT D3D12SDKVersion = 619;}
+extern "C" { __declspec(dllexport) extern const char* D3D12SDKPath = ".\\D3D12\\"; }
 
 namespace
 {
@@ -211,9 +213,10 @@ void defensor::render::RenderSystem::PreloadAssets()
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mApp.VTS();
 
+    std::atomic_uint32_t counter{ 0 };
+
     const Section renderTargetsSection("RenderTargets");
     auto renderTargetsTags = vts.GetTags(renderTargetsSection);
-    mRenderTargetStorage.Preload(renderTargetsTags);
 
     const Section vertexShaderSection("VertexShaders");
     auto vertexShaderTags = vts.GetTags(vertexShaderSection);
@@ -221,31 +224,41 @@ void defensor::render::RenderSystem::PreloadAssets()
     const Section pixelShaderSection("PixelShaders");
     auto pixelShaderTags = vts.GetTags(pixelShaderSection);
 
-    mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex);
-    mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel);
-
     const Section geometrySection("Geometry");
     auto geometryTags = vts.GetTags(geometrySection);
-    mRenderGeometries.Preload(geometryTags);
-    mGeometryResources.Preload(geometryTags);
 
     const Section textureSection("Images");
     auto textureTags = vts.GetTags(textureSection);
-    mRenderTextures.Preload(textureTags);
-    mTextureResources.Preload(textureTags);
 
     const Section materialSection("Materials");
     auto materialTags = vts.GetTags(materialSection);
+
+    const Section sceneItemsSection("SceneItems");
+    auto sceneItemsTags = vts.GetTags(sceneItemsSection);
+
+    auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + geometryTags.size() + textureTags.size() + materialTags.size() + sceneItemsTags.size();
+    numAssetsToLoad;
+
+    //---------------------------------------------------------------------------------
+    mRenderTargetStorage.Preload(renderTargetsTags, counter);
+
+    mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex, counter);
+    mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel, counter);
+
+    mRenderGeometries.Preload(geometryTags);
+    mGeometryResources.Preload(geometryTags);
+
+    mRenderTextures.Preload(textureTags);
+    mTextureResources.Preload(textureTags);
 
     auto materials = mRenderMaterials.GetMaterials(materialTags);
     for (const auto& [material, matTag] : std::views::zip(materials, materialTags))
     {
         RebindMaterial(matTag, material);
     }
-    const Section sceneItemsSection("SceneItems");
-    auto sceneItemsTags = vts.GetTags(sceneItemsSection);
     mSceneItemsStorage.Preload(sceneItemsTags);
 
+    //---------------------------------------------------------------------------------
     platform::Sleep(1, time::kSecondUnit);
 
     mMessaging.Queue(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
@@ -371,9 +384,11 @@ void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windo
     }
     else if (resizeState == yaget::render::DeviceB::ResizeState::Set)
     {
+        std::atomic_uint32_t counter{ 0 };
+
         const Section renderTargetsSection("RenderTargets");
         auto renderTargetsTags = mApp.VTS().GetTags(renderTargetsSection);
-        mRenderTargetStorage.Preload(renderTargetsTags);
+        mRenderTargetStorage.Preload(renderTargetsTags, counter);
 
         const Section sceneItemsSection("SceneItems");
         auto sceneItemsTags = mApp.VTS().GetTags(sceneItemsSection);

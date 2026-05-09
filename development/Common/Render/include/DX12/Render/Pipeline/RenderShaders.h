@@ -95,7 +95,7 @@ namespace yaget::render
         io::Buffer GetShader(const io::Tag& tag, ShaderType shaderType);
         std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType);
 
-        void Preload(const io::Tags& tags, ShaderType shaderType);
+        void Preload(const io::Tags& tags, ShaderType shaderType, std::atomic_uint32_t& counter);
 
         void ClearCache(const io::Tag& tag);
 

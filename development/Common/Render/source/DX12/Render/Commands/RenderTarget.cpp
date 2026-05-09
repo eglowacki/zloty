@@ -342,7 +342,7 @@ yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStor
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::commands::RenderTargetStorage::Preload(const io::Tags& tags)
+void yaget::render::commands::RenderTargetStorage::Preload(const io::Tags& tags, std::atomic_uint32_t& counter)
 {
     for (const auto& tag: tags)
     {
@@ -371,6 +371,8 @@ void yaget::render::commands::RenderTargetStorage::Preload(const io::Tags& tags)
         {
             mTextureResources.AttachRenderTarget(tag, renderTarget);
         }
+
+        ++counter;
     }
 }
 

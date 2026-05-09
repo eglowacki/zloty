@@ -8,5 +8,5 @@ proj.file-list = [loc('deploy.py'),
                   loc('Sample.deployment')]
 proj.file-type = 'shared'
 proj.launch-config = {loc('deploy.py'): ('project',
-        ('--root=c:\\Development\\yaget\\Dependencies;c:\\Development\\yaget\\branch\\zloty\\development\\Dependencies --configuration=Debug --destination=c:\\Development\\yaget\\branch\\zloty\\development\\bin\\Defensor\\x64.Debug --metafile=c:\\Development\\yaget\\branch\\zloty\\development\\Games\\Defensor\\Defensor.deployment',
+        ('--root=c:\\Development\\zloty\\development\\Dependencies --configuration=Debug --destination=c:\\Development\\zloty\\development\\bin\\Defensor\\x64.Debug\\ --metafile=c:\\Development\\zloty\\development\\Games\\Defensor\\Defensor.deployment',
          ''))}
