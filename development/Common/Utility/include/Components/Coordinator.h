@@ -259,7 +259,7 @@ template<typename P>
 template<typename T>
 bool yaget::comp::Coordinator<P>::RemoveComponent(comp::Id_t id, T*& component)
 {
-    YAGET_ASSERT(component, "Component parameter of type: '%s' is nulptr.", typeid(T).name());
+    YAGET_ASSERT(component, "Component parameter of type: '%s' is nullptr.", typeid(T).name());
     YAGET_ASSERT(mItems.contains(id), "Item id: '%d' of type: '%s' does not exist in collection.", id, typeid(T).name());
 
     FullRow row = FindItem(id);

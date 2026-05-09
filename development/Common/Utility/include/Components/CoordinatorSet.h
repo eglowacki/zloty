@@ -503,9 +503,6 @@ namespace yaget::comp
             meta::for_each_type<TT>([this, &result, id]<typename T0>(const T0&)
             {
                 using BaseType = meta::strip_qualifiers_t<T0>;
-
-                BaseType* foo{};
-                foo;
                 RemoveComponent<BaseType>(id);
             });
 
