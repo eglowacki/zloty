@@ -114,10 +114,10 @@ namespace
     class SplashScreenUpdater : public yaget::NoCopy
     {
     public:
-        SplashScreenUpdater(defensor::game::Messaging& messaging, yaget::Application& application, const char* fileName, COLORREF color = { 0x00000000 })
+        SplashScreenUpdater(defensor::game::Messaging& messaging, yaget::Application& application, const std::string& fileName, COLORREF color = { 0x00000000 })
             : mMessaging(messaging)
             , mApplication(application)
-            , mSplashWindow(fileName, color)
+            , mSplashWindow(yaget::util::ExpendEnv(fileName, nullptr), color)
         {
             mSplashWindow.ShowSplash();
 
@@ -163,7 +163,6 @@ namespace
                 return;
             }
 
-            YLOG_WARNING("DEF", "==================>> Splash screen update tick.");
             int currentCounter = -1;
             std::string progressMessage;
             {
@@ -184,7 +183,6 @@ namespace
 
                     auto counterMessage = std::format("{}/{}", mLastPreloadCounter, mTotalItemsToPreload.load());
                     mSplashWindow.Print(counterMessage.c_str(), yaget::Splash::TextLine::Second);
-                    YLOG_WARNING("DEF", "==================>> counterMessage: %s", counterMessage.c_str());
                 }
             }
 
@@ -274,15 +272,11 @@ int defensor::Run(const yaget::args::Options& options)
     const auto selectedAdapter = yaget::render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
     yaget::render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
 
-    std::string splashBitmapName = "c:\\Development\\zloty\\development\\Games\\Defensor\\data\\Images\\Splash.bmp";
-    //Splash splash(splashBitmapName.c_str(), COLORREF{ 0x00000000 });
-    //splash.ShowSplash();
-    //splash.Print("Testing Splash Screen", Splash::TextLine::First);
-
     game::Messaging messaging{};
     Mappers mappers(app.VTS());
 
-    SplashScreenUpdater splashScreenUpdater(messaging, app, splashBitmapName.c_str(), COLORREF{ 0x00000000 });
+    std::string splashBitmapName = "$(AppFolder)/Splash.bmp";
+    SplashScreenUpdater splashScreenUpdater(messaging, app, splashBitmapName, COLORREF{ 0x00000000 });
 
     auto returnResult = comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app, [&splashScreenUpdater]() { splashScreenUpdater.OnTick(); });
     return returnResult;
