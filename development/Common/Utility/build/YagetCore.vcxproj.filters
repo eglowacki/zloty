@@ -362,6 +362,9 @@
     <ClCompile Include="..\source\GameSystem\tinyevents\tinyevents.cpp">
       <Filter>GameSystem Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Time\DeltaClock.cpp">
+      <Filter>Time Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -802,6 +805,9 @@
     </ClInclude>
     <ClInclude Include="..\include\GameSystem\tinyevents\tinyevents.h">
       <Filter>GameSystem Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Time\DeltaClock.h">
+      <Filter>Time Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

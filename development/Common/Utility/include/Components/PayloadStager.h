@@ -73,7 +73,7 @@ namespace yaget::comp
         void Dispatch(const T& msg, DispatcherType dispatcherType)
         {
             std::lock_guard lock(mDispatcherMutex);
-            return mDispatcher[static_cast<int>(dispatcherType)].Dispatch(std::forward<T>(msg));
+            return mDispatcher[static_cast<int>(dispatcherType)].Dispatch(msg);
         }
 
         void Remove(const std::uint64_t handle, DispatcherType dispatcherType)

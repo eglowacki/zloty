@@ -149,21 +149,21 @@ namespace yaget::comp::gs
     // It creates each Coordinator on the thread that it's run and Tick is called from.
     // In this case we have 2 threads, logic and render.
     template <typename TG, typename TR, typename M, typename A>
-    int RunGame(M& messaging, A& app)
+    int RunGame(M& messaging, A& app, typename A::TickIdle tickIdle = {})
     {
-        return app.Run(internal::Updater<TG, M, A>(messaging, app), internal::Updater<TR, M, A>(messaging, app));
+        return app.Run(internal::Updater<TG, M, A>(messaging, app), internal::Updater<TR, M, A>(messaging, app), tickIdle);
     }
 
     template <typename TG, typename M, typename A>
-    int RunGame(M& messaging, A& app)
+    int RunGame(M& messaging, A& app, typename A::TickIdle tickIdle = {})
     {
-        return app.Run(internal::Updater<TG, M, A>(messaging, app));
+        return app.Run(internal::Updater<TG, M, A>(messaging, app), tickIdle);
     }
 
     template <typename TG, typename M, typename A>
-    int RunGame(M& messaging, A& app, auto renderCallback)
+    int RunGame(M& messaging, A& app, auto renderCallback, typename A::TickIdle tickIdle = {})
     {
-        return app.Run(internal::Updater<TG, M, A>(messaging, app), renderCallback);
+        return app.Run(internal::Updater<TG, M, A>(messaging, app), renderCallback, tickIdle);
     }
 
 } // namespace yaget::comp::gs

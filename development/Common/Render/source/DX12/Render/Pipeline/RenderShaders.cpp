@@ -206,7 +206,7 @@ std::vector<yaget::io::Buffer> yaget::render::RenderShaders::GetShaders(const io
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderShaders::Preload(const io::Tags& tags, ShaderType shaderType, std::atomic_uint32_t& /*counter*/)
+void yaget::render::RenderShaders::Preload(const io::Tags& tags, ShaderType shaderType, comp::gs::mt::InitCounter& /*counter*/)
 {
     GetShaders(tags, shaderType);
 }

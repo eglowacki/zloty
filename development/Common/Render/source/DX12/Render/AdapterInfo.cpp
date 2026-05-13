@@ -406,7 +406,28 @@ yaget::render::info::HardwareDevice yaget::render::info::CreateDevice(const Adap
     optionsText += "    " + conv::ToString(raytracingTier) + "\n";
 
     auto backgroundSupported = featureSupport.BackgroundProcessingSupported();
-    optionsText += "    Background Processing: " + conv::ToString(backgroundSupported);
+    optionsText += "    Background Processing: " + conv::ToString(backgroundSupported) + "\n";
+
+    auto enhancedBarriersSupported = featureSupport.EnhancedBarriersSupported();
+    optionsText += "    Enhanced Barriers Supported: " + conv::ToString(enhancedBarriersSupported) + "\n";
+
+    auto triangleFanSupported = featureSupport.TriangleFanSupported();
+    optionsText += "    Triangle Fan Supported: " + conv::ToString(triangleFanSupported) + "\n";
+
+    auto gpuUploadHeapSupported = featureSupport.GPUUploadHeapSupported();
+    optionsText += "    GPU Upload Heap Supported: " + conv::ToString(gpuUploadHeapSupported) + "\n";
+
+    auto maxSamplerDescriptorHeapSize = featureSupport.MaxSamplerDescriptorHeapSize();
+    optionsText += "    Max Sampler Descriptor Heap Size: " + conv::ToString(maxSamplerDescriptorHeapSize) + "\n";
+
+    auto maxSamplerDescriptorHeapSizeWithStaticSamplers = featureSupport.MaxSamplerDescriptorHeapSizeWithStaticSamplers();
+    optionsText += "    Max Sampler Descriptor Heap Size With Static Samplers: " + conv::ToString(maxSamplerDescriptorHeapSizeWithStaticSamplers) + "\n";
+
+    auto maxViewDescriptorHeapSize = featureSupport.MaxViewDescriptorHeapSize();
+    optionsText += "    Max View Descriptor Heap Size: " + conv::ToString(maxViewDescriptorHeapSize) + "\n";
+
+    auto tightAlignmentSupportTier = featureSupport.TightAlignmentSupportTier();
+    optionsText += "    " + conv::ToString(tightAlignmentSupportTier);
 
     YLOG_INFO("DEVI", "D3D Features:\n%s", optionsText.c_str());
 

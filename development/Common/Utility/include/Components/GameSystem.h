@@ -84,6 +84,22 @@ namespace yaget::comp::gs
         std::atomic_bool mTickEnabled = true;
     };
 
+
+    //-------------------------------------------------------------------------------------------------
+    namespace mt
+    {
+        using InitCounter = std::atomic_int32_t;
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    struct InitEvent
+    {
+        int32_t mNumItems = -1;
+        mt::InitCounter* mItemsProcessed{ nullptr };
+        std::string mText;
+    };
+
 } // namespace yaget::comp::gs
 
 #define YAGET_GAME_SYSTEM_INCLUDE_IMPLEMENTATION

@@ -30,7 +30,7 @@ public:
     //  Arg    Path of the Bitmap that will be show on the splash screen
     //  Arg    The color on the bitmap that will be made transparent
     //  =======================================================================
-    Splash(LPCTSTR lpszFileName, COLORREF colTrans);
+    Splash(const char* fileName, COLORREF colTrans);
 
     //  =======================================================================
     //  Func   ~CSplash
@@ -45,7 +45,14 @@ public:
     //  =======================================================================
     void ShowSplash();
 
-    void Print(const char* message);
+    enum class TextLine
+    {
+        First,
+        Second,
+        Max
+    };
+
+    void Print(const char* message, TextLine line);
 
     //  =======================================================================
     //  Func   CloseSplash
@@ -74,24 +81,28 @@ private:
     //  Ret    1 if succesfull
     //  Arg    Either the file path or the handle to an already loaded bitmap
     //  =======================================================================
-    DWORD SetBitmap(LPCTSTR lpszFileName);
+    DWORD SetBitmap(const char* lpszFileName);
     DWORD SetBitmap(HBITMAP hBitmap);
 
     void Init();
     void  OnPaint(HWND hwnd);
-    bool MakeTransparent();
+    bool MakeTransparent() const;
     HWND RegAndCreateWindow();
-
-    COLORREF m_colTrans = 0;
-    DWORD m_dwWidth = 0;
-    DWORD m_dwHeight = 0;
     void FreeResources();
-    HBITMAP m_hBitmap = nullptr;
-    LPCTSTR m_lpszClassName = nullptr;
 
-    HWND m_hwnd = nullptr;
+    void PrintText(HDC hDC, const char* message, TextLine line);
 
-    std::string mMessage;
+    COLORREF mColorTransparance = 0;
+    DWORD mWidth = 0;
+    DWORD mHeight = 0;
+    HBITMAP mBitmap = nullptr;
+    LPCTSTR mClassName = nullptr;
+
+    HWND mWindowHandle = nullptr;
+
+    std::string mMessages[static_cast<size_t>(TextLine::Max)];
+
+    HFONT mMessageFont = nullptr;
 };
 
 

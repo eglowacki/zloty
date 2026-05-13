@@ -7,7 +7,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(YAGET_ROOT_FOLDER)\Common\Render\Include\DX12;$(YAGET_DEPENDENCIES_FOLDER)\DirectX-Headers\include\directx;$(YAGET_DEPENDENCIES_FOLDER)\DirectX-Headers\include\dxguids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(YAGET_DEPENDENCIES_FOLDER)\AgilitySDK\build\native\include\d3dx12;$(YAGET_DEPENDENCIES_FOLDER)\AgilitySDK\build\native\include\;$(YAGET_ROOT_FOLDER)\Common\Render\Include\DX12;$(YAGET_DEPENDENCIES_FOLDER)\DirectX-Headers\include\directx;$(YAGET_DEPENDENCIES_FOLDER)\DirectX-Headers\include\dxguids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>YagetRender12$(YAGET_DEBUG_SUFFIX).lib;DirectXTK12.lib;DirectX-Guids.lib;DXGI.lib;D3d12.lib;d3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>

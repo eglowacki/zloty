@@ -12,7 +12,9 @@
         "assimp-5.0.1/builds/bin/Debug/assimp-vc143-mtd.dll",
         "AgilitySDK/build/native/bin/x64/D3D12Core.pdb;D3D12",
         "AgilitySDK/build/native/bin/x64/D3D12SDKLayers.dll;D3D12",
-        "AgilitySDK/build/native/bin/x64/D3D12SDKLayers.pdb;D3D12"
+        "AgilitySDK/build/native/bin/x64/D3D12SDKLayers.pdb;D3D12",
+        "DirectX-Compiler/bin/x64/dxil.pdb",
+        "DirectX-Compiler/bin/x64/dxcompiler.pdb"
     ]
   }
 }

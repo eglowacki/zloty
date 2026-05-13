@@ -32,15 +32,19 @@ lpfnSetLayeredWindowAttributes g_pSetLayeredWindowAttributes;
 //  ===========================================================================
 static LRESULT CALLBACK ExtWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    static yaget::Splash * spl = NULL;
+    static yaget::Splash* splashWindow = nullptr;
     if(uMsg == WM_CREATE)
     {
-        spl = (yaget::Splash*)((LPCREATESTRUCT)lParam)->lpCreateParams;
+        splashWindow = (yaget::Splash*)((LPCREATESTRUCT)lParam)->lpCreateParams;
     }
-    if(spl)
-        return spl->WindowProc(hwnd, uMsg, wParam, lParam);
+    if(splashWindow)
+    {
+        return splashWindow->WindowProc(hwnd, uMsg, wParam, lParam);
+    }
     else
+    {
         return DefWindowProc (hwnd, uMsg, wParam, lParam);
+    }
 }
 
 LRESULT CALLBACK yaget::Splash::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -54,44 +58,70 @@ LRESULT CALLBACK yaget::Splash::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
     return DefWindowProc (hwnd, uMsg, wParam, lParam) ;
 }
 
-void yaget::Splash::Print(const char* message)
+void yaget::Splash::Print(const char* message, TextLine line)
 {
-    mMessage = message;
-    ::InvalidateRgn(m_hwnd, NULL, FALSE);
-    ::UpdateWindow(m_hwnd);
+    mMessages[static_cast<size_t>(line)] = message;
+    InvalidateRgn(mWindowHandle, nullptr, false);
+    UpdateWindow(mWindowHandle);
 }
 
 
 void yaget::Splash:: OnPaint(HWND hwnd)
 {
-    if (!m_hBitmap)
+    if (!mBitmap)
+    {
         return;
+    }
 
     //  =======================================================================
     //  Paint the background by BitBlting the bitmap
     //  =======================================================================
     PAINTSTRUCT ps ;
-    HDC hDC = BeginPaint (hwnd, &ps) ;
+    HDC hDC = BeginPaint(hwnd, &ps) ;
 
     RECT   rect;
-    ::GetClientRect(m_hwnd, &rect);
+    GetClientRect(mWindowHandle, &rect);
     
-    HDC hMemDC      = ::CreateCompatibleDC(hDC);
-    HBITMAP hOldBmp = (HBITMAP)::SelectObject(hMemDC, m_hBitmap);
+    HDC hMemDC      = CreateCompatibleDC(hDC);
+    HBITMAP hOldBmp = (HBITMAP)SelectObject(hMemDC, mBitmap);
 
-    if (!mMessage.empty())
+    for (auto i = 0; i < static_cast<size_t>(TextLine::Max); ++i)
     {
-        RECT textRect{ 5, 10, 400, 200 };
-        ::DrawText(hMemDC, mMessage.c_str(), -1, &textRect, DT_CENTER);
+        const auto& message = mMessages[i];
+        if (!message.empty())
+        {
+            PrintText(hMemDC, message.c_str(), static_cast<TextLine>(i));
+        }
     }
     
-    BitBlt(hDC, 0, 0, m_dwWidth, m_dwHeight, hMemDC, 0, 0, SRCCOPY);
-
-    ::SelectObject(hMemDC, hOldBmp);
-
-    ::DeleteDC(hMemDC);
+    BitBlt(hDC, 0, 0, mWidth, mHeight, hMemDC, 0, 0, SRCCOPY);
+    SelectObject(hMemDC, hOldBmp);
+    DeleteDC(hMemDC);
     
-    EndPaint (hwnd, &ps) ;
+    EndPaint(hwnd, &ps) ;
+}
+
+void yaget::Splash::PrintText(HDC hMemDC, const char* message, TextLine line)
+{
+    LONG textBottomOffset = line == TextLine::First ? 50 : 10;
+    LONG textHeight = 80;
+    LONG textShadowOffset = 2;
+    LONG textHorizontalOffset = 100;
+    line;
+
+    auto originalFont = (HFONT)SelectObject(hMemDC, mMessageFont);
+
+    SetTextColor(hMemDC, RGB(0, 0, 0));
+    RECT textRect2{ textHorizontalOffset + textShadowOffset, mHeight - (textBottomOffset + textHeight - textShadowOffset), mWidth - (textHorizontalOffset - textShadowOffset), mHeight - (textBottomOffset - textShadowOffset)};
+    DrawText(hMemDC, message, -1, &textRect2, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    SetBkMode(hMemDC, TRANSPARENT);
+
+    SetTextColor(hMemDC, RGB(255, 0, 0));
+    RECT textRect1{ textHorizontalOffset, mHeight - (textBottomOffset + textHeight), mWidth - textHorizontalOffset, mHeight - textBottomOffset };
+    DrawText(hMemDC, message, -1, &textRect1, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    SetBkMode(hMemDC, TRANSPARENT);
+
+    SelectObject(hMemDC, originalFont);
 }
 
 void yaget::Splash::Init()
@@ -99,9 +129,11 @@ void yaget::Splash::Init()
     //  =======================================================================
     //  Initialize the variables
     //  =======================================================================
-    m_hwnd = NULL;
-    m_lpszClassName = TEXT("SPLASH");
-    m_colTrans = 0;
+    mWindowHandle = NULL;
+    mClassName = TEXT("SPLASH");
+    mColorTransparance = 0;
+    mMessageFont = CreateFont(36,20,0,0,FW_BOLD,false,false,false,DEFAULT_CHARSET,OUT_OUTLINE_PRECIS,
+                CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY, VARIABLE_PITCH,TEXT("Consolas")); 
 
     //  =======================================================================
     //  Keep the function pointer for the SetLayeredWindowAttributes function
@@ -109,8 +141,7 @@ void yaget::Splash::Init()
     //  =======================================================================
     if (HMODULE hUser32 = GetModuleHandle(TEXT("USER32.DLL")))
     {
-        g_pSetLayeredWindowAttributes = (lpfnSetLayeredWindowAttributes)
-            GetProcAddress(hUser32, "SetLayeredWindowAttributes");
+        g_pSetLayeredWindowAttributes = (lpfnSetLayeredWindowAttributes)GetProcAddress(hUser32, "SetLayeredWindowAttributes");
     }
 }
 
@@ -122,13 +153,13 @@ yaget::Splash::Splash()
     }
 }
 
-yaget::Splash::Splash(LPCTSTR lpszFileName, COLORREF colTrans)
+yaget::Splash::Splash(const char* fileName, COLORREF colTrans)
 {
     if (!yaget::dev::CurrentConfiguration().mDebug.mFlags.SuppressUI)
     {
         Init();
 
-        SetBitmap(lpszFileName);
+        SetBitmap(fileName);
         SetTransparentColor(colTrans);
     }
 }
@@ -136,6 +167,11 @@ yaget::Splash::Splash(LPCTSTR lpszFileName, COLORREF colTrans)
 yaget::Splash::~Splash()
 {
     FreeResources();
+    if (mMessageFont)
+    {
+        DeleteObject(mMessageFont);
+        mMessageFont = nullptr;
+    }
 }
 
 HWND yaget::Splash::RegAndCreateWindow()
@@ -144,45 +180,47 @@ HWND yaget::Splash::RegAndCreateWindow()
     //  Register the window with ExtWndProc as the window procedure
     //  =======================================================================
     WNDCLASSEX wndclass;
-    wndclass.cbSize         = sizeof (wndclass);
+    wndclass.cbSize         = sizeof(wndclass);
     wndclass.style          = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
     wndclass.lpfnWndProc    = ExtWndProc;
     wndclass.cbClsExtra     = 0;
     wndclass.cbWndExtra     = DLGWINDOWEXTRA;
-    wndclass.hInstance      = ::GetModuleHandle(NULL);
-    wndclass.hIcon          = NULL;
-    wndclass.hCursor        = ::LoadCursor( NULL, IDC_WAIT );
-    wndclass.hbrBackground  = (HBRUSH)::GetStockObject(LTGRAY_BRUSH);
-    wndclass.lpszMenuName   = NULL;
-    wndclass.lpszClassName  = m_lpszClassName;
-    wndclass.hIconSm        = NULL;
+    wndclass.hInstance      = GetModuleHandle(nullptr);
+    wndclass.hIcon          = nullptr;
+    wndclass.hCursor        = LoadCursor(nullptr, IDC_WAIT );
+    wndclass.hbrBackground  = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
+    wndclass.lpszMenuName   = nullptr;
+    wndclass.lpszClassName  = mClassName;
+    wndclass.hIconSm        = nullptr;
 
     if(!RegisterClassEx (&wndclass))
-        return NULL;
+    {
+        return nullptr;
+    }
 
     //  =======================================================================
     //  Create the window of the application, passing the this pointer so that
     //  ExtWndProc can use that for message forwarding
     //  =======================================================================
-    DWORD nScrWidth  = ::GetSystemMetrics(SM_CXFULLSCREEN);
-    DWORD nScrHeight = ::GetSystemMetrics(SM_CYFULLSCREEN);
+    DWORD nScrWidth  = GetSystemMetrics(SM_CXFULLSCREEN);
+    DWORD nScrHeight = GetSystemMetrics(SM_CYFULLSCREEN);
 
-    int x = (nScrWidth  - m_dwWidth) / 2;
-    int y = (nScrHeight - m_dwHeight) / 2;
-    m_hwnd = ::CreateWindowEx(WS_EX_TOPMOST|WS_EX_TOOLWINDOW, m_lpszClassName, 
+    int x = (nScrWidth  - mWidth) / 2;
+    int y = (nScrHeight - mHeight) / 2;
+    mWindowHandle = CreateWindowEx(WS_EX_TOPMOST|WS_EX_TOOLWINDOW, mClassName, 
                               TEXT("Banner"), WS_POPUP, x, y, 
-                              m_dwWidth, m_dwHeight, NULL, NULL, NULL, this);
+                              mWidth, mHeight, nullptr, nullptr, nullptr, this);
 
     //  =======================================================================
     //  Display the window
     //  =======================================================================
-    if(m_hwnd)
+    if(mWindowHandle)
     {
         MakeTransparent();
-        ::ShowWindow(m_hwnd, SW_SHOW) ;
-        ::UpdateWindow(m_hwnd);
+        ShowWindow(mWindowHandle, SW_SHOW) ;
+        UpdateWindow(mWindowHandle);
     }
-    return m_hwnd;
+    return mWindowHandle;
 }
 
 void yaget::Splash::ShowSplash()
@@ -195,20 +233,17 @@ void yaget::Splash::ShowSplash()
 }
 
 
-DWORD yaget::Splash::SetBitmap(LPCTSTR lpszFileName)
+DWORD yaget::Splash::SetBitmap(const char* fileName)
 {
     //  =======================================================================
     //  load the bitmap
     //  =======================================================================
-    HBITMAP hBitmap = (HBITMAP)::LoadImage(0, lpszFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    HBITMAP hBitmap = (HBITMAP)LoadImage(0, fileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     return SetBitmap(hBitmap);
 }
 
 DWORD yaget::Splash::SetBitmap(HBITMAP hBitmap)
 {
-    int nRetValue;
-    BITMAP  csBitmapSize;
-    
     //  =======================================================================
     //  Free loaded resource
     //  =======================================================================
@@ -216,19 +251,20 @@ DWORD yaget::Splash::SetBitmap(HBITMAP hBitmap)
     
     if (hBitmap)
     {
-        m_hBitmap = hBitmap;
+        mBitmap = hBitmap;
         
         //  ===================================================================
         //  Get bitmap size
         //  ===================================================================
-        nRetValue = ::GetObject(hBitmap, sizeof(csBitmapSize), &csBitmapSize);
+        BITMAP csBitmapSize;
+        auto nRetValue = ::GetObject(hBitmap, sizeof(csBitmapSize), &csBitmapSize);
         if (nRetValue == 0)
         {
             FreeResources();
             return 0;
         }
-        m_dwWidth = (DWORD)csBitmapSize.bmWidth;
-        m_dwHeight = (DWORD)csBitmapSize.bmHeight;
+        mWidth = (DWORD)csBitmapSize.bmWidth;
+        mHeight = (DWORD)csBitmapSize.bmHeight;
     }
        
     return 1;
@@ -236,19 +272,20 @@ DWORD yaget::Splash::SetBitmap(HBITMAP hBitmap)
 
 void yaget::Splash::FreeResources()
 {
-    if (m_hBitmap)
-        ::DeleteObject (m_hBitmap);
-    m_hBitmap = NULL;
+    if (mBitmap)
+    {
+        DeleteObject(mBitmap);
+        mBitmap = nullptr;
+    }
 }
 
 int yaget::Splash::CloseSplash()
 {
-    
-    if(m_hwnd)
+    if(mWindowHandle)
     {
-        DestroyWindow(m_hwnd);
-        m_hwnd = 0;
-        UnregisterClass(m_lpszClassName, ::GetModuleHandle(NULL));
+        DestroyWindow(mWindowHandle);
+        mWindowHandle = nullptr;
+        UnregisterClass(mClassName, ::GetModuleHandle(nullptr));
         return 1;
     }
     return 0;
@@ -256,22 +293,22 @@ int yaget::Splash::CloseSplash()
 
 bool yaget::Splash::SetTransparentColor(COLORREF col)
 {
-    m_colTrans = col;
+    mColorTransparance = col;
 
     return MakeTransparent();
 }
 
-bool yaget::Splash::MakeTransparent()
+bool yaget::Splash::MakeTransparent() const
 {
     //  =======================================================================
     //  Set the layered window style and make the required color transparent
     //  =======================================================================
-    if(m_hwnd && g_pSetLayeredWindowAttributes && m_colTrans )
+    if(mWindowHandle && g_pSetLayeredWindowAttributes && mColorTransparance )
     {
         //  set layered style for the window
-        SetWindowLong(m_hwnd, GWL_EXSTYLE, GetWindowLong(m_hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+        SetWindowLong(mWindowHandle, GWL_EXSTYLE, GetWindowLong(mWindowHandle, GWL_EXSTYLE) | WS_EX_LAYERED);
         //  call it with 0 alpha for the given color
-        g_pSetLayeredWindowAttributes(m_hwnd, m_colTrans, 0, LWA_COLORKEY);
+        g_pSetLayeredWindowAttributes(mWindowHandle, mColorTransparance, 0, LWA_COLORKEY);
     }    
-    return TRUE;
+    return true;
 }

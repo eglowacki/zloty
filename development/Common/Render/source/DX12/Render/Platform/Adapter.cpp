@@ -91,7 +91,8 @@ yaget::render::platform::Adapter::Adapter([[maybe_unused]] app::WindowFrame wind
 #endif // YAGET_DEBUG_RENDER == 1
 
     D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
-    allocatorDesc.Flags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
+    // NOTE(eg) ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT was added on 5/11/2026 due that I was getting crash when creating gpu buffer for screen quad geometry
+    allocatorDesc.Flags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED | D3D12MA::ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT;
     allocatorDesc.pDevice = mDevice.Get();
     allocatorDesc.PreferredBlockSize = 0;
     allocatorDesc.pAllocationCallbacks = mAllocationCallbacks.get();

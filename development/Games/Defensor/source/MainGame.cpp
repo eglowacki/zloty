@@ -1,5 +1,7 @@
 #include "MainGame.h"
 
+#include "App/Splash.h"
+#include "Debugging/DevConfiguration.h"
 #include "DefensorGameCoordinator.h"
 #include "DefensorGameTypes.h"
 #include "DefensorRenderCoordinator.h"
@@ -13,12 +15,13 @@
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Scene/RenderSceneItems.h"
 #include "Script/luacpp.h"
+#include "Time/DeltaClock.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
-#include "Debugging/DevConfiguration.h"
 
 #include "../resource.h"
+
 
 #if 0
 namespace yaget::app
@@ -107,6 +110,97 @@ namespace
         yaget::io::VirtualTransportSystem& mVTS;
     };
 
+    class SplashScreenUpdater : public yaget::NoCopy
+    {
+    public:
+        SplashScreenUpdater(defensor::game::Messaging& messaging, yaget::Application& application, const char* fileName, COLORREF color = { 0x00000000 })
+            : mMessaging(messaging)
+            , mApplication(application)
+            , mSplashWindow(fileName, color)
+        {
+            mSplashWindow.ShowSplash();
+
+            mInitEventHandle = mMessaging.Listen<yaget::comp::gs::InitEvent>([this](const auto& event)
+            {
+                {
+                    std::scoped_lock lock(mInitCounterMutex);
+                    mInitCounter = event.mItemsProcessed;
+
+                    if (!event.mText.empty())
+                    {
+                        mProgressMessage = event.mText;
+                    }
+                }
+
+
+                if (event.mNumItems != -1)
+                {
+                    mTotalItemsToPreload = event.mNumItems;
+                }
+            }, defensor::game::Messaging::DispatcherType::Logic);
+        }
+
+        void OnTick()
+        {
+            if (!mDeltaClock.IsDeltaTimePassed())
+            {
+                return;
+            }
+
+            int currentCounter = -1;
+            std::string progressMessage;
+            {
+                std::scoped_lock lock(mInitCounterMutex);
+                if (mInitCounter)
+                {
+                    currentCounter = mInitCounter->load();
+                }
+
+                progressMessage = mProgressMessage;
+            }
+
+            if (currentCounter != -1)
+            {
+                if (mLastPreloadCounter != currentCounter)
+                {
+                    mLastPreloadCounter = currentCounter;
+
+                    auto counterMessage = std::format("{}/{}", mLastPreloadCounter, mTotalItemsToPreload.load());
+                    mSplashWindow.Print(counterMessage.c_str(), yaget::Splash::TextLine::Second);
+                }
+            }
+
+            if (progressMessage != mLastProgressMessage)
+            {
+                mLastProgressMessage = progressMessage;
+                mSplashWindow.Print(mLastProgressMessage.c_str(), yaget::Splash::TextLine::First);
+            }
+        }
+
+        ~SplashScreenUpdater()
+        {
+            if (mInitEventHandle)
+            {
+                mMessaging.Remove(mInitEventHandle, defensor::game::Messaging::DispatcherType::Logic);
+                mSplashWindow.CloseSplash();
+            }
+        }
+
+    private:
+        defensor::game::Messaging& mMessaging;
+        yaget::Application& mApplication;
+        yaget::Splash mSplashWindow;
+        uint64_t mInitEventHandle{ 0 };
+        yaget::comp::gs::mt::InitCounter* mInitCounter{ nullptr };
+        yaget::comp::gs::mt::InitCounter mTotalItemsToPreload{ -1 };
+        int32_t mLastPreloadCounter{ -1 };
+        std::string mProgressMessage;
+        std::string mLastProgressMessage;
+
+        yaget::time::DeltaClock mDeltaClock{ 1.0/5.0 };
+        std::mutex mInitCounterMutex;
+    };
+
 }
 
 
@@ -159,9 +253,16 @@ int defensor::Run(const yaget::args::Options& options)
     const auto selectedAdapter = yaget::render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
     yaget::render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
 
+    std::string splashBitmapName = "c:\\Development\\zloty\\development\\Games\\Defensor\\data\\Images\\Splash.bmp";
+    //Splash splash(splashBitmapName.c_str(), COLORREF{ 0x00000000 });
+    //splash.ShowSplash();
+    //splash.Print("Testing Splash Screen", Splash::TextLine::First);
+
     game::Messaging messaging{};
     Mappers mappers(app.VTS());
 
-    auto returnResult = comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app);
+    SplashScreenUpdater splashScreenUpdater(messaging, app, splashBitmapName.c_str(), COLORREF{ 0x00000000 });
+
+    auto returnResult = comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app, [&splashScreenUpdater]() { splashScreenUpdater.OnTick(); });
     return returnResult;
 }

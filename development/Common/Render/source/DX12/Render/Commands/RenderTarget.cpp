@@ -133,6 +133,18 @@ namespace
         return renderTargetResource;
     }
 
+
+    bool IsRenderTargetSupported(ID3D12Device* mDevice, DXGI_FORMAT renderFormat)
+    {
+        D3D12_FEATURE_DATA_FORMAT_SUPPORT formatSupport = { renderFormat, D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2_NONE };
+        HRESULT hr = mDevice->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(formatSupport));
+        yaget::error_handlers::ThrowOnError(hr, std::format("Could not CheckFeatureSupport for texture format: '{}'.", magic_enum::enum_name(renderFormat)).c_str());
+
+        UINT required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_RENDER_TARGET;
+        bool result = (formatSupport.Support1 & required) == required;
+        return result;
+    }
+
 }
     
 
@@ -263,13 +275,7 @@ yaget::render::commands::RenderTargetStorage::~RenderTargetStorage() = default;
 //-------------------------------------------------------------------------------------------------
 yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStorage::GetRenderTarget(const io::Tag& tag, const RenderTargetSetup& renderTargetSetup, ID3D12DescriptorHeap* depthStencilDescriptorHeap, ID3D12Resource* depthStencilResource)
 {
-    D3D12_FEATURE_DATA_FORMAT_SUPPORT formatSupport = { renderTargetSetup.mRenderFormat, D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2_NONE };
-    HRESULT hr = mDevice->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(formatSupport));
-    error_handlers::ThrowOnError(hr, std::format("Could not CheckFeatureSupport for texture format: '{}'.", magic_enum::enum_name(renderTargetSetup.mRenderFormat)).c_str());
-
-    UINT required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_RENDER_TARGET;
-    auto result = (formatSupport.Support1 & required) == required;
-    if (!result)
+    if (!IsRenderTargetSupported(mDevice, renderTargetSetup.mRenderFormat))
     {
         YLOG_ERROR("REND", std::format("Render Target format: '{}' does not support required features.", magic_enum::enum_name(renderTargetSetup.mRenderFormat)).c_str());
         return {};
@@ -342,7 +348,7 @@ yaget::render::commands::RenderTarget* yaget::render::commands::RenderTargetStor
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::commands::RenderTargetStorage::Preload(const io::Tags& tags, std::atomic_uint32_t& counter)
+void yaget::render::commands::RenderTargetStorage::Preload(const io::Tags& tags, comp::gs::mt::InitCounter& counter)
 {
     for (const auto& tag: tags)
     {

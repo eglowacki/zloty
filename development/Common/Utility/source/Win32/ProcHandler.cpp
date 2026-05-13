@@ -420,6 +420,8 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
     YLOG_INFO("WIN", "Requested surface: '%s', Resolution: (%dx%d)", AppearanceNames[static_cast<int>(mActiveAppearance)], windowAppearance.mResX, windowAppearance.mResY);
     SetWindowText(winH, CreateWindowTitle(mWindowTitle, windowAppearance.mResX, windowAppearance.mResY).c_str());
 
+    //ShowWindow(mWindowHandle, SW_HIDE);
+
     mProcessMessage = [this](auto&&... params){ return onMessage(params...); };
 }
 
@@ -606,6 +608,10 @@ void yaget::app::ProcHandler::SaveAppearance() const
 bool yaget::app::ProcHandler::IsSuspended() const
 {
     return mReflectedState.mSuspended;
+}
+
+void yaget::app::ProcHandler::ShowWindow(bool /*show*/)
+{
 }
 
 /*static*/ LRESULT CALLBACK yaget::app::ProcHandler::WindowCallback(HWND hWnd, uint32_t message, uint64_t wParam, int64_t lParam)

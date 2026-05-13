@@ -213,7 +213,7 @@ void defensor::render::RenderSystem::PreloadAssets()
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mApp.VTS();
 
-    std::atomic_uint32_t counter{ 0 };
+    comp::gs::mt::InitCounter counter{ 0 };
 
     const Section renderTargetsSection("RenderTargets");
     auto renderTargetsTags = vts.GetTags(renderTargetsSection);
@@ -237,7 +237,8 @@ void defensor::render::RenderSystem::PreloadAssets()
     auto sceneItemsTags = vts.GetTags(sceneItemsSection);
 
     auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + geometryTags.size() + textureTags.size() + materialTags.size() + sceneItemsTags.size();
-    numAssetsToLoad;
+
+    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading" }, Messaging::DispatcherType::Logic);
 
     //---------------------------------------------------------------------------------
     mRenderTargetStorage.Preload(renderTargetsTags, counter);
@@ -259,9 +260,10 @@ void defensor::render::RenderSystem::PreloadAssets()
     mSceneItemsStorage.Preload(sceneItemsTags);
 
     //---------------------------------------------------------------------------------
-    platform::Sleep(1, time::kSecondUnit);
+    platform::Sleep(2, time::kSecondUnit);
 
     mMessaging.Queue(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = nullptr, .mText = "Preloading" }, Messaging::DispatcherType::Logic);
 
     SetTickEnabled(true);
 }
@@ -384,7 +386,7 @@ void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windo
     }
     else if (resizeState == yaget::render::DeviceB::ResizeState::Set)
     {
-        std::atomic_uint32_t counter{ 0 };
+        comp::gs::mt::InitCounter counter{ 0 };
 
         const Section renderTargetsSection("RenderTargets");
         auto renderTargetsTags = mApp.VTS().GetTags(renderTargetsSection);

@@ -138,6 +138,7 @@
     <ClCompile Include="..\source\TestHelpers\TestHelpers.cpp" />
     <ClCompile Include="..\source\ThreadModel\JobPool.cpp" />
     <ClCompile Include="..\source\ThreadModel\JobProcessor.cpp" />
+    <ClCompile Include="..\source\Time\DeltaClock.cpp" />
     <ClCompile Include="..\source\Time\GameClock.cpp" />
     <ClCompile Include="..\source\TinyXml\tinystr.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -279,6 +280,7 @@
     <ClInclude Include="..\include\ThreadModel\JobPool.h" />
     <ClInclude Include="..\include\ThreadModel\JobProcessor.h" />
     <ClInclude Include="..\include\ThreadModel\Variables.h" />
+    <ClInclude Include="..\include\Time\DeltaClock.h" />
     <ClInclude Include="..\include\Time\GameClock.h" />
     <ClInclude Include="..\include\tinystr.h" />
     <ClInclude Include="..\include\tinyxml.h" />

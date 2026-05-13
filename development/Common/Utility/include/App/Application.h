@@ -83,6 +83,8 @@ namespace yaget
 
         virtual app::DisplaySurface GetSurface() const = 0;
 
+        virtual void ShowWindow(bool show) = 0;
+
     protected:
         Application(const std::string& title, items::Director& director, io::VirtualTransportSystem& vts, const args::Options& options);
 
