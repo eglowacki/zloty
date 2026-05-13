@@ -296,7 +296,8 @@ bool yaget::Splash::MakeTransparent() const
         //  set layered style for the window
         SetWindowLong(mWindowHandle, GWL_EXSTYLE, GetWindowLong(mWindowHandle, GWL_EXSTYLE) | WS_EX_LAYERED);
         //  call it with 0 alpha for the given color
-        g_pSetLayeredWindowAttributes(mWindowHandle, mColorTransparance, 0, LWA_COLORKEY);
+        uint8_t alphaValue = (mColorTransparance >> 24) & 0xFF;
+        g_pSetLayeredWindowAttributes(mWindowHandle, mColorTransparance, alphaValue, LWA_ALPHA);//LWA_COLORKEY);
     }
     return true;
 }
