@@ -57,13 +57,13 @@ yaget::io::Buffer yaget::render::RenderTextures::GetTexture(const io::Tag& tag)
                  yaget::conv::ToString(tag.mGuid).c_str(),
                  yaget::conv::ToString(tag).c_str());
 
-    auto result = GetTextures(io::Tags{ tag });
+    auto result = GetTextures(io::Tags{ tag }, nullptr);
     return !result.empty() ? *result.begin() : io::Buffer{};
 }
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::io::Buffer> yaget::render::RenderTextures::GetTextures(const io::Tags& tags)
+std::vector<yaget::io::Buffer> yaget::render::RenderTextures::GetTextures(const io::Tags& tags, comp::gs::mt::InitCounter* counter)
 {
     std::vector<io::Buffer> results;
 
@@ -83,6 +83,11 @@ std::vector<yaget::io::Buffer> yaget::render::RenderTextures::GetTextures(const 
             return cachedData;
         });
 
+        if (counter)
+        {
+            ++(*counter);
+        }
+
         results.push_back(result);
     }
 
@@ -91,9 +96,9 @@ std::vector<yaget::io::Buffer> yaget::render::RenderTextures::GetTextures(const 
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderTextures::Preload(const io::Tags& tags)
+void yaget::render::RenderTextures::Preload(const io::Tags& tags, comp::gs::mt::InitCounter& counter)
 {
-    GetTextures(tags);
+    GetTextures(tags, &counter);
 }
 
 
@@ -152,7 +157,7 @@ std::vector<ID3D12DescriptorHeap*> yaget::render::TextureResources::GetResourceV
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<ID3D12Resource*> yaget::render::TextureResources::GetResources(const io::Tags& tags)
+std::vector<ID3D12Resource*> yaget::render::TextureResources::GetResources(const io::Tags& tags, comp::gs::mt::InitCounter* counter)
 {
     std::vector<ID3D12Resource*> results;
     io::Tags tagsToLoad;
@@ -163,6 +168,12 @@ std::vector<ID3D12Resource*> yaget::render::TextureResources::GetResources(const
             if (auto it = mResources.find(tag); it != mResources.end())
             {
                 results.push_back(it->second.mResource.Get());
+
+                if (counter)
+                {
+                    ++(*counter);
+                }
+
                 continue;
             }
 
@@ -188,6 +199,10 @@ std::vector<ID3D12Resource*> yaget::render::TextureResources::GetResources(const
         if (auto it = mResources.find(tag); it != mResources.end())
         {
             results.push_back(it->second.mResource.Get());
+            if (counter)
+            {
+                ++(*counter);
+            }
             continue;
         }
 
@@ -238,6 +253,10 @@ std::vector<ID3D12Resource*> yaget::render::TextureResources::GetResources(const
 
         mResources.insert({ tag, ResourceData{ unique_obj<D3D12MA::Allocation>{ allocation }, texture, srvHeap } });
         results.push_back(texture);
+        if (counter)
+        {
+            ++(*counter);
+        }
     }
 
     framerHandler.EndFrame();
@@ -255,15 +274,15 @@ void yaget::render::TextureResources::AttachRenderTarget(const io::Tag& tag, con
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::TextureResources::Preload(const io::Tags& tags)
+void yaget::render::TextureResources::Preload(const io::Tags& tags, comp::gs::mt::InitCounter& counter)
 {
-    GetResources(tags);
+    GetResources(tags, &counter);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 ID3D12Resource* yaget::render::TextureResources::GetResource(const io::Tag& tag)
 {
-    auto resources = GetResources(io::Tags{ tag });
+    auto resources = GetResources(io::Tags{ tag }, nullptr);
     return !resources.empty() ? *resources.begin() : nullptr;
 }

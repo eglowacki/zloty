@@ -118,11 +118,11 @@ namespace yaget::render::scene
         ~SceneItemsStorage();
 
         SceneItem* GetSceneItem(const io::Tag& tag);
-        std::vector<SceneItem*> GetSceneItems(const io::Tags& tags);
+        std::vector<SceneItem*> GetSceneItems(const io::Tags& tags, comp::gs::mt::InitCounter* counter);
 
         static void SortSceneItems(std::vector<SceneItem*>& sceneItems);
 
-        void Preload(const io::Tags& tags);
+        void Preload(const io::Tags& tags, comp::gs::mt::InitCounter& counter);
         void ResetAll(const app::WindowFrame& windowFrame);
 
         void ClearItem(const io::Tag& tag);

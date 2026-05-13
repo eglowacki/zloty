@@ -96,7 +96,7 @@ namespace yaget::render
         };
 
         io::Buffer GetShader(const io::Tag& tag, ShaderType shaderType);
-        std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType);
+        std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType, comp::gs::mt::InitCounter* counter);
 
         void Preload(const io::Tags& tags, ShaderType shaderType, comp::gs::mt::InitCounter& counter);
 

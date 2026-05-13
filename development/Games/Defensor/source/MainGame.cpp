@@ -110,6 +110,7 @@ namespace
         yaget::io::VirtualTransportSystem& mVTS;
     };
 
+    //-------------------------------------------------------------------------------------------------
     class SplashScreenUpdater : public yaget::NoCopy
     {
     public:
@@ -124,6 +125,8 @@ namespace
             {
                 {
                     std::scoped_lock lock(mInitCounterMutex);
+
+                    mFinishedPreloading = mInitCounter && event.mItemsProcessed == nullptr;
                     mInitCounter = event.mItemsProcessed;
 
                     if (!event.mText.empty())
@@ -140,13 +143,27 @@ namespace
             }, defensor::game::Messaging::DispatcherType::Logic);
         }
 
+
+        //-------------------------------------------------------------------------------------------------
         void OnTick()
         {
+            if (mFinishedPreloading)
+            {
+                if (mInitEventHandle)
+                {
+                    mMessaging.Remove(mInitEventHandle, defensor::game::Messaging::DispatcherType::Logic);
+                    mSplashWindow.CloseSplash();
+                }
+
+                return;
+            }
+
             if (!mDeltaClock.IsDeltaTimePassed())
             {
                 return;
             }
 
+            YLOG_WARNING("DEF", "==================>> Splash screen update tick.");
             int currentCounter = -1;
             std::string progressMessage;
             {
@@ -167,6 +184,7 @@ namespace
 
                     auto counterMessage = std::format("{}/{}", mLastPreloadCounter, mTotalItemsToPreload.load());
                     mSplashWindow.Print(counterMessage.c_str(), yaget::Splash::TextLine::Second);
+                    YLOG_WARNING("DEF", "==================>> counterMessage: %s", counterMessage.c_str());
                 }
             }
 
@@ -177,6 +195,8 @@ namespace
             }
         }
 
+
+        //-------------------------------------------------------------------------------------------------
         ~SplashScreenUpdater()
         {
             if (mInitEventHandle)
@@ -193,6 +213,7 @@ namespace
         uint64_t mInitEventHandle{ 0 };
         yaget::comp::gs::mt::InitCounter* mInitCounter{ nullptr };
         yaget::comp::gs::mt::InitCounter mTotalItemsToPreload{ -1 };
+        std::atomic_bool mFinishedPreloading{ false };
         int32_t mLastPreloadCounter{ -1 };
         std::string mProgressMessage;
         std::string mLastProgressMessage;

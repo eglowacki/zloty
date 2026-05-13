@@ -154,7 +154,7 @@ namespace tinyevents
         std::queue<std::function<void(Dispatcher&)>> mQueuedDispatches;
         std::set<ListenerHandle> mListenersScheduledForRemoval;
 
-        std::uint64_t mNextListenerId = 0;
+        std::uint64_t mNextListenerId = 1;
     };
 
 

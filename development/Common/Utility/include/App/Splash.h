@@ -103,6 +103,8 @@ private:
     std::string mMessages[static_cast<size_t>(TextLine::Max)];
 
     HFONT mMessageFont = nullptr;
+
+    std::string mFileName;
 };
 
 

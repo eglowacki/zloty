@@ -148,13 +148,13 @@ yaget::render::scene::SceneItemsStorage::~SceneItemsStorage() = default;
 //-------------------------------------------------------------------------------------------------
 yaget::render::scene::SceneItem* yaget::render::scene::SceneItemsStorage::GetSceneItem(const io::Tag& tag)
 {
-    auto resources = GetSceneItems(io::Tags{ tag });
+    auto resources = GetSceneItems(io::Tags{ tag }, nullptr);
     return !resources.empty() ? *resources.begin() : nullptr;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsStorage::GetSceneItems(const io::Tags& tags)
+std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsStorage::GetSceneItems(const io::Tags& tags, comp::gs::mt::InitCounter* counter)
 {
     std::vector<SceneItem*> results;
 
@@ -166,6 +166,10 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
             if (auto it = mItems.find(tag); it != mItems.end())
             {
                 results.push_back(&it->second);
+                if (counter)
+                {
+                    ++(*counter);
+                }
                 continue;
             }
         }
@@ -175,6 +179,10 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         if (auto it = mItems.find(tag); it != mItems.end())
         {
             results.push_back(&it->second);
+            if (counter)
+            {
+                ++(*counter);
+            }
             continue;
         }
 
@@ -211,6 +219,10 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         std::ranges::copy(texturesTags.begin(), texturesTags.end(), std::back_inserter(sceneItem.mTags.mTexturesTags));
 
         results.push_back(&sceneItem);
+        if (counter)
+        {
+            ++(*counter);
+        }
     }
 
     return results;
@@ -228,9 +240,9 @@ void yaget::render::scene::SceneItemsStorage::SortSceneItems(std::vector<SceneIt
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::scene::SceneItemsStorage::Preload(const io::Tags& tags)
+void yaget::render::scene::SceneItemsStorage::Preload(const io::Tags& tags, comp::gs::mt::InitCounter& counter)
 {
-    GetSceneItems(tags);
+    GetSceneItems(tags, &counter);
 }
 
 

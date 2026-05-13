@@ -188,27 +188,32 @@ yaget::io::Buffer yaget::render::RenderShaders::GetShader(const io::Tag& tag, Sh
 {
     YAGET_ASSERT(tag.IsValid(), "Tag: '%s:%s' is not valid.", yaget::conv::Convertor<yaget::Guid>::ToString(tag.mGuid).c_str(),
                  yaget::conv::Convertor<yaget::io::Tag>::ToString(tag).c_str());
-    auto result = GetShaders(io::Tags{ tag }, shaderType);
+    auto result = GetShaders(io::Tags{ tag }, shaderType, nullptr);
     return !result.empty() ? *result.begin() : io::Buffer{};
 }
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::io::Buffer> yaget::render::RenderShaders::GetShaders(const io::Tags& tags, ShaderType shaderType)
+std::vector<yaget::io::Buffer> yaget::render::RenderShaders::GetShaders(const io::Tags& tags, ShaderType shaderType, comp::gs::mt::InitCounter* counter)
 {
     std::lock_guard mutexLocker(mMutex);
-    std::vector<io::Buffer> results = tags | std::views::transform([this, shaderType](const auto& tag)
+    std::vector<io::Buffer> results = tags | std::views::transform([this, shaderType, counter](const auto& tag)
     {
-        return AssureShaderNonMT(tag, shaderType);
+        auto buffer = AssureShaderNonMT(tag, shaderType);
+        if (counter)
+        {
+            ++(*counter);
+        }
+        return buffer;
     }) | std::ranges::to<std::vector>();
     return results;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderShaders::Preload(const io::Tags& tags, ShaderType shaderType, comp::gs::mt::InitCounter& /*counter*/)
+void yaget::render::RenderShaders::Preload(const io::Tags& tags, ShaderType shaderType, comp::gs::mt::InitCounter& counter)
 {
-    GetShaders(tags, shaderType);
+    GetShaders(tags, shaderType, &counter);
 }
 
 

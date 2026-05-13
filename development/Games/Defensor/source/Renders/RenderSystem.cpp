@@ -236,28 +236,41 @@ void defensor::render::RenderSystem::PreloadAssets()
     const Section sceneItemsSection("SceneItems");
     auto sceneItemsTags = vts.GetTags(sceneItemsSection);
 
-    auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + geometryTags.size() + textureTags.size() + materialTags.size() + sceneItemsTags.size();
+    auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + (geometryTags.size() * 2) + (textureTags.size() * 2) + materialTags.size() + sceneItemsTags.size();
 
-    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading" }, Messaging::DispatcherType::Logic);
+    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Render Targets..." }, Messaging::DispatcherType::Logic);
 
     //---------------------------------------------------------------------------------
     mRenderTargetStorage.Preload(renderTargetsTags, counter);
+    platform::Sleep(2, time::kSecondUnit);
 
+    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Shaders..." }, Messaging::DispatcherType::Logic);
     mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex, counter);
     mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel, counter);
+    platform::Sleep(2, time::kSecondUnit);
 
-    mRenderGeometries.Preload(geometryTags);
-    mGeometryResources.Preload(geometryTags);
+    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Geometries..." }, Messaging::DispatcherType::Logic);
+    mRenderGeometries.Preload(geometryTags, counter);
+    mGeometryResources.Preload(geometryTags, counter);
+    platform::Sleep(2, time::kSecondUnit);
 
-    mRenderTextures.Preload(textureTags);
-    mTextureResources.Preload(textureTags);
+    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Textures..." }, Messaging::DispatcherType::Logic);
+    mRenderTextures.Preload(textureTags, counter);
+    mTextureResources.Preload(textureTags, counter);
+    platform::Sleep(2, time::kSecondUnit);
 
+    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Materials..." }, Messaging::DispatcherType::Logic);
     auto materials = mRenderMaterials.GetMaterials(materialTags);
     for (const auto& [material, matTag] : std::views::zip(materials, materialTags))
     {
         RebindMaterial(matTag, material);
+        ++counter;
     }
-    mSceneItemsStorage.Preload(sceneItemsTags);
+    platform::Sleep(2, time::kSecondUnit);
+
+    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Items..." }, Messaging::DispatcherType::Logic);
+    mSceneItemsStorage.Preload(sceneItemsTags, counter);
+    platform::Sleep(2, time::kSecondUnit);
 
     //---------------------------------------------------------------------------------
     platform::Sleep(2, time::kSecondUnit);
@@ -394,6 +407,6 @@ void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windo
 
         const Section sceneItemsSection("SceneItems");
         auto sceneItemsTags = mApp.VTS().GetTags(sceneItemsSection);
-        mSceneItemsStorage.Preload(sceneItemsTags);
+        mSceneItemsStorage.Preload(sceneItemsTags, counter);
     }
 }

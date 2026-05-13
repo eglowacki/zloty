@@ -61,7 +61,7 @@ LRESULT CALLBACK yaget::Splash::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 void yaget::Splash::Print(const char* message, TextLine line)
 {
     mMessages[static_cast<size_t>(line)] = message;
-    InvalidateRgn(mWindowHandle, nullptr, false);
+    InvalidateRgn(mWindowHandle, nullptr, true);
     UpdateWindow(mWindowHandle);
 }
 
@@ -83,18 +83,20 @@ void yaget::Splash:: OnPaint(HWND hwnd)
     GetClientRect(mWindowHandle, &rect);
     
     HDC hMemDC      = CreateCompatibleDC(hDC);
+
     HBITMAP hOldBmp = (HBITMAP)SelectObject(hMemDC, mBitmap);
+
+    BitBlt(hDC, 0, 0, mWidth, mHeight, hMemDC, 0, 0, SRCCOPY);
 
     for (auto i = 0; i < static_cast<size_t>(TextLine::Max); ++i)
     {
         const auto& message = mMessages[i];
         if (!message.empty())
         {
-            PrintText(hMemDC, message.c_str(), static_cast<TextLine>(i));
+            PrintText(hDC, message.c_str(), static_cast<TextLine>(i));
         }
     }
     
-    BitBlt(hDC, 0, 0, mWidth, mHeight, hMemDC, 0, 0, SRCCOPY);
     SelectObject(hMemDC, hOldBmp);
     DeleteDC(hMemDC);
     
@@ -113,15 +115,16 @@ void yaget::Splash::PrintText(HDC hMemDC, const char* message, TextLine line)
 
     SetTextColor(hMemDC, RGB(0, 0, 0));
     RECT textRect2{ textHorizontalOffset + textShadowOffset, mHeight - (textBottomOffset + textHeight - textShadowOffset), mWidth - (textHorizontalOffset - textShadowOffset), mHeight - (textBottomOffset - textShadowOffset)};
-    DrawText(hMemDC, message, -1, &textRect2, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
     SetBkMode(hMemDC, TRANSPARENT);
+    DrawText(hMemDC, message, -1, &textRect2, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     SetTextColor(hMemDC, RGB(255, 0, 0));
     RECT textRect1{ textHorizontalOffset, mHeight - (textBottomOffset + textHeight), mWidth - textHorizontalOffset, mHeight - textBottomOffset };
-    DrawText(hMemDC, message, -1, &textRect1, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
     SetBkMode(hMemDC, TRANSPARENT);
+    DrawText(hMemDC, message, -1, &textRect1, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     SelectObject(hMemDC, originalFont);
+    SetBkMode(hMemDC, OPAQUE);
 }
 
 void yaget::Splash::Init()
@@ -154,6 +157,7 @@ yaget::Splash::Splash()
 }
 
 yaget::Splash::Splash(const char* fileName, COLORREF colTrans)
+    : mFileName{fileName}
 {
     if (!yaget::dev::CurrentConfiguration().mDebug.mFlags.SuppressUI)
     {
