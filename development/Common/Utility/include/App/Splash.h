@@ -25,7 +25,7 @@ namespace yaget
     {
     public:
         Splash();
-        Splash(const std::string& fileName, COLORREF colTrans);
+        Splash(const std::string& fileName, COLORREF colTrans, RECT monitorRect);
         ~Splash();
 
         enum class TextLine
@@ -56,6 +56,7 @@ namespace yaget
 
         void PrintText(HDC hDC, const char* message, TextLine line);
 
+        RECT mMonitorRect;
         COLORREF mColorTransparance = 0;
         DWORD mWidth = 0;
         DWORD mHeight = 0;

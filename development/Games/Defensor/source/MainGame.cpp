@@ -110,6 +110,19 @@ namespace
         yaget::io::VirtualTransportSystem& mVTS;
     };
 
+
+    //-------------------------------------------------------------------------------------------------
+    RECT GetActiveMonitorSize(const yaget::Application& application)
+    {
+        auto surface = application.GetSurface();
+        auto appWindowHandle = surface.Handle<HWND>();
+        const yaget::app::SysDisplays sysDisplays;
+        const auto primary = sysDisplays.FindNearest(appWindowHandle);
+        auto primaryRect = *primary.GetRect();
+        return primaryRect;
+    }
+
+
     //-------------------------------------------------------------------------------------------------
     class SplashScreenUpdater : public yaget::NoCopy
     {
@@ -117,7 +130,7 @@ namespace
         SplashScreenUpdater(defensor::game::Messaging& messaging, yaget::Application& application, const std::string& fileName, COLORREF color = { 0x00000000 })
             : mMessaging(messaging)
             , mApplication(application)
-            , mSplashWindow(yaget::util::ExpendEnv(fileName, nullptr), color)
+            , mSplashWindow(yaget::util::ExpendEnv(fileName, nullptr), color, GetActiveMonitorSize(mApplication))
         {
             mSplashWindow.ShowSplash();
 

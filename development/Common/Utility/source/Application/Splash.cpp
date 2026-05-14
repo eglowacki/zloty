@@ -5,6 +5,15 @@
 #include "windowsx.h"
 #include "Debugging/DevConfiguration.h"
 
+
+namespace
+{
+    bool IsMonitorRectValid(RECT monitorRect)
+    {
+        return monitorRect.right - monitorRect.left > 0 && monitorRect.bottom - monitorRect.top > 0;
+    }
+
+}
 //  ===========================================================================
 //  The following is used for layering support which is used in the 
 //  splash screen for transparency. In VC 6 these are not defined in the headers
@@ -148,7 +157,8 @@ yaget::Splash::Splash()
 
 
 //--------------------------------------------------------------------------------------------------
-yaget::Splash::Splash(const std::string& fileName, COLORREF colTrans)
+yaget::Splash::Splash(const std::string& fileName, COLORREF colTrans, RECT monitorRect)
+    : mMonitorRect(monitorRect)
 {
     if (!dev::CurrentConfiguration().mDebug.mFlags.SuppressUI)
     {
@@ -194,11 +204,23 @@ HWND yaget::Splash::RegAndCreateWindow()
         return nullptr;
     }
 
-    DWORD nScrWidth = GetSystemMetrics(SM_CXFULLSCREEN);
-    DWORD nScrHeight = GetSystemMetrics(SM_CYFULLSCREEN);
+    int x = 1;
+    int y = 1;
+    if (IsMonitorRectValid(mMonitorRect))
+    {
+        DWORD nScrWidth = ((mMonitorRect.right - mMonitorRect.left) / 2) + mMonitorRect.left;
+        DWORD nScrHeight = ((mMonitorRect.bottom - mMonitorRect.top) / 2) + mMonitorRect.top;
+        x = nScrWidth - (mWidth / 2);
+        y = nScrHeight - (mHeight / 2);
+    }
+    else
+    {
+        DWORD nScrWidth = GetSystemMetrics(SM_CXFULLSCREEN);
+        DWORD nScrHeight = GetSystemMetrics(SM_CYFULLSCREEN);
+        x = (nScrWidth - mWidth) / 2;
+        y = (nScrHeight - mHeight) / 2;
+    }
 
-    int x = (nScrWidth - mWidth) / 2;
-    int y = (nScrHeight - mHeight) / 2;
     mWindowHandle = CreateWindowEx(WS_EX_TOPMOST | WS_EX_TOOLWINDOW, mClassName,
                                    TEXT("Banner"), WS_POPUP, x, y,
                                    mWidth, mHeight, nullptr, nullptr, nullptr, this);
