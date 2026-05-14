@@ -65,9 +65,9 @@ app::DisplaySurface WindowApplication::GetSurface() const
     return app::DisplaySurface{ mWindowHandler->WinHandle(), surface };
 }
 
-void WindowApplication::ShowWindow(bool show)
+void WindowApplication::DisplayWindow(bool show)
 {
-    mWindowHandler->ShowWindow(show);
+    mWindowHandler->DisplayWindow(show);
 }
 
 

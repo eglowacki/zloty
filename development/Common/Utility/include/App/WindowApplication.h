@@ -35,7 +35,7 @@ namespace yaget
         ~WindowApplication();
 
         app::DisplaySurface GetSurface() const override;
-        void ShowWindow(bool show) override;
+        void DisplayWindow(bool show) override;
 
     protected:
         using Event = std::function<void()>;

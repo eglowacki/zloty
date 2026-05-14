@@ -152,7 +152,9 @@ namespace
                 if (mInitEventHandle)
                 {
                     mMessaging.Remove(mInitEventHandle, defensor::game::Messaging::DispatcherType::Logic);
+                    mInitEventHandle = 0;
                     mSplashWindow.CloseSplash();
+                    mApplication.DisplayWindow(true);
                 }
 
                 return;
