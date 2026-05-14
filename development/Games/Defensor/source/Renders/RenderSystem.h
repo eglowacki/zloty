@@ -71,6 +71,7 @@ namespace defensor::render
         io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTarget", .mGuid = NewGuid() };
 
         size_t mResizeCallbackId{};
+        mt::JobPool mAssetPreloader{ "AssetPreloader", 1 };
 
         yaget::render::commands::RenderPassState mCurrentRenderPassState;
 

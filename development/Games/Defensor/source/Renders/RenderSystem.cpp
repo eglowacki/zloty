@@ -58,7 +58,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mRenderPasses{ app.VTS(), GetDevice().GetWindowFrame() }
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
-    mApp.PoolThread().AddTask([this]()
+    mAssetPreloader.AddTask([this]()
     {
         PreloadAssets();
     });
@@ -242,22 +242,22 @@ void defensor::render::RenderSystem::PreloadAssets()
 
     //---------------------------------------------------------------------------------
     mRenderTargetStorage.Preload(renderTargetsTags, counter);
-    platform::Sleep(2, time::kSecondUnit);
+    //platform::Sleep(2, time::kSecondUnit);
 
     mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Shaders..." }, Messaging::DispatcherType::Logic);
     mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex, counter);
     mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel, counter);
-    platform::Sleep(2, time::kSecondUnit);
+    //platform::Sleep(2, time::kSecondUnit);
 
     mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Geometries..." }, Messaging::DispatcherType::Logic);
     mRenderGeometries.Preload(geometryTags, counter);
     mGeometryResources.Preload(geometryTags, counter);
-    platform::Sleep(2, time::kSecondUnit);
+    //platform::Sleep(2, time::kSecondUnit);
 
     mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Textures..." }, Messaging::DispatcherType::Logic);
     mRenderTextures.Preload(textureTags, counter);
     mTextureResources.Preload(textureTags, counter);
-    platform::Sleep(2, time::kSecondUnit);
+    //platform::Sleep(2, time::kSecondUnit);
 
     mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Materials..." }, Messaging::DispatcherType::Logic);
     auto materials = mRenderMaterials.GetMaterials(materialTags);
@@ -266,14 +266,14 @@ void defensor::render::RenderSystem::PreloadAssets()
         RebindMaterial(matTag, material);
         ++counter;
     }
-    platform::Sleep(2, time::kSecondUnit);
+    //platform::Sleep(2, time::kSecondUnit);
 
     mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Items..." }, Messaging::DispatcherType::Logic);
     mSceneItemsStorage.Preload(sceneItemsTags, counter);
-    platform::Sleep(2, time::kSecondUnit);
+    //platform::Sleep(2, time::kSecondUnit);
 
     //---------------------------------------------------------------------------------
-    platform::Sleep(2, time::kSecondUnit);
+    platform::Sleep(5, time::kSecondUnit);
 
     mMessaging.Queue(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
     mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = nullptr, .mText = "Preloading" }, Messaging::DispatcherType::Logic);

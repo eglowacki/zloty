@@ -32,7 +32,7 @@ namespace yaget::mt
 
         struct Holder 
         { 
-            Holder(const std::string& threadName, PopNextTask_t&& popNextTask); 
+            Holder(const std::string& threadName, PopNextTask_t&& popNextTask, bool allowTaskToFinish); 
             void StartProcessing(); 
 
             void Clear();
@@ -44,7 +44,7 @@ namespace yaget::mt
             std::shared_ptr<JobProcessor> mClearedProcessor; 
         }; 
 
-        JobProcessor(const std::string& threadName, PopNextTask_t&& popNextTask); 
+        JobProcessor(const std::string& threadName, PopNextTask_t&& popNextTask, bool allowTaskToFinish); 
         ~JobProcessor(); 
         void operator()(PopNextTask_t popNextTask); 
 
@@ -53,6 +53,7 @@ namespace yaget::mt
     private: 
         bool mQuit = false; 
         const std::string mThreadName; 
+        bool mAllowTaskToFinish;
 
         std::thread mThread; 
         std::atomic_bool mTaskInProgress{ true }; 
