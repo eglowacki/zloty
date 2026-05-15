@@ -58,6 +58,11 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mRenderPasses{ app.VTS(), GetDevice().GetWindowFrame() }
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
+    if (mApp.Input().IsAction("Quit App"))
+    {
+        mApp.Input().RegisterSimpleActionCallback("Quit App", [this]() { mApplicationQuiting = true; });
+    }
+
     mAssetPreloader.AddTask([this]()
     {
         PreloadAssets();
@@ -238,45 +243,69 @@ void defensor::render::RenderSystem::PreloadAssets()
 
     auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + (geometryTags.size() * 2) + (textureTags.size() * 2) + materialTags.size() + sceneItemsTags.size();
 
-    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Render Targets..." }, Messaging::DispatcherType::Logic);
-
+    constexpr auto sleepTime = 2;
     //---------------------------------------------------------------------------------
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Render Targets...", renderTargetsTags.size()) }, Messaging::DispatcherType::Logic);
     mRenderTargetStorage.Preload(renderTargetsTags, counter);
-    //platform::Sleep(2, time::kSecondUnit);
+    platform::Sleep(sleepTime, time::kSecondUnit);
 
-    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Shaders..." }, Messaging::DispatcherType::Logic);
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Shaders...", vertexShaderTags.size() + pixelShaderTags.size()) }, Messaging::DispatcherType::Logic);
     mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex, counter);
     mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel, counter);
-    //platform::Sleep(2, time::kSecondUnit);
+    platform::Sleep(sleepTime, time::kSecondUnit);
 
-    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Geometries..." }, Messaging::DispatcherType::Logic);
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Geometries...", geometryTags.size() * 2) }, Messaging::DispatcherType::Logic);
     mRenderGeometries.Preload(geometryTags, counter);
     mGeometryResources.Preload(geometryTags, counter);
-    //platform::Sleep(2, time::kSecondUnit);
+    platform::Sleep(sleepTime, time::kSecondUnit);
 
-    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Textures..." }, Messaging::DispatcherType::Logic);
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Textures...", textureTags.size() * 2) }, Messaging::DispatcherType::Logic);
     mRenderTextures.Preload(textureTags, counter);
     mTextureResources.Preload(textureTags, counter);
-    //platform::Sleep(2, time::kSecondUnit);
+    platform::Sleep(sleepTime, time::kSecondUnit);
 
-    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Materials..." }, Messaging::DispatcherType::Logic);
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Materials...", materialTags.size()) }, Messaging::DispatcherType::Logic);
     auto materials = mRenderMaterials.GetMaterials(materialTags);
     for (const auto& [material, matTag] : std::views::zip(materials, materialTags))
     {
         RebindMaterial(matTag, material);
         ++counter;
     }
-    //platform::Sleep(2, time::kSecondUnit);
+    platform::Sleep(sleepTime, time::kSecondUnit);
 
-    mMessaging.Queue(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = "Preloading Items..." }, Messaging::DispatcherType::Logic);
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Items...", sceneItemsTags.size()) }, Messaging::DispatcherType::Logic);
     mSceneItemsStorage.Preload(sceneItemsTags, counter);
-    //platform::Sleep(2, time::kSecondUnit);
+    platform::Sleep(sleepTime, time::kSecondUnit);
 
+    if (mApplicationQuiting)
+    {
+        return;
+    }
     //---------------------------------------------------------------------------------
-    platform::Sleep(5, time::kSecondUnit);
+    platform::Sleep(sleepTime, time::kSecondUnit);
 
-    mMessaging.Queue(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
-    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = nullptr, .mText = "Preloading" }, Messaging::DispatcherType::Logic);
+    mMessaging.Dispatch(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = nullptr, .mText = "Finished Preloading" }, Messaging::DispatcherType::Logic);
 
     SetTickEnabled(true);
 }
