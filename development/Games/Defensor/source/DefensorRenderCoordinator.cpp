@@ -11,7 +11,18 @@ defensor::render::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messagi
     AddComponent<SceneComponent>(comp::GLOBAL_ID_MARKER);
 }
 
+
+//-------------------------------------------------------------------------------------------------
 defensor::render::DefensorSystemsCoordinator::~DefensorSystemsCoordinator()
 {
     mApplication.Device().Shutdown();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void defensor::render::DefensorSystemsCoordinator::Tick(const time::GameClock& gameClock, metrics::Channel& channel)
+{
+    mMessaging.Process(Messaging::DispatcherType::Render);
+
+    SystemsCoordinator::Tick(gameClock, channel);
 }

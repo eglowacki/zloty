@@ -53,6 +53,7 @@
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</InlineFunctionExpansion>
     </ClCompile>
     <ClCompile Include="..\source\GameSystem\Messaging.cpp" />
+    <ClCompile Include="..\source\GameSystem\tinyevents\tinyevents.cpp" />
     <ClCompile Include="..\source\IdGameCache.cpp" />
     <ClCompile Include="..\source\ImageLoaders\ImageProcessor.cpp" />
     <ClCompile Include="..\source\InputDevice.cpp" />
@@ -137,6 +138,7 @@
     <ClCompile Include="..\source\TestHelpers\TestHelpers.cpp" />
     <ClCompile Include="..\source\ThreadModel\JobPool.cpp" />
     <ClCompile Include="..\source\ThreadModel\JobProcessor.cpp" />
+    <ClCompile Include="..\source\Time\DeltaClock.cpp" />
     <ClCompile Include="..\source\Time\GameClock.cpp" />
     <ClCompile Include="..\source\TinyXml\tinystr.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -214,6 +216,7 @@
     <ClInclude Include="..\include\Debugging\DevConfigurationParsers.h" />
     <ClInclude Include="..\include\Exception\Exception.h" />
     <ClInclude Include="..\include\GameSystem\Messaging.h" />
+    <ClInclude Include="..\include\GameSystem\tinyevents\tinyevents.h" />
     <ClInclude Include="..\include\HashUtilities.h" />
     <ClInclude Include="..\include\IdGameCache.h" />
     <ClInclude Include="..\include\ImageLoaders\ImageProcessor.h" />
@@ -277,6 +280,7 @@
     <ClInclude Include="..\include\ThreadModel\JobPool.h" />
     <ClInclude Include="..\include\ThreadModel\JobProcessor.h" />
     <ClInclude Include="..\include\ThreadModel\Variables.h" />
+    <ClInclude Include="..\include\Time\DeltaClock.h" />
     <ClInclude Include="..\include\Time\GameClock.h" />
     <ClInclude Include="..\include\tinystr.h" />
     <ClInclude Include="..\include\tinyxml.h" />

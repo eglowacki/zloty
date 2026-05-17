@@ -14,6 +14,7 @@
 //! \file
 #pragma once
 
+#include "Components/GameSystem.h"
 #include "MathFacade.h"
 #include "Render/RenderCore.h"
 #include "Streams/Buffers.h"
@@ -117,7 +118,7 @@ namespace yaget::render::commands
         // If render target exists, return it, otherwise return nullptr
         RenderTarget* FindRenderTarget(const io::Tag& tag) const;
 
-        void Preload(const io::Tags& tags);
+        void Preload(const io::Tags& tags, comp::gs::mt::InitCounter& counter);
         void ResetAll(const app::WindowFrame& windowFrame);
 
         //-------------------------------------------------------------------------------------------------

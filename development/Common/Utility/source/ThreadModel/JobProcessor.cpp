@@ -10,8 +10,8 @@
 #include "Metrics/Gather.h"
  
  
-yaget::mt::JobProcessor::Holder::Holder(const std::string& threadName, PopNextTask_t&& popNextTask) 
-    : mJobProcessor(std::make_shared<JobProcessor>(threadName, std::move(popNextTask))) 
+yaget::mt::JobProcessor::Holder::Holder(const std::string& threadName, PopNextTask_t&& popNextTask, bool allowTaskToFinish) 
+    : mJobProcessor(std::make_shared<JobProcessor>(threadName, std::move(popNextTask), allowTaskToFinish)) 
 { 
 } 
  
@@ -39,8 +39,9 @@ void yaget::mt::JobProcessor::Holder::Clear()
 } 
  
  
-yaget::mt::JobProcessor::JobProcessor(const std::string& threadName, PopNextTask_t&& popNextTask) 
+yaget::mt::JobProcessor::JobProcessor(const std::string& threadName, PopNextTask_t&& popNextTask, bool allowTaskToFinish) 
     : mThreadName(threadName) 
+    , mAllowTaskToFinish{ allowTaskToFinish }
 { 
     mPauseCondition.Trigger();
     mThread = std::thread(std::ref(*this), std::move(popNextTask));
@@ -59,12 +60,24 @@ yaget::mt::JobProcessor::~JobProcessor()
     {
         const time::TimeUnits_t maxSleepSleep = 1000000;
         const time::TimeUnits_t units = time::kMicrosecondUnit;
-        const auto result = platform::Sleep(maxSleepSleep, units, [this]()
-        {
-                return mTaskInProgress == true;
-        });
 
-        if (result == platform::SleepResult::OK)
+        platform::SleepResult sleepResult = platform::SleepResult::OK;
+        if (mAllowTaskToFinish)
+        {
+            platform::Sleep([this]()
+            {
+                return mTaskInProgress == true;
+            });
+        }
+        else
+        {
+            sleepResult = platform::Sleep(maxSleepSleep, units, [this]()
+            {
+                return mTaskInProgress == true;
+            });
+        }
+
+        if (sleepResult == platform::SleepResult::OK)
         {
             mThread.join();
         }
@@ -72,7 +85,8 @@ yaget::mt::JobProcessor::~JobProcessor()
         {
             ::TerminateThread(static_cast<HANDLE>(mThread.native_handle()), 1);
 
-            const auto message = std::format("Job '{}' killed. Task in progress exceeded time out value: '{}{}'.", mThreadName, maxSleepSleep, metrics::UnitName(units));
+            double maxSleep = time::FromTo<double>(maxSleepSleep, units, time::kSecondUnit);
+            const auto message = std::format("Job '{}' killed. Task in progress exceeded time out value: '{} {}'.", mThreadName, maxSleep, metrics::UnitName(time::kSecondUnit));
             error_handlers::Throw("MULT", message);
         }
     } 

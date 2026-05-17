@@ -12,11 +12,14 @@
 //////////////////////////////////////////////////////////////////////
 //! \file
 #pragma once
+#include "Components/GameSystem.h"
+#include "Render/Cache/CacheWatcher.h"
 #include "Render/RenderCore.h"
 #include "Streams/Buffers.h"
 #include "VTS/VirtualTransportSystem.h"
-#include "Render/Cache/CacheWatcher.h"
+
 #include <d3dx12.h> // NOTE(eg) we need to figure out how to not include this dx12 header file
+
 
 
 namespace yaget::render
@@ -93,9 +96,9 @@ namespace yaget::render
         };
 
         io::Buffer GetShader(const io::Tag& tag, ShaderType shaderType);
-        std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType);
+        std::vector<io::Buffer> GetShaders(const io::Tags& tags, ShaderType shaderType, comp::gs::mt::InitCounter* counter);
 
-        void Preload(const io::Tags& tags, ShaderType shaderType);
+        void Preload(const io::Tags& tags, ShaderType shaderType, comp::gs::mt::InitCounter& counter);
 
         void ClearCache(const io::Tag& tag);
 

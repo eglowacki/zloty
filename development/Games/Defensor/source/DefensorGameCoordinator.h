@@ -34,8 +34,6 @@ namespace defensor::game
         DefensorSystemsCoordinator(Messaging& m, Application& app);
         ~DefensorSystemsCoordinator() = default;
 
-        // only used to show off that we can override any method from base class without virtual inheritance
         void Tick(const time::GameClock& gameClock, metrics::Channel& channel);
-
     };
 }

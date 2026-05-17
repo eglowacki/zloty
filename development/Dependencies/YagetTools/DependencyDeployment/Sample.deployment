@@ -3,7 +3,7 @@
 
     "Configuration": {
         "Common": [
-            "your_file_name_to_deploy"
+            "your_file_name_to_deploy;destination_folder_suffix_optional"
         ],
         "Debug": [
             "your_file_name_to_deploy for Debug build configuration"

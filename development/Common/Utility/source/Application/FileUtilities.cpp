@@ -234,9 +234,11 @@ std::vector<yaget::io::file::FileOpResult> yaget::io::file::RemoveFiles(const St
 //-------------------------------------------------------------------------------------------------------------------------------
 yaget::io::file::FileOpResult yaget::io::file::RenameFile(const std::string& oldFileName, const std::string& newFileName)
 {
-    if (const int result = std::rename(oldFileName.c_str(), newFileName.c_str()))
+    std::error_code ec;
+    fs::rename(oldFileName, newFileName, ec);
+    if (ec)
     {
-        std::string message = std::format("Rename file from: '{}' to: '{} failed. {}", oldFileName, newFileName, std::strerror(result));
+        std::string message = std::format("Rename file from: '{}' to: '{} failed. Error Code: '{}', Message: '{}'", oldFileName, newFileName, ec.value(), ec.message());
         return { false, message };
     }
 

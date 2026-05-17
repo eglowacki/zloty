@@ -7,6 +7,8 @@
 //      New Global Item
 //      Stages
 // 'New Item' and 'New Global Item' have subtype: StageName
+// Multiply ctor parameters for a component are seperated by ;
+// Using , will make a array of those values as a parameter for the component
 
 Version: 1
 
@@ -14,21 +16,32 @@ New Item
 Name: Background
 LocationComponent3: {1.00, 2.00, 3.00};{4.00, 5.00, 6.00, 7.00};{8.00, 9.00, 10.00}
 StageName: Boot, Main Menu, Level 1, Level 2
-Material: SceneItems@SpaceBackground
+MaterialComponent: SceneItems@SpaceBackground
 
 New Item
 Name: Player
 LocationComponent3: {0.5, 0.1, 0.00};{0.00, 0.00, 0.00, 1.00};{1.00, 1.00, 1.00}
-Input: Move Left, Move Right, Shoot
-StageName: Boot
-Velocity: 
-Material: SceneItems@Defensor-Ship
+InputComponent: Move Left, Move Right, Shoot
+StageName: Level 1, Level 2
+VelocityComponent: 
+MaterialComponent: SceneItems@Defensor-Ship
 
 New Global Item
-StageComponent: Boot
+StageComponent: Boot; Replace
+
+New Global Item
+MenuComponent: MainMenu
+StageName: Main Menu, InGame Menu
+
+New Item
+Name: Menu Input
+InputComponent: Next Menu Item, Previous Menu Item, Select Menu Item
+ScriptComponent Main Menu; Menues@MainMenu
+StageName: Main Menu, InGame Menu
 
 Stages
 Boot
 Main Menu
+InGame Menu
 Level 1
 Level 2

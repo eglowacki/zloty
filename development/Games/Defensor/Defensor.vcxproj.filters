@@ -257,6 +257,9 @@
     <CopyFileToFolders Include="data\Geometry\Defensor-Bullet.geom">
       <Filter>Data Files\Geometry</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Images\Splash.bmp">
+      <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\MainGame.h">

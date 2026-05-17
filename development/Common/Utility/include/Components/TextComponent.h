@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////
 // TextComponent.h
 //
-//  Copyright 8/8/2025 Edgar Glowacki
+//  Copyright 4/27/2026 Edgar Glowacki
 //
 //  Maintained by: Edgar
 //

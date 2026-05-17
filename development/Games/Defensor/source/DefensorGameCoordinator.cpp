@@ -305,8 +305,6 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
             }
         }
 
-        auto& inputSystem = GetGameSystem<ProcessInputSystem>();
-        inputSystem.SetContext("Edit");
         app.Input().PushContext("Edit");
     }
     else
@@ -320,14 +318,10 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
                 stageComponent->SetValue<items::db_stage::Name>(startingStage);
             }
 
-            auto& inputSystem = GetGameSystem<ProcessInputSystem>();
-            inputSystem.SetContext("Game");
             app.Input().PushContext("Game");
         }
         else
         {
-            auto& inputSystem = GetGameSystem<ProcessInputSystem>();
-            inputSystem.SetContext("Edit");
             app.Input().PushContext("Edit");
         }
     }
@@ -337,5 +331,7 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
 //-------------------------------------------------------------------------------------------------
 void defensor::game::DefensorSystemsCoordinator::Tick(const time::GameClock& gameClock, metrics::Channel& channel)
 {
+    mMessaging.Process(Messaging::DispatcherType::Logic);
+
     SystemsCoordinator::Tick(gameClock, channel);
 }

@@ -59,7 +59,8 @@ namespace yaget
 
             const yaget::time::GameClock& GameClock() const { return mApplicationClock; }
 
-            app::DisplaySurface GetSurface() const override { return app::DisplaySurface{ nullptr, app::SurfaceState::Shared }; };
+            app::DisplaySurface GetSurface() const override { return app::DisplaySurface{ nullptr, app::SurfaceState::Shared }; }
+            void DisplayWindow(bool /*show*/) override {}
 
         private:
             bool onMessagePump(const time::GameClock& gameClock) override;

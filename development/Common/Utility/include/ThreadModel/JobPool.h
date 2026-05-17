@@ -39,7 +39,7 @@ namespace yaget::mt
         using Threads_t = std::map<std::string, JobProcessor::Holder>;
 
         enum class Behaviour { StartAsRun, StartAsPause };
-        JobPool(const char* poolName, uint32_t numThreads = 0, Behaviour behaviour = Behaviour::StartAsRun);
+        JobPool(const char* poolName, uint32_t numThreads = 0, Behaviour behaviour = Behaviour::StartAsRun, bool allowTaskToFinish = false);
         ~JobPool();
 
         // Allows to specify on what thread to execute the task,
@@ -108,6 +108,7 @@ namespace yaget::mt
         // if True then create threads only on demand
         const bool mDynamicThreads;
         uint32_t mMaxNumThreads;
+        bool mAllowTaskToFinish;
     };
 
     std::string GenerateNextName(const std::string& name);

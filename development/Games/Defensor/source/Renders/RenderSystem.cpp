@@ -8,6 +8,8 @@
 
 #include <ranges>
 
+extern "C" { __declspec(dllexport) extern const UINT D3D12SDKVersion = 619;}
+extern "C" { __declspec(dllexport) extern const char* D3D12SDKPath = ".\\D3D12\\"; }
 
 namespace
 {
@@ -56,9 +58,12 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     , mRenderPasses{ app.VTS(), GetDevice().GetWindowFrame() }
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
-    mFontTag.mGuid = NewGuid();
+    if (mApp.Input().IsAction("Quit App"))
+    {
+        mApp.Input().RegisterSimpleActionCallback("Quit App", [this]() { mApplicationQuiting = true; });
+    }
 
-    mApp.PoolThread().AddTask([this]()
+    mAssetPreloader.AddTask([this]()
     {
         PreloadAssets();
     });
@@ -153,9 +158,6 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             }
             else
             {
-                auto viewMatrix = renderPass.GetViewMatrix();
-                auto orthoMatrix = renderPass.GetProjectionMatrix();
-
                 for (const auto& sceneItemTag : renderPass.mSceneItemTags)
                 {
                     auto sceneItem = mSceneItemsStorage.GetSceneItem(sceneItemTag);
@@ -216,9 +218,10 @@ void defensor::render::RenderSystem::PreloadAssets()
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mApp.VTS();
 
+    comp::gs::mt::InitCounter counter{ 0 };
+
     const Section renderTargetsSection("RenderTargets");
     auto renderTargetsTags = vts.GetTags(renderTargetsSection);
-    mRenderTargetStorage.Preload(renderTargetsTags);
 
     const Section vertexShaderSection("VertexShaders");
     auto vertexShaderTags = vts.GetTags(vertexShaderSection);
@@ -226,32 +229,83 @@ void defensor::render::RenderSystem::PreloadAssets()
     const Section pixelShaderSection("PixelShaders");
     auto pixelShaderTags = vts.GetTags(pixelShaderSection);
 
-    mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex);
-    mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel);
-
     const Section geometrySection("Geometry");
     auto geometryTags = vts.GetTags(geometrySection);
-    mRenderGeometries.Preload(geometryTags);
-    mGeometryResources.Preload(geometryTags);
 
     const Section textureSection("Images");
     auto textureTags = vts.GetTags(textureSection);
-    mRenderTextures.Preload(textureTags);
-    mTextureResources.Preload(textureTags);
 
     const Section materialSection("Materials");
     auto materialTags = vts.GetTags(materialSection);
 
+    const Section sceneItemsSection("SceneItems");
+    auto sceneItemsTags = vts.GetTags(sceneItemsSection);
+
+    auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + (geometryTags.size() * 2) + (textureTags.size() * 2) + materialTags.size() + sceneItemsTags.size();
+
+    constexpr auto sleepTime = 0;
+    //---------------------------------------------------------------------------------
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Render Targets...", renderTargetsTags.size()) }, Messaging::DispatcherType::Logic);
+    mRenderTargetStorage.Preload(renderTargetsTags, counter);
+    platform::Sleep(sleepTime, time::kSecondUnit);
+
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Shaders...", vertexShaderTags.size() + pixelShaderTags.size()) }, Messaging::DispatcherType::Logic);
+    mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex, counter);
+    mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel, counter);
+    platform::Sleep(sleepTime, time::kSecondUnit);
+
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Geometries...", geometryTags.size() * 2) }, Messaging::DispatcherType::Logic);
+    mRenderGeometries.Preload(geometryTags, counter);
+    mGeometryResources.Preload(geometryTags, counter);
+    platform::Sleep(sleepTime, time::kSecondUnit);
+
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Textures...", textureTags.size() * 2) }, Messaging::DispatcherType::Logic);
+    mRenderTextures.Preload(textureTags, counter);
+    mTextureResources.Preload(textureTags, counter);
+    platform::Sleep(sleepTime, time::kSecondUnit);
+
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Materials...", materialTags.size()) }, Messaging::DispatcherType::Logic);
     auto materials = mRenderMaterials.GetMaterials(materialTags);
     for (const auto& [material, matTag] : std::views::zip(materials, materialTags))
     {
         RebindMaterial(matTag, material);
+        ++counter;
     }
-    const Section sceneItemsSection("SceneItems");
-    auto sceneItemsTags = vts.GetTags(sceneItemsSection);
-    mSceneItemsStorage.Preload(sceneItemsTags);
+    platform::Sleep(sleepTime, time::kSecondUnit);
 
-    platform::Sleep(1, time::kSecondUnit);
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Items...", sceneItemsTags.size()) }, Messaging::DispatcherType::Logic);
+    mSceneItemsStorage.Preload(sceneItemsTags, counter);
+    platform::Sleep(sleepTime, time::kSecondUnit);
+
+    if (mApplicationQuiting)
+    {
+        return;
+    }
+    //---------------------------------------------------------------------------------
+    platform::Sleep(sleepTime, time::kSecondUnit);
+
+    mMessaging.Dispatch(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = nullptr, .mText = "Finished Preloading" }, Messaging::DispatcherType::Logic);
 
     SetTickEnabled(true);
 }
@@ -374,12 +428,14 @@ void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windo
     }
     else if (resizeState == yaget::render::DeviceB::ResizeState::Set)
     {
+        comp::gs::mt::InitCounter counter{ 0 };
+
         const Section renderTargetsSection("RenderTargets");
         auto renderTargetsTags = mApp.VTS().GetTags(renderTargetsSection);
-        mRenderTargetStorage.Preload(renderTargetsTags);
+        mRenderTargetStorage.Preload(renderTargetsTags, counter);
 
         const Section sceneItemsSection("SceneItems");
         auto sceneItemsTags = mApp.VTS().GetTags(sceneItemsSection);
-        mSceneItemsStorage.Preload(sceneItemsTags);
+        mSceneItemsStorage.Preload(sceneItemsTags, counter);
     }
 }

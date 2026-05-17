@@ -30,6 +30,7 @@
 #include <queue>
 #include <mutex>
 #include <bitset>
+#include <shared_mutex>
 
 namespace yaget
 {
@@ -190,6 +191,8 @@ namespace yaget
             //! Push new context onto top of a stack and make it current
             void PushContext(const std::string& newContextName);
 
+            std::string GetCurrentContext() const;
+
             struct ContextScoper
             {
                 ContextScoper(InputDevice& inputDevice, const std::string& newContextName) : inputDevice(inputDevice)
@@ -209,8 +212,8 @@ namespace yaget
             void LoadConfigFiles(io::VirtualTransportSystem& vts);
             void ProcessRecord(const Record& record);
 
-            mutable std::mutex mActionMapMutex;     // if we never want to re-load config file during runtime, then this mutex could go away
-            mutable std::mutex mPendingInputsMutex;
+            mutable std::shared_mutex mActionMapMutex;     // if we never want to re-load config file during runtime, then this mutex could go away
+            mutable std::shared_mutex mPendingInputsMutex;
 
             struct CompareInput
             {

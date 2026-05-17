@@ -126,6 +126,7 @@ namespace yaget::app
         Appearance ActiveAppearance() const { return mActiveAppearance; }
         // Return true if current window is minimized/suspended. 
         bool IsSuspended() const;
+        void DisplayWindow(bool show) const;
 
     private:
         static LRESULT CALLBACK WindowCallback(HWND hWnd, uint32_t message, uint64_t wParam, int64_t lParam);
@@ -157,6 +158,8 @@ namespace yaget::app
 
         Appearance mActiveAppearance = Appearance::Window;
         WindowAppearances mWindowAppearances{};
+
+        std::function<void()> mShowWindow;
     };
 
 }

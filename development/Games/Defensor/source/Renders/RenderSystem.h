@@ -71,10 +71,10 @@ namespace defensor::render
         io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTarget", .mGuid = NewGuid() };
 
         size_t mResizeCallbackId{};
+        mt::JobPool mAssetPreloader{ "AssetPreloader", 1, mt::JobPool::Behaviour::StartAsRun, true };
+        std::atomic_bool mApplicationQuiting{ false };
 
         yaget::render::commands::RenderPassState mCurrentRenderPassState;
-
-        io::Tag mFontTag;
 
         // frame rate calculations
         float mFramesThisSecond = 1;

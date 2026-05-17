@@ -4,6 +4,7 @@ import os
 import filecmp
 import shutil
 import json
+from pathlib import Path
 
 deployTag = 'DEPLOY'
 # Actualy copy/move files from root/files to destination/files
@@ -14,13 +15,22 @@ def UpdateDeploymentFiles(files, roots, destination, silentPrint, test):
         sourceExist = False
         sourceFile = ""
 
+        destinationFolderSuffix = ""
+        fileTokens = file.split(";")
+        if len(fileTokens) == 2:
+            destinationFolderSuffix = fileTokens[1]
+            file = fileTokens[0]
+
         for root in roots:
             sourceFile = path.join(root, file)
             sourceExist = path.isfile(sourceFile)
             if sourceExist:
                 break
 
-        targetFile = path.join(destination, path.basename(sourceFile))
+        destinationFilePath = path.join(destination, destinationFolderSuffix)
+        Path(destinationFilePath).mkdir(parents = True, exist_ok = True)
+
+        targetFile = path.join(destinationFilePath, path.basename(sourceFile))
         targetExist = path.isfile(targetFile)
         if sourceExist and targetExist:
             isSame = filecmp.cmp(sourceFile, targetFile, shallow=True)
@@ -102,6 +112,7 @@ def main():
     parser.add_argument('-t', '--test', action='store_true', help='Run through all steps but not actully update files, useful for diagnostics, checks')
 
     args= parser.parse_args()
+
 
     if not path.isfile(args.meta):
         if path.isfile(args.meta + '.deployment'):

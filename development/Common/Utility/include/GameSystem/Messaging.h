@@ -19,6 +19,7 @@
 
 namespace yaget::comp::gs
 {
+    // NOTE(eg) it seems that we do not use this anymore
     template <typename P>
     class Messaging
     {

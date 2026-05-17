@@ -271,13 +271,13 @@ yaget::io::Buffer yaget::render::RenderGeometries::GetGeometry(const io::Tag& ta
                  yaget::conv::ToString(tag.mGuid).c_str(),
                  yaget::conv::ToString(tag).c_str());
 
-    auto result = GetGeometries(io::Tags{ tag });
+    auto result = GetGeometries(io::Tags{ tag }, nullptr);
     return !result.empty() ? *result.begin() : io::Buffer{};
 }
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::io::Buffer> yaget::render::RenderGeometries::GetGeometries(const io::Tags& tags)
+std::vector<yaget::io::Buffer> yaget::render::RenderGeometries::GetGeometries(const io::Tags& tags, comp::gs::mt::InitCounter* counter)
 {
     std::vector<io::Buffer> results;
 
@@ -285,11 +285,16 @@ std::vector<yaget::io::Buffer> yaget::render::RenderGeometries::GetGeometries(co
 
     for (auto tag : tags)
     {
-        auto result = GetAsset(tag, [this, &results](const auto& tag, auto& cachedData)
+        auto result = GetAsset(tag, [this, &results, counter](const auto& tag, auto& cachedData)
         {
             if (!io::size_data(cachedData))
             {
                 cachedData = LoadGeometry(tag);
+            }
+
+            if (counter)
+            {
+                ++(*counter);
             }
 
             return cachedData;
@@ -303,9 +308,9 @@ std::vector<yaget::io::Buffer> yaget::render::RenderGeometries::GetGeometries(co
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderGeometries::Preload(const io::Tags& tags)
+void yaget::render::RenderGeometries::Preload(const io::Tags& tags, comp::gs::mt::InitCounter& counter)
 {
-    GetGeometries(tags);
+    GetGeometries(tags, &counter);
 }
 
 
@@ -393,7 +398,7 @@ yaget::render::GeometriesResources::~GeometriesResources() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::GeometriesResources::GetResources(const io::Tags& tags)
+std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::GeometriesResources::GetResources(const io::Tags& tags, comp::gs::mt::InitCounter* counter)
 {
     std::vector<GeometryData> results;
     io::Tags tagsToLoad;
@@ -404,6 +409,10 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
             if (auto geometryData = FindGeometryData(tag); geometryData.mHeader.IsValid())
             {
                 results.push_back(geometryData);
+                if (counter)
+                {
+                    ++(*counter);
+                }
                 continue;
             }
 
@@ -429,13 +438,17 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
         if (auto geometryData = FindGeometryData(tag); geometryData.mHeader.IsValid())
         {
             results.push_back(geometryData);
+            if (counter)
+            {
+                ++(*counter);
+            }
             continue;
         }
 
         auto geometryBuffer = mRenderGeometries.GetGeometry(tag);
         if (!io::size_data(geometryBuffer))
         {
-            // this should not happen here, since the mRenderGeometries.GetGeometry weill always return valid buffer.
+            // this should not happen here, since the mRenderGeometries.GetGeometry will always return valid buffer.
             // It will use placeholder geometry if tag does not exist.
             YAGET_ASSERT(false, "Could not find geometry data for tag: '%s'.", yaget::conv::ToString(tag).c_str());
             continue;
@@ -524,6 +537,10 @@ std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::Geo
 
             mResources.insert({ tag, std::move(resourceData) });
             results.push_back(geometryData);
+            if (counter)
+            {
+                ++(*counter);
+            }
         }
     }
 
@@ -575,9 +592,9 @@ void yaget::render::GeometriesResources::ClearResource(const io::Tag& tag)
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::GeometriesResources::Preload(const io::Tags& tags)
+void yaget::render::GeometriesResources::Preload(const io::Tags& tags, comp::gs::mt::InitCounter& counter)
 {
-    GetResources(tags);
+    GetResources(tags, &counter);
 }
 
 
@@ -604,6 +621,6 @@ yaget::render::GeometriesResources::GeometryData yaget::render::GeometriesResour
 //-------------------------------------------------------------------------------------------------
 yaget::render::GeometriesResources::GeometryData yaget::render::GeometriesResources::GetResource(const io::Tag& tag)
 {
-    auto resources = GetResources(io::Tags{ tag });
+    auto resources = GetResources(io::Tags{ tag }, nullptr);
     return !resources.empty() ? *resources.begin() : GeometryData{};
 }

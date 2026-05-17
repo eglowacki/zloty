@@ -188,7 +188,7 @@ namespace yaget::comp
 
 
     template<typename T>
-    concept has_component_types = requires (T t) { {t.GetStorage()}; };
+    concept is_component_persistent = requires (T t) { {t.GetStorage()}; };
 
     //template<char ...C>
     //requires (sizeof...(C)%2 == 0)
@@ -393,7 +393,7 @@ namespace yaget::comp
 
             C* component{};
 
-            if constexpr (has_component_types<C>)
+            if constexpr (is_component_persistent<C>)
             {
                 bool result = false;
                 auto parameters = mDirector->LoadComponentState<C>(id, &result);;
@@ -457,11 +457,6 @@ namespace yaget::comp
 
                 if (!coordinatorFound)
                 {
-                    C* foo{};
-                    foo;
-                    int z = 0;
-                    z;
-
                     if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
                     {
                         auto& coordinator = GetCoordinator<coordinatorIndex>();
@@ -508,9 +503,6 @@ namespace yaget::comp
             meta::for_each_type<TT>([this, &result, id]<typename T0>(const T0&)
             {
                 using BaseType = meta::strip_qualifiers_t<T0>;
-
-                BaseType* foo{};
-                foo;
                 RemoveComponent<BaseType>(id);
             });
 

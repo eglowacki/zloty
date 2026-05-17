@@ -6,54 +6,26 @@
         "Flags": "ButtonDown",
         "Value": "ESC"
     },
-    "New Game": {
-        "Action": "New Game",
-        "ContextName": "Menu",
-        "DisplayName": "N",
+    "Next Menu Item": {
+        "Action": "Next Menu Item",
+        "ContextName": "Main Menu",
+        "DisplayName": "Arrow Down",
         "Flags": "ButtonDown",
-        "Value": "N"
+        "Value": "ArrowDown"
     },
-    "Load Game": {
-        "Action": "Load Game",
-        "ContextName": "Menu",
-        "DisplayName": "L",
+    "Previous Menu Item": {
+        "Action": "Previous Menu Item",
+        "ContextName": "Main Menu",
+        "DisplayName": "Arrow Up",
         "Flags": "ButtonDown",
-        "Value": "L"
+        "Value": "ArrowUp"
     },
-    "Save Game": {
-        "Action": "Save Game",
-        "ContextName": "Menu",
-        "DisplayName": "S",
+    "Select Menu Item": {
+        "Action": "Select Menu Item",
+        "ContextName": "Main Menu",
+        "DisplayName": "Return",
         "Flags": "ButtonDown",
-        "Value": "S"
-    },
-    "Options": {
-        "Action": "Options",
-        "ContextName": "Menu",
-        "DisplayName": "O",
-        "Flags": "ButtonDown",
-        "Value": "O"
-    },
-    "Foobar": {
-        "Action": "Foobar",
-        "ContextName": "Menu",
-        "DisplayName": "F",
-        "Flags": "ButtonDown",
-        "Value": "F"
-    },
-    "Credits": {
-        "Action": "Credits",
-        "ContextName": "Menu",
-        "DisplayName": "C",
-        "Flags": "ButtonDown",
-        "Value": "C"
-    },
-    "Quit": {
-        "Action": "Quit",
-        "ContextName": "Menu",
-        "DisplayName": "Q",
-        "Flags": "ButtonDown",
-        "Value": "Q"
+        "Value": "Return"
     },
     "Konsole": {
         "Action": "Konsole",

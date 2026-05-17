@@ -36,6 +36,12 @@ namespace yaget::comp::gs
                 using BaseSystemType = std::tuple_element_t<T0, S>;
                 using SystemRow = typename BaseSystemType::Row;
 
+                if constexpr (std::tuple_size_v<std::remove_reference_t<SystemRow>> == 0)
+                {
+                    // if system does not have any components, then it can be used with any coordinator
+                    return;
+                }
+
                 using RequestedRow = tuple_get_union_t<SystemRow, typename R::FullRow>;
 
                 if (result)
@@ -104,10 +110,12 @@ namespace yaget::comp::gs
         // Returns true of componentName does exist, otherwise false
         bool IsComponentTyped(const std::string& componentName) const;
 
+    protected:
+        Messaging& mMessaging;
+
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
-        Messaging& mMessaging;
         A& mApp;
         CoordinatorSet mCoordinatorSet;
         ManagedSystems mSystems;
@@ -141,21 +149,21 @@ namespace yaget::comp::gs
     // It creates each Coordinator on the thread that it's run and Tick is called from.
     // In this case we have 2 threads, logic and render.
     template <typename TG, typename TR, typename M, typename A>
-    int RunGame(M& messaging, A& app)
+    int RunGame(M& messaging, A& app, typename A::TickIdle tickIdle = {})
     {
-        return app.Run(internal::Updater<TG, M, A>(messaging, app), internal::Updater<TR, M, A>(messaging, app));
+        return app.Run(internal::Updater<TG, M, A>(messaging, app), internal::Updater<TR, M, A>(messaging, app), tickIdle);
     }
 
     template <typename TG, typename M, typename A>
-    int RunGame(M& messaging, A& app)
+    int RunGame(M& messaging, A& app, typename A::TickIdle tickIdle = {})
     {
-        return app.Run(internal::Updater<TG, M, A>(messaging, app));
+        return app.Run(internal::Updater<TG, M, A>(messaging, app), tickIdle);
     }
 
     template <typename TG, typename M, typename A>
-    int RunGame(M& messaging, A& app, auto renderCallback)
+    int RunGame(M& messaging, A& app, auto renderCallback, typename A::TickIdle tickIdle = {})
     {
-        return app.Run(internal::Updater<TG, M, A>(messaging, app), renderCallback);
+        return app.Run(internal::Updater<TG, M, A>(messaging, app), renderCallback, tickIdle);
     }
 
 } // namespace yaget::comp::gs
@@ -173,7 +181,7 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
         constexpr std::size_t index = T0;
         using ComponentType = meta::strip_qualifiers_t<std::tuple_element_t<index, typename CoordinatorSet::FullRow>>;
 
-        if constexpr (has_component_types<ComponentType>)
+        if constexpr (is_component_persistent<ComponentType>)
         {
             const auto componentName = db::ResolveName<ComponentType>();
             using ParamTypes = typename ComponentType::Types;

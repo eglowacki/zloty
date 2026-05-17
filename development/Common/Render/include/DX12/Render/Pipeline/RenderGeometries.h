@@ -13,6 +13,7 @@
 //! \file
 #pragma once
 
+#include "Components/GameSystem.h"
 #include "Render/RenderCore.h"
 #include "Streams/Buffers.h"
 #include "Render/Cache/CacheWatcher.h"
@@ -135,9 +136,9 @@ namespace yaget::render
         ~RenderGeometries();
 
         io::Buffer GetGeometry(const io::Tag& tag);
-        std::vector<io::Buffer> GetGeometries(const io::Tags& tags);
+        std::vector<io::Buffer> GetGeometries(const io::Tags& tags, comp::gs::mt::InitCounter* counter);
 
-        void Preload(const io::Tags& tags);
+        void Preload(const io::Tags& tags, comp::gs::mt::InitCounter& counter);
 
         // This provides option to attach buffer without going through the VTS, loading strings and parsing
         void AttachGeometry(const io::Tag& tag, io::Buffer buffer);
@@ -171,14 +172,14 @@ namespace yaget::render
         };
 
         GeometryData GetResource(const io::Tag& tag);
-        std::vector<GeometryData> GetResources(const io::Tags& tags);
+        std::vector<GeometryData> GetResources(const io::Tags& tags, comp::gs::mt::InitCounter* counter);
 
         // if current resource was updated with buffer without resizing, 
         // return true otherwise return false
         bool UpdateResourceData(const io::Tag& tag, const io::Buffer& buffer);
         void ClearResource(const io::Tag& tag);
 
-        void Preload(const io::Tags& tags);
+        void Preload(const io::Tags& tags, comp::gs::mt::InitCounter& counter);
 
     private:
         GeometryData FindGeometryData(const io::Tag& tag) const;

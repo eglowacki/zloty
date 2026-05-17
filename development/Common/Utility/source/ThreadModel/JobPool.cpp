@@ -70,11 +70,12 @@ std::string yaget::mt::GenerateNextName(const std::string& name)
 }
 
 
-yaget::mt::JobPool::JobPool(const char* poolName, uint32_t numThreads /*= 0*/, Behaviour behaviour /*= Behaviour::StartAsRun*/) 
+yaget::mt::JobPool::JobPool(const char* poolName, uint32_t numThreads /*= 0*/, Behaviour behaviour /*= Behaviour::StartAsRun*/, bool allowTaskToFinish /*= false*/) 
     : mName(GenerateNextName(poolName))
     , mBehaviour(behaviour)
     , mDynamicThreads(true)
     , mMaxNumThreads(CalculateMaxNumThreads(numThreads))
+    , mAllowTaskToFinish{ allowTaskToFinish }
 {
     mEmptyCondition.Trigger();
 
@@ -84,7 +85,7 @@ yaget::mt::JobPool::JobPool(const char* poolName, uint32_t numThreads /*= 0*/, B
     for (uint32_t i = 0; i < numThreadsToCreate; ++i)
     { 
         std::string threadName = mMaxNumThreads > 1 ? std::format("{}_{}/{}", mName, i + 1, mMaxNumThreads) : mName;
-        mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); }))); 
+        mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); }, mAllowTaskToFinish))); 
     } 
 } 
 
@@ -151,7 +152,7 @@ void yaget::mt::JobPool::UpdateThreadPool(size_t numTasksLeft)
             {
                 // spawn another thread
                 std::string threadName = mMaxNumThreads > 1 ? std::format("{}_{}/{}", mName, threadListSize + 1, mMaxNumThreads) : mName;
-                mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); })));
+                mThreads.insert(std::make_pair(threadName, JobProcessor::Holder(threadName, [this]() { return PopNextTask(); }, mAllowTaskToFinish)));
             }
 
             threadListSize = mThreads.size();

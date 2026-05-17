@@ -65,6 +65,11 @@ app::DisplaySurface WindowApplication::GetSurface() const
     return app::DisplaySurface{ mWindowHandler->WinHandle(), surface };
 }
 
+void WindowApplication::DisplayWindow(bool show)
+{
+    mWindowHandler->DisplayWindow(show);
+}
+
 
 size_t WindowApplication::IconId = 0;;
 

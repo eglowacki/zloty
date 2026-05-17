@@ -386,11 +386,17 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
         if (windowAppearance.mMaximized)
         {
             mWindowAppearances[mActiveAppearance].mMaximized = false;
-            ::ShowWindow(mWindowHandle, SW_MAXIMIZE);
+            mShowWindow = [this]()
+            {
+                ::ShowWindow(mWindowHandle, SW_MAXIMIZE);
+            };
         }
         else
         {
-            ::ShowWindow(mWindowHandle, SW_SHOW);
+            mShowWindow = [this]()
+            {
+                ::ShowWindow(mWindowHandle, SW_SHOW);
+            };
         }
         break;
 
@@ -401,7 +407,10 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
 
             ::MoveWindow(mWindowHandle, wa.mLeft, wa.mTop, wa.FrameWidth(), wa.FrameHeight(), FALSE);
 
-            ToggleBorderless();
+            mShowWindow = [this]()
+            {
+                ToggleBorderless();
+            };
         }
         break;
 
@@ -606,6 +615,18 @@ void yaget::app::ProcHandler::SaveAppearance() const
 bool yaget::app::ProcHandler::IsSuspended() const
 {
     return mReflectedState.mSuspended;
+}
+
+void yaget::app::ProcHandler::DisplayWindow(bool show) const
+{
+    if (show)
+    {
+        mShowWindow();
+    }
+    else
+    {
+        ShowWindow(mWindowHandle, SW_HIDE);
+    }
 }
 
 /*static*/ LRESULT CALLBACK yaget::app::ProcHandler::WindowCallback(HWND hWnd, uint32_t message, uint64_t wParam, int64_t lParam)
