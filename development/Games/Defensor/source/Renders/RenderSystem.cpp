@@ -243,7 +243,7 @@ void defensor::render::RenderSystem::PreloadAssets()
 
     auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + (geometryTags.size() * 2) + (textureTags.size() * 2) + materialTags.size() + sceneItemsTags.size();
 
-    constexpr auto sleepTime = 2;
+    constexpr auto sleepTime = 0;
     //---------------------------------------------------------------------------------
     mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Render Targets...", renderTargetsTags.size()) }, Messaging::DispatcherType::Logic);
     mRenderTargetStorage.Preload(renderTargetsTags, counter);
