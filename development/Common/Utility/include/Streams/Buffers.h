@@ -214,7 +214,7 @@ namespace yaget::io
     struct Tag
     {
         std::string mName;          //! user defined name
-        Guid mGuid;          //! unique id for this asset
+        Guid mGuid;                 //! unique id for this asset
         std::string mVTSName;       //! Virtual Transport System data tag,  '$(Levels)/Test/Foo1.pak'
         std::string mSectionName;   //! section name that this tag belongs to it
 
