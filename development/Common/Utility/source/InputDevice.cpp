@@ -714,6 +714,12 @@ void input::InputDevice::PushContext(const std::string& newContextName)
 {
     mt::WriteLock locker(mActionMapMutex);
 
+    if (!mContextStack.empty() && mContextStack.top() == newContextName)
+    {
+        YLOG_WARNING("INPT", "Trying to push context: '%s' which is already on top of the stack, ignoring.", newContextName.c_str());
+        return;
+    }
+
     mContextStack.push(newContextName);
 }
 

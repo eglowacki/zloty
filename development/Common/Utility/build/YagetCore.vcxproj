@@ -37,6 +37,7 @@
     <ClCompile Include="..\source\Components\GameSystem.cpp" />
     <ClCompile Include="..\source\Components\LocationComponent.cpp" />
     <ClCompile Include="..\source\Components\MaterialComponent.cpp" />
+    <ClCompile Include="..\source\Components\MenuScreenComponent.cpp" />
     <ClCompile Include="..\source\Components\NameComponent.cpp" />
     <ClCompile Include="..\source\Components\PayloadStager.cpp" />
     <ClCompile Include="..\source\Components\PersistentObserverComponent.cpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="..\include\Components\GameSystem.h" />
     <ClInclude Include="..\include\Components\GameSystemInline.h" />
     <ClInclude Include="..\include\Components\MaterialComponent.h" />
+    <ClInclude Include="..\include\Components\MenuScreenComponent.h" />
     <ClInclude Include="..\include\Components\NameComponent.h" />
     <ClInclude Include="..\include\Components\PersistentObserverComponent.h" />
     <ClInclude Include="..\include\Components\SystemsCoordinator.h" />
