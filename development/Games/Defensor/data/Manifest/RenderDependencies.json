@@ -14,18 +14,7 @@
         "dependencies": [
             {
                 "dependencies": [
-                    {
-                        "dependencies": [
-                            {
-                                "dependencies": [
-                                    "VertexShaders@BasicTexture",
-                                    "PixelShaders@BasicTexture"
-                                ],
-                                "name": "Transient@Constant=vertexBasicTexture-pixelBasicTexture=ShaderBuffer"
-                            }
-                        ],
-                        "name": "Transient@Signature=vertexBasicTexture-pixelBasicTexture"
-                    }
+                    "Transient@Signature=vertexBasicTexture-pixelBasicTexture"
                 ],
                 "name": "Transient@PSO=Signature=vertexBasicTexture-pixelBasicTexture=BlendModeAlpha-RasterizerStateCounterClockwise-DepthStateOn-TopologyStateTriangle-RTVFormatRGBA8"
             }
