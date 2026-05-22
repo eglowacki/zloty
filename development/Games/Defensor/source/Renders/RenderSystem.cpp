@@ -35,6 +35,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, false)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
     , mMatrixInterpolator(0.0f, 1.0f)
+    , mPipelineContext{ GetDevice(), app.VTS() }
     , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindMaterial(guid); })
     , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
     , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"), GetDevice().GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat)
@@ -215,6 +216,18 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::PreloadAssets()
 {
+    comp::gs::mt::InitCounter counter{ 0 };
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(0), .mItemsProcessed = &counter, .mText = std::format("Preloading...") }, Messaging::DispatcherType::Logic);
+
+    mPipelineContext.PreloadAssets("Boot");
+    mPipelineContext.PreloadAssets("");
+
+    mMessaging.Dispatch(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
+    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = 0, .mItemsProcessed = nullptr, .mText = "Finished Preloading" }, Messaging::DispatcherType::Logic);
+
+    SetTickEnabled(true);
+
+#if 0
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mApp.VTS();
 
@@ -308,6 +321,7 @@ void defensor::render::RenderSystem::PreloadAssets()
     mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = nullptr, .mText = "Finished Preloading" }, Messaging::DispatcherType::Logic);
 
     SetTickEnabled(true);
+#endif
 }
 
 
@@ -370,8 +384,9 @@ void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, const
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::render::RenderSystem::HotRebindMaterial(const Guid& guid)
+void defensor::render::RenderSystem::HotRebindMaterial(const Guid& /*guid*/)
 {
+#if 0 // This is driven by DependencyGraph class
     Guid matGuid;
     DependencyNode* matNode = nullptr;
     std::vector<DependencyNode*> pathTo;
@@ -415,6 +430,7 @@ void defensor::render::RenderSystem::HotRebindMaterial(const Guid& guid)
     RebindMaterial(matTag, material);
 
     matNode->Dirty() = true;
+#endif
 }
 
 

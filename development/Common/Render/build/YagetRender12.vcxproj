@@ -160,6 +160,7 @@
     <ClInclude Include="..\include\DX12\Render\Device.h" />
     <ClInclude Include="..\include\DX12\Render\Logger\RenderLogTags.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\ConstantBuffer.h" />
+    <ClInclude Include="..\include\DX12\Render\Pipeline\PipelineContext.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\PipelineTags.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\RenderGeometries.h" />
     <ClInclude Include="..\include\DX12\Render\Pipeline\ShaderBuffers.h" />
@@ -217,6 +218,7 @@
     <ClCompile Include="..\source\DX12\Render\Helpers\ResourceDescriptions.cpp" />
     <ClCompile Include="..\source\DX12\Render\Metrics\RenderMetrics.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\ConstantBuffer.cpp" />
+    <ClCompile Include="..\source\DX12\Render\Pipeline\PipelineContext.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\PipelineTags.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\RenderGeometries.cpp" />
     <ClCompile Include="..\source\DX12\Render\Pipeline\ShaderBuffers.cpp" />
