@@ -1,6 +1,6 @@
 #include "Render/Pipeline/PipelineContext.h"
 #include "GameSystem/Messaging.h"
-#include "Render/Device.h"
+//#include "Render/Device.h"
 #include "Render/Platform/Adapter.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 
@@ -42,8 +42,9 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts)
-    : mRenderSignatures{ device.GetAdapter().GetDevice(), vts, GetSection("Signatures") }
+yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, ProgressCallback progressCallback)
+    : mDependencyGraph(vts, Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindItemProperties(guid); })
+    , mRenderSignatures{ device.GetAdapter().GetDevice(), vts, GetSection("Signatures") }
     , mRenderPipelines{ device.GetAdapter().GetDevice(), vts, GetSection("Pipelines"), device.GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat }
     , mRenderShaders{ vts, GetSection("Shaders") }
     , mPipelineTags{ vts }
@@ -64,6 +65,7 @@ yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTran
     , mFontStorage{ mRenderGeometries, mGeometryResources, mSceneItemsStorage, vts }
     , mRenderPasses{ vts, device.GetWindowFrame() }
     , mVTS{ vts }
+    , mProgressCallback{ progressCallback }
 {
 }
 
@@ -71,8 +73,6 @@ yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTran
 //-------------------------------------------------------------------------------------------------
 void yaget::render::PipelineContext::PreloadAssets(const std::string& sectionSuffix)
 {
-    using Section = io::VirtualTransportSystem::Section;
-
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mVTS;
 
@@ -99,11 +99,12 @@ void yaget::render::PipelineContext::PreloadAssets(const std::string& sectionSuf
     const Section sceneItemsSection = GetAssetSection("SceneItems", sectionSuffix);
     auto sceneItemsTags = vts.GetTags(sceneItemsSection);
 
-    //auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + (geometryTags.size() * 2) + (textureTags.size() * 2) + materialTags.size() + sceneItemsTags.size();
+    auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + (geometryTags.size() * 2) + (textureTags.size() * 2) + materialTags.size() + sceneItemsTags.size();
 
     constexpr auto sleepTime = 0;
+    const std::string formatedSuffix = sectionSuffix.empty() ? "" : std::format(" {}", sectionSuffix);
     //---------------------------------------------------------------------------------
-    //mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Render Targets...", renderTargetsTags.size()) }, Messaging::DispatcherType::Logic);
+    mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Render Targets...", renderTargetsTags.size(), formatedSuffix) });
     mRenderTargetStorage.Preload(renderTargetsTags, counter);
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
 
@@ -111,7 +112,7 @@ void yaget::render::PipelineContext::PreloadAssets(const std::string& sectionSuf
     //{
     //    return;
     //}
-    //mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Shaders...", vertexShaderTags.size() + pixelShaderTags.size()) }, comp::gs::Messaging::DispatcherType::Logic);
+    mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Shaders...", vertexShaderTags.size() + pixelShaderTags.size(), formatedSuffix) });
     mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex, counter);
     mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel, counter);
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
@@ -120,7 +121,7 @@ void yaget::render::PipelineContext::PreloadAssets(const std::string& sectionSuf
     //{
     //    return;
     //}
-    //mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Geometries...", geometryTags.size() * 2) }, Messaging::DispatcherType::Logic);
+    mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Geometries...", geometryTags.size() * 2, formatedSuffix) });
     mRenderGeometries.Preload(geometryTags, counter);
     mGeometryResources.Preload(geometryTags, counter);
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
@@ -129,7 +130,7 @@ void yaget::render::PipelineContext::PreloadAssets(const std::string& sectionSuf
     //{
     //    return;
     //}
-    //mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Textures...", textureTags.size() * 2) }, Messaging::DispatcherType::Logic);
+    mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Textures...", textureTags.size() * 2, formatedSuffix) });
     mRenderTextures.Preload(textureTags, counter);
     mTextureResources.Preload(textureTags, counter);
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
@@ -138,7 +139,7 @@ void yaget::render::PipelineContext::PreloadAssets(const std::string& sectionSuf
     //{
     //    return;
     //}
-    //mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Materials...", materialTags.size()) }, Messaging::DispatcherType::Logic);
+    mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Materials...", materialTags.size(), formatedSuffix) });
     auto materials = mRenderMaterials.GetMaterials(materialTags);
     for (const auto& [material, matTag] : std::views::zip(materials, materialTags))
     {
@@ -151,7 +152,7 @@ void yaget::render::PipelineContext::PreloadAssets(const std::string& sectionSuf
     //{
     //    return;
     //}
-    //mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Items...", sceneItemsTags.size()) }, Messaging::DispatcherType::Logic);
+    mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Items...", sceneItemsTags.size(), formatedSuffix) });
     mSceneItemsStorage.Preload(sceneItemsTags, counter);
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
 
@@ -163,9 +164,34 @@ void yaget::render::PipelineContext::PreloadAssets(const std::string& sectionSuf
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
 
     //mMessaging.Dispatch(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
-    //mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = nullptr, .mText = "Finished Preloading" }, Messaging::DispatcherType::Logic);
+    mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = nullptr, .mText = std::format("Finished{} Preloading", formatedSuffix) });
 
     //SetTickEnabled(true);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::PipelineContext::OnResetDevice(const app::WindowFrame& windowFrame, yaget::render::DeviceB::ResizeState resizeState)
+{
+    using Section = yaget::io::VirtualTransportSystem::Section;
+
+    if (resizeState == DeviceB::ResizeState::Reset)
+    {
+        mRenderTargetStorage.ResetAll(windowFrame);
+        mSceneItemsStorage.ResetAll(windowFrame);
+    }
+    else if (resizeState == DeviceB::ResizeState::Set)
+    {
+        comp::gs::mt::InitCounter counter{ 0 };
+
+        const Section renderTargetsSection("RenderTargets");
+        auto renderTargetsTags = mVTS.GetTags(renderTargetsSection);
+        mRenderTargetStorage.Preload(renderTargetsTags, counter);
+
+        const Section sceneItemsSection("SceneItems");
+        auto sceneItemsTags = mVTS.GetTags(sceneItemsSection);
+        mSceneItemsStorage.Preload(sceneItemsTags, counter);
+    }
 }
 
 
@@ -217,11 +243,62 @@ void yaget::render::PipelineContext::RebindMaterial(const io::Tag& matTag, const
     //        |     |
     //     Vertex Pixel
     //     Shader Shader
-    //mDependencyGraph.Add(matTag.mGuid, psoTag.mGuid);
-    //mDependencyGraph.Add(psoTag.mGuid, sigTag.mGuid);
-    //mDependencyGraph.Add(sigTag.mGuid, shaderBufferTag.mGuid);
-    //mDependencyGraph.Add(shaderBufferTag.mGuid, vsTag.mGuid);
-    //mDependencyGraph.Add(shaderBufferTag.mGuid, psTag.mGuid);
+    mDependencyGraph.Add(matTag.mGuid, psoTag.mGuid);
+    mDependencyGraph.Add(psoTag.mGuid, sigTag.mGuid);
+    mDependencyGraph.Add(sigTag.mGuid, shaderBufferTag.mGuid);
+    mDependencyGraph.Add(shaderBufferTag.mGuid, vsTag.mGuid);
+    mDependencyGraph.Add(shaderBufferTag.mGuid, psTag.mGuid);
 
     //mDependencyGraph.ClearDirty(matTag.mGuid);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::PipelineContext::HotRebindItemProperties(const Guid& /*guid*/)
+{
+#if 0 // This is driven by DependencyGraph class
+    Guid matGuid;
+    DependencyNode* matNode = nullptr;
+    std::vector<DependencyNode*> pathTo;
+
+    /*DependencyNode *node =*/
+    mDependencyGraph.Find(guid, &pathTo);
+    if (!pathTo.empty())
+    {
+        matNode = *pathTo.begin();
+        matGuid = matNode->mGuid;
+    }
+    else
+    {
+        YLOG_ERROR("REND", std::format("Material '{}' is not found in dependency graph, ignoring material rebind.", conv::ToString(guid)).c_str());
+        return;
+    }
+
+    auto& vts = mApp.VTS();
+    auto matTag = vts.FindTag(matGuid);
+    auto oldMaterial = mRenderMaterials.GetMaterial(matTag);
+
+    mRenderMaterials.ClearCache(matTag);
+
+    auto material = mRenderMaterials.GetMaterial(matTag);
+
+    auto oldMaterialText = conv::ToString(oldMaterial);
+    auto newMaterialText = conv::ToString(material);
+    YLOG_INFO("REND", std::format("Rebinding material '{}':\n\t== Old '{}'\n\n\t== New '{}'", conv::ToString(matTag), oldMaterialText, newMaterialText).c_str());
+
+    auto vsTag = material.mVertexShader;
+    mRenderShaders.ClearCache(vsTag);
+    auto psTag = material.mPixelShader;
+    mRenderShaders.ClearCache(psTag);
+
+    auto sigTag = material.mSignature;
+    mRenderSignatures.ClearCache(sigTag);
+
+    auto psoTag = material.mPSO;
+    mRenderPipelines.ClearCache(psoTag);
+
+    RebindMaterial(matTag, material);
+
+    matNode->Dirty() = true;
+#endif
 }

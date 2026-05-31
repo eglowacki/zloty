@@ -13,6 +13,7 @@
 //! \file
 #pragma once
 
+#include "Parsers/DependencyGraph.h"
 #include "Render/RenderCore.h"
 #include "Render/Commands/RenderPasses.h"
 #include "Render/Commands/RenderTarget.h"
@@ -26,6 +27,7 @@
 #include "Render/Pipeline/ShaderBuffers.h"
 #include "Render/UI/FontRender.h"
 #include "Render/Scene/RenderSceneItems.h"
+#include "Render/Device.h"
 
 
 
@@ -34,9 +36,13 @@ namespace yaget::render
     class PipelineContext
     {
     public:
-        PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts);
-        void PreloadAssets(const std::string& sectionSuffix);
+        using ProgressCallback = std::function<void(const comp::gs::InitEvent& event)>;
+        PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, ProgressCallback progressCallback);
 
+        void PreloadAssets(const std::string& sectionSuffix);
+        void OnResetDevice(const app::WindowFrame& windowFrame, DeviceB::ResizeState resizeState);
+
+        DependencyGraph mDependencyGraph;
         RenderSignatures mRenderSignatures;
         RenderPipelines mRenderPipelines;
         RenderShaders mRenderShaders;
@@ -53,7 +59,12 @@ namespace yaget::render
         commands::RenderPasses mRenderPasses;
 
     private:
-        io::VirtualTransportSystem& mVTS;
+        using Section = io::VirtualTransportSystem::Section;
+
         void RebindMaterial(const io::Tag& tag, const yaget::render::MaterialPropertyTags& material);
+        void HotRebindItemProperties(const Guid& guid);
+
+        io::VirtualTransportSystem& mVTS;
+        ProgressCallback mProgressCallback;
     };
 }
