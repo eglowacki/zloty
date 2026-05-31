@@ -6,28 +6,9 @@
 #include "Renders/RenderSystem.h"
 #include "Render/UI/FontRender.h"
 
-#include <ranges>
 
 extern "C" { __declspec(dllexport) extern const UINT D3D12SDKVersion = 619;}
 extern "C" { __declspec(dllexport) extern const char* D3D12SDKPath = ".\\D3D12\\"; }
-
-namespace
-{
-    yaget::io::VirtualTransportSystem::Section GetSection(const char* cacheName)
-    {
-        using Section = yaget::io::VirtualTransportSystem::Section;
-#ifdef YAGET_DEBUG
-        Section section("Caches@" + std::string(cacheName) + "_Debug");
-        section.mMatch = Section::FilterMatch::Exact;
-        return section;
-#else
-        Section section("Caches@" + std::string(cacheName));
-        section.mMatch = Section::FilterMatch::Exact;
-        return section;
-#endif
-    }
-
-}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -35,28 +16,7 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, false)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
     , mMatrixInterpolator(0.0f, 1.0f)
-    , mPipelineContext{ GetDevice(), app.VTS() }
-    , mDependencyGraph(app.VTS(), Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindMaterial(guid); })
-    , mRenderSignatures(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Signatures"))
-    , mRenderPipelines(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Pipelines"), GetDevice().GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat)
-    , mRenderShaders(app.VTS(), GetSection("Shaders"))
-    , mPipelineTags{ app.VTS() }
-    , mRenderMaterials(mPipelineTags, app.VTS())
-    , mRenderTextures(app.VTS(), GetSection("Textures"))
-    , mTextureResources(GetDevice(), mRenderTextures)
-    , mShaderBuffers(GetDevice().GetWindowFrame().GetSurface().NumBackBuffers(), GetDevice().GetAdapter(), app.VTS(), GetSection("Constants"), GetDevice().GetQueueFenceValues())
-    , mRenderGeometries(GetDevice().GetAdapter().GetDevice(), app.VTS(), GetSection("Geometries"))
-    , mGeometryResources(GetDevice(), mRenderGeometries)
-    , mRenderTargetStorage(GetDevice().GetAdapter().GetDevice(), GetDevice().GetSwapChain(), mTextureResources, app.VTS())
-    , mSceneItemsStorage(mRenderMaterials,
-                         mRenderSignatures,
-                         mRenderPipelines,
-                         mShaderBuffers,
-                         mTextureResources,
-                         mGeometryResources,
-                         app.VTS(), GetSection("SceneItems"))
-    , mFontStorage(mRenderGeometries, mGeometryResources, mSceneItemsStorage, app.VTS())
-    , mRenderPasses{ app.VTS(), GetDevice().GetWindowFrame() }
+    , mPipelineContext{ GetDevice(), app.VTS(), [this](const auto event){ mMessaging.Dispatch(event, Messaging::DispatcherType::Logic); } }
     , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
     if (mApp.Input().IsAction("Quit App"))
@@ -92,28 +52,33 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
         constexpr float FpsAlpha = 0.5f;
         // let's show frame rate here, using stb library for generating text
-        static bool flipper = false;
         mFramesThisSecond++;
         mCurrentCalcTime += gameClock.GetDeltaTimeSecond();
         if (mCurrentCalcTime > 1.0f)
         {
+            auto surface = mApp.GetSurface().GetSize<int>();
+
+            auto resX = std::get<0>(surface);
+            auto resY = std::get<1>(surface);
             mAverageFps = FpsAlpha * mAverageFps + (1.0f - FpsAlpha) * mFramesThisSecond;
             auto framePerSecond = std::format("FPS: {} ", static_cast<uint32_t>(mAverageFps));
             auto milliPerFrame = std::format("Ms: {:.4f} ", 1000.0f / mAverageFps);
+            auto resolution = std::format("{}x{} ", resX, resY);
 
             ui::TextPrinters textPrinters
             {
                 { .mText = framePerSecond, .mX = 10, .mY = 10, .mSize = 2.0f, .mColor = math3d::Color{ colors::Red } },
-                { .mText = milliPerFrame, .mColor = math3d::Color{ colors::Yellow } }
+                { .mText = milliPerFrame, .mColor = math3d::Color{ colors::Yellow } },
+                { .mText = resolution, .mColor = math3d::Color{ colors::White } }
             };
 
-            mFontStorage.UpdateText(fontTag, textPrinters, commands::Type::Direct);
+            mPipelineContext.mFontStorage.UpdateText(fontTag, textPrinters, commands::Type::Direct);
 
             mCurrentCalcTime -= 1.0f;
             mFramesThisSecond = 0;
         }
 
-        const auto& renderPasses = mRenderPasses.GetPasses();
+        const auto& renderPasses = mPipelineContext.mRenderPasses.GetPasses();
         auto& device = GetDevice();
 
         for (const auto& renderPass: renderPasses)
@@ -128,7 +93,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             };
 
             std::vector<ItemToRender> itemsToRender;
-            auto renderTarget = mRenderTargetStorage.FindRenderTarget(renderPass.mRenderTargetTag);
+            auto renderTarget = mPipelineContext.mRenderTargetStorage.FindRenderTarget(renderPass.mRenderTargetTag);
             auto colorClear = renderPass.GetColorClear(renderTarget);
             auto depthClearValue = renderPass.GetDepthStencilClear(renderTarget);
 
@@ -144,9 +109,9 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 coordinator.ForEach<RenderEntity>([&itemsToRender, &viewMatrix, &orthoMatrix, &renderPass, this](comp::Id_t /*id*/, const auto& row)
                 {
                     auto renderComponent = std::get<RenderComponent*>(row);
-                    if (mRenderPasses.RenderThisPass(renderComponent->mSceneItemTag, renderPass))
+                    if (mPipelineContext.mRenderPasses.RenderThisPass(renderComponent->mSceneItemTag, renderPass))
                     {
-                        auto sceneItem = mSceneItemsStorage.GetSceneItem(renderComponent->mSceneItemTag);
+                        auto sceneItem = mPipelineContext.mSceneItemsStorage.GetSceneItem(renderComponent->mSceneItemTag);
 
                         auto worldViewProj = (renderComponent->mMatrix * viewMatrix * orthoMatrix).Transpose();
                         float timeData = 1.0f;
@@ -161,7 +126,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             {
                 for (const auto& sceneItemTag : renderPass.mSceneItemTags)
                 {
-                    auto sceneItem = mSceneItemsStorage.GetSceneItem(sceneItemTag);
+                    auto sceneItem = mPipelineContext.mSceneItemsStorage.GetSceneItem(sceneItemTag);
 
                     auto worldViewProj = (viewMatrix * orthoMatrix).Transpose();
                     float timeData = 1.0f;
@@ -176,7 +141,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             });
 
             //scene::SceneItemsStorage::SortSceneItems(itemsToRender);
-            std::ranges::for_each(itemsToRender, [commandList, currentFrameIndex, commandType, this](ItemToRender& item)
+            std::ranges::for_each(itemsToRender, [commandList, currentFrameIndex, commandType, this](const ItemToRender& item)
             {
                 item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::WorldViewProjection, item.mWorldViewProj, commandType);
                 item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::Time, item.mTime, commandType);
@@ -192,7 +157,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     {
         const auto& newFrameRenderIds = sceneComponent->GetIds();
 
-        mRenderPasses.BindAsset(sceneComponent->mRenderPassTag);
+        mPipelineContext.mRenderPasses.BindAsset(sceneComponent->mRenderPassTag);
 
         coordinator.ForEach<RenderEntity>(newFrameRenderIds, [sceneComponent, &vts = mApp.VTS(), this](comp::Id_t id, const auto& row)
         {
@@ -203,7 +168,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 
                 if (renderComponent->mSceneItemTag.mGuid != Guid(data->mAssetGuid))
                 {
-                    renderComponent->mSceneItemTag = mApp.VTS().FindTag(Guid(data->mAssetGuid));
+                    renderComponent->mSceneItemTag = vts.FindTag(Guid(data->mAssetGuid));
                 }
             }
 
@@ -216,242 +181,18 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::PreloadAssets()
 {
-    comp::gs::mt::InitCounter counter{ 0 };
-    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(0), .mItemsProcessed = &counter, .mText = std::format("Preloading...") }, Messaging::DispatcherType::Logic);
+    //mPipelineContext.PreloadAssets("Boot");
+    //mMessaging.Dispatch(items::StageEvent{ "Asset Load", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
 
-    mPipelineContext.PreloadAssets("Boot");
     mPipelineContext.PreloadAssets("");
-
     mMessaging.Dispatch(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
-    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = 0, .mItemsProcessed = nullptr, .mText = "Finished Preloading" }, Messaging::DispatcherType::Logic);
 
     SetTickEnabled(true);
-
-#if 0
-    // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
-    auto& vts = mApp.VTS();
-
-    comp::gs::mt::InitCounter counter{ 0 };
-
-    const Section renderTargetsSection("RenderTargets");
-    auto renderTargetsTags = vts.GetTags(renderTargetsSection);
-
-    const Section vertexShaderSection("VertexShaders");
-    auto vertexShaderTags = vts.GetTags(vertexShaderSection);
-
-    const Section pixelShaderSection("PixelShaders");
-    auto pixelShaderTags = vts.GetTags(pixelShaderSection);
-
-    const Section geometrySection("Geometry");
-    auto geometryTags = vts.GetTags(geometrySection);
-
-    const Section textureSection("Images");
-    auto textureTags = vts.GetTags(textureSection);
-
-    const Section materialSection("Materials");
-    auto materialTags = vts.GetTags(materialSection);
-
-    const Section sceneItemsSection("SceneItems");
-    auto sceneItemsTags = vts.GetTags(sceneItemsSection);
-
-    auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + (geometryTags.size() * 2) + (textureTags.size() * 2) + materialTags.size() + sceneItemsTags.size();
-
-    constexpr auto sleepTime = 0;
-    //---------------------------------------------------------------------------------
-    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Render Targets...", renderTargetsTags.size()) }, Messaging::DispatcherType::Logic);
-    mRenderTargetStorage.Preload(renderTargetsTags, counter);
-    platform::Sleep(sleepTime, time::kSecondUnit);
-
-    if (mApplicationQuiting)
-    {
-        return;
-    }
-    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Shaders...", vertexShaderTags.size() + pixelShaderTags.size()) }, Messaging::DispatcherType::Logic);
-    mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex, counter);
-    mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel, counter);
-    platform::Sleep(sleepTime, time::kSecondUnit);
-
-    if (mApplicationQuiting)
-    {
-        return;
-    }
-    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Geometries...", geometryTags.size() * 2) }, Messaging::DispatcherType::Logic);
-    mRenderGeometries.Preload(geometryTags, counter);
-    mGeometryResources.Preload(geometryTags, counter);
-    platform::Sleep(sleepTime, time::kSecondUnit);
-
-    if (mApplicationQuiting)
-    {
-        return;
-    }
-    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Textures...", textureTags.size() * 2) }, Messaging::DispatcherType::Logic);
-    mRenderTextures.Preload(textureTags, counter);
-    mTextureResources.Preload(textureTags, counter);
-    platform::Sleep(sleepTime, time::kSecondUnit);
-
-    if (mApplicationQuiting)
-    {
-        return;
-    }
-    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Materials...", materialTags.size()) }, Messaging::DispatcherType::Logic);
-    auto materials = mRenderMaterials.GetMaterials(materialTags);
-    for (const auto& [material, matTag] : std::views::zip(materials, materialTags))
-    {
-        RebindMaterial(matTag, material);
-        ++counter;
-    }
-    platform::Sleep(sleepTime, time::kSecondUnit);
-
-    if (mApplicationQuiting)
-    {
-        return;
-    }
-    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {} Items...", sceneItemsTags.size()) }, Messaging::DispatcherType::Logic);
-    mSceneItemsStorage.Preload(sceneItemsTags, counter);
-    platform::Sleep(sleepTime, time::kSecondUnit);
-
-    if (mApplicationQuiting)
-    {
-        return;
-    }
-    //---------------------------------------------------------------------------------
-    platform::Sleep(sleepTime, time::kSecondUnit);
-
-    mMessaging.Dispatch(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
-    mMessaging.Dispatch(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = nullptr, .mText = "Finished Preloading" }, Messaging::DispatcherType::Logic);
-
-    SetTickEnabled(true);
-#endif
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void defensor::render::RenderSystem::RebindMaterial(const io::Tag& matTag, const yaget::render::MaterialPropertyTags& material)
-{
-    auto& vts = mApp.VTS();
-
-    auto vsTag = material.mVertexShader;
-    auto psTag = material.mPixelShader;
-    auto sigTag = material.mSignature;
-    auto psoTag = material.mPSO;
-    auto shaderBufferTag = material.mShaderBuffer;
-    if (!vsTag.IsValid() || !psTag.IsValid() || !sigTag.IsValid() || !psoTag.IsValid() || !shaderBufferTag.IsValid())
-    {
-        YLOG_ERROR("REND", std::format("Material '{}' has invalid material tags. {}'",
-                       conv::ToString(matTag),
-                       conv::ToString(material)).c_str());
-        return;
-    }
-
-    ID3D12RootSignature* signature = nullptr;
-    mRenderShaders.CreateSignatureDescription(vsTag, psTag, [this, &sigTag, &signature, &shaderBufferTag](const auto& descResult)
-    {
-        signature = mRenderSignatures.GetSignature(sigTag, descResult);
-        mShaderBuffers.MakeBuffers(shaderBufferTag, descResult.mIndexMap);
-    });
-    AttachTransientAsset(sigTag, vts);
-    AttachTransientAsset(shaderBufferTag, vts);
-
-    auto vsBlob = mRenderShaders.GetShader(vsTag, yaget::render::RenderShaders::ShaderType::Vertex);
-    auto psBlob = mRenderShaders.GetShader(psTag, yaget::render::RenderShaders::ShaderType::Pixel);
-
-    auto vertexPins = mRenderShaders.GetShaderPins(vsTag);
-    auto pixelPins = mRenderShaders.GetShaderPins(psTag);
-
-    /*ID3D12PipelineState* pipeline =*/
-    mRenderPipelines.GetPipeline(psoTag, signature, vsBlob, vertexPins, psBlob, pixelPins);
-    AttachTransientAsset(psoTag, vts);
-
-    //NOTE(eg) now we need to add this dependencies data:
-    //        Material
-    //           |
-    //        Pipeline
-    //           |
-    //       Signature --> IndexMap
-    //           |
-    //      ShaderBuffer
-    //        |     |
-    //     Vertex Pixel
-    //     Shader Shader
-    mDependencyGraph.Add(matTag.mGuid, psoTag.mGuid);
-    mDependencyGraph.Add(psoTag.mGuid, sigTag.mGuid);
-    mDependencyGraph.Add(sigTag.mGuid, shaderBufferTag.mGuid);
-    mDependencyGraph.Add(shaderBufferTag.mGuid, vsTag.mGuid);
-    mDependencyGraph.Add(shaderBufferTag.mGuid, psTag.mGuid);
-
-    //mDependencyGraph.ClearDirty(matTag.mGuid);
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void defensor::render::RenderSystem::HotRebindMaterial(const Guid& /*guid*/)
-{
-#if 0 // This is driven by DependencyGraph class
-    Guid matGuid;
-    DependencyNode* matNode = nullptr;
-    std::vector<DependencyNode*> pathTo;
-
-    /*DependencyNode *node =*/
-    mDependencyGraph.Find(guid, &pathTo);
-    if (!pathTo.empty())
-    {
-        matNode = *pathTo.begin();
-        matGuid = matNode->mGuid;
-    }
-    else
-    {
-        YLOG_ERROR("REND", std::format("Material '{}' is not found in dependency graph, ignoring material rebind.", conv::ToString(guid)).c_str());
-        return;
-    }
-
-    auto& vts = mApp.VTS();
-    auto matTag = vts.FindTag(matGuid);
-    auto oldMaterial = mRenderMaterials.GetMaterial(matTag);
-
-    mRenderMaterials.ClearCache(matTag);
-
-    auto material = mRenderMaterials.GetMaterial(matTag);
-
-    auto oldMaterialText = conv::ToString(oldMaterial);
-    auto newMaterialText = conv::ToString(material);
-    YLOG_INFO("REND", std::format("Rebinding material '{}':\n\t== Old '{}'\n\n\t== New '{}'", conv::ToString(matTag), oldMaterialText, newMaterialText).c_str());
-
-    auto vsTag = material.mVertexShader;
-    mRenderShaders.ClearCache(vsTag);
-    auto psTag = material.mPixelShader;
-    mRenderShaders.ClearCache(psTag);
-
-    auto sigTag = material.mSignature;
-    mRenderSignatures.ClearCache(sigTag);
-
-    auto psoTag = material.mPSO;
-    mRenderPipelines.ClearCache(psoTag);
-
-    RebindMaterial(matTag, material);
-
-    matNode->Dirty() = true;
-#endif
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windowFrame, yaget::render::DeviceB::ResizeState resizeState)
 {
-    if (resizeState == yaget::render::DeviceB::ResizeState::Reset)
-    {
-        mRenderTargetStorage.ResetAll(windowFrame);
-        mSceneItemsStorage.ResetAll(windowFrame);
-    }
-    else if (resizeState == yaget::render::DeviceB::ResizeState::Set)
-    {
-        comp::gs::mt::InitCounter counter{ 0 };
-
-        const Section renderTargetsSection("RenderTargets");
-        auto renderTargetsTags = mApp.VTS().GetTags(renderTargetsSection);
-        mRenderTargetStorage.Preload(renderTargetsTags, counter);
-
-        const Section sceneItemsSection("SceneItems");
-        auto sceneItemsTags = mApp.VTS().GetTags(sceneItemsSection);
-        mSceneItemsStorage.Preload(sceneItemsTags, counter);
-    }
+    mPipelineContext.OnResetDevice(windowFrame, resizeState);
 }
