@@ -42,6 +42,17 @@ namespace yaget::render
         void PreloadAssets(const std::string& sectionSuffix);
         void OnResetDevice(const app::WindowFrame& windowFrame, DeviceB::ResizeState resizeState);
 
+        commands::RenderTarget* FindRenderTarget(const io::Tag& tag) const;
+        scene::SceneItem* GetSceneItem(const io::Tag& tag);
+        void UpdateText(const io::Tag& tag, const ui::TextPrinters& textPrinters, commands::Type commandType);
+        commands::RenderPasses& RenderPasses() { return mRenderPasses; }
+
+    private:
+        using Section = io::VirtualTransportSystem::Section;
+
+        void RebindMaterial(const io::Tag& tag, const yaget::render::MaterialPropertyTags& material);
+        void HotRebindItemProperties(const Guid& guid);
+
         DependencyGraph mDependencyGraph;
         RenderSignatures mRenderSignatures;
         RenderPipelines mRenderPipelines;
@@ -57,12 +68,6 @@ namespace yaget::render
         scene::SceneItemsStorage mSceneItemsStorage;
         ui::FontStorage mFontStorage;
         commands::RenderPasses mRenderPasses;
-
-    private:
-        using Section = io::VirtualTransportSystem::Section;
-
-        void RebindMaterial(const io::Tag& tag, const yaget::render::MaterialPropertyTags& material);
-        void HotRebindItemProperties(const Guid& guid);
 
         io::VirtualTransportSystem& mVTS;
         ProgressCallback mProgressCallback;

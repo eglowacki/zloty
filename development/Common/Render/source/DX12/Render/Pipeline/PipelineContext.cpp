@@ -1,6 +1,5 @@
 #include "Render/Pipeline/PipelineContext.h"
 #include "GameSystem/Messaging.h"
-//#include "Render/Device.h"
 #include "Render/Platform/Adapter.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 
@@ -23,7 +22,7 @@ namespace
 
     yaget::io::tool::VirtualTransportSystemReset::Section GetAssetSection(const std::string& sectionName, const std::string& sectionSuffix)
     {
-        yaget::io::tool::VirtualTransportSystemReset::Section result {};
+        yaget::io::tool::VirtualTransportSystemReset::Section result{};
 
         if (!sectionSuffix.empty())
         {
@@ -192,6 +191,29 @@ void yaget::render::PipelineContext::OnResetDevice(const app::WindowFrame& windo
         auto sceneItemsTags = mVTS.GetTags(sceneItemsSection);
         mSceneItemsStorage.Preload(sceneItemsTags, counter);
     }
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::commands::RenderTarget* yaget::render::PipelineContext::FindRenderTarget(const io::Tag& tag) const
+{
+    auto renderTarget = mRenderTargetStorage.FindRenderTarget(tag);
+    return renderTarget;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::scene::SceneItem* yaget::render::PipelineContext::GetSceneItem(const io::Tag& tag)
+{
+    auto sceneItem = mSceneItemsStorage.GetSceneItem(tag);
+    return sceneItem;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void yaget::render::PipelineContext::UpdateText(const io::Tag& tag, const ui::TextPrinters& textPrinters, commands::Type commandType)
+{
+    mFontStorage.UpdateText(tag, textPrinters, commandType);
 }
 
 

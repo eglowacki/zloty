@@ -72,13 +72,13 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 { .mText = resolution, .mColor = math3d::Color{ colors::White } }
             };
 
-            mPipelineContext.mFontStorage.UpdateText(fontTag, textPrinters, commands::Type::Direct);
+            mPipelineContext.UpdateText(fontTag, textPrinters, commands::Type::Direct);
 
             mCurrentCalcTime -= 1.0f;
             mFramesThisSecond = 0;
         }
 
-        const auto& renderPasses = mPipelineContext.mRenderPasses.GetPasses();
+        const auto& renderPasses = mPipelineContext.RenderPasses().GetPasses();
         auto& device = GetDevice();
 
         for (const auto& renderPass: renderPasses)
@@ -93,7 +93,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             };
 
             std::vector<ItemToRender> itemsToRender;
-            auto renderTarget = mPipelineContext.mRenderTargetStorage.FindRenderTarget(renderPass.mRenderTargetTag);
+            auto renderTarget = mPipelineContext.FindRenderTarget(renderPass.mRenderTargetTag);
             auto colorClear = renderPass.GetColorClear(renderTarget);
             auto depthClearValue = renderPass.GetDepthStencilClear(renderTarget);
 
@@ -109,9 +109,9 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 coordinator.ForEach<RenderEntity>([&itemsToRender, &viewMatrix, &orthoMatrix, &renderPass, this](comp::Id_t /*id*/, const auto& row)
                 {
                     auto renderComponent = std::get<RenderComponent*>(row);
-                    if (mPipelineContext.mRenderPasses.RenderThisPass(renderComponent->mSceneItemTag, renderPass))
+                    if (mPipelineContext.RenderPasses().RenderThisPass(renderComponent->mSceneItemTag, renderPass))
                     {
-                        auto sceneItem = mPipelineContext.mSceneItemsStorage.GetSceneItem(renderComponent->mSceneItemTag);
+                        auto sceneItem = mPipelineContext.GetSceneItem(renderComponent->mSceneItemTag);
 
                         auto worldViewProj = (renderComponent->mMatrix * viewMatrix * orthoMatrix).Transpose();
                         float timeData = 1.0f;
@@ -126,7 +126,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             {
                 for (const auto& sceneItemTag : renderPass.mSceneItemTags)
                 {
-                    auto sceneItem = mPipelineContext.mSceneItemsStorage.GetSceneItem(sceneItemTag);
+                    auto sceneItem = mPipelineContext.GetSceneItem(sceneItemTag);
 
                     auto worldViewProj = (viewMatrix * orthoMatrix).Transpose();
                     float timeData = 1.0f;
@@ -157,7 +157,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
     {
         const auto& newFrameRenderIds = sceneComponent->GetIds();
 
-        mPipelineContext.mRenderPasses.BindAsset(sceneComponent->mRenderPassTag);
+        mPipelineContext.RenderPasses().BindAsset(sceneComponent->mRenderPassTag);
 
         coordinator.ForEach<RenderEntity>(newFrameRenderIds, [sceneComponent, &vts = mApp.VTS(), this](comp::Id_t id, const auto& row)
         {
