@@ -231,14 +231,8 @@ void yaget::render::commands::RenderTarget::BeginFrame(const CommandList* comman
 //-------------------------------------------------------------------------------------------------
 void yaget::render::commands::RenderTarget::EndFrame(const CommandList* commandList)
 {
-    if (mSwapChain)
-    {
-        mState = commands::TransitionFromTo(commandList, mRenderTargetResource.Get(), mState, D3D12_RESOURCE_STATE_PRESENT);
-    }
-    else
-    {
-        mState = commands::TransitionFromTo(commandList, mRenderTargetResource.Get(), mState, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    }
+    D3D12_RESOURCE_STATES toState = mSwapChain ? D3D12_RESOURCE_STATE_PRESENT : D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    mState = commands::TransitionFromTo(commandList, mRenderTargetResource.Get(), mState, toState);
 }
 
 
