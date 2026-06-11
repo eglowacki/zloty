@@ -188,11 +188,11 @@ namespace yaget::io
 
         void WriteDataChunk(const auto& dataChunk)
         {
-            Serialize(dataChunk, mBuffer);
-            //YAGET_ASSERT(mWriteOffset + dataSize <= io::BufferSize(mBuffer), "Messaging buffer does not have enough space to write dataChunk out.");
+            auto dataSize = Serialize(dataChunk, {});
+            AssureWriteSize(dataSize);
+            YAGET_ASSERT(mWriteOffset + dataSize <= io::size_data(mBuffer), "Messaging buffer does not have enough space to write dataChunk out.");
 
-            //std::memcpy(io::BufferPointer(mBuffer) + mWriteOffset, dataChunk, dataSize);
-            //mWriteOffset += dataSize;
+            mWriteOffset += Serialize(dataChunk, cast_to_view(mBuffer, mWriteOffset));
         }
 
 
