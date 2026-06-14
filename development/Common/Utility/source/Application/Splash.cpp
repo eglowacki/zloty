@@ -110,7 +110,7 @@ void yaget::Splash::PrintText(HDC hMemDC, const char* message, TextLine line)
     LONG textBottomOffset = line == TextLine::First ? 50 : 10;
     LONG textHeight = 80;
     LONG textShadowOffset = 2;
-    LONG textHorizontalOffset = 100;
+    LONG textHorizontalOffset = 10;
 
     auto originalFont = static_cast<HFONT>(SelectObject(hMemDC, mMessageFont));
 

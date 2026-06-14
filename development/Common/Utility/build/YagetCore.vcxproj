@@ -37,6 +37,7 @@
     <ClCompile Include="..\source\Components\GameSystem.cpp" />
     <ClCompile Include="..\source\Components\LocationComponent.cpp" />
     <ClCompile Include="..\source\Components\MaterialComponent.cpp" />
+    <ClCompile Include="..\source\Components\MenuScreenComponent.cpp" />
     <ClCompile Include="..\source\Components\NameComponent.cpp" />
     <ClCompile Include="..\source\Components\PayloadStager.cpp" />
     <ClCompile Include="..\source\Components\PersistentObserverComponent.cpp" />
@@ -118,6 +119,7 @@
     <ClCompile Include="..\source\Metrics\PerformanceTracer.cpp" />
     <ClCompile Include="..\source\Parsers\DependencyGraph.cpp" />
     <ClCompile Include="..\source\Parsers\Parser.cpp" />
+    <ClCompile Include="..\source\Script\Executant.cpp" />
     <ClCompile Include="..\source\sqlite\shell.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -198,6 +200,7 @@
     <ClInclude Include="..\include\Components\GameSystem.h" />
     <ClInclude Include="..\include\Components\GameSystemInline.h" />
     <ClInclude Include="..\include\Components\MaterialComponent.h" />
+    <ClInclude Include="..\include\Components\MenuScreenComponent.h" />
     <ClInclude Include="..\include\Components\NameComponent.h" />
     <ClInclude Include="..\include\Components\PersistentObserverComponent.h" />
     <ClInclude Include="..\include\Components\SystemsCoordinator.h" />
@@ -264,6 +267,7 @@
     <ClInclude Include="..\include\Parsers\Parser.h" />
     <ClInclude Include="..\include\Platform\Support.h" />
     <ClInclude Include="..\include\Platform\WindowsLean.h" />
+    <ClInclude Include="..\include\Script\Executant.h" />
     <ClInclude Include="..\include\Script\luacpp.h" />
     <ClInclude Include="..\include\sqlite\AccessHelpers.h" />
     <ClInclude Include="..\include\sqlite\SQLite.h" />

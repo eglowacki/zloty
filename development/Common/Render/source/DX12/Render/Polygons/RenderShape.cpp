@@ -31,12 +31,8 @@ void yaget::render::RenderShape::Bind(GeometriesResources::GeometryData geometry
 {
     if (geometryData != mGeometryData && geometryData.mHeader.IsValid())
     {
+        *this = {};
         mGeometryData = std::move(geometryData);
-
-        mVertexBufferView = {};
-        mIndexBufferView = {};
-        mNumTriangles = 0;
-        mHasIndices = false;
 
         UpdateGeometryData();
     }

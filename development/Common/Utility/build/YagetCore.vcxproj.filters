@@ -365,6 +365,12 @@
     <ClCompile Include="..\source\Time\DeltaClock.cpp">
       <Filter>Time Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Components\MenuScreenComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\Executant.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -808,6 +814,12 @@
     </ClInclude>
     <ClInclude Include="..\include\Time\DeltaClock.h">
       <Filter>Time Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\MenuScreenComponent.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Script\Executant.h">
+      <Filter>Script Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

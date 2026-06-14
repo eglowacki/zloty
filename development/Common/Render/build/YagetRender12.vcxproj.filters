@@ -196,6 +196,9 @@
     <ClInclude Include="..\include\DX12\Render\UI\FontRender.h">
       <Filter>Source Files\UI Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Pipeline\PipelineContext.h">
+      <Filter>Source Files\Pipeline Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -332,6 +335,9 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\UI\FontRender.cpp">
       <Filter>Source Files\UI Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Pipeline\PipelineContext.cpp">
+      <Filter>Source Files\Pipeline Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

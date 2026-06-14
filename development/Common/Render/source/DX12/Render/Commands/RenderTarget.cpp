@@ -200,16 +200,13 @@ void yaget::render::commands::RenderTarget::BeginFrame(const CommandList* comman
         // texture render target cna only use optimized clear color set at the creation time,
         // otherwise use passed clear color for swap chain render target
         colors::Color rtClearColor;
-        if (clearColor)
+        if (mSwapChain)
         {
-            if (mSwapChain)
-            {
-                rtClearColor = *clearColor;
-            }
-            else
-            {
-                rtClearColor = mClearColor;
-            }
+            rtClearColor = *clearColor;
+        }
+        else
+        {
+            rtClearColor = mClearColor;
         }
 
         commands::ClearRenderTarget(commandList, rtClearColor, mRenderTargetResource.Get(), mRTVDescriptorHeap.Get(), frameIndex);
@@ -234,14 +231,8 @@ void yaget::render::commands::RenderTarget::BeginFrame(const CommandList* comman
 //-------------------------------------------------------------------------------------------------
 void yaget::render::commands::RenderTarget::EndFrame(const CommandList* commandList)
 {
-    if (mSwapChain)
-    {
-        mState = commands::TransitionFromTo(commandList, mRenderTargetResource.Get(), mState, D3D12_RESOURCE_STATE_PRESENT);
-    }
-    else
-    {
-        mState = commands::TransitionFromTo(commandList, mRenderTargetResource.Get(), mState, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    }
+    D3D12_RESOURCE_STATES toState = mSwapChain ? D3D12_RESOURCE_STATE_PRESENT : D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    mState = commands::TransitionFromTo(commandList, mRenderTargetResource.Get(), mState, toState);
 }
 
 
