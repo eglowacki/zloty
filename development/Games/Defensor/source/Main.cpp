@@ -8,7 +8,6 @@
 #include "LoggerCpp/OutputDebug.h"
 #include "LoggerCpp/OutputFile.h"
 #include "MemoryManager/PoolAllocator.h"
-#include "MemoryManager/NewAllocator.h"
 
 yaget::Strings yaget::ylog::GetRegisteredTags()
 {
@@ -31,18 +30,14 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
     using namespace yaget;
 
-    memory::InitializeAllocations();
-
     args::Options options("Yaget.Defensor");
 
-    const int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug, ylog::OutputConsole>(lpCmdLine, options, nullptr, 0, [&options]()
+    const int result = app::helpers::Harness<ylog::OutputFile, ylog::OutputDebug, ylog::OutputConsole>(lpCmdLine, options, [&options]()
     {
         metrics::Channel channel("Main.Defensor");
 
         return defensor::Run(options);
     });
-
-    memory::ReportAllocations();
 
     return result;
 }

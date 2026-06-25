@@ -16,14 +16,15 @@
 //! \file
 #pragma once
 
-#include "YagetCore.h"
 #include "App/AppUtilities.h"
 #include "Debugging/DevConfiguration.h"
 #include "Exception/Exception.h"
+#include "MemoryManager/NewAllocator.h"
 #include "Meta/CompilerAlgo.h"
 #include "Metrics/Concurrency.h"
 #include "Platform/Support.h"
 #include "StringHelpers.h"
+#include "YagetCore.h"
 
 #include <functional>
 
@@ -37,6 +38,19 @@ namespace yaget::app::helpers
     template<typename... Args>
     int Harness(const char* lpCmdLine, args::Options& options, const char* configData, size_t configSize, Callback callback)
     {
+        struct MemInitializer
+        {
+            MemInitializer()
+            {
+                memory::InitializeAllocations();
+            }
+
+            ~MemInitializer()
+            {
+                memory::ReportAllocations();
+            }
+        } memInitializer;
+
         // this will force first time ever initialization if current ids struct with setting
         // main thread id as current one. If user utilizes different thread as a "main",
         // it can call this before calling Harness
@@ -105,6 +119,18 @@ namespace yaget::app::helpers
         }
 
         return Harness<Args...>(lineCommands.c_str(), options, configData, configSize, callback);
+    }
+
+    template<typename... Args>
+    int Harness(const char* lpCmdLine, args::Options& options, Callback callback)
+    {
+        return app::helpers::Harness<Args...>(lpCmdLine, options, nullptr, 0, callback);
+    }
+
+    template<typename... Args>
+    int Harness(const wchar_t* lpCmdLine, args::Options& options, Callback callback)
+    {
+        return app::helpers::Harness<Args...>(conv::wide_to_utf8(lpCmdLine).c_str(), options, nullptr, 0, callback);
     }
 
     inline std::string ParseCommandLineParameters(int argc, char* argv[], const std::string& extraParameters = {})
