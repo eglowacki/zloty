@@ -2,21 +2,23 @@
 #include "Script/luacpp.h"
 
 
-    //lua_State* L = luaL_newstate(); // Create new Lua state
-    //luaL_openlibs(L);               // Load Lua libraries
+//lua_State* L = luaL_newstate(); // Create new Lua state
+//luaL_openlibs(L);               // Load Lua libraries
 
-    //lua_pushcfunction(L, l_log);
-    //lua_setglobal(L, "log");
+//lua_pushcfunction(L, l_log);
+//lua_setglobal(L, "log");
 
-    //// Execute Lua script
-    //if (luaL_dostring(L, "log('Hello from Lua!')")) 
-    //{
-    //    printf("Error: %s\n", lua_tostring(L, -1));
-    //}
+//// Execute Lua script
+//if (luaL_dostring(L, "log('Hello from Lua!')")) 
+//{
+//    printf("Error: %s\n", lua_tostring(L, -1));
+//}
 
-    //lua_close(L); // Close Lua state
+//lua_close(L); // Close Lua state
+
 namespace
 {
+    //--------------------------------------------------------------------------------------------------
     static int l_log(lua_State* L) 
     {
         const char* msg = luaL_checkstring(L, 1);
@@ -24,6 +26,8 @@ namespace
         return 0; // Number of results
     }
 
+
+    //--------------------------------------------------------------------------------------------------
     class LuaExecutant : public yaget::NoCopy
     {
     public:
@@ -49,7 +53,6 @@ namespace
             else
             {
                 YLOG_ERROR("SCRT", "%s", lua_tostring(L, -1));
-                //luaL_error(L, "Error: %s\n", lua_tostring(L, -1));                
             }
 
             return {};
@@ -59,33 +62,56 @@ namespace
         lua_State* L{};
     };
 
-    std::unique_ptr<LuaExecutant> luaExecutant;
-    LuaExecutant& get_lua_exe()
+
+    //--------------------------------------------------------------------------------------------------
+    struct LuaEnvironment;
+    std::unique_ptr<LuaEnvironment> lifeTimeEnvironment;
+
+    //--------------------------------------------------------------------------------------------------
+    void CleanupLuaEnvironment() 
     {
-        YAGET_ASSERT(luaExecutant, "Lua run time must be initialized before usage.");
-        return *luaExecutant;
+        lifeTimeEnvironment = nullptr;
     }
-}
 
 
-//--------------------------------------------------------------------------------------------------
-void yaget::script::Initialize()
-{
-    luaExecutant = std::make_unique<LuaExecutant>();
-}
+    //--------------------------------------------------------------------------------------------------
+    struct LuaEnvironment
+    {
+        LuaEnvironment()
+        {
+            std::ignore = std::atexit(CleanupLuaEnvironment);
+        }
+
+        LuaExecutant mLuaExecutant;
+    };
 
 
-//--------------------------------------------------------------------------------------------------
-void yaget::script::Destroy()
-{
-    luaExecutant = nullptr;
+    //--------------------------------------------------------------------------------------------------
+    LuaEnvironment* GetLuaEnv()
+    {
+        if (!lifeTimeEnvironment)
+        {
+            lifeTimeEnvironment = std::make_unique<LuaEnvironment>();
+        }
+
+        return lifeTimeEnvironment.get();
+    }
+
+
+    //--------------------------------------------------------------------------------------------------
+    LuaExecutant& lua_exe()
+    {
+        static auto luaEnvironment = GetLuaEnv();
+        return luaEnvironment->mLuaExecutant;
+    }
+
 }
 
 
 //--------------------------------------------------------------------------------------------------
 std::string yaget::script::Run(const std::string& sourceText)
 {
-    auto result = get_lua_exe().Run(sourceText);
+    auto result = lua_exe().Run(sourceText);
 
     return result;
 }

@@ -57,23 +57,6 @@ namespace yaget::app::helpers
 
         metrics::MarkAddMessage("Started Game", metrics::MessageScope::Process, 0);
 
-        // init script system
-        struct ScripterInitializer
-        {
-            ScripterInitializer()
-            {
-                script::Initialize();
-            }
-
-            ~ScripterInitializer()
-            {
-                script::Destroy();
-            }
-
-        };
-
-        ScripterInitializer scripterInitializer;
-
         int returnResult = 0;
         try
         {
