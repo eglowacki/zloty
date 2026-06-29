@@ -448,7 +448,7 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
     message += "\n=== Environment Aliases:";
     const util::EnvironmentList& envList = util::GetCurrentEnvironment();
 
-    auto it = std::max_element(envList.begin(), envList.end(), [](const util::EnvironmentList::value_type& a, const util::EnvironmentList::value_type& b)
+    auto it = std::ranges::max_element(envList, [](const util::EnvironmentList::value_type& a, const util::EnvironmentList::value_type& b)
     {
         return a.first.length() < b.first.length();
     });
