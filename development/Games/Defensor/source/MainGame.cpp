@@ -293,7 +293,7 @@ int defensor::Run(const yaget::args::Options& options)
     std::string splashBitmapName = "$(AppFolder)/Splash.bmp";
     SplashScreenUpdater splashScreenUpdater(messaging, app, splashBitmapName, COLORREF{ 0xCA000000 });
 
-    //auto runResult = yaget::script::Run("log('Hello from Lua!')");
+    auto runResult = yaget::script::Run("log('Hello from Lua!')");
 
     auto returnResult = comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app, [&splashScreenUpdater]() { splashScreenUpdater.OnTick(); });
     return returnResult;
