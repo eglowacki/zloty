@@ -53,6 +53,7 @@ namespace yaget
 
     constexpr uint32_t InvalidId = static_cast<uint32_t>(-1);
 
+    // auto operator<=>(const NoCopy&) const = default;
     class NoCopy
     {
     public:
