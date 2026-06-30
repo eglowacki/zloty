@@ -33,7 +33,7 @@ namespace
 
     //--------------------------------------------------------------------------------------------------
     /// some_drive:/some_folders/my_executable.exe
-    std::string GetApllicationPath()
+    std::string GetApplicationPath()
     {
         const size_t kMaxPath = 512;
         char buf[kMaxPath] = {'\0'};
@@ -46,7 +46,7 @@ namespace
     /// some_drive:/some_folders
     std::string ResolveAppFolder()
     {
-        std::string appPath = GetApllicationPath();
+        std::string appPath = GetApplicationPath();
         std::string appName = ::PathFindFileName(appPath.c_str());
 
         appPath = yaget::conv::ReplaceString(appPath, appName, "");
@@ -66,7 +66,7 @@ namespace
     /// Return executable name with extension
     std::string ResolveExecutableName()
     {
-        std::string appPath = GetApllicationPath();
+        std::string appPath = GetApplicationPath();
         appPath = PathFindFileName(appPath.c_str());
         return appPath;
     }
@@ -363,7 +363,7 @@ bool yaget::util::IsEnvironment(const std::string& variable)
 {
     const auto& env = EnvList();
 
-    return env.find(variable) != std::end(env);
+    return env.contains(variable);
 }
 
 
@@ -388,8 +388,6 @@ std::string yaget::util::CollapseEnv(const std::string& variable, const std::str
     }
 
     conv::ReplaceAll(collapsedValue, "\\", "/");
-    //fs::path fsPath(collapsedValue);
-    //collapsedValue = fsPath.generic_string();
     return collapsedValue;
 }
 
