@@ -625,7 +625,7 @@ bool yaget::util::FileCycler(const std::string& folder, const std::string& fileN
         }
 
         auto leftNames = io::file::GetFileNames(folderNameText, false, filterText);
-        std::sort(leftNames.begin(), leftNames.end(), [](const std::string& elem1, const std::string& elem2)
+        std::ranges::sort(leftNames, [](const std::string& elem1, const std::string& elem2)
         {
             return ExtractNumber(elem1, maxNameDigits) < ExtractNumber(elem2, maxNameDigits);
         });
