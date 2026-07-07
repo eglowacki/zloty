@@ -19,8 +19,6 @@
 
 namespace yaget::script
 {
-    void Initialize();
-    void Destroy();
     //--------------------------------------------------------------------------------------------------
     std::string Run(const std::string& sourceText);
 

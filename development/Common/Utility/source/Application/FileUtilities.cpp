@@ -93,7 +93,7 @@ yaget::Strings yaget::io::file::GetFileNames(const std::string& sourceLocation, 
         FilterFileNames(foundFiles, canonicalPath, filter);
     }
 
-    std::sort(foundFiles.begin(), foundFiles.end());
+    std::ranges::sort(foundFiles);
     //double timeEnd = platform::GetRealTime();
 
     return foundFiles;

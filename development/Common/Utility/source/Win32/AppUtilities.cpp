@@ -33,7 +33,7 @@ namespace
 
     //--------------------------------------------------------------------------------------------------
     /// some_drive:/some_folders/my_executable.exe
-    std::string GetApllicationPath()
+    std::string GetApplicationPath()
     {
         const size_t kMaxPath = 512;
         char buf[kMaxPath] = {'\0'};
@@ -46,7 +46,7 @@ namespace
     /// some_drive:/some_folders
     std::string ResolveAppFolder()
     {
-        std::string appPath = GetApllicationPath();
+        std::string appPath = GetApplicationPath();
         std::string appName = ::PathFindFileName(appPath.c_str());
 
         appPath = yaget::conv::ReplaceString(appPath, appName, "");
@@ -66,7 +66,7 @@ namespace
     /// Return executable name with extension
     std::string ResolveExecutableName()
     {
-        std::string appPath = GetApllicationPath();
+        std::string appPath = GetApplicationPath();
         appPath = PathFindFileName(appPath.c_str());
         return appPath;
     }
@@ -363,7 +363,7 @@ bool yaget::util::IsEnvironment(const std::string& variable)
 {
     const auto& env = EnvList();
 
-    return env.find(variable) != std::end(env);
+    return env.contains(variable);
 }
 
 
@@ -388,8 +388,6 @@ std::string yaget::util::CollapseEnv(const std::string& variable, const std::str
     }
 
     conv::ReplaceAll(collapsedValue, "\\", "/");
-    //fs::path fsPath(collapsedValue);
-    //collapsedValue = fsPath.generic_string();
     return collapsedValue;
 }
 
@@ -448,7 +446,7 @@ std::string yaget::util::DisplayCurrentConfiguration(args::Options* options)
     message += "\n=== Environment Aliases:";
     const util::EnvironmentList& envList = util::GetCurrentEnvironment();
 
-    auto it = std::max_element(envList.begin(), envList.end(), [](const util::EnvironmentList::value_type& a, const util::EnvironmentList::value_type& b)
+    auto it = std::ranges::max_element(envList, [](const util::EnvironmentList::value_type& a, const util::EnvironmentList::value_type& b)
     {
         return a.first.length() < b.first.length();
     });
@@ -627,7 +625,7 @@ bool yaget::util::FileCycler(const std::string& folder, const std::string& fileN
         }
 
         auto leftNames = io::file::GetFileNames(folderNameText, false, filterText);
-        std::sort(leftNames.begin(), leftNames.end(), [](const std::string& elem1, const std::string& elem2)
+        std::ranges::sort(leftNames, [](const std::string& elem1, const std::string& elem2)
         {
             return ExtractNumber(elem1, maxNameDigits) < ExtractNumber(elem2, maxNameDigits);
         });
