@@ -67,6 +67,23 @@ namespace
         searches.push_back(searchPath);
     }
 
+
+    fs::file_time_type ConvertTimeFromWin(FILETIME winTime)
+    {
+        ULARGE_INTEGER ull{};
+        ull.LowPart  = winTime.dwLowDateTime;
+        ull.HighPart = winTime.dwHighDateTime;
+
+        constexpr ULONGLONG WINDOWS_TICK = 10000000ULL; // 1 second = 10^7 ticks
+        constexpr ULONGLONG SEC_TO_UNIX_EPOCH = 11644473600ULL; // seconds between 1601 and 1970
+
+        ULONGLONG ticks_since_unix_epoch = ull.QuadPart - (SEC_TO_UNIX_EPOCH * WINDOWS_TICK);
+
+        auto duration_since_epoch = std::chrono::duration_cast<std::filesystem::file_time_type::duration>(std::chrono::nanoseconds(ticks_since_unix_epoch * 100));
+
+        return fs::file_time_type{duration_since_epoch};
+    }
+
 } // namespace
 
 
@@ -363,9 +380,42 @@ std::filesystem::file_time_type yaget::io::file::GetFileDate(const std::string& 
     }
     else if (fileDateType == FileDateType::CreationTime)
     {
-        YAGET_ASSERT(false, "File CreationTime is not implemented yet!!!");
-        result = fs::last_write_time(p, ec);
+#ifdef _WIN32
+        WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+
+        // Retrieve file metadata without opening the file
+        if (GetFileAttributesExA(p.generic_string().c_str(), GetFileExInfoStandard, &fileInfo)) 
+        {
+            FILETIME ftCreate = fileInfo.ftLastWriteTime;//fileInfo.ftCreationTime;
+
+            SYSTEMTIME stUTC, stLocal;
+            // Convert the file time to UTC system time, then to local time
+            FileTimeToSystemTime(&ftCreate, &stUTC);
+            SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
+
+            FILETIME creationTime{};
+            auto convResult = SystemTimeToFileTime(&stLocal, &creationTime);
+            convResult;
+
+            result = ConvertTimeFromWin(creationTime);
+
+            ////std::cout << "Created on: " 
+            ////          << stLocal.wYear << "-" 
+            ////          << stLocal.wMonth << "-" 
+            ////          << stLocal.wDay << " "
+            ////          << stLocal.wHour << ":" 
+            ////          << stLocal.wMinute << ":" 
+            ////          << stLocal.wSecond << "\n";
+        } 
+        else 
+        {
+            YLOG_ERROR("FILE", "Error retrieving file attributes for '%s'.", p.generic_string().c_str());
+        }
+#else
+        #error  "File CreationTime is not implemented for your platform."
+#endif
     }
+
     const auto errorCode = ec.value();
     if (ec && (errorCode != static_cast<int>(std::errc::no_such_file_or_directory) && errorCode != 3))  // 3 = The system cannot find the path specified.
     {
