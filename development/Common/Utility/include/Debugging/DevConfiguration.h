@@ -219,7 +219,7 @@ namespace yaget
             bool IsThreadRender() const;
         };
 
-        std::string Initialize(const args::Options& options, const char* configData, size_t configSize);
+        void Initialize(const args::Options& options, const char* configData, size_t configSize);
 
         const Configuration& CurrentConfiguration();
         const ThreadIds& CurrentThreadIds();
