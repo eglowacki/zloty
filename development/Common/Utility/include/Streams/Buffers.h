@@ -19,6 +19,7 @@
 #include <memory>
 #include "YagetCore.h"
 #include "App/AppUtilities.h"
+#include <array>
 
 
 namespace yaget::io
@@ -159,6 +160,12 @@ namespace yaget::io
         }
 
 
+        bool operator<(const MessagingBuffer& other) const
+        {
+            return size_data(mBuffer) < size_data(other.mBuffer);
+        };
+
+
         void AssureWriteSize(size_t additionalSize)
         {
             const auto currentCapacity = size_data(mBuffer);
@@ -204,11 +211,62 @@ namespace yaget::io
         }
 
 
+        static MessagingBuffer* Allocate(size_t bufferSize)
+        {
+            //auto lower_it = mPayloadBufferPool.lower_bound(bufferSize);
+
+            //auto next_root = static_cast<int>(std::floor(std::sqrt(bufferSize)) + 1);
+            //next_root;
+
+            auto it = std::ranges::find_if(mPayloadBufferPool, [bufferSize](const auto& buffer)
+            {
+                return buffer && size_data(buffer->mBuffer) >= bufferSize;
+            });
+
+            if (it != mPayloadBufferPool.end())
+            {
+                auto result = it->release();
+                return result;
+            }
+
+            return new MessagingBuffer(bufferSize);
+        }
+
+
+        static void Free(MessagingBuffer* messagingBuffer)
+        {
+            auto freeSpot = std::ranges::find_if(mPayloadBufferPool, [](const auto& buffer)
+            {
+                return buffer == nullptr;
+            });
+
+            YAGET_ASSERT(freeSpot != mPayloadBufferPool.end(), "Failed to find free spot in payload buffer pool.");
+
+            if (freeSpot != mPayloadBufferPool.end())
+            {
+                *freeSpot = std::unique_ptr<MessagingBuffer>(messagingBuffer);
+                freeSpot->get()->mWriteOffset = 0;
+                freeSpot->get()->mNumEntities = 0;
+            }
+
+            std::ranges::sort(mPayloadBufferPool, [](const auto& lhs, const auto& rhs)
+            {
+                return lhs && rhs ? size_data(lhs->mBuffer) < size_data(rhs->mBuffer) : lhs != nullptr;
+            });
+        }
+
+
         Buffer mBuffer;
         size_t mWriteOffset = 0;
         // Increment for every entity during frame. Allows us to allocate memory 
         // based on how many entities there were processed during frame
         size_t mNumEntities = 0;
+
+    private:
+        using PayloadBuffer = std::unique_ptr<MessagingBuffer>;
+        // we can not use size of Buffer as a key, since that could be changed by the client code at any time.
+        //static std::set<PayloadBuffer> mPayloadBuffersStorage;
+        static inline std::array<PayloadBuffer, 100> mPayloadBufferPool;
     };
 
     struct Tag

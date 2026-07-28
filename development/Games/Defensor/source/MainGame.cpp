@@ -237,10 +237,12 @@ namespace
 
 }
 
+#include <set>
 
 int defensor::Run(const yaget::args::Options& options)
 {
     using namespace yaget;
+
 
 #if 0
     lua_State* L = luaL_newstate(); // Create new Lua state

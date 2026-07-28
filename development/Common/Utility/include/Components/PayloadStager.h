@@ -19,27 +19,27 @@
 #include "YagetCore.h"
 #include "GameSystem/tinyevents/tinyevents.h"
 #include <memory>
-
+#include <stack>
 
 namespace yaget::comp
 {
     // Provides ability to move payloads between threads, primary usage is Logic Thread -> Render Thread
-    template<typename T>
+    // It also provides ability to listen and dispatch events between threads
+    template<typename S>
     class PayloadStager
     {
     public:
-        using Storage = T;
+        using Storage = S;
         using Payload = std::shared_ptr<Storage>;
         using ConstPayload = std::shared_ptr<const Storage>;
     
         // Create new and blank payload ready to be filled and called to SetPayload
         template<typename... Args>
         Payload CreatePayload(Args&&... args);
-        // Set this payload as the active one and return old previous one
+        // Set this payload as the active one and return the previous one.
+        // This call makes payload available to GetPayload and ConsumePayload methods.
         Payload SetPayload(const Payload& payload);
     
-        // Returns active payload without changing/clearing
-        ConstPayload GetPayload() const;
         // Returns active payload and clears current one to empty
         ConstPayload ConsumePayload();
 
@@ -53,43 +53,40 @@ namespace yaget::comp
         std::uint64_t Listen(const std::function<void(const T&)>& listener, DispatcherType dispatcherType)
         {
             std::lock_guard lock(mDispatcherMutex);
-            return mDispatcher[static_cast<int>(dispatcherType)].Listen(listener);
+            return Dispatcher(dispatcherType).Listen(listener);
         }
 
         template <typename T>
         void Queue(T&& msg, DispatcherType dispatcherType)
         {
             std::lock_guard lock(mDispatcherMutex);
-            mDispatcher[static_cast<int>(dispatcherType)].Queue(std::forward<T>(msg));
+            Dispatcher(dispatcherType).Queue(std::forward<T>(msg));
         }
 
         void Process(DispatcherType dispatcherType)
         {
             std::lock_guard lock(mDispatcherMutex);
-            mDispatcher[static_cast<int>(dispatcherType)].Process();
+            Dispatcher(dispatcherType).Process();
         }
 
         template <typename T>
         void Dispatch(const T& msg, DispatcherType dispatcherType)
         {
             std::lock_guard lock(mDispatcherMutex);
-            return mDispatcher[static_cast<int>(dispatcherType)].Dispatch(msg);
+            return Dispatcher(dispatcherType).Dispatch(msg);
         }
 
         void Remove(const std::uint64_t handle, DispatcherType dispatcherType)
         {
             std::lock_guard lock(mDispatcherMutex);
-            mDispatcher[static_cast<int>(dispatcherType)].Remove(handle);
+            Dispatcher(dispatcherType).Remove(handle);
         }
 
-        //tinyevents::Token GetToken(const std::uint64_t handle, DispatcherType dispatcherType)
-        //{
-        //    std::lock_guard lock(mDispatcherMutex);
-        //    tinyevents::Token token(mDispatcher[static_cast<int>(dispatcherType)], handle);
-        //    return token;
-        //}
-    
     private:
+        tinyevents::Dispatcher& Dispatcher(DispatcherType dispatcherType)
+        {
+            return mDispatcher[static_cast<int>(dispatcherType)];
+        }
         // return blank payload, ready to be filled 
         // and used in SetPayload(...) method
         template<typename... Args>
@@ -106,40 +103,39 @@ namespace yaget::comp
     
     //-------------------------------------------------------------------------------------------
     // put this into .inl file
-    template<typename T>
+    template<typename S>
     template<typename... Args>
-    typename PayloadStager<T>::Payload PayloadStager<T>::CreatePayload(Args&&... args)
+    PayloadStager<S>::Payload PayloadStager<S>::CreatePayload(Args&&... args)
     {
         Payload payload = GetNextFreePayload(std::forward<Args>(args)...);
         return payload;
     }
     
-    template<typename T>
-    typename PayloadStager<T>::Payload PayloadStager<T>::SetPayload(const Payload& newPayload)
+    template<typename S>
+    PayloadStager<S>::Payload PayloadStager<S>::SetPayload(const Payload& newPayload)
     {
         Payload oldPayload = mActivePayload.exchange(newPayload);
         return oldPayload;
     }
     
-    template<typename T>
-    typename PayloadStager<T>::ConstPayload PayloadStager<T>::GetPayload() const
-    {
-        ConstPayload currentPayload = mActivePayload.load();
-        return currentPayload;
-    }
-    
-    template<typename T>
-    typename PayloadStager<T>::ConstPayload PayloadStager<T>::ConsumePayload()
+    template<typename S>
+    PayloadStager<S>::ConstPayload PayloadStager<S>:: ConsumePayload()
     {
         ConstPayload currentPayload = mActivePayload.exchange(Payload{});
         return currentPayload;
     }
     
-    template<typename T>
+    template<typename S>
     template<typename... Args>
-    typename PayloadStager<T>::Payload PayloadStager<T>::GetNextFreePayload(Args&&... args)
+    PayloadStager<S>::Payload PayloadStager<S>::GetNextFreePayload(Args&&... args)
     {
-        return std::make_shared<Storage>(std::forward<Args>(args)...);
+        Storage* newPayload = Storage::Allocate(std::forward<Args>(args)...);
+        auto payload = std::shared_ptr<Storage>(newPayload, [](auto* oldObject)
+        {
+            Storage::Free(oldObject);
+        });
+
+        return payload;
     }
 
 } // namespace yaget

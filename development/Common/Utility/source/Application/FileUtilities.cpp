@@ -84,6 +84,22 @@ namespace
         return fs::file_time_type{duration_since_epoch};
     }
 
+
+    SYSTEMTIME ConvertFileTimeToSystemTime(std::filesystem::file_time_type ftime) {
+        // 1. Extract raw 64-bit count of ticks (100-nanosecond intervals since Jan 1, 1601)
+        const uint64_t rawCount = ftime.time_since_epoch().count();
+
+        // 2. Map to Win32 FILETIME
+        FILETIME ft;
+        ft.dwLowDateTime = static_cast<DWORD>(rawCount);
+        ft.dwHighDateTime = static_cast<DWORD>(rawCount >> 32);
+
+        // 3. Convert to SYSTEMTIME
+        SYSTEMTIME st;
+        FileTimeToSystemTime(&ft, &st);
+
+        return st;
+    }
 } // namespace
 
 
