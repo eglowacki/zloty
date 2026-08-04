@@ -15,8 +15,8 @@
 #pragma once
 
 
-#include "Components/GameSystem.h"
 #include "DefensorGameTypes.h"
+#include "Components/GameSystem.h"
 
 namespace defensor::game
 {
