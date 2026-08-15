@@ -106,3 +106,5 @@ development/Common/Script/Lua-5.4.7/
 development/Common/Utility/include/sqlite/sqlite-amalgamation-3470200/
 
 *.DotSettings
+
+development/Tools/Everything/

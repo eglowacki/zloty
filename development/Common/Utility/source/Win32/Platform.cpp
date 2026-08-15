@@ -694,7 +694,7 @@ void platform::DebuggerOutput(const std::string& message)
 
 void system::Initialize(const args::Options& options, const char* configData, size_t configSize)
 {
-    const auto resultMessage = dev::Initialize(options, configData, configSize);
+    dev::Initialize(options, configData, configSize);
     ylog::Initialize(options);
     metrics::Initialize(options);
 
@@ -706,8 +706,6 @@ void system::Initialize(const args::Options& options, const char* configData, si
         yaget::ToString(yaget::YagetVersion).c_str(),
         buildNumber.c_str(), appTime,
         ::GetCommandLineA());
-
-    YLOG_CINFO("INIT", resultMessage.empty(), "Configuration Overrides: '%s'.", resultMessage.c_str());
 }
 
 system::InitializationResult system::InitializeSetup(int argc, char* argv[], args::Options& options, const char* configData, size_t configSize)

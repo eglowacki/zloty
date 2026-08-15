@@ -201,7 +201,7 @@ bool yaget::dev::ThreadIds::IsThreadRender() const
 
 //-------------------------------------------------------------------------------------------------------------------------------
 /// do not use any YLOG since the log system has not been initialized yet
-std::string yaget::dev::Initialize(const args::Options& options, const char* configData, size_t configSize)
+void yaget::dev::Initialize(const args::Options& options, const char* configData, size_t configSize)
 {
     std::string optionsPathName = io::file::FindConfigFile("Configuration", true, &options);
 
@@ -307,6 +307,4 @@ std::string yaget::dev::Initialize(const args::Options& options, const char* con
     //
 
     GetCurrentConfiguration() = configuration;
-
-    return {};
 }

@@ -43,6 +43,11 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
         const auto cacheFilePath = cacheFileTag.ResolveVTS();
         const auto cacheFileTimeStamp = io::file::GetFileDate(cacheFilePath);
 
+#if 0
+        const auto cacheFileTimeStamp2 = io::file::GetFileDate(cacheFilePath, io::file::FileDateType::CreationTime);
+        cacheFileTimeStamp2;
+#endif
+
         io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
         if (auto asset = cacheLoader.GetAsset())
         {

@@ -42,9 +42,11 @@ namespace defensor::game
     using Messaging = comp::PayloadStager<io::MessagingBuffer>;
     using MessagingPayload = Messaging::Payload;
 
-    struct StateCollectorComponent { static constexpr int Capacity = 64; };
+    using GlobalEntity = comp::GlobalRowPolicy<
+        comp::MenuComponent*, 
+        items::StageComponent*
+    >;
 
-    using GlobalEntity = comp::GlobalRowPolicy<comp::MenuComponent*, items::StageComponent*, StateCollectorComponent*>;
     using Entity = comp::RowPolicy<
         comp::LocationComponent3*,
         comp::InputComponent*,
@@ -55,7 +57,8 @@ namespace defensor::game
         comp::MaterialComponent*,
         comp::BulletComponent*,
         comp::TextComponent*,
-        comp::MenuScreenComponent*>;
+        comp::MenuScreenComponent*
+    >;
 
     using GlobalCoordinator = comp::Coordinator<GlobalEntity>;
     using EntityCoordinator = comp::Coordinator<Entity>;
