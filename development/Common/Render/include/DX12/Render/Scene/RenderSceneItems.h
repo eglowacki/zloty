@@ -58,7 +58,7 @@ namespace yaget::render::scene
     public:
         static inline uint32_t PassOrderIndependent = 0;
 
-        struct Tags
+        struct AssetTags
         {
             io::Tag mMaterialTag;
             io::Tag mGeometryTag;
@@ -81,7 +81,7 @@ namespace yaget::render::scene
         // are combination of properties, like root, pipeline, constants, geometry data and texture resources.
         // That means the lower value of mRenderPassOrder will be rendered 'first'
         uint64_t GetRenderOrder() const;
-        const Tags& GetTags() const;
+        const AssetTags& GetTags() const;
 
     private:
         friend SceneItemsStorage;
@@ -96,7 +96,7 @@ namespace yaget::render::scene
         std::vector<ID3D12DescriptorHeap*> mTextureResources{};
 
         RenderShape mRenderShape;
-        Tags mTags;
+        AssetTags mTags;
     };
 
 

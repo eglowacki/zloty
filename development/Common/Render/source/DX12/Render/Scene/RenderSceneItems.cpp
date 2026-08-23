@@ -102,7 +102,7 @@ uint64_t yaget::render::scene::SceneItem::GetRenderOrder() const
 
 
 //-------------------------------------------------------------------------------------------------
-const yaget::render::scene::SceneItem::Tags& yaget::render::scene::SceneItem::GetTags() const
+const yaget::render::scene::SceneItem::AssetTags& yaget::render::scene::SceneItem::GetTags() const
 {
     return mTags;
 }
