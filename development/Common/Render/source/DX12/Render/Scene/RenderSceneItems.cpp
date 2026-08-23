@@ -58,12 +58,12 @@ void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, const command
 {
     auto deviceCommandList = commandList->GetDeviceCommandList();
 
-    if (currentRenderPassState.CheckHash(mRootSignature, commands::RenderPassState::HashType::RootSignature))
+    if (currentRenderPassState.CheckNewHash(mRootSignature, commands::RenderPassState::HashType::RootSignature))
     {
         deviceCommandList->SetGraphicsRootSignature(mRootSignature);
     }
 
-    if (currentRenderPassState.CheckHash(mPipelineState, commands::RenderPassState::HashType::PipelineState))
+    if (currentRenderPassState.CheckNewHash(mPipelineState, commands::RenderPassState::HashType::PipelineState))
     {
         deviceCommandList->SetPipelineState(mPipelineState);
     }
