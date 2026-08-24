@@ -64,6 +64,7 @@ namespace yaget::render::scene
             io::Tag mGeometryTag;
             io::Tags mTexturesTags;
             uint32_t mRenderPassOrder{ PassOrderIndependent };
+            AssetCacheType mPsoCacheType{ AssetCacheType::Empty };
         };
 
         SceneItem();

@@ -40,11 +40,25 @@ void yaget::render::RenderShape::Bind(GeometriesResources::GeometryData geometry
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::RenderShape::Render(ID3D12GraphicsCommandList* commandList) const
+void yaget::render::RenderShape::Render(ID3D12GraphicsCommandList* commandList, AssetCacheType psoType) const
 {
     if (mGeometryData.mHeader.IsValid())
     {
-        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        D3D_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+        if (has(psoType, AssetCacheType::TopologyStateTriangle))
+        {
+            topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        }
+        else if (has(psoType, AssetCacheType::TopologyStatePoint))
+        {
+            topology = D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+        }
+        else if (has(psoType, AssetCacheType::TopologyStateLine))
+        {
+            topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+        }
+
+        commandList->IASetPrimitiveTopology(topology);
         commandList->IASetVertexBuffers(0, 1, &mVertexBufferView);
 
         if (mHasIndices)

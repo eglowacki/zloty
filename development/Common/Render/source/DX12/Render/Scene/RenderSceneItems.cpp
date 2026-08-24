@@ -85,7 +85,7 @@ void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, const command
     mConstantBuffer->Bind(deviceCommandList);
 
     mRenderShape.Bind(mGeometryData);
-    mRenderShape.Render(deviceCommandList);
+    mRenderShape.Render(deviceCommandList, mTags.mPsoCacheType);
 }
 
 
@@ -214,7 +214,8 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
             .mMaterialTag = materialTag,
             .mGeometryTag = geometryTag,
             .mTexturesTags = {},
-            .mRenderPassOrder =  itemProperties.mRenderOrder
+            .mRenderPassOrder =  itemProperties.mRenderOrder,
+            .mPsoCacheType = AssetCache::TagToType(materialProperties.mPSO)
         };
         std::ranges::copy(texturesTags.begin(), texturesTags.end(), std::back_inserter(sceneItem.mTags.mTexturesTags));
 

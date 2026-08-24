@@ -155,6 +155,10 @@ namespace yaget::render
         return anded(lhs, rhs);
     }
 
+    constexpr bool has(AssetCacheType source, AssetCacheType target)
+    {
+        return static_cast<bool>(source & target);
+    }
 
     static AssetCacheType BasicVertex = AssetCacheType::VertexPosition | AssetCacheType::VertexColor;
     static AssetCacheType BasicPixel = AssetCacheType::PixelColor;
