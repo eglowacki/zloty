@@ -102,7 +102,6 @@ namespace
 
         if (has(assetType, AssetCacheType::RasterizerStateWireframe))
         {
-            //rasterizerState = DirectX::CommonStates::Wireframe;
             rasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
         }
 
@@ -173,6 +172,11 @@ namespace
         {
             format = DXGI_FORMAT_D24_UNORM_S8_UINT;
         }
+        else if (has(assetType, AssetCacheType::DSVFormatD32F))
+        {
+            format = DXGI_FORMAT_D32_FLOAT;
+        }
+
         return format;
     }
 

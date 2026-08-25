@@ -272,9 +272,13 @@ bool yaget::io::VirtualTransportSystem::AttachTransientBlob(const std::vector<st
         }
     }
 
-    for (const auto& asset : assets)
+    if (!assets.empty())
     {
-        (void)AddAsset(asset);
+        std::unique_lock<std::mutex> locker(mMutexAssets);
+        for (const auto& asset : assets)
+        {
+            AddAssetNonMT(asset);
+        }
     }
 
     return true;
