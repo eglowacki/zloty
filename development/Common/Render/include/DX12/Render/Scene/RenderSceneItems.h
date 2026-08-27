@@ -61,7 +61,7 @@ namespace yaget::render::scene
         struct AssetTags
         {
             io::Tag mMaterialTag;
-            io::Tag mGeometryTag;
+            io::Tags mGeometriesTags;
             io::Tags mTexturesTags;
             uint32_t mRenderPassOrder{ PassOrderIndependent };
             AssetCacheType mPsoCacheType{ AssetCacheType::Empty };
@@ -93,7 +93,7 @@ namespace yaget::render::scene
         ID3D12PipelineState* mPipelineState{};
         ConstantBuffer* mConstantBuffer{};
 
-        GeometriesResources::GeometryData mGeometryData{};
+        GeometriesResources::GeometryData mGeometriesData{};
         std::vector<ID3D12DescriptorHeap*> mTextureResources{};
 
         RenderShape mRenderShape;

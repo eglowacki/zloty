@@ -17,7 +17,7 @@ namespace
         using Sections = yaget::io::VirtualTransportSystem::Sections;
 
         Section mMaterial;
-        Section mGeometry;
+        Sections mGeometries;
         Sections mTextures;
 
         uint32_t mRenderOrder{ yaget::render::scene::SceneItem::PassOrderIndependent};
@@ -28,7 +28,7 @@ namespace
     void to_json(nlohmann::json& j, const ItemProperties& itemProperties)
     {
         j["Material"] = itemProperties.mMaterial;
-        j["Geometry"] = itemProperties.mGeometry;
+        j["Geometries"] = itemProperties.mGeometries;
         j["Textures"] =  itemProperties.mTextures;
         j["RenderOrder"] =  itemProperties.mRenderOrder;
     }
@@ -38,7 +38,7 @@ namespace
     void from_json(const nlohmann::json& j, ItemProperties& itemProperties)
     {
         itemProperties.mMaterial = yaget::json::GetValue(j, "Material", itemProperties.mMaterial);
-        itemProperties.mGeometry = yaget::json::GetValue(j, "Geometry", itemProperties.mGeometry);
+        itemProperties.mGeometries = yaget::json::GetValue(j, "Geometries", itemProperties.mGeometries);
         itemProperties.mTextures = yaget::json::GetValue(j, "Textures", itemProperties.mTextures);
         itemProperties.mRenderOrder = yaget::json::GetValue(j, "RenderOrder", itemProperties.mRenderOrder);
     }
@@ -84,7 +84,7 @@ void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, const command
 
     mConstantBuffer->Bind(deviceCommandList);
 
-    mRenderShape.Bind(mGeometryData);
+    mRenderShape.Bind(mGeometriesData);
     mRenderShape.Render(deviceCommandList, mTags.mPsoCacheType);
 }
 
@@ -114,7 +114,7 @@ bool yaget::render::scene::SceneItem::UpdateData(uint32_t bufferIndex, constant_
     if (constantTypes == constant_shader_types::ConstantTypes::GeometryData)
     {
         const auto geomData = reinterpret_cast<const GeometriesResources::GeometryData*>(data);
-        mGeometryData = *geomData;
+        mGeometriesData = *geomData;
         return true;
     }
 
@@ -189,11 +189,11 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         auto itemProperties = LoadBlob<ItemProperties>(mVTS, tag);
 
         auto materialTag = mVTS.GetTag(itemProperties.mMaterial);
-        auto geometryTag = mVTS.GetTag(itemProperties.mGeometry);
+        auto geometriesTags = mVTS.GetTags(itemProperties.mGeometries);
         auto texturesTags = mVTS.GetTags(itemProperties.mTextures);
 
         MaterialPropertyTags materialProperties = mRenderMaterials.GetMaterial(materialTag);
-        auto geometryData = mGeometries.GetResource(geometryTag);
+        auto geometriesData = mGeometries.GetResources(geometriesTags, nullptr);
         auto textures = mTextures.GetResourceViews(texturesTags);
 
         auto rootSig = mSignatures.GetSignature(materialProperties.mSignature);
@@ -206,18 +206,17 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         sceneItem.mRootSignature = rootSig;
         sceneItem.mPipelineState = pso;
         sceneItem.mConstantBuffer = constantBuffer;
-        sceneItem.mGeometryData = geometryData;
-        std::ranges::copy(textures.begin(), textures.end(), std::back_inserter(sceneItem.mTextureResources));
+        sceneItem.mGeometriesData = geometriesData.empty() ? GeometriesResources::GeometryData{} : geometriesData.front();
+        sceneItem.mTextureResources = std::move(textures);
 
         sceneItem.mTags = 
         {
             .mMaterialTag = materialTag,
-            .mGeometryTag = geometryTag,
-            .mTexturesTags = {},
+            .mGeometriesTags = geometriesTags,
+            .mTexturesTags = std::move(texturesTags),
             .mRenderPassOrder =  itemProperties.mRenderOrder,
             .mPsoCacheType = AssetCache::TagToType(materialProperties.mPSO)
         };
-        std::ranges::copy(texturesTags.begin(), texturesTags.end(), std::back_inserter(sceneItem.mTags.mTexturesTags));
 
         results.push_back(&sceneItem);
         if (counter)
