@@ -90,6 +90,7 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
                     {
                         // skip getting cache data for this file since it's newer then cache file
                         YLOG_INFO("DEVI", std::format("File '{} ({})' is newer then cache '{} ({})', will update.", filePath, fileTimeStamp, cacheFilePath, cacheFileTimeStamp).c_str());
+                        mCacheStatus = ored(mCacheStatus, CacheStatus::Holes);
                         continue;
                     }
 
