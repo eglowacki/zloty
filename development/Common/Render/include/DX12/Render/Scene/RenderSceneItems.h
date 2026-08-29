@@ -93,10 +93,9 @@ namespace yaget::render::scene
         ID3D12PipelineState* mPipelineState{};
         ConstantBuffer* mConstantBuffer{};
 
-        GeometriesResources::GeometryData mGeometriesData{};
+        GeometriesResources::Geometries mGeometriesData{};
         std::vector<ID3D12DescriptorHeap*> mTextureResources{};
 
-        RenderShape mRenderShape;
         AssetTags mTags;
     };
 

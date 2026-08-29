@@ -42,7 +42,30 @@ namespace
         itemProperties.mTextures = yaget::json::GetValue(j, "Textures", itemProperties.mTextures);
         itemProperties.mRenderOrder = yaget::json::GetValue(j, "RenderOrder", itemProperties.mRenderOrder);
     }
-    
+
+
+    D3D_PRIMITIVE_TOPOLOGY GetTopologyType(yaget::render::AssetCacheType psoType)
+    {
+        using namespace yaget::render;
+
+        D3D_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+        if (has(psoType, AssetCacheType::TopologyStateTriangle))
+        {
+            topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        }
+        else if (has(psoType, AssetCacheType::TopologyStatePoint))
+        {
+            topology = D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+        }
+        else if (has(psoType, AssetCacheType::TopologyStateLine))
+        {
+            topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+        }
+
+        return topology;
+    }
+
+
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -68,6 +91,12 @@ void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, const command
         deviceCommandList->SetPipelineState(mPipelineState);
     }
 
+    auto topology = GetTopologyType(mTags.mPsoCacheType);
+    if (currentRenderPassState.CheckNewHash(topology, commands::RenderPassState::HashType::Topology))
+    {
+        deviceCommandList->IASetPrimitiveTopology(topology);
+    }
+
     constexpr constant_shader_types::ConstantTypes textureTypes[4] =
     {
         constant_shader_types::ConstantTypes::Texture2d,
@@ -84,8 +113,13 @@ void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, const command
 
     mConstantBuffer->Bind(deviceCommandList);
 
-    mRenderShape.Bind(mGeometriesData);
-    mRenderShape.Render(deviceCommandList, mTags.mPsoCacheType);
+    std::vector<RenderShape> renderShapes{ mGeometriesData.size() };
+
+    for (const auto& [geom, shape] : std::views::zip(mGeometriesData, renderShapes))
+    {
+        shape.Bind(geom);
+        shape.Render(deviceCommandList);
+    }
 }
 
 
@@ -114,7 +148,13 @@ bool yaget::render::scene::SceneItem::UpdateData(uint32_t bufferIndex, constant_
     if (constantTypes == constant_shader_types::ConstantTypes::GeometryData)
     {
         const auto geomData = reinterpret_cast<const GeometriesResources::GeometryData*>(data);
-        mGeometriesData = *geomData;
+        const auto& passIndex = geomData->mPassIndex;
+
+        auto minSizeNeeded = std::max<size_t>(mGeometriesData.size(), passIndex + 1);
+        mGeometriesData.resize(minSizeNeeded);
+
+        mGeometriesData[passIndex] = *geomData;
+
         return true;
     }
 
@@ -206,13 +246,13 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         sceneItem.mRootSignature = rootSig;
         sceneItem.mPipelineState = pso;
         sceneItem.mConstantBuffer = constantBuffer;
-        sceneItem.mGeometriesData = geometriesData.empty() ? GeometriesResources::GeometryData{} : geometriesData.front();
+        sceneItem.mGeometriesData = std::move(geometriesData);
         sceneItem.mTextureResources = std::move(textures);
 
         sceneItem.mTags = 
         {
             .mMaterialTag = materialTag,
-            .mGeometriesTags = geometriesTags,
+            .mGeometriesTags = std::move(geometriesTags),
             .mTexturesTags = std::move(texturesTags),
             .mRenderPassOrder =  itemProperties.mRenderOrder,
             .mPsoCacheType = AssetCache::TagToType(materialProperties.mPSO)

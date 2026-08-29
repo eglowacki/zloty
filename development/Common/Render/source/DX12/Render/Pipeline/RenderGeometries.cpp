@@ -398,7 +398,7 @@ yaget::render::GeometriesResources::~GeometriesResources() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-std::vector<yaget::render::GeometriesResources::GeometryData> yaget::render::GeometriesResources::GetResources(const io::Tags& tags, comp::gs::mt::InitCounter* counter)
+yaget::render::GeometriesResources::Geometries yaget::render::GeometriesResources::GetResources(const io::Tags& tags, comp::gs::mt::InitCounter* counter)
 {
     std::vector<GeometryData> results;
     io::Tags tagsToLoad;

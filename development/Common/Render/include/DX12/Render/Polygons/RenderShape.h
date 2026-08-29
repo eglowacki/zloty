@@ -35,7 +35,7 @@ namespace yaget::render
         ~RenderShape();
 
         void Bind(GeometriesResources::GeometryData geometryData);
-        void Render(ID3D12GraphicsCommandList* commandList, AssetCacheType psoType) const;
+        void Render(ID3D12GraphicsCommandList* commandList) const;
 
     private:
         void UpdateGeometryData();
