@@ -76,12 +76,12 @@ namespace yaget::render::commands
 
         size_t mRootSignatureHash{};
         size_t mPipelineStateHash{};
-        size_t TexturesHash[16]{};
+        size_t mTexturesHash[16]{};
         size_t mTopologyHash{};
         size_t mVertexBufferHash{};
         size_t mIndexBufferHash{};
 
-        bool CheckHash(auto stateObject, HashType hashType)
+        bool CheckNewHash(auto stateObject, HashType hashType)
         {
             size_t newHash = std::hash<decltype(stateObject)>{}(stateObject);
             size_t* currentHash = nullptr;
@@ -96,7 +96,7 @@ namespace yaget::render::commands
                     break;
                 case HashType::Texture:
                     //// For textures we have an array of hashes, so we need to find the first empty slot or a matching hash
-                    //for (size_t& textureHash : TexturesHash)
+                    //for (size_t& textureHash : mTexturesHash)
                     //{
                     //    if (textureHash == 0 || textureHash == newHash)
                     //    {

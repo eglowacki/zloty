@@ -26,7 +26,7 @@ namespace
             auto rasterizerState = json::GetValue(jasonBlock, "RasterizerState", render::AssetCacheType::RasterizerStateNone);
             auto blendMode = json::GetValue(jasonBlock, "BlendMode", render::AssetCacheType::BlendModeOpaque);
             auto depthState = json::GetValue(jasonBlock, "DepthState", render::AssetCacheType::DepthStateNone);
-            auto topologyState = render::AssetCacheType::TopologyStateTriangle;
+            auto topologyState = json::GetValue(jasonBlock, "TopologyState", render::AssetCacheType::TopologyStateTriangle);
             auto rtFormat = render::AssetCacheType::RTVFormatRGBA8;
 
             std::string sigCreated = " ";

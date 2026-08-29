@@ -17,7 +17,7 @@ namespace
         using Sections = yaget::io::VirtualTransportSystem::Sections;
 
         Section mMaterial;
-        Section mGeometry;
+        Sections mGeometries;
         Sections mTextures;
 
         uint32_t mRenderOrder{ yaget::render::scene::SceneItem::PassOrderIndependent};
@@ -28,7 +28,7 @@ namespace
     void to_json(nlohmann::json& j, const ItemProperties& itemProperties)
     {
         j["Material"] = itemProperties.mMaterial;
-        j["Geometry"] = itemProperties.mGeometry;
+        j["Geometries"] = itemProperties.mGeometries;
         j["Textures"] =  itemProperties.mTextures;
         j["RenderOrder"] =  itemProperties.mRenderOrder;
     }
@@ -38,11 +38,34 @@ namespace
     void from_json(const nlohmann::json& j, ItemProperties& itemProperties)
     {
         itemProperties.mMaterial = yaget::json::GetValue(j, "Material", itemProperties.mMaterial);
-        itemProperties.mGeometry = yaget::json::GetValue(j, "Geometry", itemProperties.mGeometry);
+        itemProperties.mGeometries = yaget::json::GetValue(j, "Geometries", itemProperties.mGeometries);
         itemProperties.mTextures = yaget::json::GetValue(j, "Textures", itemProperties.mTextures);
         itemProperties.mRenderOrder = yaget::json::GetValue(j, "RenderOrder", itemProperties.mRenderOrder);
     }
-    
+
+
+    D3D_PRIMITIVE_TOPOLOGY GetTopologyType(yaget::render::AssetCacheType psoType)
+    {
+        using namespace yaget::render;
+
+        D3D_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+        if (has(psoType, AssetCacheType::TopologyStateTriangle))
+        {
+            topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        }
+        else if (has(psoType, AssetCacheType::TopologyStatePoint))
+        {
+            topology = D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+        }
+        else if (has(psoType, AssetCacheType::TopologyStateLine))
+        {
+            topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+        }
+
+        return topology;
+    }
+
+
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -58,14 +81,20 @@ void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, const command
 {
     auto deviceCommandList = commandList->GetDeviceCommandList();
 
-    if (currentRenderPassState.CheckHash(mRootSignature, commands::RenderPassState::HashType::RootSignature))
+    if (currentRenderPassState.CheckNewHash(mRootSignature, commands::RenderPassState::HashType::RootSignature))
     {
         deviceCommandList->SetGraphicsRootSignature(mRootSignature);
     }
 
-    if (currentRenderPassState.CheckHash(mPipelineState, commands::RenderPassState::HashType::PipelineState))
+    if (currentRenderPassState.CheckNewHash(mPipelineState, commands::RenderPassState::HashType::PipelineState))
     {
         deviceCommandList->SetPipelineState(mPipelineState);
+    }
+
+    auto topology = GetTopologyType(mTags.mPsoCacheType);
+    if (currentRenderPassState.CheckNewHash(topology, commands::RenderPassState::HashType::Topology))
+    {
+        deviceCommandList->IASetPrimitiveTopology(topology);
     }
 
     constexpr constant_shader_types::ConstantTypes textureTypes[4] =
@@ -84,8 +113,13 @@ void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, const command
 
     mConstantBuffer->Bind(deviceCommandList);
 
-    mRenderShape.Bind(mGeometryData);
-    mRenderShape.Render(deviceCommandList);
+    std::vector<RenderShape> renderShapes{ mGeometriesData.size() };
+
+    for (const auto& [geom, shape] : std::views::zip(mGeometriesData, renderShapes))
+    {
+        shape.Bind(geom);
+        shape.Render(deviceCommandList);
+    }
 }
 
 
@@ -102,7 +136,7 @@ uint64_t yaget::render::scene::SceneItem::GetRenderOrder() const
 
 
 //-------------------------------------------------------------------------------------------------
-const yaget::render::scene::SceneItem::Tags& yaget::render::scene::SceneItem::GetTags() const
+const yaget::render::scene::SceneItem::AssetTags& yaget::render::scene::SceneItem::GetTags() const
 {
     return mTags;
 }
@@ -114,7 +148,13 @@ bool yaget::render::scene::SceneItem::UpdateData(uint32_t bufferIndex, constant_
     if (constantTypes == constant_shader_types::ConstantTypes::GeometryData)
     {
         const auto geomData = reinterpret_cast<const GeometriesResources::GeometryData*>(data);
-        mGeometryData = *geomData;
+        const auto& passIndex = geomData->mPassIndex;
+
+        auto minSizeNeeded = std::max<size_t>(mGeometriesData.size(), passIndex + 1);
+        mGeometriesData.resize(minSizeNeeded);
+
+        mGeometriesData[passIndex] = *geomData;
+
         return true;
     }
 
@@ -189,11 +229,11 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         auto itemProperties = LoadBlob<ItemProperties>(mVTS, tag);
 
         auto materialTag = mVTS.GetTag(itemProperties.mMaterial);
-        auto geometryTag = mVTS.GetTag(itemProperties.mGeometry);
+        auto geometriesTags = mVTS.GetTags(itemProperties.mGeometries);
         auto texturesTags = mVTS.GetTags(itemProperties.mTextures);
 
         MaterialPropertyTags materialProperties = mRenderMaterials.GetMaterial(materialTag);
-        auto geometryData = mGeometries.GetResource(geometryTag);
+        auto geometriesData = mGeometries.GetResources(geometriesTags, nullptr);
         auto textures = mTextures.GetResourceViews(texturesTags);
 
         auto rootSig = mSignatures.GetSignature(materialProperties.mSignature);
@@ -206,17 +246,17 @@ std::vector<yaget::render::scene::SceneItem*> yaget::render::scene::SceneItemsSt
         sceneItem.mRootSignature = rootSig;
         sceneItem.mPipelineState = pso;
         sceneItem.mConstantBuffer = constantBuffer;
-        sceneItem.mGeometryData = geometryData;
-        std::ranges::copy(textures.begin(), textures.end(), std::back_inserter(sceneItem.mTextureResources));
+        sceneItem.mGeometriesData = std::move(geometriesData);
+        sceneItem.mTextureResources = std::move(textures);
 
         sceneItem.mTags = 
         {
             .mMaterialTag = materialTag,
-            .mGeometryTag = geometryTag,
-            .mTexturesTags = {},
-            .mRenderPassOrder =  itemProperties.mRenderOrder
+            .mGeometriesTags = std::move(geometriesTags),
+            .mTexturesTags = std::move(texturesTags),
+            .mRenderPassOrder =  itemProperties.mRenderOrder,
+            .mPsoCacheType = AssetCache::TagToType(materialProperties.mPSO)
         };
-        std::ranges::copy(texturesTags.begin(), texturesTags.end(), std::back_inserter(sceneItem.mTags.mTexturesTags));
 
         results.push_back(&sceneItem);
         if (counter)

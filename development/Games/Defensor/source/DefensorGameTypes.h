@@ -7,6 +7,7 @@
 //
 //  NOTES:
 //      Specific game types needed for Defensor game
+//      "python + jinja2 for a c++ code" search term
 //
 //
 //  #include "DefensorGameTypes.h"

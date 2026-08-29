@@ -1,7 +1,7 @@
 {
-    "Geometry": "Geometry@Rectangle",
-    "Material": "Materials@ScreenQuadMaterial",
-    "Textures": [
-        "RenderTargets@Scene"
-    ]
+  "Geometries": [ "Geometry@Rectangle" ],
+  "Material": "Materials@ScreenQuadMaterial",
+  "Textures": [
+    "RenderTargets@Scene"
+  ]
 }

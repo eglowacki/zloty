@@ -167,12 +167,15 @@ namespace yaget::render
 
             ID3D12Resource* mVerticesResource{};
             ID3D12Resource* mIndicesResource{};
+            uint32_t mPassIndex{ 0 };
 
             auto operator<=>(const GeometryData&) const = default;
         };
 
+        using Geometries = std::vector<GeometryData>;
+
         GeometryData GetResource(const io::Tag& tag);
-        std::vector<GeometryData> GetResources(const io::Tags& tags, comp::gs::mt::InitCounter* counter);
+        Geometries GetResources(const io::Tags& tags, comp::gs::mt::InitCounter* counter);
 
         // if current resource was updated with buffer without resizing, 
         // return true otherwise return false

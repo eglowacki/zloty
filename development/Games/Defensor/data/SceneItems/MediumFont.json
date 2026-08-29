@@ -1,5 +1,5 @@
 {
-    "Geometry": "Geometry@MediumFont",
-    "Material": "Materials@FontMaterial",
-    "RenderOrder": 10
+  "Geometries": [ "Geometry@MediumFont" ],
+  "Material": "Materials@FontMaterial",
+  "RenderOrder": 10
 }

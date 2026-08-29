@@ -150,12 +150,12 @@ void yaget::render::ui::FontStorage::UpdateText(const io::Tag& tag, const TextPr
 
     if (auto sceneItem = mSceneItemsStorage.GetSceneItem(tag))
     {
-        const auto& geometryTag = sceneItem->GetTags().mGeometryTag;
+        const auto& geometryTag = sceneItem->GetTags().mGeometriesTags.front();
 
         if (mGeometryResources.UpdateResourceData(geometryTag, textBuffer))
         {
             auto geometryData = mGeometryResources.GetResource(geometryTag);
-            sceneItem->UpdateData(0,constant_shader_types::ConstantTypes::GeometryData, geometryData, commandType);
+            sceneItem->UpdateData(0, constant_shader_types::ConstantTypes::GeometryData, geometryData, commandType);
         }
         else
         {

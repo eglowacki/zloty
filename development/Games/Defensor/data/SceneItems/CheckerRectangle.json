@@ -1,5 +1,5 @@
 {
-    "Geometry": "Geometry@Rectangle",
+  "Geometries": [ "Geometry@Rectangle" ],
     "Material": "Materials@BasicTextureMaterial",
     "Textures": [
         "Images@SpaceBackground"

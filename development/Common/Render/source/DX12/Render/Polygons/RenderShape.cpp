@@ -44,7 +44,6 @@ void yaget::render::RenderShape::Render(ID3D12GraphicsCommandList* commandList) 
 {
     if (mGeometryData.mHeader.IsValid())
     {
-        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         commandList->IASetVertexBuffers(0, 1, &mVertexBufferView);
 
         if (mHasIndices)
