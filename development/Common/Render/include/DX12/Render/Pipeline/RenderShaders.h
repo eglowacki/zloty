@@ -82,7 +82,7 @@ namespace yaget::render
     class RenderShaders : public CacheWatcher<io::Buffer>
     {
     public:
-        RenderShaders(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
+        RenderShaders(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, io::Buffer userData);
         ~RenderShaders();
 
         enum class ShaderType

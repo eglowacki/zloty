@@ -51,7 +51,9 @@ namespace defensor::render
         math3d::Interpolator<colors::Color> mColorInterpolator;
         math3d::Interpolator<float> mMatrixInterpolator;
 
-        yaget::render::PipelineContext mPipelineContext;
+        //using LevelPipelineContext = std::unique_ptr<yaget::render::PipelineContext>;
+        using LevelPipelineContext = yaget::render::PipelineContext;
+        LevelPipelineContext mPipelineContext;
 
         io::Tag mSwapChainRenderTargetTag{ .mName = "SwapChainRenderTarget", .mGuid = NewGuid() };
         io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTarget", .mGuid = NewGuid() };

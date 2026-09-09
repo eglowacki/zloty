@@ -317,8 +317,8 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderPipelines::RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, int depthStencilFormatFlags)
-    : CacheWatcher(vts, fileName)
+yaget::render::RenderPipelines::RenderPipelines(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, io::Buffer userData, int depthStencilFormatFlags)
+    : CacheWatcher(vts, std::move(fileName), std::move(userData))
     , mDevice(device)
     , mDepthStencilFormatFlags(depthStencilFormatFlags)
 {

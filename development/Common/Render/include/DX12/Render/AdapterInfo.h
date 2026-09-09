@@ -62,8 +62,36 @@ namespace yaget::render::info
         }
     };
 
+
+    //-------------------------------------------------------------------------------------------------
     struct Adapter
     {
+        struct GraphicsDriverVersion
+        {
+            UINT16 mV1{};
+            UINT16 mV2{};
+            UINT16 mV3{};
+            UINT16 mV4{};
+
+            GraphicsDriverVersion() = default;
+            GraphicsDriverVersion(int64_t driverVersion)
+                : mV1{ static_cast<UINT16>(driverVersion >> 48) }
+                , mV2{ static_cast<UINT16>(static_cast<UINT16>(driverVersion >> 32) & 0xFFFF) }
+                , mV3{ static_cast<UINT16>(static_cast<UINT16>(driverVersion >> 16) & 0xFFFF) }
+                , mV4{ static_cast<UINT16>(driverVersion & 0xFFFF) }
+            {
+            }
+
+            int64_t Compact() const
+            {
+                return (static_cast<int64_t>(mV1) << 48) |
+                       (static_cast<int64_t>(mV2) << 32) |
+                       (static_cast<int64_t>(mV3) << 16) |
+                       static_cast<int64_t>(mV4);
+            }
+        };
+
+        GraphicsDriverVersion mDriverVersion;
         std::string mName;
         bool mSoftware = false;
         uint64_t mVideoMemory = 0;

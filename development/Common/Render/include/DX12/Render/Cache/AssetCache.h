@@ -169,7 +169,7 @@ namespace yaget::render
     public:
         using Section = io::VirtualTransportSystem::Section;  
 
-        AssetCache(io::VirtualTransportSystem& vts, Section fileName);
+        AssetCache(io::VirtualTransportSystem& vts, Section fileName, io::Buffer userData);
         ~AssetCache();
         io::Buffer GetCachedAsset(const io::Tag& tag) const;
         void SaveCachedAsset(const io::Tag& tag, io::Buffer buffer);
@@ -204,6 +204,7 @@ namespace yaget::render
 
         CacheStatus mCacheStatus = CacheStatus::Clean;
         Section mCacheSection;
+        io::Buffer mUserData;
 
         using TagToAssetCacheTypeMap = std::map<io::Tag, AssetCacheType>;
         static TagToAssetCacheTypeMap mTagToAssetCacheType;

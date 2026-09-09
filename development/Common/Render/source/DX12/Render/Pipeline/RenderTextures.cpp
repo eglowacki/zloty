@@ -40,8 +40,8 @@ namespace
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderTextures::RenderTextures(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
-    : CacheWatcher(vts, fileName)
+yaget::render::RenderTextures::RenderTextures(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, io::Buffer userData)
+    : CacheWatcher(vts, std::move(fileName), std::move(userData))
 {
 }
 

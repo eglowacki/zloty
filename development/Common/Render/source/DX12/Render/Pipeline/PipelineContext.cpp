@@ -42,16 +42,17 @@ namespace
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, ProgressCallback progressCallback)
-    : mDependencyGraph(vts, Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindItemProperties(guid); })
-    , mRenderSignatures{ device.GetAdapter().GetDevice(), vts, GetSection("Signatures") }
-    , mRenderPipelines{ device.GetAdapter().GetDevice(), vts, GetSection("Pipelines"), device.GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat }
-    , mRenderShaders{ vts, GetSection("Shaders") }
+    : mGraphicsDriverVersion{ device.GetSelectedAdapter().mDriverVersion }
+    , mDependencyGraph(vts, Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindItemProperties(guid); })
+    , mRenderSignatures{ device.GetAdapter().GetDevice(), vts, GetSection("Signatures"), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
+    , mRenderPipelines{ device.GetAdapter().GetDevice(), vts, GetSection("Pipelines"), io::CreateBuffer(mGraphicsDriverVersion.Compact()), device.GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat }
+    , mRenderShaders{ vts, GetSection("Shaders"), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
     , mPipelineTags{ vts }
     , mRenderMaterials{ mPipelineTags, vts }
-    , mRenderTextures{ vts, GetSection("Textures") }
+    , mRenderTextures{ vts, GetSection("Textures"), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
     , mTextureResources{ device, mRenderTextures }
     , mShaderBuffers{ device.GetWindowFrame().GetSurface().NumBackBuffers(), device.GetAdapter(), vts, GetSection("Constants"), device.GetQueueFenceValues() }
-    , mRenderGeometries{ device.GetAdapter().GetDevice(), vts, GetSection("Geometries") }
+    , mRenderGeometries{ device.GetAdapter().GetDevice(), vts, GetSection("Geometries"), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
     , mGeometryResources{ device, mRenderGeometries }
     , mRenderTargetStorage{ device.GetAdapter().GetDevice(), device.GetSwapChain(), mTextureResources, vts }
     , mSceneItemsStorage{ mRenderMaterials,

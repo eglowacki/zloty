@@ -53,6 +53,7 @@ namespace yaget::render
         void RebindMaterial(const io::Tag& tag, const yaget::render::MaterialPropertyTags& material);
         void HotRebindItemProperties(const Guid& guid);
 
+        yaget::render::info::Adapter::GraphicsDriverVersion mGraphicsDriverVersion{};
         DependencyGraph mDependencyGraph;
         RenderSignatures mRenderSignatures;
         RenderPipelines mRenderPipelines;

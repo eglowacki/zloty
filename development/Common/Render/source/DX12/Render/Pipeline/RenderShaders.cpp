@@ -172,8 +172,8 @@ size_t yaget::render::constant_shader_types::GetConstantLayoutSize(ConstantLayou
 }
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderShaders::RenderShaders(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
-    : CacheWatcher(vts, fileName)
+yaget::render::RenderShaders::RenderShaders(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, io::Buffer userData)
+    : CacheWatcher(vts, std::move(fileName), std::move(userData))
     , mResourceCompiler(std::make_shared<ResourceCompiler>())
 {
 }

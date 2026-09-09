@@ -132,7 +132,7 @@ namespace yaget::render
     class RenderGeometries : public CacheWatcher<io::Buffer>
     {
     public:
-        RenderGeometries(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
+        RenderGeometries(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, io::Buffer userData);
         ~RenderGeometries();
 
         io::Buffer GetGeometry(const io::Tag& tag);

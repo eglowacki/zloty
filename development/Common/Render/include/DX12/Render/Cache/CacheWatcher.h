@@ -63,9 +63,9 @@ namespace yaget::render
     class CacheWatcher
     {
     public:
-        CacheWatcher(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
+        CacheWatcher(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, io::Buffer userData)
             : mVTS(vts)
-            , mCache(mVTS, fileName)
+            , mCache(mVTS, std::move(fileName), std::move(userData))
         {
         }
         ~CacheWatcher() = default;

@@ -28,6 +28,8 @@ namespace
         D3D_FEATURE_LEVEL_12_0
     };
 
+
+    //-------------------------------------------------------------------------------------------------
     yaget::render::ComPtr<IDXGIFactory7> CreateFactory()
     {
         if (yaget::dev::CurrentConfiguration().mGraphics.mGPUTraceback)
@@ -69,6 +71,29 @@ namespace
         yaget::error_handlers::ThrowOnError(hr, "Could not get factory Interface 7 from from DXGI factory.");
 
         return factory;
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    yaget::render::info::Adapter::GraphicsDriverVersion GetDriverVersion(IDXGIAdapter* adapter)
+    {
+        yaget::render::info::Adapter::GraphicsDriverVersion result;
+
+        LARGE_INTEGER driverVersion = {};
+
+        // Check interface support for IDXGIDevice to get the UMD version
+        HRESULT hr = adapter->CheckInterfaceSupport(__uuidof(IDXGIDevice), &driverVersion);
+
+        if (SUCCEEDED(hr))
+        {
+            // Decode the 64-bit integer into 4 parts (major.minor.build.revision)
+            result.mV1 = static_cast<UINT16>(driverVersion.QuadPart >> 48);
+            result.mV2 = static_cast<UINT16>((driverVersion.QuadPart >> 32) & 0xFFFF);
+            result.mV3 = static_cast<UINT16>((driverVersion.QuadPart >> 16) & 0xFFFF);
+            result.mV4 = static_cast<UINT16>(driverVersion.QuadPart & 0xFFFF);
+        }
+
+        return result;
     }
 
 } // namespace
@@ -236,7 +261,8 @@ yaget::render::info::Adapters yaget::render::info::EnumerateAdapters(Filters fil
                     conv::wide_to_utf8(desc.Description).c_str(), IsSoftware(desc.Flags).c_str(), desc.VendorId, desc.DeviceId,
                     conv::ToThousandsSep(desc.DedicatedVideoMemory).c_str(), conv::ToThousandsSep(desc.SharedSystemMemory).c_str(), desc.Flags);
 
-                adapters.emplace_back(Adapter{conv::wide_to_utf8(desc.Description), static_cast<bool>(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE), desc.DedicatedVideoMemory, desc.AdapterLuid, featureLevel, collectedOutputs});
+                const auto driverVersion = GetDriverVersion(adapter.Get());
+                adapters.emplace_back(Adapter{ driverVersion, conv::wide_to_utf8(desc.Description), static_cast<bool>(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE), desc.DedicatedVideoMemory, desc.AdapterLuid, featureLevel, collectedOutputs});
                 break;
             }
         }

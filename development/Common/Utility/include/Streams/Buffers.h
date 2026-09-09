@@ -32,28 +32,28 @@ namespace yaget::io
 
 
     template <typename T>
-    T* cast_data(const Buffer& buffer)
+    constexpr T* cast_data(const Buffer& buffer)
     {
         return reinterpret_cast<T*>(buffer.first.get());
     }
 
 
     template <typename T, typename S = size_t>
-    S size_data(const T& buffer)
+    constexpr S size_data(const T& buffer)
     {
         return static_cast<S>(buffer.second);
     }
 
 
     template <typename T>
-    T* cast_data(const BufferView& buffer)
+    constexpr T* cast_data(const BufferView& buffer)
     {
         return reinterpret_cast<T*>(buffer.first);
     }
 
 
     template <typename T>
-    T* cast_data(BufferView& buffer)
+    constexpr T* cast_data(BufferView& buffer)
     {
         const T* result = cast_data<T>(std::as_const(buffer));
         return const_cast<T*>(result);
@@ -61,14 +61,14 @@ namespace yaget::io
 
 
     template <typename T>
-    T* cast_data_to_ptr(Buffer buffer)
+    constexpr T* cast_data_to_ptr(Buffer buffer)
     {
         return (T*)*io::cast_data<ptrdiff_t>(buffer);
     }
 
 
     template <typename T>
-    T* cast_data_to_ptr(BufferView& buffer)
+    constexpr T* cast_data_to_ptr(BufferView& buffer)
     {
         return (T*)*io::cast_data<ptrdiff_t>(buffer);
     }
@@ -302,4 +302,40 @@ namespace yaget::io
     };
 
     using Tags = std::vector<Tag>;
+
+
+    namespace mem
+    {
+        size_t WriteData(char* destination, size_t offset, const auto& dataSource)
+        {
+            std::memcpy(destination + offset, &dataSource, sizeof(dataSource));
+            offset += sizeof(dataSource);
+            return offset;
+        }
+
+
+        size_t WriteData(yaget::io::Buffer& buffer, size_t offset, const auto& dataSource)
+        {
+            return WriteData(yaget::io::cast_data<char>(buffer), offset, dataSource);
+        }
+
+
+        template <typename T>
+        const T* ReadData(const char* source, size_t& offset)
+        {
+            auto value = reinterpret_cast<const T*>(source + offset);
+            offset += sizeof(T);  
+
+            return value;
+        }
+
+
+        template <typename T>
+        const T* ReadData(const Buffer& buffer, size_t& offset)
+        {
+            return ReadData<T>(yaget::io::cast_data<const char>(buffer), offset);
+        }
+
+    }
+
 }
