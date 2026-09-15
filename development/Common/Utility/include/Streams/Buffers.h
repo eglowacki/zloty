@@ -110,6 +110,16 @@ namespace yaget::io
     }
 
 
+    template <size_t A = 256>
+    inline Buffer CreateAlignBuffer(const uint8_t* data, size_t size)
+    {
+        Buffer dataBuffer{ new uint8_t[size], size };
+        //Buffer dataBuffer = CreateBuffer(size);
+        std::memcpy(dataBuffer.first.get(), data, size);
+        return dataBuffer;
+    }
+
+
     inline Buffer ResizeBuffer(const Buffer& buffer, size_t size)
     {
         if (size <= size_data(buffer))

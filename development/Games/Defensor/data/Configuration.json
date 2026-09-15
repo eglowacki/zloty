@@ -118,7 +118,7 @@
                         "Filters": [ "*.cache" ],
                         "Path": [ "$(AppDataFolder)/Caches" ],
                         "ReadOnly": false,
-                        "Recursive": false
+                        "Recursive": true
                     }
                 },
                 {

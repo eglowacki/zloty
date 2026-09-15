@@ -37,9 +37,9 @@ namespace yaget::render
     {
     public:
         using ProgressCallback = std::function<void(const comp::gs::InitEvent& event)>;
-        PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, ProgressCallback progressCallback);
+        PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, const std::string& stagePrefix, ProgressCallback progressCallback);
 
-        void PreloadAssets(const std::string& sectionSuffix);
+        void PreloadAssets(const std::string& stagePrefix);
         void OnResetDevice(const app::WindowFrame& windowFrame, DeviceB::ResizeState resizeState);
 
         commands::RenderTarget* FindRenderTarget(const io::Tag& tag) const;

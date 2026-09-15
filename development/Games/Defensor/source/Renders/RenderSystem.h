@@ -18,17 +18,7 @@
 #include "Parsers/DependencyGraph.h"
 #include "Render/Commands/RenderTarget.h"
 #include "Render/DesktopApplication.h"
-#include "Render/Commands/RenderPasses.h"
 #include "Render/Pipeline/PipelineContext.h"
-#include "Render/Pipeline/PipelineTags.h"
-#include "Render/Pipeline/RenderGeometries.h"
-#include "Render/Pipeline/RenderMaterialProperties.h"
-#include "Render/Pipeline/RenderPipelines.h"
-#include "Render/Pipeline/RenderShaders.h"
-#include "Render/Pipeline/RenderSignatures.h"
-#include "Render/Pipeline/RenderTextures.h"
-#include "Render/Pipeline/ShaderBuffers.h"
-#include "Render/Scene/RenderSceneItems.h"
 #include "Render/UI/FontRender.h"
 
 
@@ -51,8 +41,7 @@ namespace defensor::render
         math3d::Interpolator<colors::Color> mColorInterpolator;
         math3d::Interpolator<float> mMatrixInterpolator;
 
-        //using LevelPipelineContext = std::unique_ptr<yaget::render::PipelineContext>;
-        using LevelPipelineContext = yaget::render::PipelineContext;
+        using LevelPipelineContext = std::unique_ptr<yaget::render::PipelineContext>;
         LevelPipelineContext mPipelineContext;
 
         io::Tag mSwapChainRenderTargetTag{ .mName = "SwapChainRenderTarget", .mGuid = NewGuid() };

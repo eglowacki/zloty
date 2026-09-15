@@ -6,27 +6,29 @@
 
 namespace
 {
-    yaget::io::VirtualTransportSystem::Section GetSection(const char* cacheName)
+    yaget::io::VirtualTransportSystem::Section GetSection(const char* cacheName, const std::string& stagePrefix)
     {
         using Section = yaget::io::VirtualTransportSystem::Section;
+
 #ifdef YAGET_DEBUG
-        Section section("Caches@" + std::string(cacheName) + "_Debug");
-        section.mMatch = Section::FilterMatch::Exact;
-        return section;
+        const auto debugPrefix = "_Debug";
 #else
-        Section section("Caches@" + std::string(cacheName));
+        const auto debugPrefix = "";
+#endif
+
+        const auto stageName = stagePrefix + (stagePrefix.empty() ? "" : "/");
+        Section section("Caches@" + stageName + std::string(cacheName) + debugPrefix);
         section.mMatch = Section::FilterMatch::Exact;
         return section;
-#endif
     }
 
-    yaget::io::tool::VirtualTransportSystemReset::Section GetAssetSection(const std::string& sectionName, const std::string& sectionSuffix)
+    yaget::io::tool::VirtualTransportSystemReset::Section GetAssetSection(const std::string& sectionName, const std::string& stagePrefix)
     {
         yaget::io::tool::VirtualTransportSystemReset::Section result{};
 
-        if (!sectionSuffix.empty())
+        if (!stagePrefix.empty())
         {
-            auto parameter = std::format("{}@{}", sectionName, sectionSuffix);
+            auto parameter = std::format("{}@{}", sectionName, stagePrefix);
             result = { parameter };
         }
         else
@@ -37,22 +39,29 @@ namespace
         return result;
     }
 
+
+    yaget::io::Tags GetAssetTags(const std::string& sectionName, const yaget::io::VirtualTransportSystem& vts, const std::string& stagePrefix)
+    {
+        const auto renderTargetsSection = GetAssetSection(sectionName, stagePrefix);
+        return vts.GetTags(renderTargetsSection);
+    }
+
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, ProgressCallback progressCallback)
+yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, const std::string& stagePrefix, ProgressCallback progressCallback)
     : mGraphicsDriverVersion{ device.GetSelectedAdapter().mDriverVersion }
     , mDependencyGraph(vts, Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindItemProperties(guid); })
-    , mRenderSignatures{ device.GetAdapter().GetDevice(), vts, GetSection("Signatures"), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
-    , mRenderPipelines{ device.GetAdapter().GetDevice(), vts, GetSection("Pipelines"), io::CreateBuffer(mGraphicsDriverVersion.Compact()), device.GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat }
-    , mRenderShaders{ vts, GetSection("Shaders"), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
+    , mRenderSignatures{ device.GetAdapter().GetDevice(), vts, GetSection("Signatures", stagePrefix), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
+    , mRenderPipelines{ device.GetAdapter().GetDevice(), vts, GetSection("Pipelines", stagePrefix), io::CreateBuffer(mGraphicsDriverVersion.Compact()), device.GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat }
+    , mRenderShaders{ vts, GetSection("Shaders", stagePrefix), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
     , mPipelineTags{ vts }
     , mRenderMaterials{ mPipelineTags, vts }
-    , mRenderTextures{ vts, GetSection("Textures"), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
+    , mRenderTextures{ vts, GetSection("Textures", stagePrefix), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
     , mTextureResources{ device, mRenderTextures }
-    , mShaderBuffers{ device.GetWindowFrame().GetSurface().NumBackBuffers(), device.GetAdapter(), vts, GetSection("Constants"), device.GetQueueFenceValues() }
-    , mRenderGeometries{ device.GetAdapter().GetDevice(), vts, GetSection("Geometries"), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
+    , mShaderBuffers{ device.GetWindowFrame().GetSurface().NumBackBuffers(), device.GetAdapter(), vts, GetSection("Constants", stagePrefix), device.GetQueueFenceValues() }
+    , mRenderGeometries{ device.GetAdapter().GetDevice(), vts, GetSection("Geometries", stagePrefix), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
     , mGeometryResources{ device, mRenderGeometries }
     , mRenderTargetStorage{ device.GetAdapter().GetDevice(), device.GetSwapChain(), mTextureResources, vts }
     , mSceneItemsStorage{ mRenderMaterials,
@@ -61,7 +70,7 @@ yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTran
                          mShaderBuffers,
                          mTextureResources,
                          mGeometryResources,
-                         vts, GetSection("SceneItems") }
+                         vts, GetSection("SceneItems", stagePrefix) }
     , mFontStorage{ mRenderGeometries, mGeometryResources, mSceneItemsStorage, vts }
     , mRenderPasses{ vts, device.GetWindowFrame() }
     , mVTS{ vts }
@@ -71,38 +80,25 @@ yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTran
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::PipelineContext::PreloadAssets(const std::string& sectionSuffix)
+void yaget::render::PipelineContext::PreloadAssets(const std::string& stagePrefix)
 {
     // we need to have some kind of manifest file which will enumerate all the files that need to be post process and saved into a cache
     auto& vts = mVTS;
 
     comp::gs::mt::InitCounter counter{ 0 };
 
-    const Section renderTargetsSection = GetAssetSection("RenderTargets", sectionSuffix);
-    auto renderTargetsTags = vts.GetTags(renderTargetsSection);
-
-    const Section vertexShaderSection = GetAssetSection("VertexShaders", sectionSuffix);
-    auto vertexShaderTags = vts.GetTags(vertexShaderSection);
-
-    const Section pixelShaderSection = GetAssetSection("PixelShaders", sectionSuffix);
-    auto pixelShaderTags = vts.GetTags(pixelShaderSection);
-
-    const Section geometrySection = GetAssetSection("Geometry", sectionSuffix);
-    auto geometryTags = vts.GetTags(geometrySection);
-
-    const Section textureSection = GetAssetSection("Images", sectionSuffix);
-    auto textureTags = vts.GetTags(textureSection);
-
-    const Section materialSection = GetAssetSection("Materials", sectionSuffix);
-    auto materialTags = vts.GetTags(materialSection);
-
-    const Section sceneItemsSection = GetAssetSection("SceneItems", sectionSuffix);
-    auto sceneItemsTags = vts.GetTags(sceneItemsSection);
+    auto renderTargetsTags = GetAssetTags("RenderTargets", vts, stagePrefix);
+    auto vertexShaderTags = GetAssetTags("VertexShaders", vts, stagePrefix);
+    auto pixelShaderTags = GetAssetTags("PixelShaders", vts, stagePrefix);
+    auto geometryTags = GetAssetTags("Geometry", vts, stagePrefix);
+    auto textureTags = GetAssetTags("Images", vts, stagePrefix);
+    auto materialTags = GetAssetTags("Materials", vts, stagePrefix);
+    auto sceneItemsTags = GetAssetTags("SceneItems", vts, stagePrefix);
 
     auto numAssetsToLoad = renderTargetsTags.size() + vertexShaderTags.size() + pixelShaderTags.size() + (geometryTags.size() * 2) + (textureTags.size() * 2) + materialTags.size() + sceneItemsTags.size();
 
     constexpr auto sleepTime = 0;
-    const std::string formatedSuffix = sectionSuffix.empty() ? "" : std::format(" {}", sectionSuffix);
+    const std::string formatedSuffix = stagePrefix.empty() ? "" : std::format(" {}", stagePrefix);
     //---------------------------------------------------------------------------------
     mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Render Targets...", renderTargetsTags.size(), formatedSuffix) });
     mRenderTargetStorage.Preload(renderTargetsTags, counter);
@@ -165,8 +161,6 @@ void yaget::render::PipelineContext::PreloadAssets(const std::string& sectionSuf
 
     //mMessaging.Dispatch(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
     mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = nullptr, .mText = std::format("Finished{} Preloading", formatedSuffix) });
-
-    //SetTickEnabled(true);
 }
 
 
