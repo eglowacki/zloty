@@ -7,7 +7,7 @@
 //      New Global Item
 //      Stages
 // 'New Item' and 'New Global Item' have subtype: StageName
-// Multiply ctor parameters for a component are seperated by ;
+// Multiple ctor parameters for a component are seperated by ;
 // Using , will make a array of those values as a parameter for the component
 
 Version: 1
