@@ -6,6 +6,7 @@
 
 namespace
 {
+    //-------------------------------------------------------------------------------------------------
     yaget::io::VirtualTransportSystem::Section GetSection(const char* cacheName, const std::string& stagePrefix)
     {
         using Section = yaget::io::VirtualTransportSystem::Section;
@@ -22,6 +23,8 @@ namespace
         return section;
     }
 
+
+    //-------------------------------------------------------------------------------------------------
     yaget::io::tool::VirtualTransportSystemReset::Section GetAssetSection(const std::string& sectionName, const std::string& stagePrefix)
     {
         yaget::io::tool::VirtualTransportSystemReset::Section result{};
@@ -40,30 +43,44 @@ namespace
     }
 
 
+    //-------------------------------------------------------------------------------------------------
     yaget::io::Tags GetAssetTags(const std::string& sectionName, const yaget::io::VirtualTransportSystem& vts, const std::string& stagePrefix)
     {
         const auto renderTargetsSection = GetAssetSection(sectionName, stagePrefix);
         return vts.GetTags(renderTargetsSection);
     }
 
+
+    //-------------------------------------------------------------------------------------------------
+    ID3D12Device* GetDevice(const yaget::render::DeviceB& device)
+    {
+        return device.GetAdapter().GetDevice();
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    yaget::io::Buffer GetUserData(const yaget::render::DeviceB& device)
+    {
+        return yaget::io::CreateBuffer(device.GetSelectedAdapter().mDriverVersion.Compact());
+    }
+
 }
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, const std::string& stagePrefix, ProgressCallback progressCallback)
-    : mGraphicsDriverVersion{ device.GetSelectedAdapter().mDriverVersion }
-    , mDependencyGraph(vts, Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindItemProperties(guid); })
-    , mRenderSignatures{ device.GetAdapter().GetDevice(), vts, GetSection("Signatures", stagePrefix), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
-    , mRenderPipelines{ device.GetAdapter().GetDevice(), vts, GetSection("Pipelines", stagePrefix), io::CreateBuffer(mGraphicsDriverVersion.Compact()), device.GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat }
-    , mRenderShaders{ vts, GetSection("Shaders", stagePrefix), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
+yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, const std::string& stagePrefix, const items::Director& /*director*/, ProgressCallback progressCallback)
+    : mDependencyGraph(vts, Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindItemProperties(guid); })
+    , mRenderSignatures{ GetDevice(device), vts, GetSection("Signatures", stagePrefix), GetUserData(device) }
+    , mRenderPipelines{ GetDevice(device), vts, GetSection("Pipelines", stagePrefix), GetUserData(device), device.GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat }
+    , mRenderShaders{ vts, GetSection("Shaders", stagePrefix), GetUserData(device) }
     , mPipelineTags{ vts }
     , mRenderMaterials{ mPipelineTags, vts }
-    , mRenderTextures{ vts, GetSection("Textures", stagePrefix), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
+    , mRenderTextures{ vts, GetSection("Textures", stagePrefix), GetUserData(device) }
     , mTextureResources{ device, mRenderTextures }
     , mShaderBuffers{ device.GetWindowFrame().GetSurface().NumBackBuffers(), device.GetAdapter(), vts, GetSection("Constants", stagePrefix), device.GetQueueFenceValues() }
-    , mRenderGeometries{ device.GetAdapter().GetDevice(), vts, GetSection("Geometries", stagePrefix), io::CreateBuffer(mGraphicsDriverVersion.Compact()) }
+    , mRenderGeometries{ GetDevice(device), vts, GetSection("Geometries", stagePrefix), GetUserData(device) }
     , mGeometryResources{ device, mRenderGeometries }
-    , mRenderTargetStorage{ device.GetAdapter().GetDevice(), device.GetSwapChain(), mTextureResources, vts }
+    , mRenderTargetStorage{ GetDevice(device), device.GetSwapChain(), mTextureResources, vts }
     , mSceneItemsStorage{ mRenderMaterials,
                          mRenderSignatures,
                          mRenderPipelines,

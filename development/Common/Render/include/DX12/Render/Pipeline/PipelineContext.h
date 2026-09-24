@@ -30,6 +30,11 @@
 #include "Render/Device.h"
 
 
+namespace yaget::items
+{
+    class Director;
+}
+
 
 namespace yaget::render
 {
@@ -37,7 +42,7 @@ namespace yaget::render
     {
     public:
         using ProgressCallback = std::function<void(const comp::gs::InitEvent& event)>;
-        PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, const std::string& stagePrefix, ProgressCallback progressCallback);
+        PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, const std::string& stagePrefix, const items::Director& director, ProgressCallback progressCallback);
 
         void PreloadAssets(const std::string& stagePrefix);
         void OnResetDevice(const app::WindowFrame& windowFrame, DeviceB::ResizeState resizeState);
@@ -53,7 +58,6 @@ namespace yaget::render
         void RebindMaterial(const io::Tag& tag, const yaget::render::MaterialPropertyTags& material);
         void HotRebindItemProperties(const Guid& guid);
 
-        yaget::render::info::Adapter::GraphicsDriverVersion mGraphicsDriverVersion{};
         DependencyGraph mDependencyGraph;
         RenderSignatures mRenderSignatures;
         RenderPipelines mRenderPipelines;

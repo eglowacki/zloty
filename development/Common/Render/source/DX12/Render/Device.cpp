@@ -70,17 +70,25 @@ void yaget::render::DeviceB::Resize()
 
     mQueueStorage->WaitForAllIdle();
 
-    std::ranges::for_each(mResizeCallbacks, [this](const auto& element)
     {
-        element.mCallback(mWindowFrame, ResizeState::Reset);
-    });
+        std::scoped_lock lock(mResizeCallbackMutex);
+
+        std::ranges::for_each(mResizeCallbacks, [this](const auto& element)
+        {
+            element.mCallback(mWindowFrame, ResizeState::Reset);
+        });
+    }
 
     mSwapChain->Resize();
 
-    std::ranges::for_each(mResizeCallbacks, [this](const auto& element)
     {
-        element.mCallback(mWindowFrame, ResizeState::Set);
-    });
+        std::scoped_lock lock(mResizeCallbackMutex);
+
+        std::ranges::for_each(mResizeCallbacks, [this](const auto& element)
+        {
+            element.mCallback(mWindowFrame, ResizeState::Set);
+        });
+    }
 }
 
 
@@ -123,6 +131,8 @@ const yaget::app::WindowFrame &yaget::render::DeviceB::GetWindowFrame() const
 //-------------------------------------------------------------------------------------------------
 size_t yaget::render::DeviceB::RegisterResizeCallback(ResizeCallback callback)
 {
+    std::scoped_lock lock(mResizeCallbackMutex);
+
     mNextResizeCallbackId++;
     mResizeCallbacks.push_back({ .mId = mNextResizeCallbackId, .mCallback = callback });
 
@@ -133,6 +143,8 @@ size_t yaget::render::DeviceB::RegisterResizeCallback(ResizeCallback callback)
 //-------------------------------------------------------------------------------------------------
 void yaget::render::DeviceB::UnregisterResizeCallback(size_t callbackId)
 {
+    std::scoped_lock lock(mResizeCallbackMutex);
+
     std::erase_if(mResizeCallbacks, [callbackId](const auto& callbackData)
     {
         return callbackData.mId == callbackId;

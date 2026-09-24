@@ -147,7 +147,7 @@ namespace yaget::mt
 
     using unique_lock = std::unique_lock<std::mutex>;
 
-} // namespace yaget::met
+} // namespace yaget::mt
 
 
 

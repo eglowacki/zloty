@@ -203,6 +203,8 @@ namespace yaget::render
         using ResizeCallbacks = std::vector<ResizeCallbackData>;
         ResizeCallbacks mResizeCallbacks;
         size_t mNextResizeCallbackId{};
+
+        std::mutex mResizeCallbackMutex;
     };
 
     // add class of type DeviceB but stub out all calls as a no-op
