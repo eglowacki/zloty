@@ -23,7 +23,7 @@ struct IDXGIFactory;
 namespace D3D12MA { class Allocator; }
 
 // Doing this here so I do not have to include dx12 header files. Those values are enums in those
-// header files and we simply use int type.
+// header files, and we simply use int type.
 using D3D_FEATURE_LEVEL_Y = int;
 using DXGI_FORMAT_Y = int;
 constexpr D3D_FEATURE_LEVEL_Y D3D_FEATURE_LEVEL_1_0_CORE_Y = 0x1000;
