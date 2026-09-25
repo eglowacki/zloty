@@ -147,7 +147,7 @@ namespace yaget::render::info
     // return adapter representing resolution or default adapter if no resolution supported
     Adapter SelectDefaultAdapter(size_t configInitBlock_ResX, size_t configInitBlock_ResY);
 
-    // This get's returned by CreateDevice(...) function. It provides all three DX12 objects
+    // This gets returned by CreateDevice(...) function. It provides all three DX12 objects
     // representing device, adapter and factory.
     using HardwareDevice = std::tuple<ComPtr<ID3D12Device>, ComPtr<IDXGIAdapter>, ComPtr<IDXGIFactory>>;
     // Create actual device and initialize (debug is on in non-shipping configurations)
