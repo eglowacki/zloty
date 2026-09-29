@@ -66,54 +66,69 @@ namespace yaget::render::commands
     {
         enum class HashType
         {
+            Texture = 0,    // this and all Texture... enum values below need to start at 0.
+            Texture1,       // It is used as index value into mTexturesHash array
+            Texture2,
+            Texture3,
+            Texture4,
+            Texture5,
+            Texture6,
+            Texture7,
+            Texture8,
+            Texture9,
+            Texture10,
+            Texture11,
+            Texture12,
+            Texture13,
+            Texture14,
+            Texture15,
             RootSignature,
             PipelineState,
-            Texture,
             Topology,
             VertexBuffer,
             IndexBuffer
         };
 
+        size_t mTexturesHash[16]{};
         size_t mRootSignatureHash{};
         size_t mPipelineStateHash{};
-        size_t mTexturesHash[16]{};
         size_t mTopologyHash{};
         size_t mVertexBufferHash{};
         size_t mIndexBufferHash{};
 
+        // If cached state is different from stateObject, return true and update cached state,
+        // otherwise return false.
         bool CheckNewHash(auto stateObject, HashType hashType)
         {
             size_t newHash = std::hash<decltype(stateObject)>{}(stateObject);
             size_t* currentHash = nullptr;
 
-            switch (hashType)
+            if (hashType >= HashType::Texture && hashType <= HashType::Texture15)
             {
-                case HashType::RootSignature:
-                    currentHash = &mRootSignatureHash;
-                    break;
-                case HashType::PipelineState:
-                    currentHash = &mPipelineStateHash;
-                    break;
-                case HashType::Texture:
-                    //// For textures we have an array of hashes, so we need to find the first empty slot or a matching hash
-                    //for (size_t& textureHash : mTexturesHash)
-                    //{
-                    //    if (textureHash == 0 || textureHash == newHash)
-                    //    {
-                    //        currentHash = &textureHash;
-                    //        break;
-                    //    }
-                    //}
-                    break;
-                case HashType::Topology:
-                    currentHash = &mTopologyHash;
-                    break;
-                case HashType::VertexBuffer:
-                    currentHash = &mVertexBufferHash;
-                    break;
-                case HashType::IndexBuffer:
-                    currentHash = &mIndexBufferHash;
-                    break;
+                currentHash = &mTexturesHash[static_cast<size_t>(hashType)];
+            }
+            else
+            {
+                switch (hashType)
+                {
+                    case HashType::RootSignature:
+                        currentHash = &mRootSignatureHash;
+                        break;
+                    case HashType::PipelineState:
+                        currentHash = &mPipelineStateHash;
+                        break;
+                    case HashType::Topology:
+                        currentHash = &mTopologyHash;
+                        break;
+                    case HashType::VertexBuffer:
+                        currentHash = &mVertexBufferHash;
+                        break;
+                    case HashType::IndexBuffer:
+                        currentHash = &mIndexBufferHash;
+                        break;
+                    default: 
+                        YAGET_ASSERT(false, "HashType: %d not handled", static_cast<int>(hashType));
+                }
             }
 
             if (currentHash)

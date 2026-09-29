@@ -39,7 +39,7 @@ namespace yaget::render
     class RenderTextures : public CacheWatcher<io::Buffer>
     {
     public:
-        RenderTextures(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
+        RenderTextures(io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, io::Buffer userData);
         ~RenderTextures();
 
         io::Buffer GetTexture(const io::Tag& tag);

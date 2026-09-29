@@ -253,8 +253,8 @@ bool yaget::render::geom::ValidateDataLayout(const io::Buffer& buffer)
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::RenderGeometries::RenderGeometries(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName)
-    : CacheWatcher(vts, fileName)
+yaget::render::RenderGeometries::RenderGeometries(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, io::Buffer userData)
+    : CacheWatcher(vts, std::move(fileName), std::move(userData))
     , mDevice(device)
 {
 }

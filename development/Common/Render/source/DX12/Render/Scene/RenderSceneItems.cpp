@@ -108,10 +108,13 @@ void yaget::render::scene::SceneItem::Render(uint32_t bufferIndex, const command
     auto commandType = commandList->GetType();
     for (size_t i = 0; i < mTextureResources.size(); ++i)
     {
-        mConstantBuffer->UpdateData(bufferIndex, textureTypes[i], mTextureResources[i], commandType);
+        if (currentRenderPassState.CheckNewHash(mTextureResources[i], static_cast<commands::RenderPassState::HashType>(i)))
+        {
+            mConstantBuffer->UpdateData(bufferIndex, textureTypes[i], mTextureResources[i], commandType);
+        }
     }
 
-    mConstantBuffer->Bind(deviceCommandList);
+    mConstantBuffer->Bind (deviceCommandList);
 
     std::vector<RenderShape> renderShapes{ mGeometriesData.size() };
 

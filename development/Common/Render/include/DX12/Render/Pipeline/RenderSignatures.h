@@ -27,7 +27,7 @@ namespace yaget::render
     class RenderSignatures : public CacheWatcher<ComPtr<ID3D12RootSignature>>
     {
     public:
-        RenderSignatures(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName);
+        RenderSignatures(ID3D12Device* device, io::VirtualTransportSystem& vts, io::VirtualTransportSystem::Section fileName, io::Buffer userData);
         ~RenderSignatures();
 
         ID3D12RootSignature* GetSignature(const io::Tag& tag, const RenderShaders::RootDescResult& rootDescResult);

@@ -11,6 +11,68 @@ namespace
 {
     constexpr size_t CurrentFileVersion = 1;
 
+    size_t SaveDataCollection(auto dataCollection, char* dataPointer, size_t offset)
+    {
+        using namespace yaget;
+
+        auto numElements = dataCollection.size();
+        offset = io::mem::WriteData(dataPointer, offset, numElements);
+        
+        for (const auto& [key, value] : dataCollection)
+        {
+            offset = io::mem::WriteData(dataPointer, offset, key);
+            offset = io::mem::WriteData(dataPointer, offset, value);
+        }
+
+        return offset;
+    }
+
+    template <typename T>
+    T LoadDataCollection(const char* dataPointer, size_t& offset)
+    {
+        using namespace yaget;
+        using Key = typename T::key_type;
+        using Value = typename T::mapped_type;
+
+        T result{};
+
+        auto numElements = *io::mem::ReadData<size_t>(dataPointer, offset);
+        for (size_t i = 0; i < numElements; ++i)
+        {
+            auto key = io::mem::ReadData<Key>(dataPointer, offset);
+            auto value = io::mem::ReadData<Value>(dataPointer, offset);
+
+            result.insert({ *key, *value });
+        }
+
+        return result;
+    }
+
+
+    // Return true if cache is valid and up to date, otherwise false if cache is stale and needs to be resaved. 
+    bool ValidateCacheIndex(auto& cacheIndex, const std::filesystem::file_time_type& cacheFileTimeStamp, const std::string& cacheFilePath, const yaget::io::VirtualTransportSystem& vts)
+    {
+        using namespace yaget;
+
+        auto erasedElements = std::erase_if(cacheIndex, [&vts, &cacheFileTimeStamp, &cacheFilePath](const auto& pair)
+        {
+            const auto& guid = pair.first;
+            auto tag = vts.FindTag(guid);
+            const auto filePath = tag.ResolveVTS();
+            const auto fileTimeStamp = io::file::GetFileDate(filePath);
+            if (fileTimeStamp > cacheFileTimeStamp)
+            {
+                // skip getting cache data for this file since it's newer then cache file
+                YLOG_INFO("DEVI", std::format("File '{} ({})' is newer then cache '{} ({})', will update.", filePath, fileTimeStamp, cacheFilePath, cacheFileTimeStamp).c_str());
+                return true;
+            }
+
+            return false;
+        });
+
+        return erasedElements == 0;
+    }
+
 }
 
 
@@ -32,9 +94,10 @@ void yaget::render::AssetCache::SaveMappings(const Section& /*fileName*/, io::Vi
 
 
 //-------------------------------------------------------------------------------------------------
-yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section fileName)
+yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section fileName, io::Buffer userData)
     : mVTS(vts)
     , mCacheSection(std::move(fileName))
+    , mUserData(std::move(userData))
 {
     const auto& configBlock = dev::CurrentConfiguration().mDataLoaders;
     if (!configBlock.mClearCache)
@@ -51,6 +114,7 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
         io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
         if (auto asset = cacheLoader.GetAsset())
         {
+            const size_t USER_DATA_SIZE = io::size_data(mUserData);
             io::MessagingBuffer cache;
             cache.mBuffer = compression::UnzipBuffer(io::cast_to_view(asset->mBuffer));
             if (!io::size_data(cache.mBuffer))
@@ -58,10 +122,11 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
                 cache.mBuffer = asset->mBuffer;
             }
             cache.mWriteOffset = io::size_data(cache.mBuffer);
-            size_t offset = 0;
 
-            auto fileSignature = reinterpret_cast<YagetFileSignature*>(io::cast_data<char>(cache.mBuffer) + offset);
-            offset += sizeof(YagetFileSignature);
+            auto dataPointer = io::cast_data<const char>(cache.mBuffer);
+            size_t offset = 0;
+                                                                       
+            auto fileSignature = io::mem::ReadData<YagetFileSignature>(dataPointer, offset);
             if (!fileSignature->IsValid(CurrentFileVersion))
             {
                 YLOG_ERROR("DEVI", "Unsupported cache '%s' version: '%d'. Expected version is <= '%d'. Cache will be ignored.",
@@ -71,37 +136,35 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
                 return;
             }
 
+            // if file is NOT the same version as latest supported by the loader, we need to re-save it on dtor, so make it 'dirty'
             mCacheStatus = fileSignature->Version == CurrentFileVersion ? CacheStatus::Clean : CacheStatus::Dirty;
             if (fileSignature->Version == 1)
             {
-                auto numElements = *(reinterpret_cast<size_t*>(io::cast_data<char>(cache.mBuffer) + offset));
-                offset += sizeof(numElements);
-                for (size_t i = 0; i < numElements; ++i)
+                // if cache file user data is not the same provided signature, we need to re-save it on dtor, so make it 'dirty'
+                if (std::memcmp(dataPointer + offset, io::cast_data<const char>(mUserData), USER_DATA_SIZE) != 0)
                 {
-                    auto guid = reinterpret_cast<Guid*>(io::cast_data<char>(cache.mBuffer) + offset);
-                    offset += sizeof(Guid);
-                    auto location = reinterpret_cast<Location*>(io::cast_data<char>(cache.mBuffer) + offset);
-                    offset += sizeof(Location);
+                    YLOG_INFO("DEVI", "Outdated user data in cache '%s'. Cache will be ignored.", conv::ToString(mCacheSection).c_str());
 
-                    auto tag = mVTS.FindTag(*guid);
-                    const auto filePath = tag.ResolveVTS();
-                    const auto fileTimeStamp = io::file::GetFileDate(filePath);
-                    if (fileTimeStamp > cacheFileTimeStamp)
-                    {
-                        // skip getting cache data for this file since it's newer then cache file
-                        YLOG_INFO("DEVI", std::format("File '{} ({})' is newer then cache '{} ({})', will update.", filePath, fileTimeStamp, cacheFilePath, cacheFileTimeStamp).c_str());
-                        mCacheStatus = ored(mCacheStatus, CacheStatus::Holes);
-                        continue;
-                    }
-
-                    mCacheIndex.insert({ *guid, *location });
+                    mCacheStatus = CacheStatus::Dirty;
+                    return;
                 }
+                offset += USER_DATA_SIZE;
+
+                mCacheIndex = LoadDataCollection<decltype(mCacheIndex)>(dataPointer, offset);
+                bool cacheValid = ValidateCacheIndex(mCacheIndex, cacheFileTimeStamp, cacheFilePath, mVTS);
+                mCacheStatus = cacheValid ? mCacheStatus : ored(mCacheStatus, CacheStatus::Holes);
+
                 mCache = io::MessagingBuffer(io::size_data(cache.mBuffer) - offset);
                 mCache.mWriteOffset = io::size_data(mCache.mBuffer);
                 memcpy(io::cast_data<char>(mCache.mBuffer), io::cast_data<char>(cache.mBuffer) + offset,
                     io::size_data(mCache.mBuffer));
             }
         }
+    }
+    else
+    {
+        // - do we just mark this as a dirty so it will get saved in dtor?
+        // - do we want that option to be like fire and forget
     }
 }
 
@@ -113,7 +176,11 @@ yaget::render::AssetCache::~AssetCache()
     {
         // we need to serialize mCacheIndex and mCache into a single buffer and save it back to VTS
         // format of the buffer is [YagetFileSignature][numElements][{guid}{location}...][cacheData]
-        io::Buffer indexBuffer = io::CreateBuffer(sizeof(YagetFileSignature) + sizeof(size_t) + mCacheIndex.size() * (sizeof(Guid) + sizeof(Location)));
+        const size_t SIG_SIZE = sizeof(YagetFileSignature);
+        const size_t USER_SIZE = io::size_data(mUserData);
+        const size_t PAYLOAD_ENTRIES = sizeof(size_t);
+        const size_t PAYLOAD_SIZE = (mCacheIndex.size() * (sizeof(Guid) + sizeof(Location)));
+        io::Buffer indexBuffer = io::CreateBuffer(SIG_SIZE + USER_SIZE + PAYLOAD_ENTRIES + PAYLOAD_SIZE);
 
         YagetFileSignature fileSignature;
         fileSignature.Version = CurrentFileVersion;
@@ -121,19 +188,14 @@ yaget::render::AssetCache::~AssetCache()
         auto dataPointer = io::cast_data<char>(indexBuffer);
         size_t offset = 0;
 
-        std::memcpy(dataPointer + offset, &fileSignature, sizeof(fileSignature));
-        offset += sizeof(fileSignature);
+        offset = io::mem::WriteData(dataPointer, offset, fileSignature);
 
-        auto numElements = mCacheIndex.size();
-        std::memcpy(dataPointer + offset, &numElements, sizeof(numElements));
-        offset += sizeof(numElements);
-        for (const auto& [guid, location] : mCacheIndex)
-        {
-            std::memcpy(dataPointer + offset, &guid, sizeof(guid));
-            offset += sizeof(guid);
-            std::memcpy(dataPointer + offset, &location, sizeof(location));
-            offset += sizeof(location);
-        }
+        //-----------------------------------------------------------------------------
+        // TODO(eg) write user data out. Q: How we determine at this level what is the user data and how we save it?
+        std::memcpy(dataPointer + offset, io::cast_data<const char>(mUserData), USER_SIZE);
+        offset += USER_SIZE;
+
+        offset = SaveDataCollection(mCacheIndex, dataPointer, offset);
 
         mCache.Shrink();
         auto fullCacheData = io::CreateBuffer(io::size_data(indexBuffer) + io::size_data(mCache.mBuffer));
