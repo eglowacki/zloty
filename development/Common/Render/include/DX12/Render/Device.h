@@ -191,6 +191,7 @@ namespace yaget::render
         void SetFrameFenceValue(uint64_t fenceValue, uint32_t frameIndex, commands::Type type);
         uint64_t GetFrameFenceValue(uint32_t frameIndex, commands::Type type) const;
         uint64_t GetFrameFenceValue(commands::Type type) const;
+        void UpdateResizeCallbacks(ResizeState resizeState);
 
         info::Adapter mSelectedAdapter;
 

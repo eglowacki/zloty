@@ -64,31 +64,27 @@ yaget::render::DeviceB::~DeviceB()
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::render::DeviceB::UpdateResizeCallbacks(ResizeState resizeState)
+{
+    std::scoped_lock lock(mResizeCallbackMutex);
+
+    std::ranges::for_each(mResizeCallbacks, [this, resizeState](const auto& element)
+    {
+        element.mCallback(mWindowFrame, resizeState);
+    });
+}
+
+
+//-------------------------------------------------------------------------------------------------
 void yaget::render::DeviceB::Resize()
 {
     Waiter::Lock scoper(mWaiter);
 
     mQueueStorage->WaitForAllIdle();
 
-    {
-        std::scoped_lock lock(mResizeCallbackMutex);
-
-        std::ranges::for_each(mResizeCallbacks, [this](const auto& element)
-        {
-            element.mCallback(mWindowFrame, ResizeState::Reset);
-        });
-    }
-
+    UpdateResizeCallbacks(ResizeState::Reset);
     mSwapChain->Resize();
-
-    {
-        std::scoped_lock lock(mResizeCallbackMutex);
-
-        std::ranges::for_each(mResizeCallbacks, [this](const auto& element)
-        {
-            element.mCallback(mWindowFrame, ResizeState::Set);
-        });
-    }
+    UpdateResizeCallbacks(ResizeState::Set);
 }
 
 

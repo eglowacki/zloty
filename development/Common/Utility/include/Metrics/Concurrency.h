@@ -28,7 +28,6 @@
 
 #include "YagetCore.h"
 #include "Time/GameClock.h"
-#include <functional>
 #include <source_location>
 
 #if !defined(YAGET_CONC_METRICS_ENABLED)

@@ -69,18 +69,19 @@ namespace
 
 //-------------------------------------------------------------------------------------------------
 yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, const std::string& stagePrefix, const items::Director& /*director*/, ProgressCallback progressCallback)
-    : mDependencyGraph(vts, Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindItemProperties(guid); })
-    , mRenderSignatures{ GetDevice(device), vts, GetSection("Signatures", stagePrefix), GetUserData(device) }
-    , mRenderPipelines{ GetDevice(device), vts, GetSection("Pipelines", stagePrefix), GetUserData(device), device.GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat }
-    , mRenderShaders{ vts, GetSection("Shaders", stagePrefix), GetUserData(device) }
+    : mDevice(device)
+    , mDependencyGraph(vts, Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindItemProperties(guid); })
+    , mRenderSignatures{ GetDevice(mDevice), vts, GetSection("Signatures", stagePrefix), GetUserData(mDevice) }
+    , mRenderPipelines{ GetDevice(mDevice), vts, GetSection("Pipelines", stagePrefix), GetUserData(mDevice), mDevice.GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat }
+    , mRenderShaders{ vts, GetSection("Shaders", stagePrefix), GetUserData(mDevice) }
     , mPipelineTags{ vts }
     , mRenderMaterials{ mPipelineTags, vts }
-    , mRenderTextures{ vts, GetSection("Textures", stagePrefix), GetUserData(device) }
-    , mTextureResources{ device, mRenderTextures }
-    , mShaderBuffers{ device.GetWindowFrame().GetSurface().NumBackBuffers(), device.GetAdapter(), vts, GetSection("Constants", stagePrefix), device.GetQueueFenceValues() }
-    , mRenderGeometries{ GetDevice(device), vts, GetSection("Geometries", stagePrefix), GetUserData(device) }
-    , mGeometryResources{ device, mRenderGeometries }
-    , mRenderTargetStorage{ GetDevice(device), device.GetSwapChain(), mTextureResources, vts }
+    , mRenderTextures{ vts, GetSection("Textures", stagePrefix), GetUserData(mDevice) }
+    , mTextureResources{ mDevice, mRenderTextures }
+    , mShaderBuffers{ mDevice.GetWindowFrame().GetSurface().NumBackBuffers(), mDevice.GetAdapter(), vts, GetSection("Constants", stagePrefix), mDevice.GetQueueFenceValues() }
+    , mRenderGeometries{ GetDevice(mDevice), vts, GetSection("Geometries", stagePrefix), GetUserData(mDevice) }
+    , mGeometryResources{ mDevice, mRenderGeometries }
+    , mRenderTargetStorage{ GetDevice(mDevice), mDevice.GetSwapChain(), mTextureResources, vts }
     , mSceneItemsStorage{ mRenderMaterials,
                          mRenderSignatures,
                          mRenderPipelines,
@@ -89,10 +90,19 @@ yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTran
                          mGeometryResources,
                          vts, GetSection("SceneItems", stagePrefix) }
     , mFontStorage{ mRenderGeometries, mGeometryResources, mSceneItemsStorage, vts }
-    , mRenderPasses{ vts, device.GetWindowFrame() }
+    , mRenderPasses{ vts, mDevice.GetWindowFrame() }
     , mVTS{ vts }
     , mProgressCallback{ progressCallback }
 {
+    //mResizeCallbackId = { device.RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) };
+
+}
+
+
+//-------------------------------------------------------------------------------------------------
+yaget::render::PipelineContext::~PipelineContext()
+{
+    mDevice.UnregisterResizeCallback(mResizeCallbackId);
 }
 
 
