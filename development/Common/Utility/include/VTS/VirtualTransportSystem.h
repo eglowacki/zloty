@@ -167,8 +167,10 @@ namespace yaget
             // Return name of the resolver used for this specific asset tag
             std::string GetResolverType(const io::Tag& tag) const;
 
-            bool DeleteBlob(const Section& section) { return DeleteBlobs(Sections{ section }); }
-            virtual bool DeleteBlobs(const Sections& /*sections*/) { return false; }
+            bool DeleteBlob(const Section& section) { return DeleteBlob(Sections{ section }); }
+            bool DeleteBlob(const Sections& sections);
+
+            virtual bool DeleteBlobs(const io::Tags& /*tags*/) { return false; }
 
             virtual ~VirtualTransportSystem();
 

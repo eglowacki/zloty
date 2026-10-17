@@ -2,8 +2,7 @@
 
 #include "Metrics/Gather.h"
 #include "TestHelpers/TestHelpers.h"
-#include "VTS/VirtualTransportSystem.h"
-#include "VTS/ResolvedAssets.h"
+//#include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 
 YAGET_BRAND_NAME_F("Beyond Limits")
@@ -203,7 +202,7 @@ TEST_F(VTS, TransportSystem)
         metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 1");
 
         // delete all test data,
-        EXPECT_TRUE(vts.DeleteBlobs({ sourceSection, targetSection }));
+        EXPECT_TRUE(vts.DeleteBlob({ sourceSection, targetSection }));
         EXPECT_EQ(vts.GetNumTags({ sourceSection, targetSection }), 0);
 
         newTag = vts.GenerateTag(blobFile);
@@ -268,7 +267,7 @@ TEST_F(VTS, TransportSystem)
         io::BLobLoader<TestAsset> exactLoader(vts, Section(targetSection.mName + "@" + exactCopy));
         EXPECT_TRUE(exactLoader.Assets().empty() == false && (*exactLoader.Assets().begin())->mTag.mGuid == exactTag.mGuid);
 
-        EXPECT_TRUE(vts.DeleteBlobs({ sourceSection, targetSection }));
+        EXPECT_TRUE(vts.DeleteBlob({ sourceSection, targetSection }));
         EXPECT_EQ(vts.GetNumTags({ sourceSection, targetSection }), 0);
     }
 
@@ -366,7 +365,7 @@ TEST_F(VTS, TransportSystem)
     {
         metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 8");
 
-        EXPECT_TRUE(vts.DeleteBlobs({ file11, file12 }));
+        EXPECT_TRUE(vts.DeleteBlob({ file11, file12 }));
 
         std::vector<std::shared_ptr<io::Asset>> assets;
         io::BLobLoader<TestAsset> bLobLoader(vts, sourceSection);
@@ -386,7 +385,7 @@ TEST_F(VTS, TransportSystem)
     {
         metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 9");
 
-        EXPECT_TRUE(vts.DeleteBlobs({ sourceSection, targetSection }));
+        EXPECT_TRUE(vts.DeleteBlob({ sourceSection, targetSection }));
         EXPECT_EQ(vts.GetNumTags({ sourceSection, targetSection }), 0);
     }
 
@@ -499,7 +498,7 @@ TEST_F(VTS, TransportSystem)
         metrics::TimeScoper<time::kMilisecondUnit> intTimer("TEST", "VTS Test 14");
         //io::tool::VirtualTransportSystemDefault vts(dev::CurrentConfiguration().mInit.mVTSConfig, Resolvers, vtsFile);
 
-        EXPECT_TRUE(vts.DeleteBlobs({ settings, sourceSection }));
+        EXPECT_TRUE(vts.DeleteBlob({ settings, sourceSection }));
         EXPECT_EQ(vts.GetNumTags({ settings, sourceSection }), 0);
     }
 

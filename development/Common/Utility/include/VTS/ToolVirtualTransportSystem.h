@@ -20,7 +20,7 @@
 namespace yaget::io::tool
 {
     //--------------------------------------------------------------------------------------------------
-    class VirtualTransportSystem : public io::VirtualTransportSystem
+    class VirtualTransportSystem : public yaget::io::VirtualTransportSystem
     {
     public:
         VirtualTransportSystem(dev::Configuration::Init::VTSConfigList configList, const AssetResolvers& assetResolvers, const std::string& fileName, RuntimeMode reset);
@@ -31,7 +31,7 @@ namespace yaget::io::tool
         bool AttachBlob(std::shared_ptr<io::Asset> asset) { return AttachBlob(std::vector<std::shared_ptr<io::Asset>>{ asset }); }
         bool AttachBlob(const std::vector<std::shared_ptr<io::Asset>>& assets);
 
-        bool DeleteBlobs(const Sections& sections) override;
+        bool DeleteBlobs(const io::Tags& tags) override;
 
     private:
         struct Locker : public DatabaseLocker

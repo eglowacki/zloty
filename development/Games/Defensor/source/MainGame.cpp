@@ -97,9 +97,21 @@ namespace
             auto cacheManifest = Section("CachesManifest@crc");
             CrcCaches crcDiskCaches;
             yaget::render::PopulateMap(cacheManifest, mVTS, crcDiskCaches);
-            auto crcCaches = CalculateVTSCrcs(yaget::io::VirtualTransportSystem::CrcMode::ClearLoaded);
+            auto crcVtsCaches = CalculateVTSCrcs(yaget::io::VirtualTransportSystem::CrcMode::ClearLoaded);
 
-            //mVTS.DeleteBlob(cacheManifest);
+            // Determine which cached "blob" assets currently known to the VirtualTransportSystem (VTS)
+            // are invalid compared to the on-disk cache manifest, remove those invalid blobs from VTS,
+            yaget::io::Tags invalidCaches = crcVtsCaches | std::views::filter([&crcDiskCaches](const auto& crcValue)
+            {
+                return !crcDiskCaches.contains(crcValue.first) || crcDiskCaches.at(crcValue.first) != crcValue.second;
+            }) | std::views::transform([this](const auto& crcValue)
+            {
+                const auto cacheFileTag = mVTS.FindTag(crcValue.first);
+
+                return cacheFileTag;
+            }) | std::ranges::to<std::vector>();
+
+            mVTS.DeleteBlobs(invalidCaches);
 
             for (const auto mapping : MappingPopulators)
             {

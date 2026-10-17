@@ -709,6 +709,14 @@ std::string yaget::io::VirtualTransportSystem::GetResolverType(const io::Tag& ta
 
 
 //--------------------------------------------------------------------------------------------------
+bool yaget::io::VirtualTransportSystem::DeleteBlob(const Sections& sections)
+{
+    std::vector<io::Tag> tags = GetTags(sections);
+    return DeleteBlobs(tags);
+}
+
+
+//--------------------------------------------------------------------------------------------------
 std::string yaget::io::NormalizePath(const std::string& filePath)
 {
     fs::path fsPath(filePath);

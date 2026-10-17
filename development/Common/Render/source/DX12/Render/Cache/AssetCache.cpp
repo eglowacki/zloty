@@ -114,7 +114,7 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
 #endif
 
         io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
-        if (auto asset = cacheLoader.GetAsset(); io::size_data(asset->mBuffer))
+        if (auto asset = cacheLoader.GetAsset(); asset && io::size_data(asset->mBuffer))
         {
             const size_t USER_DATA_SIZE = io::size_data(mUserData);
             io::MessagingBuffer cache;
