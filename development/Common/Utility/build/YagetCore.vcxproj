@@ -214,6 +214,7 @@
     <ClInclude Include="..\include\Compression\Zipper.h" />
     <ClInclude Include="..\include\Core\ErrorHandlers.h" />
     <ClInclude Include="..\include\Database\Database.h" />
+    <ClInclude Include="..\include\DataCRC.h" />
     <ClInclude Include="..\include\Debugging\Assert.h" />
     <ClInclude Include="..\include\Debugging\DevConfiguration.h" />
     <ClInclude Include="..\include\Debugging\DevConfigurationParsers.h" />

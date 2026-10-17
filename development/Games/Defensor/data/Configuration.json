@@ -122,6 +122,15 @@
                     }
                 },
                 {
+                    "CachesManifest": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(AppDataFolder)/Caches" ],
+                        "ReadOnly": false,
+                        "Recursive": false
+                    }
+                },
+                {
                     "Transient": {
                         "Converters": "BIN",
                         "Filters": [ "*.tran" ],

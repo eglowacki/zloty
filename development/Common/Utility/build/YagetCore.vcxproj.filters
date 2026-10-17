@@ -821,6 +821,9 @@
     <ClInclude Include="..\include\Script\Executant.h">
       <Filter>Script Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DataCRC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\source\Win32\CommandLineArgs.inl">

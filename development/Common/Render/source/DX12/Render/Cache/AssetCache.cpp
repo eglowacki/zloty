@@ -1,3 +1,5 @@
+#include "DataCRC.h"
+
 #include "Render/RenderCore.h"
 #include "Compression/Zipper.h"
 #include "Render/Cache/AssetCache.h"
@@ -112,7 +114,7 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
 #endif
 
         io::SingleBLobLoader<io::BinAsset> cacheLoader(mVTS, mCacheSection);
-        if (auto asset = cacheLoader.GetAsset())
+        if (auto asset = cacheLoader.GetAsset(); io::size_data(asset->mBuffer))
         {
             const size_t USER_DATA_SIZE = io::size_data(mUserData);
             io::MessagingBuffer cache;
@@ -143,7 +145,7 @@ yaget::render::AssetCache::AssetCache(io::VirtualTransportSystem& vts, Section f
                 // if cache file user data is not the same provided signature, we need to re-save it on dtor, so make it 'dirty'
                 if (std::memcmp(dataPointer + offset, io::cast_data<const char>(mUserData), USER_DATA_SIZE) != 0)
                 {
-                    YLOG_INFO("DEVI", "Outdated user data in cache '%s'. Cache will be ignored.", conv::ToString(mCacheSection).c_str());
+                    YLOG_INFO("DEVI", "Outdated user data in cache '%s'. Cache will be re-created.", conv::ToString(mCacheSection).c_str());
 
                     mCacheStatus = CacheStatus::Dirty;
                     return;
@@ -176,9 +178,9 @@ yaget::render::AssetCache::~AssetCache()
     {
         // we need to serialize mCacheIndex and mCache into a single buffer and save it back to VTS
         // format of the buffer is [YagetFileSignature][numElements][{guid}{location}...][cacheData]
-        const size_t SIG_SIZE = sizeof(YagetFileSignature);
+        constexpr size_t SIG_SIZE = sizeof(YagetFileSignature);
         const size_t USER_SIZE = io::size_data(mUserData);
-        const size_t PAYLOAD_ENTRIES = sizeof(size_t);
+        constexpr size_t PAYLOAD_ENTRIES = sizeof(size_t);
         const size_t PAYLOAD_SIZE = (mCacheIndex.size() * (sizeof(Guid) + sizeof(Location)));
         io::Buffer indexBuffer = io::CreateBuffer(SIG_SIZE + USER_SIZE + PAYLOAD_ENTRIES + PAYLOAD_SIZE);
 
@@ -191,7 +193,6 @@ yaget::render::AssetCache::~AssetCache()
         offset = io::mem::WriteData(dataPointer, offset, fileSignature);
 
         //-----------------------------------------------------------------------------
-        // TODO(eg) write user data out. Q: How we determine at this level what is the user data and how we save it?
         std::memcpy(dataPointer + offset, io::cast_data<const char>(mUserData), USER_SIZE);
         offset += USER_SIZE;
 
@@ -247,7 +248,7 @@ void yaget::render::AssetCache::SaveCachedAsset(const io::Tag& tag, io::Buffer b
         {
             // NOTE(eg) We need to still save smaller buffer, so we do not re-allocate
             // memory unnecessary. But we need to update
-            // mCacheIndex[tag.mGuid] = mCache.mWriteOffset, io::size_data(buffer)};
+            // mCacheIndex[tag.mGuid] = mCache.mWriteOffset, io::size_data(buffer);
             //location.mSize = io::size_data(buffer);
             io::CopyBuffer(buffer, mCache.mBuffer, location.mOffset);
             mCacheStatus = ored(mCacheStatus, CacheStatus::Dirty);

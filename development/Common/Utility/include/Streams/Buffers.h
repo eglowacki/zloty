@@ -27,6 +27,7 @@ namespace yaget::io
     // .first - points to data
     // .second - size of data
     using Buffer = std::pair<std::shared_ptr<uint8_t>, size_t>;
+    //struct Buffer : std::pair<std::shared_ptr<uint8_t>, size_t> {};
     // This represents memory with size but it does not own, thus does not delete/cleanup
     using BufferView = std::pair<uint8_t*, size_t>;
 
@@ -312,6 +313,9 @@ namespace yaget::io
     };
 
     using Tags = std::vector<Tag>;
+
+    using CrcValueType = uint32_t;
+    using Crcs = std::vector<CrcValueType>;
 
 
     namespace mem

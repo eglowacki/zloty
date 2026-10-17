@@ -49,7 +49,6 @@ namespace defensor::render
 
         size_t mResizeCallbackId{};
         mt::JobPool mAssetPreloader{ "AssetPreloader", 1, mt::JobPool::Behaviour::StartAsRun, true };
-        std::atomic_bool mApplicationQuiting{ false };
 
         yaget::render::commands::RenderPassState mCurrentRenderPassState;
 

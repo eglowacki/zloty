@@ -139,6 +139,12 @@ size_t yaget::render::DeviceB::RegisterResizeCallback(ResizeCallback callback)
 //-------------------------------------------------------------------------------------------------
 void yaget::render::DeviceB::UnregisterResizeCallback(size_t callbackId)
 {
+    if (callbackId == 0)
+    {
+        // simple check if callbackId is valid
+        return;
+    }
+
     std::scoped_lock lock(mResizeCallbackMutex);
 
     std::erase_if(mResizeCallbacks, [callbackId](const auto& callbackData)

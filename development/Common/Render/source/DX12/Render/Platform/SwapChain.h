@@ -60,9 +60,6 @@ namespace yaget::render::platform
         DXGI_SWAP_CHAIN_DESC1 GetDescription() const;
         D3D12_RESOURCE_DESC GetDepthStencilDescription() const;
 
-        static int DepthBufferFlag;
-        static int StencilBufferFlag;
-
     private:
         void UpdateRenderTargetViews();
 

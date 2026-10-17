@@ -86,11 +86,21 @@ namespace
         {&yaget::render::commands::RenderTargetStorage::PopulateMappings, &yaget::render::commands::RenderTargetStorage::SaveMappings, "Manifest@RenderTargetOptions"},
     };
 
-    struct Mappers
+    class Mappers
     {
+    public:
         Mappers(yaget::io::VirtualTransportSystem& vts)
             : mVTS(vts)
         {
+            using Section = yaget::io::VirtualTransportSystem::Section;
+
+            auto cacheManifest = Section("CachesManifest@crc");
+            CrcCaches crcDiskCaches;
+            yaget::render::PopulateMap(cacheManifest, mVTS, crcDiskCaches);
+            auto crcCaches = CalculateVTSCrcs(yaget::io::VirtualTransportSystem::CrcMode::ClearLoaded);
+
+            //mVTS.DeleteBlob(cacheManifest);
+
             for (const auto mapping : MappingPopulators)
             {
                 mapping.mPopulator(mapping.mSectionName, mVTS);
@@ -99,12 +109,38 @@ namespace
 
         ~Mappers()
         {
+            using Section = yaget::io::VirtualTransportSystem::Section;
+
+            auto crcCaches = CalculateVTSCrcs(yaget::io::VirtualTransportSystem::CrcMode::KeepLoaded);
+
+            auto cacheManifest = Section("CachesManifest@crc");
+            yaget::render::SaveMap(cacheManifest, mVTS, crcCaches);
+
             for (const auto mapping : MappingPopulators)
             {
-                yaget::io::VirtualTransportSystem::Section populatorName = mapping.mSectionName;
-                yaget::io::VirtualTransportSystem::Section saverName = populatorName.mName + "Write@" + populatorName.mFilter;
+                Section populatorName = mapping.mSectionName;
+                Section saverName = populatorName.mName + "Write@" + populatorName.mFilter;
                 mapping.mSaver(saverName, mVTS);
             }
+        }
+
+    private:
+        using CrcCaches = std::map<yaget::Guid, uint32_t>;
+
+        CrcCaches CalculateVTSCrcs(yaget::io::VirtualTransportSystem::CrcMode crcMode) const
+        {
+            using Section = yaget::io::VirtualTransportSystem::Section;
+
+            auto tags = mVTS.GetTags(Section("Caches"));
+            auto crcs = mVTS.GetCrcs(tags, crcMode);
+
+            CrcCaches crcCaches;
+            for (const auto& [tag, crcValue] : std::views::zip(tags, crcs))
+            {
+                crcCaches.insert({ tag.mGuid, crcValue });
+            }
+
+            return crcCaches;
         }
 
         yaget::io::VirtualTransportSystem& mVTS;

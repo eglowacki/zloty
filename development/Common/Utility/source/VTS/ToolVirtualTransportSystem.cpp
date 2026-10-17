@@ -208,7 +208,7 @@ yaget::io::Tag yaget::io::tool::VirtualTransportSystem::CopyTag(const io::Tag& s
 
 
 //--------------------------------------------------------------------------------------------------
-bool yaget::io::tool::VirtualTransportSystem::DeleteBlob(const Sections& sections)
+bool yaget::io::tool::VirtualTransportSystem::DeleteBlobs(const Sections& sections)
 {
     std::vector<io::Tag> tags = GetTags(sections);
 

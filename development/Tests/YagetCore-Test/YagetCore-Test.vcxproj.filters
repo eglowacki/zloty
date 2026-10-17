@@ -64,6 +64,9 @@
     <ClCompile Include="TestFiles\MessagingBuffer_Test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="TestFiles\Zip_Test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Test Files">

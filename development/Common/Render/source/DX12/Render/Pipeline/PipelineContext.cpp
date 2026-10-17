@@ -131,58 +131,34 @@ void yaget::render::PipelineContext::PreloadAssets(const std::string& stagePrefi
     mRenderTargetStorage.Preload(renderTargetsTags, counter);
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
 
-    //if (mApplicationQuiting)
-    //{
-    //    return;
-    //}
     mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Shaders...", vertexShaderTags.size() + pixelShaderTags.size(), formatedSuffix) });
     mRenderShaders.Preload(vertexShaderTags, yaget::render::RenderShaders::ShaderType::Vertex, counter);
     mRenderShaders.Preload(pixelShaderTags, yaget::render::RenderShaders::ShaderType::Pixel, counter);
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
 
-    //if (mApplicationQuiting)
-    //{
-    //    return;
-    //}
     mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Geometries...", geometryTags.size() * 2, formatedSuffix) });
     mRenderGeometries.Preload(geometryTags, counter);
     mGeometryResources.Preload(geometryTags, counter);
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
 
-    //if (mApplicationQuiting)
-    //{
-    //    return;
-    //}
     mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Textures...", textureTags.size() * 2, formatedSuffix) });
     mRenderTextures.Preload(textureTags, counter);
     mTextureResources.Preload(textureTags, counter);
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
 
-    //if (mApplicationQuiting)
-    //{
-    //    return;
-    //}
     mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Materials...", materialTags.size(), formatedSuffix) });
     auto materials = mRenderMaterials.GetMaterials(materialTags);
-    for (const auto& [material, matTag] : std::views::zip(materials, materialTags))
+    yaget::platform::Sleep(sleepTime, time::kSecondUnit);                                            for (const auto& [material, matTag] : std::views::zip(materials, materialTags))
     {
         RebindMaterial(matTag, material);
         ++counter;
     }
-    yaget::platform::Sleep(sleepTime, time::kSecondUnit);
 
-    //if (mApplicationQuiting)
-    //{
-    //    return;
-    //}
+
     mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Items...", sceneItemsTags.size(), formatedSuffix) });
     mSceneItemsStorage.Preload(sceneItemsTags, counter);
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
 
-    //if (mApplicationQuiting)
-    //{
-    //    return;
-    //}
     //---------------------------------------------------------------------------------
     yaget::platform::Sleep(sleepTime, time::kSecondUnit);
 

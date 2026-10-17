@@ -31,8 +31,7 @@ namespace yaget::io::tool
         bool AttachBlob(std::shared_ptr<io::Asset> asset) { return AttachBlob(std::vector<std::shared_ptr<io::Asset>>{ asset }); }
         bool AttachBlob(const std::vector<std::shared_ptr<io::Asset>>& assets);
 
-        bool DeleteBlob(const Section& section) { return DeleteBlob(Sections{ section }); }
-        bool DeleteBlob(const Sections& sections);
+        bool DeleteBlobs(const Sections& sections) override;
 
     private:
         struct Locker : public DatabaseLocker
@@ -52,7 +51,7 @@ namespace yaget::io::tool
     };
     
     //--------------------------------------------------------------------------------------------------
-    // used to start one db with reset data, and second one to re-use existing data (helper classes only)
+    // used to start one db with with re-use existing data
     class VirtualTransportSystemDefault : public io::tool::VirtualTransportSystem
     {
     public:
@@ -62,6 +61,7 @@ namespace yaget::io::tool
     };
     
     //--------------------------------------------------------------------------------------------------
+    // start one db with reset data
     class VirtualTransportSystemReset : public io::tool::VirtualTransportSystem
     {
     public:
