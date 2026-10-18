@@ -2,8 +2,7 @@
 
 #include "Metrics/Gather.h"
 #include "TestHelpers/TestHelpers.h"
-#include "VTS/VirtualTransportSystem.h"
-#include "VTS/ResolvedAssets.h"
+//#include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 
 YAGET_BRAND_NAME_F("Beyond Limits")

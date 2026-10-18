@@ -166,8 +166,6 @@ yaget::render::ComPtr<ID3D12DescriptorHeap> yaget::render::helpers::CreateDescri
             desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
             break;
         case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
-            desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-            break;
         case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
             desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             break;

@@ -108,3 +108,4 @@ development/Common/Utility/include/sqlite/sqlite-amalgamation-3470200/
 *.DotSettings
 
 development/Tools/Everything/
+/development/Games/Defensor/data/Manifest/RenderDependencies.json

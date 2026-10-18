@@ -118,8 +118,14 @@ namespace yaget::items
         {}
     };
 
-    template<typename T>
-    concept is_persistent_type = requires (T t) { {t.GetStorage()}; };
+    template <typename T>
+    class SaveDirector : public Director
+    {
+    public:
+        SaveDirector(const std::string& name, RuntimeMode runTimeMode = RuntimeMode::Default)
+            : Director("$(SaveDataFolder)/" + name + ".sqlite", comp::db::GenerateSystemsCoordinator<T, comp::db::GenerateCoordinator::Schema>(), {}, comp::db::GenerateSystemsCoordinator<T, comp::db::GenerateCoordinator::Version>(), runTimeMode)
+        {}
+    };
 
     template <typename T>
     class SetupDirector : public DefaultDirector<T>

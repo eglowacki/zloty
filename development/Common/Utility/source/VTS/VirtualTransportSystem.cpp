@@ -1,13 +1,16 @@
-#include "VTS/VirtualTransportSystem.h"
 #include "App/AppUtilities.h"
-#include "Logger/YLog.h"
 #include "App/FileUtilities.h"
+#include "DataCRC.h"
 #include "Exception/Exception.h"
+#include "Logger/YLog.h"
 #include "Metrics/Concurrency.h"
 #include "Streams/Buffers.h"
-#include "Metrics/Concurrency.h"
+#include "VTS/VirtualTransportSystem.h"
+
 #include <filesystem>
 #include <utility>
+
+#include "VTS/ResolvedAssets.h"
 namespace fs = std::filesystem;
 
 #define YAGET_VTS_VERSION 10
@@ -511,6 +514,28 @@ yaget::io::Tag yaget::io::VirtualTransportSystem::FindTag(const Guid& guid) cons
 
 
 //--------------------------------------------------------------------------------------------------
+yaget::io::Crcs yaget::io::VirtualTransportSystem::GetCrcs(const Tags& tags, CrcMode crcMode)
+{
+    BLobLoader<Asset> assetLoader(*this, tags);
+    const auto& assets = assetLoader.Assets();
+
+    Crcs crcs;
+    for (auto asset : assets)
+    {
+        auto crcValue = crc::CalculateCRC32(asset->mBuffer);
+        crcs.push_back(crcValue);
+    }
+
+    if (crcMode == CrcMode::ClearLoaded)
+    {
+        ClearAssets(tags);
+    }
+
+    return crcs;
+}
+
+
+//--------------------------------------------------------------------------------------------------
 yaget::io::Tag yaget::io::VirtualTransportSystem::GenerateTag(const Section& section) const
 {
     using TargetSection = std::tuple<std::string /*Name*/, Strings /*Path*/, Strings /*Filters*/, std::string /*Converters*/, bool /*ReadOnly*/>;
@@ -680,6 +705,14 @@ std::string yaget::io::VirtualTransportSystem::GetResolverType(const io::Tag& ta
     }
 
     return resolverType;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+bool yaget::io::VirtualTransportSystem::DeleteBlob(const Sections& sections)
+{
+    std::vector<io::Tag> tags = GetTags(sections);
+    return DeleteBlobs(tags);
 }
 
 

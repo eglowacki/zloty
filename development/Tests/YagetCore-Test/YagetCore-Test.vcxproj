@@ -77,6 +77,7 @@
     <ClCompile Include="TestFiles\Threading_Test.cpp" />
     <ClCompile Include="TestFiles\VTS_Test.cpp" />
     <ClCompile Include="TestFiles\YLog_Test.cpp" />
+    <ClCompile Include="TestFiles\Zip_Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Utility\build\YagetCore.vcxproj">

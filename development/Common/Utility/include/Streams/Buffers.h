@@ -27,6 +27,7 @@ namespace yaget::io
     // .first - points to data
     // .second - size of data
     using Buffer = std::pair<std::shared_ptr<uint8_t>, size_t>;
+    //struct Buffer : std::pair<std::shared_ptr<uint8_t>, size_t> {};
     // This represents memory with size but it does not own, thus does not delete/cleanup
     using BufferView = std::pair<uint8_t*, size_t>;
 
@@ -105,6 +106,16 @@ namespace yaget::io
     inline Buffer CreateBuffer(const uint8_t* data, size_t size)
     {
         Buffer dataBuffer = CreateBuffer(size);
+        std::memcpy(dataBuffer.first.get(), data, size);
+        return dataBuffer;
+    }
+
+
+    template <size_t A = 256>
+    inline Buffer CreateAlignBuffer(const uint8_t* data, size_t size)
+    {
+        Buffer dataBuffer{ new uint8_t[size], size };
+        //Buffer dataBuffer = CreateBuffer(size);
         std::memcpy(dataBuffer.first.get(), data, size);
         return dataBuffer;
     }
@@ -302,6 +313,9 @@ namespace yaget::io
     };
 
     using Tags = std::vector<Tag>;
+
+    using CrcValueType = uint32_t;
+    using Crcs = std::vector<CrcValueType>;
 
 
     namespace mem

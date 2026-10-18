@@ -1,4 +1,5 @@
 #include "MainGame.h"
+#include "DataCRC.h"
 
 #include "App/Splash.h"
 #include "Debugging/DevConfiguration.h"
@@ -15,7 +16,9 @@
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Scene/RenderSceneItems.h"
 #include "Script/luacpp.h"
+#include "Streams/Populators.h"
 #include "Time/DeltaClock.h"
+#include "VTS/AssetCrcs.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
@@ -86,10 +89,12 @@ namespace
         {&yaget::render::commands::RenderTargetStorage::PopulateMappings, &yaget::render::commands::RenderTargetStorage::SaveMappings, "Manifest@RenderTargetOptions"},
     };
 
-    struct Mappers
+    class Mappers
     {
+    public:
         Mappers(yaget::io::VirtualTransportSystem& vts)
             : mVTS(vts)
+            , mCRCAssetsData(vts, yaget::io::VirtualTransportSystem::Section("CachesManifest@crc"), yaget::io::VirtualTransportSystem::Section("Caches"))
         {
             for (const auto mapping : MappingPopulators)
             {
@@ -99,15 +104,37 @@ namespace
 
         ~Mappers()
         {
+            using Section = yaget::io::VirtualTransportSystem::Section;
+
             for (const auto mapping : MappingPopulators)
             {
-                yaget::io::VirtualTransportSystem::Section populatorName = mapping.mSectionName;
-                yaget::io::VirtualTransportSystem::Section saverName = populatorName.mName + "Write@" + populatorName.mFilter;
+                Section populatorName = mapping.mSectionName;
+                Section saverName = populatorName.mName + "Write@" + populatorName.mFilter;
                 mapping.mSaver(saverName, mVTS);
             }
         }
 
+    private:
+        using CrcCaches = std::map<yaget::Guid, uint32_t>;
+
+        CrcCaches CalculateVTSCrcs(yaget::io::VirtualTransportSystem::CrcMode crcMode) const
+        {
+            using Section = yaget::io::VirtualTransportSystem::Section;
+
+            auto tags = mVTS.GetTags(Section("Caches"));
+            auto crcs = mVTS.GetCrcs(tags, crcMode);
+
+            CrcCaches crcCaches;
+            for (const auto& [tag, crcValue] : std::views::zip(tags, crcs))
+            {
+                crcCaches.insert({ tag.mGuid, crcValue });
+            }
+
+            return crcCaches;
+        }
+
         yaget::io::VirtualTransportSystem& mVTS;
+        yaget::io::crc::AssetsData mCRCAssetsData;
     };
 
 

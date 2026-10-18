@@ -131,10 +131,14 @@ namespace yaget
             size_t RequestBlob(const std::vector<io::Tag>& tags, std::function<void(std::shared_ptr<A>)> blobAssetCallback, std::atomic_size_t* tagsCounter);
 
             //! Return collection of all tags under sectionName/blobName
-            std::vector<io::Tag> GetTags(const Section& section) const { return GetTags(Sections{ section }); }
-            std::vector<io::Tag> GetTags(const Sections& sections) const;
-            io::Tag GetTag(const Section& section) const { std::vector<io::Tag> tags = GetTags(section); return tags.empty() ? io::Tag() : *tags.begin(); }
+            Tags GetTags(const Section& section) const { return GetTags(Sections{ section }); }
+            Tags GetTags(const Sections& sections) const;
+            io::Tag GetTag(const Section& section) const { Tags tags = GetTags(section); return tags.empty() ? io::Tag() : *tags.begin(); }
             io::Tag FindTag(const Guid& guid) const;
+
+            enum class CrcMode { KeepLoaded, ClearLoaded };
+            CrcValueType GetCrc(const Tag& tag, CrcMode crcMode) { auto crcs = GetCrcs(Tags{ tag }, crcMode); return crcs.empty() ? 0 : *crcs.begin(); }
+            Crcs GetCrcs(const Tags& tags, CrcMode crcMode);
 
             //! Return number of valid tags under sectionName/blobName
             size_t GetNumTags(const Section& section) const { return GetNumTags(Sections{ section }); }
@@ -152,7 +156,7 @@ namespace yaget
             void AddOverride(const std::shared_ptr<io::Asset>& asset);
             // Remove local cached assets, but preserve entry in DB. Used to force reload from disk on next request/load blob
             void ClearAssets(const io::Tags& tags);
-            void ClearAsset(const io::Tag& tag) { ClearAssets({ tag }); };
+            void ClearAsset(const io::Tag& tag) { ClearAssets({ tag }); }
 
             void AttachTransientBlob(const std::shared_ptr<io::Asset>& asset) { AttachTransientBlob(std::vector<std::shared_ptr<io::Asset>>{ asset }); }
             bool AttachTransientBlob(const std::vector<std::shared_ptr<io::Asset>>& assets);
@@ -162,6 +166,11 @@ namespace yaget
 
             // Return name of the resolver used for this specific asset tag
             std::string GetResolverType(const io::Tag& tag) const;
+
+            bool DeleteBlob(const Section& section) { return DeleteBlob(Sections{ section }); }
+            bool DeleteBlob(const Sections& sections);
+
+            virtual bool DeleteBlobs(const io::Tags& /*tags*/) { return false; }
 
             virtual ~VirtualTransportSystem();
 

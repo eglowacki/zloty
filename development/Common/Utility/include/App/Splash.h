@@ -57,7 +57,7 @@ namespace yaget
         void PrintText(HDC hDC, const char* message, TextLine line);
 
         RECT mMonitorRect;
-        COLORREF mColorTransparance = 0;
+        COLORREF mColorTransparency = 0;
         DWORD mWidth = 0;
         DWORD mHeight = 0;
         HBITMAP mBitmap = nullptr;

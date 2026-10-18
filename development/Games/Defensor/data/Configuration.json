@@ -118,6 +118,15 @@
                         "Filters": [ "*.cache" ],
                         "Path": [ "$(AppDataFolder)/Caches" ],
                         "ReadOnly": false,
+                        "Recursive": true
+                    }
+                },
+                {
+                    "CachesManifest": {
+                        "Converters": "JSON",
+                        "Filters": [ "*.json" ],
+                        "Path": [ "$(AppDataFolder)/Caches" ],
+                        "ReadOnly": false,
                         "Recursive": false
                     }
                 },

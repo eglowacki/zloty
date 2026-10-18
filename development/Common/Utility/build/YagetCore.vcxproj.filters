@@ -371,6 +371,12 @@
     <ClCompile Include="..\source\Script\Executant.cpp">
       <Filter>Script Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\VTS\AssetCrcs.cpp">
+      <Filter>VTS Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Streams\Populators.cpp">
+      <Filter>Stream Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -820,6 +826,15 @@
     </ClInclude>
     <ClInclude Include="..\include\Script\Executant.h">
       <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DataCRC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\VTS\AssetCrcs.h">
+      <Filter>VTS Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Streams\Populators.h">
+      <Filter>Stream Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

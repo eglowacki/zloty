@@ -76,9 +76,6 @@ namespace
 } // namespace
 
 
-int yaget::render::platform::SwapChain::DepthBufferFlag = 1 << 0;
-int yaget::render::platform::SwapChain::StencilBufferFlag = 1 << 1;
-
 //-------------------------------------------------------------------------------------------------
 yaget::render::platform::SwapChain::SwapChain(app::WindowFrame windowFrame, const info::Adapter& adapterInfo, ID3D12Device* device, IDXGIFactory* factory, ID3D12CommandQueue* commandQueue)
     : mWindowFrame{ std::move(windowFrame) }

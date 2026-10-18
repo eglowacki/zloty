@@ -1,3 +1,4 @@
+
 #include "MemoryManager/NewAllocator.h"
 #include "Render/DesktopApplication.h"
 #include "Render/Device.h"
@@ -7,7 +8,7 @@
 #include "Render/UI/FontRender.h"
 
 
-extern "C" { __declspec(dllexport) extern const UINT D3D12SDKVersion = 619;}
+extern "C" { __declspec(dllexport) extern const UINT D3D12SDKVersion = D3D12_SDK_VERSION;}
 extern "C" { __declspec(dllexport) extern const char* D3D12SDKPath = ".\\D3D12\\"; }
 
 
@@ -16,14 +17,8 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, false)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
     , mMatrixInterpolator(0.0f, 1.0f)
-    , mPipelineContext{ GetDevice(), app.VTS(), [this](const auto event){ mMessaging.Dispatch(event, Messaging::DispatcherType::Logic); } }
-    , mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
+    //, mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
-    if (mApp.Input().IsAction("Quit App"))
-    {
-        mApp.Input().RegisterSimpleActionCallback("Quit App", [this]() { mApplicationQuiting = true; });
-    }
-
     mAssetPreloader.AddTask([this]()
     {
         PreloadAssets();
@@ -31,16 +26,18 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
 }
 
 
-//-------------------------------------------------------------------------------------------------
-colors::Color lerp(const colors::Color& a, const colors::Color& b, float t)
-{
-    return colors::Color::Lerp(a, b, t);
-}
+////-------------------------------------------------------------------------------------------------
+//colors::Color lerp(const colors::Color& a, const colors::Color& b, float t)
+//{
+//    return colors::Color::Lerp(a, b, t);
+//}
 
 
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel, const SceneComponent* sceneComponent)
 {
+    YAGET_ASSERT(mPipelineContext, "Pipeline context is not initialized");
+
     using namespace yaget::render;
     using RenderEntity = comp::RowPolicy<RenderComponent*>;
     auto& coordinator = GetCS().GetCoordinator<RenderEntity>();
@@ -56,10 +53,8 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
         mCurrentCalcTime += gameClock.GetDeltaTimeSecond();
         if (mCurrentCalcTime > 1.0f)
         {
-            auto surface = mApp.GetSurface().GetSize<int>();
+            auto [resX, resY] = mApp.GetSurface().GetSize<int>();
 
-            auto resX = std::get<0>(surface);
-            auto resY = std::get<1>(surface);
             mAverageFps = FpsAlpha * mAverageFps + (1.0f - FpsAlpha) * mFramesThisSecond;
             auto framePerSecond = std::format("FPS: {} ", static_cast<uint32_t>(mAverageFps));
             auto milliPerFrame = std::format("Ms: {:.4f} ", 1000.0f / mAverageFps);
@@ -72,13 +67,13 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 { .mText = resolution, .mColor = math3d::Color{ colors::White } }
             };
 
-            mPipelineContext.UpdateText(fontTag, textPrinters, commands::Type::Direct);
+            mPipelineContext->UpdateText(fontTag, textPrinters, commands::Type::Direct);
 
             mCurrentCalcTime -= 1.0f;
             mFramesThisSecond = 0;
         }
 
-        const auto& renderPasses = mPipelineContext.RenderPasses().GetPasses();
+        const auto& renderPasses = mPipelineContext->RenderPasses().GetPasses();
         auto& device = GetDevice();
 
         for (const auto& renderPass: renderPasses)
@@ -93,7 +88,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             };
 
             std::vector<ItemToRender> itemsToRender;
-            auto renderTarget = mPipelineContext.FindRenderTarget(renderPass.mRenderTargetTag);
+            auto renderTarget = mPipelineContext->FindRenderTarget(renderPass.mRenderTargetTag);
             auto colorClear = renderPass.GetColorClear(renderTarget);
             auto depthClearValue = renderPass.GetDepthStencilClear(renderTarget);
 
@@ -109,9 +104,9 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
                 coordinator.ForEach<RenderEntity>([&itemsToRender, &viewMatrix, &orthoMatrix, &renderPass, this](comp::Id_t /*id*/, const auto& row)
                 {
                     auto renderComponent = std::get<RenderComponent*>(row);
-                    if (mPipelineContext.RenderPasses().RenderThisPass(renderComponent->mSceneItemTag, renderPass))
+                    if (mPipelineContext->RenderPasses().RenderThisPass(renderComponent->mSceneItemTag, renderPass))
                     {
-                        auto sceneItem = mPipelineContext.GetSceneItem(renderComponent->mSceneItemTag);
+                        auto sceneItem = mPipelineContext->GetSceneItem(renderComponent->mSceneItemTag);
 
                         auto worldViewProj = (renderComponent->mMatrix * viewMatrix * orthoMatrix).Transpose();
                         float timeData = 1.0f;
@@ -126,7 +121,7 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             {
                 for (const auto& sceneItemTag : renderPass.mSceneItemTags)
                 {
-                    auto sceneItem = mPipelineContext.GetSceneItem(sceneItemTag);
+                    auto sceneItem = mPipelineContext->GetSceneItem(sceneItemTag);
 
                     auto worldViewProj = (viewMatrix * orthoMatrix).Transpose();
                     float timeData = 1.0f;
@@ -151,13 +146,15 @@ void defensor::render::RenderSystem::OnUpdate(comp::Id_t id, const time::GameClo
             frameCommands.EndFrame();
         }
 
+        //auto tempPipelineContext = std::make_unique<PipelineContext>(GetDevice(), mApp.VTS(), [](const auto event){ } );
+
         memory::StopRecordAllocations();
     }
     else
     {
         const auto& newFrameRenderIds = sceneComponent->GetIds();
 
-        mPipelineContext.RenderPasses().BindAsset(sceneComponent->mRenderPassTag);
+        mPipelineContext->RenderPasses().BindAsset(sceneComponent->mRenderPassTag);
 
         coordinator.ForEach<RenderEntity>(newFrameRenderIds, [sceneComponent, &vts = mApp.VTS(), this](comp::Id_t id, const auto& row)
         {
@@ -184,15 +181,24 @@ void defensor::render::RenderSystem::PreloadAssets()
     //mPipelineContext.PreloadAssets("Boot");
     //mMessaging.Dispatch(items::StageEvent{ "Asset Load", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
 
-    mPipelineContext.PreloadAssets("");
+    GetDevice().UnregisterResizeCallback(mResizeCallbackId);
+    mPipelineContext = nullptr;
+    mPipelineContext = std::make_unique<yaget::render::PipelineContext>(GetDevice(), mApp.VTS(), "Boot", mApp.Director(), [this](const auto event){ mMessaging.Dispatch(event, Messaging::DispatcherType::Logic); } );
+
+
+    mPipelineContext->PreloadAssets("");
     mMessaging.Dispatch(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
 
     SetTickEnabled(true);
+    mResizeCallbackId = { GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) };
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windowFrame, yaget::render::DeviceB::ResizeState resizeState)
 {
-    mPipelineContext.OnResetDevice(windowFrame, resizeState);
+    if (mPipelineContext)
+    {
+        mPipelineContext->OnResetDevice(windowFrame, resizeState);
+    }
 }

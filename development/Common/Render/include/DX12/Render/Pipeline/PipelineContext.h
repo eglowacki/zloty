@@ -14,7 +14,6 @@
 #pragma once
 
 #include "Parsers/DependencyGraph.h"
-#include "Render/RenderCore.h"
 #include "Render/Commands/RenderPasses.h"
 #include "Render/Commands/RenderTarget.h"
 #include "Render/Pipeline/PipelineTags.h"
@@ -30,16 +29,23 @@
 #include "Render/Device.h"
 
 
+namespace yaget::items
+{
+    class Director;
+}
+
 
 namespace yaget::render
 {
     class PipelineContext
     {
+
     public:
         using ProgressCallback = std::function<void(const comp::gs::InitEvent& event)>;
-        PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, ProgressCallback progressCallback);
+        PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, const std::string& stagePrefix, const items::Director& director, ProgressCallback progressCallback);
+        ~PipelineContext();
 
-        void PreloadAssets(const std::string& sectionSuffix);
+        void PreloadAssets(const std::string& stagePrefix);
         void OnResetDevice(const app::WindowFrame& windowFrame, DeviceB::ResizeState resizeState);
 
         commands::RenderTarget* FindRenderTarget(const io::Tag& tag) const;
@@ -50,10 +56,11 @@ namespace yaget::render
     private:
         using Section = io::VirtualTransportSystem::Section;
 
-        void RebindMaterial(const io::Tag& tag, const yaget::render::MaterialPropertyTags& material);
+        void RebindMaterial(const io::Tag& tag, const MaterialPropertyTags& material);
         void HotRebindItemProperties(const Guid& guid);
 
-        yaget::render::info::Adapter::GraphicsDriverVersion mGraphicsDriverVersion{};
+        DeviceB& mDevice;
+        size_t mResizeCallbackId{};
         DependencyGraph mDependencyGraph;
         RenderSignatures mRenderSignatures;
         RenderPipelines mRenderPipelines;

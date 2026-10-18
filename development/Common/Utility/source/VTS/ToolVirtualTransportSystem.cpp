@@ -208,9 +208,12 @@ yaget::io::Tag yaget::io::tool::VirtualTransportSystem::CopyTag(const io::Tag& s
 
 
 //--------------------------------------------------------------------------------------------------
-bool yaget::io::tool::VirtualTransportSystem::DeleteBlob(const Sections& sections)
+bool yaget::io::tool::VirtualTransportSystem::DeleteBlobs(const io::Tags& tags)
 {
-    std::vector<io::Tag> tags = GetTags(sections);
+    if (tags.empty())
+    {
+        return true;
+    }
 
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {

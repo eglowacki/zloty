@@ -90,6 +90,12 @@ yaget::io::Buffer yaget::compression::ZipBuffer(const io::BufferView sourceBuffe
 //-------------------------------------------------------------------------------------------------
 yaget::io::Buffer yaget::compression::UnzipBuffer(const io::BufferView sourceBuffer)
 {
+    if (io::size_data(sourceBuffer) < sizeof(YagetZipSignature))
+    {
+        YLOG_ERROR("ZIP", "Buffer does not contain a valid zip signature.");
+        return {};
+    }
+
     size_t offset = 0;
 
     auto zipSignature = reinterpret_cast<YagetZipSignature*>(io::cast_data<char>(sourceBuffer) + offset);
@@ -102,7 +108,7 @@ yaget::io::Buffer yaget::compression::UnzipBuffer(const io::BufferView sourceBuf
 
     if (!zipSignature->IsValid())
     {
-        YLOG_ERROR("DEVI", "Unsupported zip buffer, version: '%d'. Expected version is <= '%d'. Cache will be ignored.",
+        YLOG_ERROR("DEVI", "Unsupported zip buffer, version: '%d'. Expected version is <= '%d'. File will be ignored.",
             zipSignature->Version,
             CurrentZipVersion);
 

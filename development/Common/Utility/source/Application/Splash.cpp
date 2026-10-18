@@ -136,7 +136,7 @@ void yaget::Splash::Init()
 {
     mWindowHandle = nullptr;
     mClassName = TEXT("SPLASH");
-    mColorTransparance = 0;
+    mColorTransparency = 0;
     mMessageFont = CreateFont(36, 20, 0, 0,FW_BOLD, false, false, false,DEFAULT_CHARSET,OUT_OUTLINE_PRECIS,
                               CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY, VARIABLE_PITCH,TEXT("Consolas"));
     if (HMODULE hUser32 = GetModuleHandle(TEXT("USER32.DLL")))
@@ -305,7 +305,7 @@ int yaget::Splash::CloseSplash()
 //--------------------------------------------------------------------------------------------------
 bool yaget::Splash::SetTransparentColor(COLORREF col)
 {
-    mColorTransparance = col;
+    mColorTransparency = col;
     return MakeTransparent();
 }
 
@@ -313,13 +313,13 @@ bool yaget::Splash::SetTransparentColor(COLORREF col)
 //--------------------------------------------------------------------------------------------------
 bool yaget::Splash::MakeTransparent() const
 {
-    if (mWindowHandle && g_pSetLayeredWindowAttributes && mColorTransparance)
+    if (mWindowHandle && g_pSetLayeredWindowAttributes && mColorTransparency)
     {
         //  set layered style for the window
         SetWindowLong(mWindowHandle, GWL_EXSTYLE, GetWindowLong(mWindowHandle, GWL_EXSTYLE) | WS_EX_LAYERED);
         //  call it with 0 alpha for the given color
-        uint8_t alphaValue = (mColorTransparance >> 24) & 0xFF;
-        g_pSetLayeredWindowAttributes(mWindowHandle, mColorTransparance, alphaValue, LWA_ALPHA);//LWA_COLORKEY);
+        uint8_t alphaValue = (mColorTransparency >> 24) & 0xFF;
+        g_pSetLayeredWindowAttributes(mWindowHandle, mColorTransparency, alphaValue, LWA_ALPHA);//LWA_COLORKEY);
     }
     return true;
 }
