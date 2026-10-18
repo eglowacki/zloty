@@ -17,17 +17,20 @@
     path = development/Dependencies/DirectXShaderCompiler
     url = https://github.com/microsoft/DirectXShaderCompiler.git
 [submodule "development/Dependencies/tracy"]
-	path = development/Dependencies/tracy
-	url = https://github.com/wolfpld/tracy.git
+    path = development/Dependencies/tracy
+    url = https://github.com/wolfpld/tracy.git
 [submodule "development/Dependencies/assimp"]
-	path = development/Dependencies/assimp
-	url = https://github.com/assimp/assimp.git
+    path = development/Dependencies/assimp
+    url = https://github.com/assimp/assimp.git
 [submodule "development/Dependencies/stb"]
-	path = development/Dependencies/stb
-	url = https://github.com/nothings/stb.git
+    path = development/Dependencies/stb
+    url = https://github.com/nothings/stb.git
 [submodule "development/Dependencies/zip-utils"]
-	path = development/Dependencies/zip-utils
-	url = https://github.com/Source-Authors/zip-utils.git
+    path = development/Dependencies/zip-utils
+    url = https://github.com/Source-Authors/zip-utils.git
 [submodule "development/Dependencies/D3D12MemoryAllocator"]
-	path = development/Dependencies/D3D12MemoryAllocator
-	url = https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git
+    path = development/Dependencies/D3D12MemoryAllocator
+    url = https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git
+[submodule "development/Dependencies/luabridge3"]
+    path = development/Dependencies/luabridge3
+    url = https://github.com/kunitoki/LuaBridge3.git
