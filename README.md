@@ -1,6 +1,7 @@
 # zloty
 YAGET "Yet Another Game Engine Technology" development (Rev.2-June.2021) 
 
+<img width="695" height="147" alt="image" src="https://github.com/user-attachments/assets/f9aab045-b954-4c9f-b71f-1805dbb91cd3" />
 
 * [Home](https://github.com/eglowacki/zloty/wiki)
 
