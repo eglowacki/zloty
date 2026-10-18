@@ -31,6 +31,6 @@
 [submodule "development/Dependencies/D3D12MemoryAllocator"]
     path = development/Dependencies/D3D12MemoryAllocator
     url = https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git
-[submodule "development/Dependencies/luabridge3"]
-    path = development/Dependencies/luabridge3
-    url = https://github.com/kunitoki/LuaBridge3.git
+[submodule "development/Dependencies/LuaBridge3"]
+	path = development/Dependencies/LuaBridge3
+	url = https://github.com/kunitoki/LuaBridge3.git
