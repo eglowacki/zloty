@@ -8,6 +8,8 @@
 #include "Render/Platform/ResourceCompiler.h"
 #include "Render\PlaceholderAssets\PlaceholderAssets.h"
 #include "Streams/Guid.h"
+#include "Streams/Populators.h"
+
 #include "VTS/ResolvedAssets.h"
 
 
@@ -282,14 +284,14 @@ void yaget::render::RenderShaders::CreateSignatureDescription(const io::Tag& ver
 //-------------------------------------------------------------------------------------------------
 void yaget::render::RenderShaders::PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
-    PopulateMap(fileName, vts, ShaderOptionsMappings);
+    io::PopulateMap(fileName, vts, ShaderOptionsMappings);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::RenderShaders::SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
-    SaveMap(fileName, vts, ShaderOptionsMappings);
+    io::SaveMap(fileName, vts, ShaderOptionsMappings);
 }
 
 

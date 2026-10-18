@@ -135,6 +135,7 @@
     </ClCompile>
     <ClCompile Include="..\source\STLHelper.cpp" />
     <ClCompile Include="..\source\Streams\Guid.cpp" />
+    <ClCompile Include="..\source\Streams\Populators.cpp" />
     <ClCompile Include="..\source\Streams\Watcher.cpp" />
     <ClCompile Include="..\source\StringHelpers.cpp" />
     <ClCompile Include="..\source\TestHelpers\TestHelpers.cpp" />
@@ -162,6 +163,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\source\VTS\AssetCrcs.cpp" />
     <ClCompile Include="..\source\VTS\BlobLoader.cpp" />
     <ClCompile Include="..\source\VTS\DiagnosticVirtualTransportSystem.cpp" />
     <ClCompile Include="..\source\VTS\ResolvedAssets.cpp" />
@@ -276,6 +278,7 @@
     <ClInclude Include="..\include\sqlite\sqlite3ext.h" />
     <ClInclude Include="..\include\Streams\Buffers.h" />
     <ClInclude Include="..\include\Streams\Guid.h" />
+    <ClInclude Include="..\include\Streams\Populators.h" />
     <ClInclude Include="..\include\Streams\Watcher.h" />
     <ClInclude Include="..\include\StringCRC.h" />
     <ClInclude Include="..\include\StringHelpers.h" />
@@ -291,6 +294,7 @@
     <ClInclude Include="..\include\tinyxml.h" />
     <ClInclude Include="..\include\UnitTest\catch.hpp" />
     <ClInclude Include="..\include\UnitTest\TestReporterOutputDebug.h" />
+    <ClInclude Include="..\include\VTS\AssetCrcs.h" />
     <ClInclude Include="..\include\VTS\BlobLoader.h" />
     <ClInclude Include="..\include\VTS\DiagnosticVirtualTransportSystem.h" />
     <ClInclude Include="..\include\VTS\ResolvedAssets.h" />

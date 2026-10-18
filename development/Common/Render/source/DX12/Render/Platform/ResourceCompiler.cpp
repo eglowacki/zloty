@@ -5,6 +5,7 @@
 #include "magic_enum/magic_enum.hpp"
 #include "Platform/Support.h"
 #include "StringHelpers.h"
+#include "Streams/Populators.h"
 
 #include <d3d12shader.h>    // Shader reflection.
 #include <d3dcompiler.h>
@@ -316,14 +317,14 @@ void yaget::render::ResourceReflector::MakeRootSignature(ResourceReflector* addi
 //-------------------------------------------------------------------------------------------------
 void yaget::render::ResourceReflector::PopulateMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
-    PopulateMap(fileName, vts, ReflectorVariableMappings);
+    io::PopulateMap(fileName, vts, ReflectorVariableMappings);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 void yaget::render::ResourceReflector::SaveMappings(io::VirtualTransportSystem::Section fileName, io::VirtualTransportSystem& vts)
 {
-    SaveMap(fileName, vts, ReflectorVariableMappings);
+    io::SaveMap(fileName, vts, ReflectorVariableMappings);
 }
 
 

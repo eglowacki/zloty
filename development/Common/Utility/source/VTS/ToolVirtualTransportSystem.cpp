@@ -210,6 +210,11 @@ yaget::io::Tag yaget::io::tool::VirtualTransportSystem::CopyTag(const io::Tag& s
 //--------------------------------------------------------------------------------------------------
 bool yaget::io::tool::VirtualTransportSystem::DeleteBlobs(const io::Tags& tags)
 {
+    if (tags.empty())
+    {
+        return true;
+    }
+
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
     {
         SQLite& database = databaseHandle->DB();

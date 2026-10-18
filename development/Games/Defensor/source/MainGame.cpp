@@ -1,4 +1,5 @@
 #include "MainGame.h"
+#include "DataCRC.h"
 
 #include "App/Splash.h"
 #include "Debugging/DevConfiguration.h"
@@ -15,7 +16,9 @@
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Scene/RenderSceneItems.h"
 #include "Script/luacpp.h"
+#include "Streams/Populators.h"
 #include "Time/DeltaClock.h"
+#include "VTS/AssetCrcs.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
@@ -91,28 +94,8 @@ namespace
     public:
         Mappers(yaget::io::VirtualTransportSystem& vts)
             : mVTS(vts)
+            , mCRCAssetsData(vts, yaget::io::VirtualTransportSystem::Section("CachesManifest@crc"), yaget::io::VirtualTransportSystem::Section("Caches"))
         {
-            using Section = yaget::io::VirtualTransportSystem::Section;
-
-            auto cacheManifest = Section("CachesManifest@crc");
-            CrcCaches crcDiskCaches;
-            yaget::render::PopulateMap(cacheManifest, mVTS, crcDiskCaches);
-            auto crcVtsCaches = CalculateVTSCrcs(yaget::io::VirtualTransportSystem::CrcMode::ClearLoaded);
-
-            // Determine which cached "blob" assets currently known to the VirtualTransportSystem (VTS)
-            // are invalid compared to the on-disk cache manifest, remove those invalid blobs from VTS,
-            yaget::io::Tags invalidCaches = crcVtsCaches | std::views::filter([&crcDiskCaches](const auto& crcValue)
-            {
-                return !crcDiskCaches.contains(crcValue.first) || crcDiskCaches.at(crcValue.first) != crcValue.second;
-            }) | std::views::transform([this](const auto& crcValue)
-            {
-                const auto cacheFileTag = mVTS.FindTag(crcValue.first);
-
-                return cacheFileTag;
-            }) | std::ranges::to<std::vector>();
-
-            mVTS.DeleteBlobs(invalidCaches);
-
             for (const auto mapping : MappingPopulators)
             {
                 mapping.mPopulator(mapping.mSectionName, mVTS);
@@ -122,11 +105,6 @@ namespace
         ~Mappers()
         {
             using Section = yaget::io::VirtualTransportSystem::Section;
-
-            auto crcCaches = CalculateVTSCrcs(yaget::io::VirtualTransportSystem::CrcMode::KeepLoaded);
-
-            auto cacheManifest = Section("CachesManifest@crc");
-            yaget::render::SaveMap(cacheManifest, mVTS, crcCaches);
 
             for (const auto mapping : MappingPopulators)
             {
@@ -156,6 +134,7 @@ namespace
         }
 
         yaget::io::VirtualTransportSystem& mVTS;
+        yaget::io::crc::AssetsData mCRCAssetsData;
     };
 
 
