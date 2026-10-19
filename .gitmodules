@@ -34,3 +34,8 @@
 [submodule "development/Dependencies/LuaBridge3"]
     path = development/Dependencies/LuaBridge3
     url = https://github.com/kunitoki/LuaBridge3.git
+[submodule "development/Dependencies/sol3"]
+    path = development/Dependencies/sol3
+    url = https://github.com/RealTimeLogic/sol2.git
+    branch = support-lua-5.5
+
