@@ -233,6 +233,34 @@ namespace yaget::meta
     }
 
 
+    //----------------------------------------------------------------------------------------------------------------------------------
+    // remove any cv, pointers and references qualifiers from tuple
+    template<class Tuple>
+    struct decay_args_tuple;
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template<class... Args>
+    struct decay_args_tuple<std::tuple<Args...>> 
+    {
+        using type = std::tuple<std::decay_t<Args>...>;
+    };
+
+
+    //-------------------------------------------------------------------------------------------------
+    template<typename T1, typename T2> struct tuple_cat_helper;
+    template<typename... T1, typename...T2>
+    struct tuple_cat_helper<std::tuple<T1...>, std::tuple<T2...>>
+    {
+        using type = std::tuple<T1..., T2...>;
+    };
+
+
+    //-------------------------------------------------------------------------------------------------
+    template<typename T1, typename T2>
+    using tuple_cat_t = typename tuple_cat_helper<T1, T2>::type;
+
+
     //-------------------------------------------------------------------------------------------------
     /// [1]
     /// This is the user-facing function.
@@ -340,7 +368,11 @@ namespace yaget::meta
     template<std::size_t N, std::size_t C, typename TCallable>
     constexpr void for_loop(TCallable&& callable)
     {
-        callable.template operator()<C>();
+        if constexpr (N > 0)
+        {
+            callable.template operator()<C>();
+        }
+
         if constexpr (C + 1 < N)
         {
             for_loop<N, C + 1>(std::forward<TCallable>(callable));

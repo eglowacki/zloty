@@ -112,11 +112,11 @@ namespace yaget::comp::gs
 
     protected:
         Messaging& mMessaging;
+        A& mApp;
 
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
-        A& mApp;
         CoordinatorSet mCoordinatorSet;
         ManagedSystems mSystems;
 

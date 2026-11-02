@@ -119,7 +119,9 @@
     <ClCompile Include="..\source\Metrics\PerformanceTracer.cpp" />
     <ClCompile Include="..\source\Parsers\DependencyGraph.cpp" />
     <ClCompile Include="..\source\Parsers\Parser.cpp" />
+    <ClCompile Include="..\source\Script\ComponentBinder.cpp" />
     <ClCompile Include="..\source\Script\Executant.cpp" />
+    <ClCompile Include="..\source\Script\ScriptState.cpp" />
     <ClCompile Include="..\source\sqlite\shell.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -270,8 +272,10 @@
     <ClInclude Include="..\include\Parsers\Parser.h" />
     <ClInclude Include="..\include\Platform\Support.h" />
     <ClInclude Include="..\include\Platform\WindowsLean.h" />
+    <ClInclude Include="..\include\Script\ComponentBinder.h" />
     <ClInclude Include="..\include\Script\Executant.h" />
     <ClInclude Include="..\include\Script\luacpp.h" />
+    <ClInclude Include="..\include\Script\ScriptState.h" />
     <ClInclude Include="..\include\sqlite\AccessHelpers.h" />
     <ClInclude Include="..\include\sqlite\SQLite.h" />
     <ClInclude Include="..\include\sqlite\sqlite3.h" />

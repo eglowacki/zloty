@@ -6,6 +6,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>YAGET_ASSERT_ENABLED=1;YAGET_LOG_ENABLED=1;YAGET_CONC_METRICS_ENABLED=1;YAGET_WATCHER_ENABLED=1;YAGET_DEBUG_RENDER=1;YAGET_NEW_ALLOCATOR_ENABLED=0;YAGET_AUTO_CLEANUP=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />

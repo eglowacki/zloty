@@ -16,6 +16,7 @@ yaget::Strings yaget::ylog::GetRegisteredTags()
         #include "Logger/CoreLogTags.h"
         #include "Render/Logger/RenderLogTags.h"
         "DEF",
+        "LUA",
     };
 
     return tags;

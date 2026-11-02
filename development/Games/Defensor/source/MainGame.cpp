@@ -15,8 +15,10 @@
 #include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Scene/RenderSceneItems.h"
-#include "Script/luacpp.h"
-#include "Streams/Populators.h"
+//#include "Script/luacpp.h"
+//#include "sol/sol.hpp"
+//#include "Script/Executant.h"
+//#include "Script/ComponentBinder.h"
 #include "Time/DeltaClock.h"
 #include "VTS/AssetCrcs.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
@@ -24,7 +26,6 @@
 #include "VTS/ToolVirtualTransportSystem.h"
 
 #include "../resource.h"
-#include "Script/Executant.h"
 
 #if 0
 namespace yaget::app
@@ -115,24 +116,6 @@ namespace
         }
 
     private:
-        using CrcCaches = std::map<yaget::Guid, uint32_t>;
-
-        CrcCaches CalculateVTSCrcs(yaget::io::VirtualTransportSystem::CrcMode crcMode) const
-        {
-            using Section = yaget::io::VirtualTransportSystem::Section;
-
-            auto tags = mVTS.GetTags(Section("Caches"));
-            auto crcs = mVTS.GetCrcs(tags, crcMode);
-
-            CrcCaches crcCaches;
-            for (const auto& [tag, crcValue] : std::views::zip(tags, crcs))
-            {
-                crcCaches.insert({ tag.mGuid, crcValue });
-            }
-
-            return crcCaches;
-        }
-
         yaget::io::VirtualTransportSystem& mVTS;
         yaget::io::crc::AssetsData mCRCAssetsData;
     };
@@ -262,6 +245,7 @@ namespace
         std::mutex mInitCounterMutex;
     };
 
+
 }
 
 #include <set>
@@ -270,8 +254,12 @@ int defensor::Run(const yaget::args::Options& options)
 {
     using namespace yaget;
 
-
 #if 0
+    sol::state lua;
+    int x = 0;
+    lua.set_function("beep", [&x]{ ++x; });
+    lua.script("beep()");
+
     lua_State* L = luaL_newstate(); // Create new Lua state
     luaL_openlibs(L);               // Load Lua libraries
 
@@ -316,13 +304,34 @@ int defensor::Run(const yaget::args::Options& options)
     const auto selectedAdapter = yaget::render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
     yaget::render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
 
+    //sol::state lua = yaget::script::GetState();
+    //auto yaget_lua_env = lua["yaget"].get_or_create<sol::table>();
+
+    //yaget_lua_env.set_function("NewItemId", [&app]()
+    //{
+    //    auto id = yaget::idspace::get_persistent(app.IdCache);;
+    //    return id;
+    //});
+
+ //   yaget_lua_env.set_function("MaterialComponent", script::PersistentComponent<comp::MaterialComponent>{});
+ //   yaget_lua_env.set_function("VelocityComponent", script::PersistentComponent<comp::VelocityComponent>{});
+
+	//lua.script("itemId = yaget.NewItemId()");
+ //   comp::Id_t id = lua["itemId"];
+ //   id;
+
+	////lua.script("result = yaget.MaterialComponent(itemId, 'SceneItems@SpaceBackground')");
+	//lua.script("result = yaget.VelocityComponent(itemId)");
+ //   bool result = lua["result"];
+ //   result;
+
     game::Messaging messaging{};
     Mappers mappers(app.VTS());
 
     std::string splashBitmapName = "$(AppFolder)/Splash.bmp";
     SplashScreenUpdater splashScreenUpdater(messaging, app, splashBitmapName, COLORREF{ 0xCA000000 });
 
-    auto runResult = yaget::script::Run("log('Hello from Lua!')");
+    //auto runResult = yaget::script::Run("log('Hello from Lua!')");
 
     auto returnResult = comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app, [&splashScreenUpdater]() { splashScreenUpdater.OnTick(); });
     return returnResult;

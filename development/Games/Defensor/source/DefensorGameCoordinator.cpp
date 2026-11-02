@@ -1,9 +1,15 @@
 ﻿#include "DefensorGameCoordinator.h"
-#include "VTS/ToolVirtualTransportSystem.h"
 #include "Items/ItemsDirector.h"
+#include "Script/ComponentBinder.h"
 #include "StringHelpers.h"
-#include <ranges>
+#include "VTS/ToolVirtualTransportSystem.h"
+//#include "Script/luacpp.h"
+//#include "sol/sol.hpp"
+//#include "Script/Executant.h"
+#include "Script/ComponentBinder.h"
+
 #include <iostream>
+#include <ranges>
 
 namespace
 {
@@ -280,10 +286,21 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     //Bar(BindConstructor<comp::VelocityComponent>());
     //"Persistance@PlayerTest"
 
-    auto s = conv::ToString(FooStuffEnum::Hello);
-    s;
-    auto i = conv::ToString(10);
-    i;
+    sol::state lua = yaget::script::GetState();
+    auto yaget_lua_env = lua["yaget"].get_or_create<sol::table>();
+
+    yaget_lua_env.set_function("NewItemId", [&app = mApp]()
+    {
+        auto id = yaget::idspace::get_persistent(app.IdCache);;
+        return id;
+    });
+
+    yaget_lua_env.set_function("MaterialComponent", script::PersistentComponent<comp::MaterialComponent, DefensorSystemsCoordinator>{*this});
+    yaget_lua_env.set_function("VelocityComponent", script::PersistentComponent<comp::VelocityComponent, DefensorSystemsCoordinator>{*this});
+
+	lua.script("itemId = yaget.NewItemId()");
+	lua.script("result = yaget.MaterialComponent(itemId, 'SceneItems@SpaceBackground')");
+
 
     const auto& itemsFile = dev::CurrentConfiguration().mInit.mItemsFile;
     if (!itemsFile.empty())

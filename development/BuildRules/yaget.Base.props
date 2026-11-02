@@ -4,7 +4,7 @@
     <Import Project="Props\yaget.flatbuffers.props" />
     <Import Project="Props\yaget.nlohmann_json.props" />
     <Import Project="Props\yaget.Math.DXTK.props" />
-    <Import Project="Props\yaget.lua.props" />
+    <Import Project="Props\yaget.LuaSol2.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
   </PropertyGroup>

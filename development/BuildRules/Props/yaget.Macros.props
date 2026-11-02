@@ -11,6 +11,7 @@
     <_PropertySheetDisplayName>yaget.Macros</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup>
+    <ClCompile />
   </ItemDefinitionGroup>
   <ItemGroup>
     <BuildMacro Include="YAGET_ROOT_FOLDER">
