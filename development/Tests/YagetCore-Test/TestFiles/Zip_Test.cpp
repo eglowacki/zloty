@@ -25,9 +25,9 @@ TEST_F(ZipUnzip, ZipUnzip_RoundTrip_StringData)
     auto unzipped = compression::UnzipBuffer(io::cast_to_view(zipped));
     // Unzipped should match original
     EXPECT_EQ(io::size_data(unzipped), original.size());
-    auto resultCmp = unzipped == srcBuffer;
-    resultCmp;
-    EXPECT_TRUE(unzipped == srcBuffer);
+    auto resultCmp = io::size_data(unzipped) == io::size_data(srcBuffer) && std::memcmp(io::cast_data<const char>(unzipped), io::cast_data<const char>(srcBuffer), io::size_data(unzipped)) == 0;//unzipped == srcBuffer;
+    //resultCmp;
+    EXPECT_TRUE(resultCmp);
 }
 
 

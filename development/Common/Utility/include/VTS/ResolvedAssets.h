@@ -211,6 +211,31 @@ namespace yaget::io
     };
 
     //-------------------------------------------------------------------------------------------------------------------------------
+    class LuaAsset : public Asset
+    {
+    public:
+        LuaAsset(const Tag& tag, const Buffer& buffer, const VirtualTransportSystem& vts)
+            : Asset(tag, buffer, vts)
+        {
+            mSource = { cast_data<const char>(mBuffer), size_data(mBuffer) };
+            //file::imemstream memStream(cast_data<const char>(mBuffer), size_data(mBuffer));
+
+            //std::string textLine;
+            //while (std::getline(memStream, textLine))
+            //{
+            //    conv::Trim(textLine);
+            //    if (!textLine.empty())
+            //    {
+            //        mStrings.push_back(textLine);
+            //        textLine = "";
+            //    }
+            //}
+        }
+
+        std::string mSource;
+    };
+
+    //-------------------------------------------------------------------------------------------------------------------------------
     template<typename T>  //Asset
     requires std::is_base_of_v<Asset, T> && (!std::same_as<Asset, T>)
     inline std::shared_ptr<Asset> ResolveAsset(const Buffer& dataBuffer, const Tag& requestedTag, const VirtualTransportSystem& vts)

@@ -139,6 +139,11 @@ void yaget::items::Director::AddStageItems(const std::string& stageName, const c
             }
         }
     }
+    else
+    {
+        const auto& message = std::format("Stage Name '{}' not added, does not exist.", stageName);
+        YLOG_ERROR("DIRE", message.c_str());
+    }
 }
 
 

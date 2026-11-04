@@ -15,10 +15,6 @@
 #include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Scene/RenderSceneItems.h"
-//#include "Script/luacpp.h"
-//#include "sol/sol.hpp"
-//#include "Script/Executant.h"
-//#include "Script/ComponentBinder.h"
 #include "Time/DeltaClock.h"
 #include "VTS/AssetCrcs.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
@@ -254,27 +250,6 @@ int defensor::Run(const yaget::args::Options& options)
 {
     using namespace yaget;
 
-#if 0
-    sol::state lua;
-    int x = 0;
-    lua.set_function("beep", [&x]{ ++x; });
-    lua.script("beep()");
-
-    lua_State* L = luaL_newstate(); // Create new Lua state
-    luaL_openlibs(L);               // Load Lua libraries
-
-    lua_pushcfunction(L, l_log);
-    lua_setglobal(L, "log");
-
-    // Execute Lua script
-    if (luaL_dostring(L, "log('Hello from Lua!')")) 
-    {
-        printf("Error: %s\n", lua_tostring(L, -1));
-    }
-
-    lua_close(L); // Close Lua state
-#endif
-
     if (options.find<bool>("vts_fix", false))
     {
         io::diag::VirtualTransportSystem vtsFixer(false, "$(DatabaseFolder)/vts.sqlite");
@@ -290,7 +265,8 @@ int defensor::Run(const yaget::args::Options& options)
         { "PERS", io::ResolveAsset<io::StringsAsset> },
         { "GEOM", io::ResolveAsset<io::StringsAsset> },
         { "BIN", io::ResolveAsset<io::BinAsset> },
-        { "IMAGE", io::ResolveAsset<io::TextureAsset> }
+        { "IMAGE", io::ResolveAsset<io::TextureAsset> },
+        { "LUA", io::ResolveAsset<io::LuaAsset> }
     };
 
     const auto& configInitBlock = dev::CurrentConfiguration().mInit;
@@ -304,34 +280,11 @@ int defensor::Run(const yaget::args::Options& options)
     const auto selectedAdapter = yaget::render::info::SelectDefaultAdapter(configInitBlock.ResX, configInitBlock.ResY);
     yaget::render::DesktopApplication app("Yaget.Defensor", director, vts, options, selectedAdapter);
 
-    //sol::state lua = yaget::script::GetState();
-    //auto yaget_lua_env = lua["yaget"].get_or_create<sol::table>();
-
-    //yaget_lua_env.set_function("NewItemId", [&app]()
-    //{
-    //    auto id = yaget::idspace::get_persistent(app.IdCache);;
-    //    return id;
-    //});
-
- //   yaget_lua_env.set_function("MaterialComponent", script::PersistentComponent<comp::MaterialComponent>{});
- //   yaget_lua_env.set_function("VelocityComponent", script::PersistentComponent<comp::VelocityComponent>{});
-
-	//lua.script("itemId = yaget.NewItemId()");
- //   comp::Id_t id = lua["itemId"];
- //   id;
-
-	////lua.script("result = yaget.MaterialComponent(itemId, 'SceneItems@SpaceBackground')");
-	//lua.script("result = yaget.VelocityComponent(itemId)");
- //   bool result = lua["result"];
- //   result;
-
     game::Messaging messaging{};
     Mappers mappers(app.VTS());
 
     std::string splashBitmapName = "$(AppFolder)/Splash.bmp";
     SplashScreenUpdater splashScreenUpdater(messaging, app, splashBitmapName, COLORREF{ 0xCA000000 });
-
-    //auto runResult = yaget::script::Run("log('Hello from Lua!')");
 
     auto returnResult = comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app, [&splashScreenUpdater]() { splashScreenUpdater.OnTick(); });
     return returnResult;

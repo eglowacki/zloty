@@ -243,7 +243,7 @@ namespace yaget::meta
     template<class... Args>
     struct decay_args_tuple<std::tuple<Args...>> 
     {
-        using type = std::tuple<std::decay_t<Args>...>;
+        using type = std::tuple<std::remove_pointer_t<std::decay_t<Args>>...>;
     };
 
 

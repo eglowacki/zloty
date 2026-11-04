@@ -2,14 +2,16 @@
 #include "Items/ItemsDirector.h"
 #include "Script/ComponentBinder.h"
 #include "StringHelpers.h"
-#include "VTS/ToolVirtualTransportSystem.h"
-//#include "Script/luacpp.h"
+#include "Script/MathBinder.h"
+//#include "VTS/ToolVirtualTransportSystem.h"
 //#include "sol/sol.hpp"
-//#include "Script/Executant.h"
-#include "Script/ComponentBinder.h"
+#include "Script/Executant.h"
+#include "Script/AppUtilitiesBinder.h"
+//#include "Script/ComponentBinder.h"
 
 #include <iostream>
 #include <ranges>
+
 
 namespace
 {
@@ -238,45 +240,8 @@ namespace
         std::map<yaget::comp::Id_t, yaget::Strings> mItems;
     };
 
-    template <typename T>
-    struct BindConstructor
-    {
-        template<typename... Args>
-        T operator()(Args&&...args)const
-        {
-            return T(std::forward<Args>(args)...);
-        }
-    };
-    template<typename type, typename...args>
-    void getFuncInfo(type(*/*func*/)(args...))
-    {
-        using Params = std::tuple<args...>;
-        Params param{};
-        param;
-        // some code here...
-        // here my example:
-        ((std::cout << typeid(args).name() << "\n"),...);
-    }
-
-    template <typename Fn>
-    void Bar(Fn f)
-    {
-        //f(10);
-        //getFuncInfo(&f);
-    }
-    //void someRandomFunction(int a, float b, double c, const char* d, int e[], std::pair<int, const char*> f)
-    //{
-    //    a;b;c;d;e;f;
-    //}
-
 }
 
-
-enum class FooStuffEnum
-{
-    Hello,
-    World
-};
 
 
 //-------------------------------------------------------------------------------------------------
@@ -286,61 +251,40 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     //Bar(BindConstructor<comp::VelocityComponent>());
     //"Persistance@PlayerTest"
 
-    sol::state lua = yaget::script::GetState();
-    auto yaget_lua_env = lua["yaget"].get_or_create<sol::table>();
-
-    yaget_lua_env.set_function("NewItemId", [&app = mApp]()
-    {
-        auto id = yaget::idspace::get_persistent(app.IdCache);;
-        return id;
-    });
-
-    yaget_lua_env.set_function("MaterialComponent", script::PersistentComponent<comp::MaterialComponent, DefensorSystemsCoordinator>{*this});
-    yaget_lua_env.set_function("VelocityComponent", script::PersistentComponent<comp::VelocityComponent, DefensorSystemsCoordinator>{*this});
-
-	lua.script("itemId = yaget.NewItemId()");
-	lua.script("result = yaget.MaterialComponent(itemId, 'SceneItems@SpaceBackground')");
-
+    sol::state lua = script::GetState();
+    script::BindMath(lua, "yaget");
+    script::BindComponents<CoordinatorSet::FullRow, DefensorSystemsCoordinator>(lua, "yaget", *this);
+    script::BindAppUtilities(lua, "yaget", mApp);
 
     const auto& itemsFile = dev::CurrentConfiguration().mInit.mItemsFile;
     if (!itemsFile.empty())
     {
-        io::SingleBLobLoader<io::StringsAsset> fileLoader(app.VTS(), itemsFile);
-        auto asset = fileLoader.GetAsset();
-        const auto& lines = asset ? asset->mStrings : Strings{};
-        YLOG_CERROR("GSYS", !lines.empty(), "Could not load '%s' file to populate persistent data in DB.", itemsFile.c_str());
-        if (!lines.empty())
+        io::SingleBLobLoader<io::LuaAsset> fileLoader(app.VTS(), itemsFile);
+        if (auto asset = fileLoader.GetAsset(); asset)
         {
-            try
-            {
-                PersistentReader persistentReader(lines, app.IdCache);
-                persistentReader.PersistData(*this);
-            }
-            catch (const ex::bad_init& e)
-            {
-                YLOG_ERROR("GSYS", "PersistentReader '%s' failed: %s", itemsFile.c_str(), e.what());
-            }
-        }
+            const auto& source = asset->mSource;
+            script::Run(lua, source, asset->mTag, script::Execute::Safe);
 
-        app.Input().PushContext("Edit");
+            app.Input().PushContext("Edit");
+        }
     }
     else
     {
-        constexpr auto stageId = comp::GLOBAL_ID_MARKER;
-        if (auto stageComponent = LoadComponent<items::StageComponent>(stageId))
-        {
-            const auto& startingStage = dev::CurrentConfiguration().mInit.mStartingStage;
-            if (!startingStage.empty())
-            {
-                stageComponent->SetValue<items::db_stage::Name>(startingStage);
-            }
+        //constexpr auto stageId = comp::GLOBAL_ID_MARKER;
+        //if (auto stageComponent = LoadComponent<items::StageComponent>(stageId))
+        //{
+        //    const auto& startingStage = dev::CurrentConfiguration().mInit.mStartingStage;
+        //    if (!startingStage.empty())
+        //    {
+        //        stageComponent->SetValue<items::db_stage::Name>(startingStage);
+        //    }
 
-            app.Input().PushContext("Game");
-        }
-        else
-        {
-            app.Input().PushContext("Edit");
-        }
+        //    app.Input().PushContext("Game");
+        //}
+        //else
+        //{
+        //    app.Input().PushContext("Edit");
+        //}
     }
 }
 

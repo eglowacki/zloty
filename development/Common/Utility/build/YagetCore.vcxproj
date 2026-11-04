@@ -119,8 +119,10 @@
     <ClCompile Include="..\source\Metrics\PerformanceTracer.cpp" />
     <ClCompile Include="..\source\Parsers\DependencyGraph.cpp" />
     <ClCompile Include="..\source\Parsers\Parser.cpp" />
+    <ClCompile Include="..\source\Script\AppUtilitiesBinder.cpp" />
     <ClCompile Include="..\source\Script\ComponentBinder.cpp" />
     <ClCompile Include="..\source\Script\Executant.cpp" />
+    <ClCompile Include="..\source\Script\MathBinder.cpp" />
     <ClCompile Include="..\source\Script\ScriptState.cpp" />
     <ClCompile Include="..\source\sqlite\shell.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -272,9 +274,11 @@
     <ClInclude Include="..\include\Parsers\Parser.h" />
     <ClInclude Include="..\include\Platform\Support.h" />
     <ClInclude Include="..\include\Platform\WindowsLean.h" />
+    <ClInclude Include="..\include\Script\AppUtilitiesBinder.h" />
     <ClInclude Include="..\include\Script\ComponentBinder.h" />
     <ClInclude Include="..\include\Script\Executant.h" />
     <ClInclude Include="..\include\Script\luacpp.h" />
+    <ClInclude Include="..\include\Script\MathBinder.h" />
     <ClInclude Include="..\include\Script\ScriptState.h" />
     <ClInclude Include="..\include\sqlite\AccessHelpers.h" />
     <ClInclude Include="..\include\sqlite\SQLite.h" />
@@ -347,6 +351,9 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="..\..\..\BuildRules\Natvis\yaget.Core.natvis" />
+    <Natvis Include="..\..\..\Dependencies\D3D12MemoryAllocator\src\D3D12MemAlloc.natvis" />
+    <Natvis Include="..\..\..\Dependencies\nlohmann-json-3.11\nlohmann_json.natvis" />
+    <Natvis Include="..\..\..\Dependencies\sol3\sol2.natvis" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Dependencies\lua\LuaLibrary.vcxproj">

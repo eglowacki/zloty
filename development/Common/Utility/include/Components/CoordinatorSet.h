@@ -111,9 +111,6 @@ namespace yaget::comp
             });
         }
 
-        template<typename T>
-        concept requires_global_coordinator = requires { typename T::Global; };
-
         template <typename Coordinators, size_t Num = std::tuple_size_v<Coordinators>>
         constexpr bool has_global_coordinator()
         {
@@ -121,7 +118,7 @@ namespace yaget::comp
             {
                 using CoordinatorRow = typename std::tuple_element_t<Num - 1, Coordinators>::Policy;
                 CoordinatorRow coordinatorRow{};
-                if constexpr (requires_global_coordinator<CoordinatorRow>)
+                if constexpr (comp::requires_global_coordinator<CoordinatorRow>)
                 {
                     return true;
                 }
@@ -149,7 +146,7 @@ namespace yaget::comp
 
                 using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
 
-                if constexpr (internalc::requires_global_coordinator<CoordinatorPolicy>)
+                if constexpr (comp::requires_global_coordinator<CoordinatorPolicy>)
                 {
                     using RequestedRow = comp::tuple_get_union_t<QueryRow, typename CoordinatorPolicy::Row>;
                     
@@ -237,7 +234,7 @@ namespace yaget::comp
 
                     using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
 
-                    if constexpr (internalc::requires_global_coordinator<CoordinatorPolicy>)
+                    if constexpr (comp::requires_global_coordinator<CoordinatorPolicy>)
                     {
                         using RequestedRow = tuple_get_union_t<QueryRow, typename CoordinatorPolicy::Row>;
                         using RequestedRowPolicy = comp::GlobalRowPolicy<RequestedRow>;
@@ -263,7 +260,7 @@ namespace yaget::comp
                 constexpr std::size_t coordinatorIndex = T0;
 
                 using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
-                if constexpr (!internalc::requires_global_coordinator<CoordinatorPolicy>)
+                if constexpr (!comp::requires_global_coordinator<CoordinatorPolicy>)
                 {
                     using RequestedRow = tuple_get_union_t<QueryRow, typename CoordinatorPolicy::Row>;
 

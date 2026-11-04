@@ -43,8 +43,11 @@ namespace yaget::items
 
         IdGameCache& IdCache() { return mIdGameCache; }
 
+        template <typename ComponentParams>
+        bool SaveComponentState(const std::string& componentName, const ComponentParams& inputParam);
+
         template <typename S>
-        bool SaveComponentState(comp::Id_t componentId, const std::string& componentName, const S& storage);
+        bool SaveComponentState(const std::string& componentName, comp::Id_t componentId, const S& storage);
 
         // save T::mDataStorage to DB
         template <typename T>
@@ -144,11 +147,10 @@ namespace yaget::items
     // database file, thus destroying previous data
     using SetupBlankDirector = SetupDirector<comp::db::EmptySchema>;
 
-    template <typename S>
-    bool Director::SaveComponentState(comp::Id_t componentId, const std::string& componentName, const S& storage)
+    template <typename ComponentParams>
+    bool Director::SaveComponentState(const std::string& componentName, const ComponentParams& inputParam)
     {
         const SQLite::StatementId_t statementId = "statementId_" + componentName;
-        auto inputParam = std::tuple_cat(std::tuple(componentId), storage);
 
         const auto dbLock = LockDatabaseAccess();
         auto& database = dbLock->DB();
@@ -173,6 +175,13 @@ namespace yaget::items
         return result;
     }
 
+    template <typename S>
+    bool Director::SaveComponentState(const std::string& componentName, comp::Id_t componentId, const S& storage)
+    {
+        auto inputParam = std::tuple_cat(std::tuple(componentId), storage);
+        return SaveComponentState(componentName, inputParam);
+    }
+
     template <typename T>
     bool Director::SaveComponentState(const T* component)
     {
@@ -183,7 +192,7 @@ namespace yaget::items
         }
 
         const auto componentName = comp::db::ResolveName<T>();
-        return SaveComponentState(component->Id(), componentName, component->GetStorage());
+        return SaveComponentState(componentName, component->Id(), component->GetStorage());
     }
 
     template <typename T>

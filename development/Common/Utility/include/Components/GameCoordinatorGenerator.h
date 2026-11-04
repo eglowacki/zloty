@@ -40,7 +40,26 @@ namespace yaget::comp::db
             {
                 text.erase(0, strlen(keyword));
             }
-            
+        }
+
+        // converets complex std types to simple ones.
+        // Returns true if it was able to convert, false otherwise
+        inline bool FixComplexTypeNames(std::string& text)
+        {
+            bool result = false;
+
+            if (text.starts_with("class std::basic_string"))
+            {
+                text = "std::string";
+                result = true;
+            }
+            else if (text.starts_with("class std::vector<class std::basic_string"))
+            {
+                text = "std::vector<std::string>";
+                result = true;
+            }
+
+            return result;
         }
 
         template <typename T>
@@ -49,16 +68,20 @@ namespace yaget::comp::db
             using BaseType = meta::strip_qualifiers_t<T>;
             std::string typeName = meta::type_name_v<BaseType>();
 
-            const auto result = typeName.find_last_of("::");
-            if (result != std::string::npos)
+            if (!FixComplexTypeNames(typeName))
             {
-                typeName.erase(0, result+1);
+                const auto result = typeName.find_last_of("::");
+                if (result != std::string::npos)
+                {
+                    typeName.erase(0, result + 1);
+                }
+
+                ClearKeyword(typeName, "struct ");
+                ClearKeyword(typeName, "class ");
+
+                conv::Trim(typeName, ": ");
             }
 
-            ClearKeyword(typeName, "struct ");
-            ClearKeyword(typeName, "class ");
-
-            conv::Trim(typeName, ": ");
             return typeName;
         }
 

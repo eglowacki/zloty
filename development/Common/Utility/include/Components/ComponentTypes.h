@@ -105,6 +105,11 @@ namespace yaget
             using Global = bool;
         };
 
+
+        //----------------------------------------------------------------------------------------------------------------------------------
+        template<typename T>
+        concept requires_global_coordinator = requires { typename T::Global; };
+
     } // namespace comp
 
     namespace items
