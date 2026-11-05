@@ -54,6 +54,7 @@ namespace yaget::comp::gs
         }
     }
 
+
     //-------------------------------------------------------------------------------------------------
     // Create coordinator for system and call each for update
     // T is GameCoordinatorSet and ...S are Systems (classes that follow yaget::comp::gs::GameSystem)
@@ -109,6 +110,9 @@ namespace yaget::comp::gs
         bool PersistComponent(yaget::comp::Id_t id, const std::string& componentType, const std::string& params);
         // Returns true of componentName does exist, otherwise false
         bool IsComponentTyped(const std::string& componentName) const;
+
+        CoordinatorSet& GetCoordinatorSet() { return mCoordinatorSet; }
+        const CoordinatorSet& GetCoordinatorSet() const { return mCoordinatorSet; }
 
     protected:
         Messaging& mMessaging;

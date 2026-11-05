@@ -251,6 +251,10 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     //Bar(BindConstructor<comp::VelocityComponent>());
     //"Persistance@PlayerTest"
 
+    //constexpr size_t numC = GameCoordinatorSet::NumCoordinators;
+    //numC;
+    //constexpr bool coordinatorSet2 = comp::is_coordinator_set<GameCoordinatorSet>;
+
     sol::state lua = script::GetState();
     script::BindMath(lua, "yaget");
     script::BindComponents<CoordinatorSet::FullRow, DefensorSystemsCoordinator>(lua, "yaget", *this);

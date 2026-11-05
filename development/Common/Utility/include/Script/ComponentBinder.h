@@ -18,6 +18,8 @@
 #include "YagetCore.h"
 #include "Components/ComponentTypes.h"
 #include "Components/GameCoordinatorGenerator.h"
+#include "Components/SystemsCoordinator.h"
+
 #include "Items/StageComponent.h"
 #include "Script/ScriptState.h"
 #include "VTS/VirtualTransportSystem.h"
@@ -209,8 +211,8 @@ namespace yaget::script
         using ComponentParameters = meta::tuple_cat_t<std::tuple<comp::Id_t>, ParameterPack>;
         static constexpr size_t NumParameters = std::tuple_size_v<ComponentParameters>;
 
-        PersistentComponent(SystemCoordinator& coordinator)
-            : mCoordinator(coordinator)
+        PersistentComponent(SystemCoordinator& systemCoordinator)
+            : mSystemCoordinator(systemCoordinator)
         {
         }
 
@@ -238,37 +240,75 @@ namespace yaget::script
                     });
 
                     const auto& componentName = comp::db::ResolveName<ComponentType>();
-                    if (mCoordinator.IsComponentTyped(componentName))
+                    if (mSystemCoordinator.IsComponentTyped(componentName))
                     {
-                        constexpr size_t NumCoordinators = SystemCoordinator::CoordinatorSet::NumCoordinators;
-                        bool globalIdSet = false;
+                        ComponentType* component = nullptr;
+                        using Coordinators = typename SystemCoordinator::CoordinatorSet::Coordinators;
+                        Coordinators* coordinators = nullptr;
+                        component; coordinators;
 
-                        meta::for_loop<NumCoordinators>([&globalIdSet, &fullParams]<std::size_t T0>()
+                        constexpr size_t coorinatorIndex = comp::FindCoordinatorIndex<ComponentType, SystemCoordinator>();
+                        coorinatorIndex;
+
+                        if constexpr (comp::IsComponentValid<ComponentType, SystemCoordinator>())
                         {
-                            if (!globalIdSet)
+                            if constexpr (comp::IsComponentGlobal<ComponentType, SystemCoordinator>() == comp::ComponentQueryType::Global)
                             {
-                                constexpr std::size_t coordinatorIndex = T0;
-                                using CoordinatorType = std::tuple_element_t<coordinatorIndex, SystemCoordinator::CoordinatorSet::Coordinators>;
-                                using CoordinatorComponents = CoordinatorType::FullRow;
-
-                                if constexpr (yaget::meta::tuple_is_element_v<ComponentType*, CoordinatorComponents>)
-                                {
-                                    using Policy = CoordinatorType::Policy;
-                                    if constexpr (comp::requires_global_coordinator<Policy>)
-                                    {
-                                        std::get<0>(fullParams) = comp::GLOBAL_ID_MARKER;
-                                        globalIdSet = true;
-                                    }
-                                }
+                                std::get<0>(fullParams) = comp::GLOBAL_ID_MARKER;
+                                int z = 0;
+                                z;
                             }
-                        });
+                        }
 
-                        auto& director = mCoordinator.Director();
+
+
+                        // ====
+                        //auto coordinator = comp::GetCoordinator<ComponentType, SystemCoordinator>(mSystemCoordinator);
+                        //coordinator;
+
+                        //const auto& coordinatorCREF = comp::GetCoordinator<ComponentType, SystemCoordinator>(std::cref(mSystemCoordinator));
+                        //coordinatorCREF;
+
+                        auto& tt = mSystemCoordinator.GetCoordinatorSet();
+                        tt;
+                        using CS = meta::strip_qualifiers_t<decltype(tt)>;
+                        CS* cs = nullptr;
+                        cs;
+
+                        //std::integral<CS>
+                        //auto coordinator2 = comp::GetCoordinator<ComponentType, CS>(tt);
+                        //coordinator2;
+
+                        //const auto& coordinator2CREF = comp::GetCoordinator<ComponentType, decltype(tt)>(std::cref(tt));
+                        //coordinator2CREF;
+
+                        constexpr bool systemCoordinator = comp::is_systems_coordinator<SystemCoordinator>;
+                        constexpr bool coordinatorSet = comp::is_coordinator_set<SystemCoordinator>;
+
+                        using CoordSet = typename SystemCoordinator::CoordinatorSet;
+                        //CoordSet* coordSet = nullptr; coordSet;
+                        constexpr bool systemCoordinator2 = comp::is_systems_coordinator<CoordSet>;
+                        constexpr bool coordinatorSet2 = comp::is_coordinator_set<CoordSet>;
+                        ////constexpr bool coordinatorSet3 = comp::is_coordinator_set2<CoordSet>;
+
+                        //if constexpr (CoordSet::NumCoordinators == 0)
+                        //{
+                        //    int z = 0;
+                        //    z;
+                        //}
+                        
+                        
+                        
+                        // ====
+
+
+
+
+                        auto& director = mSystemCoordinator.Director();
                         validCall = director.SaveComponentState(componentName, fullParams);
 
                         yaget::comp::ItemId itemId(std::get<0>(fullParams));
-                        YLOG_INFO("LUA", "Saved %sComponent %s: '%s(%s). LuaParameters: '%s'.", 
-                            (globalIdSet ? "Global " : ""),
+                        YLOG_INFO("LUA", "Saved Component %s: '%s(%s). LuaParameters: '%s'.", 
                             itemId.ToString().c_str(),
                             componentName.c_str(), 
                             print_tuple(fullParams).c_str(), 
@@ -303,7 +343,6 @@ namespace yaget::script
                 providedParamValues.c_str());
         }
 
-
         size_t ValidateParameters(const sol::variadic_args& va) const
         {
             using namespace yaget;
@@ -321,7 +360,7 @@ namespace yaget::script
             return numValidParams;
         }
 
-        SystemCoordinator& mCoordinator;
+        SystemCoordinator& mSystemCoordinator;
 	};
 
 

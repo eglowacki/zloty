@@ -187,6 +187,8 @@ namespace yaget::comp
     template<typename T>
     concept is_component_persistent = requires (T t) { {t.GetStorage()}; };
 
+
+
     //template<char ...C>
     //requires (sizeof...(C)%2 == 0)
     //constexpr std::string
@@ -533,4 +535,177 @@ namespace yaget::comp
         Coordinators mCoordinators;
         items::Director* mDirector{};
     };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template<typename T>
+    concept is_systems_coordinator = requires { typename T::CoordinatorSet; };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template<typename T>
+    concept is_coordinator_set = requires
+    {
+        typename T::Coordinators;
+        typename T::NumCoordinators; 
+    };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template<typename T>
+    struct coordinator_set;
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template<is_systems_coordinator T>
+    struct coordinator_set<T>
+    {
+        using type = typename T::CoordinatorSet;
+    };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template<is_coordinator_set T>
+    struct coordinator_set<T>
+    {
+        using type = T;
+    };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template<typename T>
+    using coordinator_set_t = typename coordinator_set<T>::type;
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    constexpr size_t InvalidCoordinatorIndex = std::numeric_limits<size_t>::max();
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template <typename ComponentType, typename T, typename CS = coordinator_set_t<T>>
+    consteval size_t FindCoordinatorIndex()
+    {
+        constexpr size_t NumCoordinators = CS::NumCoordinators;
+        size_t indexResult = InvalidCoordinatorIndex;
+
+        meta::for_loop<NumCoordinators>([&indexResult]<std::size_t T0>()
+        {
+            if (indexResult == InvalidCoordinatorIndex)
+            {
+                constexpr std::size_t CoordinatorIndex = T0;
+
+                using Coordinators = typename CS::Coordinators;
+                using CoordinatorType = std::tuple_element_t<CoordinatorIndex, Coordinators>;
+                using CoordinatorComponents = CoordinatorType::FullRow;
+
+                if constexpr (yaget::meta::tuple_is_element_v<ComponentType*, CoordinatorComponents>)
+                {
+                    indexResult = CoordinatorIndex;
+                }
+            }
+        });
+
+        return indexResult;
+    }
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template <typename ComponentType, typename T>
+    struct CoordinatorIndex
+    {
+        static constexpr size_t value = FindCoordinatorIndex<ComponentType, T>();
+    };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template <typename ComponentType, typename T>
+    constexpr size_t CoordinatorIndex_v =  CoordinatorIndex<ComponentType, T>::value;
+    
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template <typename ComponentType, typename T, typename CS =  coordinator_set_t<T>>
+    consteval bool IsComponentValid()
+    {
+        constexpr size_t coordinatorIndex = CoordinatorIndex_v<ComponentType, CS>;
+        return coordinatorIndex != InvalidCoordinatorIndex;
+    }
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    enum class ComponentQueryType
+    {
+        Invalid,
+        Valid,
+        Global
+    };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template <typename ComponentType, typename T, typename CS =  coordinator_set_t<T>>
+    consteval ComponentQueryType IsComponentGlobal()
+    {
+        constexpr size_t coordinatorIndex = CoordinatorIndex_v<ComponentType, CS>;
+        if (coordinatorIndex != InvalidCoordinatorIndex)
+        {
+            using Coordinators = typename CS::Coordinators;
+            using CoordinatorType = std::tuple_element_t<coordinatorIndex, Coordinators>;
+            using Policy = CoordinatorType::Policy;
+            if constexpr (comp::requires_global_coordinator<Policy>)
+            {
+                return ComponentQueryType::Global;
+            }
+
+            return ComponentQueryType::Valid;
+        }
+
+        return ComponentQueryType::Invalid;
+    }
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template <typename ComponentType, typename T, typename CS =  coordinator_set_t<T>>
+    struct CoordinatorType
+    {
+        using Coordinators = typename CS::Coordinators;
+        using type = std::tuple_element_t<CoordinatorIndex_v<ComponentType, CS>, Coordinators>;
+    };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template<typename ComponentType, typename T, typename CS =  coordinator_set_t<T>>
+    using CoordinatorType_t = typename CoordinatorType<ComponentType, CS>::type;
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    //template<typename ComponentType, typename T>
+    //auto GetCoordinator(T& t)
+    //{
+    //    t;
+    //    if constexpr (coordinator_set_v<T>)
+    //    {
+    //        return 1;
+    //        //return t.GetCoordinator<CoordinatorIndex_v<ComponentType, T>>();
+    //    }
+    //    else if constexpr (systems_coordinator_v<T>)
+    //    {
+    //        return 2;
+    //        //return t.GetCoordinatorSet().GetCoordinator<CoordinatorIndex_v<ComponentType, T>>();
+    //    }
+    //}
+
+    ////----------------------------------------------------------------------------------------------------------------------------------
+    //template<typename ComponentType, typename T>
+    //const auto& GetCoordinator(const T& t)
+    //{
+    //    if constexpr (is_coordinator_set<T>)
+    //    {
+    //        return t.GetCoordinator<CoordinatorIndex_v<ComponentType, T>>();
+    //    }
+    //    else if constexpr (is_systems_coordinator<T>)
+    //    {
+    //        return t.GetCoordinatorSet().GetCoordinator<CoordinatorIndex_v<ComponentType, T>>();
+    //    }
+    //}
+
+
 }

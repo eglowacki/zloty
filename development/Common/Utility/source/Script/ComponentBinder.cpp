@@ -104,14 +104,3 @@ std::string yaget::script::print_lua_arg_values(const sol::variadic_args& va)
 
     return conv::Combine(values, ", ");
 }
-
-
-////----------------------------------------------------------------------------------------------------------------------------------
-//void yaget::script::AddStages(const Strings stageNames)
-//{
-//    yaget_lua_env.set_function("AddStages", [&app]()
-//    {
-//        auto id = yaget::idspace::get_persistent(app.IdCache);;
-//        return id;
-//    });
-//}
