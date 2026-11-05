@@ -389,6 +389,9 @@
     <ClCompile Include="..\source\Script\AppUtilitiesBinder.cpp">
       <Filter>Script Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Components\ComponentMetaTypes.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -859,6 +862,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Script\AppUtilitiesBinder.h">
       <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\ComponentMetaTypes.h">
+      <Filter>Component Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

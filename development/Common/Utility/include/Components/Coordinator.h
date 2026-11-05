@@ -18,6 +18,7 @@
 
 #include "Components/ComponentTypes.h"
 #include "Components/GameCoordinatorGenerator.h"
+#include "Core/ErrorHandlers.h"
 #include "Metrics/Concurrency.h"
 
 

@@ -23,8 +23,8 @@
 //! \file
 #pragma once
 
-#include "Core/ErrorHandlers.h"
 #include "Components/Component.h"
+#include "Components/ComponentMetaTypes.h"
 #include "HashUtilities.h"
 #include "sqlite/SQLite.h"
 #include "VTS/ResolvedAssets.h"
@@ -151,7 +151,7 @@ namespace yaget::comp::db
         using namespace yaget;
 
         R results{};
-        if constexpr (comp::types::has_coordinatorset<T>)
+        if constexpr (comp::metatypes::has_coordinatorset<T>)
         {
             using FullRow = typename T::CoordinatorSet_t::FullRow;
 

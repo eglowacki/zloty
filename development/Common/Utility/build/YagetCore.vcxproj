@@ -31,6 +31,7 @@
     <ClCompile Include="..\source\Components\Collectors.cpp" />
     <ClCompile Include="..\source\Components\CollisionShape.cpp" />
     <ClCompile Include="..\source\Components\Component.cpp" />
+    <ClCompile Include="..\source\Components\ComponentMetaTypes.cpp" />
     <ClCompile Include="..\source\Components\ComponentTypes.cpp" />
     <ClCompile Include="..\source\Components\Coordinator.cpp" />
     <ClCompile Include="..\source\Components\GameCoordinatorGenerator.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="..\include\Components\Collectors.h" />
     <ClInclude Include="..\include\Components\CollisionShape.h" />
     <ClInclude Include="..\include\Components\Component.h" />
+    <ClInclude Include="..\include\Components\ComponentMetaTypes.h" />
     <ClInclude Include="..\include\Components\ComponentTypes.h" />
     <ClInclude Include="..\include\Components\Coordinator.h" />
     <ClInclude Include="..\include\Components\CoordinatorSet.h" />

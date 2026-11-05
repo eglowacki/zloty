@@ -110,15 +110,6 @@ namespace yaget
         template<typename T>
         concept requires_global_coordinator = requires { typename T::Global; };
 
-
-        namespace types
-        {
-            //----------------------------------------------------------------------------------------------------------------------------------
-            template<typename T>
-            concept has_coordinatorset = requires { typename T::CoordinatorSet_t; };
-
-        }
-
     } // namespace comp
 
     namespace items
