@@ -23,6 +23,6 @@ namespace yaget::comp::metatypes
 {
     //----------------------------------------------------------------------------------------------------------------------------------
     template <typename T>
-    concept has_coordinatorset = requires { typename T::CoordinatorSet_t; };
+    concept has_coordinator_set = requires { typename T::CoordinatorSet_t; };
 
 }

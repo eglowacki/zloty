@@ -151,7 +151,7 @@ namespace yaget::comp::db
         using namespace yaget;
 
         R results{};
-        if constexpr (comp::metatypes::has_coordinatorset<T>)
+        if constexpr (comp::metatypes::has_coordinator_set<T>)
         {
             using FullRow = typename T::CoordinatorSet_t::FullRow;
 
