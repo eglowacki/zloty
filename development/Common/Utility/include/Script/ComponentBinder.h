@@ -243,7 +243,7 @@ namespace yaget::script
                     if (mSystemCoordinator.IsComponentTyped(componentName))
                     {
                         ComponentType* component = nullptr;
-                        using Coordinators = typename SystemCoordinator::CoordinatorSet::Coordinators;
+                        using Coordinators = typename SystemCoordinator::CoordinatorSet_t::Coordinators;
                         Coordinators* coordinators = nullptr;
                         component; coordinators;
 
@@ -282,14 +282,14 @@ namespace yaget::script
                         //const auto& coordinator2CREF = comp::GetCoordinator<ComponentType, decltype(tt)>(std::cref(tt));
                         //coordinator2CREF;
 
-                        constexpr bool systemCoordinator = comp::is_systems_coordinator<SystemCoordinator>;
-                        constexpr bool coordinatorSet = comp::is_coordinator_set<SystemCoordinator>;
+                        //constexpr bool systemCoordinator = comp::is_systems_coordinator<SystemCoordinator>;
+                        //constexpr bool coordinatorSet = comp::is_coordinator_set<SystemCoordinator>;
 
-                        using CoordSet = typename SystemCoordinator::CoordinatorSet;
-                        //CoordSet* coordSet = nullptr; coordSet;
-                        constexpr bool systemCoordinator2 = comp::is_systems_coordinator<CoordSet>;
-                        constexpr bool coordinatorSet2 = comp::is_coordinator_set<CoordSet>;
-                        ////constexpr bool coordinatorSet3 = comp::is_coordinator_set2<CoordSet>;
+                        //using CoordSet = typename SystemCoordinator::CoordinatorSet_t;
+                        ////CoordSet* coordSet = nullptr; coordSet;
+                        //constexpr bool systemCoordinator2 = comp::is_systems_coordinator<CoordSet>;
+                        //constexpr bool coordinatorSet2 = comp::is_coordinator_set<CoordSet>;
+                        //////constexpr bool coordinatorSet3 = comp::is_coordinator_set2<CoordSet>;
 
                         //if constexpr (CoordSet::NumCoordinators == 0)
                         //{

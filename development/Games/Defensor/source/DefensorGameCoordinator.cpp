@@ -257,7 +257,7 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
 
     sol::state lua = script::GetState();
     script::BindMath(lua, "yaget");
-    script::BindComponents<CoordinatorSet::FullRow, DefensorSystemsCoordinator>(lua, "yaget", *this);
+    script::BindComponents<CoordinatorSet_t::FullRow, DefensorSystemsCoordinator>(lua, "yaget", *this);
     script::BindAppUtilities(lua, "yaget", mApp);
 
     const auto& itemsFile = dev::CurrentConfiguration().mInit.mItemsFile;

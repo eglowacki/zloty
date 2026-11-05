@@ -538,43 +538,45 @@ namespace yaget::comp
 
 
     //----------------------------------------------------------------------------------------------------------------------------------
-    template<typename T>
-    concept is_systems_coordinator = requires { typename T::CoordinatorSet; };
-
-
     //----------------------------------------------------------------------------------------------------------------------------------
-    template<typename T>
-    concept is_coordinator_set = requires
-    {
-        typename T::Coordinators;
-        typename T::NumCoordinators; 
-    };
-
-
     //----------------------------------------------------------------------------------------------------------------------------------
-    template<typename T>
-    struct coordinator_set;
+    //template<typename T>
+    //concept is_systems_coordinator = requires { typename T::CoordinatorSet_t; };
 
 
-    //----------------------------------------------------------------------------------------------------------------------------------
-    template<is_systems_coordinator T>
-    struct coordinator_set<T>
-    {
-        using type = typename T::CoordinatorSet;
-    };
+    ////----------------------------------------------------------------------------------------------------------------------------------
+    //template<typename T>
+    //concept is_coordinator_set = requires
+    //{
+    //    typename T::Coordinators;
+    //    typename T::NumCoordinators; 
+    //};
 
 
-    //----------------------------------------------------------------------------------------------------------------------------------
-    template<is_coordinator_set T>
-    struct coordinator_set<T>
-    {
-        using type = T;
-    };
+    ////----------------------------------------------------------------------------------------------------------------------------------
+    //template<typename T>
+    //struct coordinator_set;
 
 
-    //----------------------------------------------------------------------------------------------------------------------------------
-    template<typename T>
-    using coordinator_set_t = typename coordinator_set<T>::type;
+    ////----------------------------------------------------------------------------------------------------------------------------------
+    //template<is_systems_coordinator T>
+    //struct coordinator_set<T>
+    //{
+    //    using type = typename T::CoordinatorSet_t;
+    //};
+
+
+    ////----------------------------------------------------------------------------------------------------------------------------------
+    //template<is_coordinator_set T>
+    //struct coordinator_set<T>
+    //{
+    //    using type = T;
+    //};
+
+
+    ////----------------------------------------------------------------------------------------------------------------------------------
+    //template <typename T>
+    //using coordinator_set_t = typename T::CoordinatorSet_t;//coordinator_set<T>::type;
 
 
     //----------------------------------------------------------------------------------------------------------------------------------
@@ -582,9 +584,11 @@ namespace yaget::comp
 
 
     //----------------------------------------------------------------------------------------------------------------------------------
-    template <typename ComponentType, typename T, typename CS = coordinator_set_t<T>>
+    template <typename ComponentType, typename T>//, typename CS = coordinator_set_t<T>>
     consteval size_t FindCoordinatorIndex()
     {
+        using CS = typename T::CoordinatorSet_t;
+
         constexpr size_t NumCoordinators = CS::NumCoordinators;
         size_t indexResult = InvalidCoordinatorIndex;
 
@@ -592,15 +596,15 @@ namespace yaget::comp
         {
             if (indexResult == InvalidCoordinatorIndex)
             {
-                constexpr std::size_t CoordinatorIndex = T0;
+                constexpr std::size_t coordinatorIndex = T0;
 
                 using Coordinators = typename CS::Coordinators;
-                using CoordinatorType = std::tuple_element_t<CoordinatorIndex, Coordinators>;
+                using CoordinatorType = std::tuple_element_t<coordinatorIndex, Coordinators>;
                 using CoordinatorComponents = CoordinatorType::FullRow;
 
                 if constexpr (yaget::meta::tuple_is_element_v<ComponentType*, CoordinatorComponents>)
                 {
-                    indexResult = CoordinatorIndex;
+                    indexResult = coordinatorIndex;
                 }
             }
         });
@@ -609,24 +613,26 @@ namespace yaget::comp
     }
 
 
-    //----------------------------------------------------------------------------------------------------------------------------------
-    template <typename ComponentType, typename T>
-    struct CoordinatorIndex
-    {
-        static constexpr size_t value = FindCoordinatorIndex<ComponentType, T>();
-    };
+    ////----------------------------------------------------------------------------------------------------------------------------------
+    //template <typename ComponentType, typename T>
+    //struct CoordinatorIndex
+    //{
+    //    static constexpr size_t value = FindCoordinatorIndex<ComponentType, T>();
+    //};
 
 
-    //----------------------------------------------------------------------------------------------------------------------------------
-    template <typename ComponentType, typename T>
-    constexpr size_t CoordinatorIndex_v =  CoordinatorIndex<ComponentType, T>::value;
+    ////----------------------------------------------------------------------------------------------------------------------------------
+    //template <typename ComponentType, typename T>
+    //constexpr size_t CoordinatorIndex_v =  CoordinatorIndex<ComponentType, T>::value;
     
 
     //----------------------------------------------------------------------------------------------------------------------------------
-    template <typename ComponentType, typename T, typename CS =  coordinator_set_t<T>>
+    template <typename ComponentType, typename T>//, typename CS =  coordinator_set_t<T>>
     consteval bool IsComponentValid()
     {
-        constexpr size_t coordinatorIndex = CoordinatorIndex_v<ComponentType, CS>;
+        //using CS = typename T::CoordinatorSet_t;
+
+        constexpr size_t coordinatorIndex = FindCoordinatorIndex<ComponentType, T>();
         return coordinatorIndex != InvalidCoordinatorIndex;
     }
 
@@ -641,10 +647,12 @@ namespace yaget::comp
 
 
     //----------------------------------------------------------------------------------------------------------------------------------
-    template <typename ComponentType, typename T, typename CS =  coordinator_set_t<T>>
+    template <typename ComponentType, typename T>//, typename CS =  coordinator_set_t<T>>
     consteval ComponentQueryType IsComponentGlobal()
     {
-        constexpr size_t coordinatorIndex = CoordinatorIndex_v<ComponentType, CS>;
+        using CS = typename T::CoordinatorSet_t;
+
+        constexpr size_t coordinatorIndex = FindCoordinatorIndex<ComponentType, T>();
         if (coordinatorIndex != InvalidCoordinatorIndex)
         {
             using Coordinators = typename CS::Coordinators;
@@ -663,17 +671,18 @@ namespace yaget::comp
 
 
     //----------------------------------------------------------------------------------------------------------------------------------
-    template <typename ComponentType, typename T, typename CS =  coordinator_set_t<T>>
+    template <typename ComponentType, typename T>//, typename CS =  coordinator_set_t<T>>
     struct CoordinatorType
     {
+        using CS = typename T::CoordinatorSet_t;
         using Coordinators = typename CS::Coordinators;
-        using type = std::tuple_element_t<CoordinatorIndex_v<ComponentType, CS>, Coordinators>;
+        using type = std::tuple_element_t<FindCoordinatorIndex<ComponentType, CS>(), Coordinators>;
     };
 
 
     //----------------------------------------------------------------------------------------------------------------------------------
-    template<typename ComponentType, typename T, typename CS =  coordinator_set_t<T>>
-    using CoordinatorType_t = typename CoordinatorType<ComponentType, CS>::type;
+    template<typename ComponentType, typename T>//, typename CS =  coordinator_set_t<T>>
+    using CoordinatorType_t = typename CoordinatorType<ComponentType, T>::type;
 
 
     //----------------------------------------------------------------------------------------------------------------------------------

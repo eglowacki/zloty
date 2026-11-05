@@ -23,10 +23,10 @@
 //! \file
 #pragma once
 
-#include "HashUtilities.h"
 #include "Core/ErrorHandlers.h"
-#include "sqlite/SQLite.h"
 #include "Components/Component.h"
+#include "HashUtilities.h"
+#include "sqlite/SQLite.h"
 #include "VTS/ResolvedAssets.h"
 
 
@@ -104,9 +104,6 @@ namespace yaget::comp::db
         template<>
         inline std::string ResolveDatabaseType<double>() { return "REAL"; }
 
-        template<typename T>
-        concept has_coordinatorset = requires { typename T::CoordinatorSet; };
-
     }
 
     template <typename T>
@@ -154,9 +151,9 @@ namespace yaget::comp::db
         using namespace yaget;
 
         R results{};
-        if constexpr (internal::has_coordinatorset<T>)
+        if constexpr (comp::types::has_coordinatorset<T>)
         {
-            using FullRow = typename T::CoordinatorSet::FullRow;
+            using FullRow = typename T::CoordinatorSet_t::FullRow;
 
             meta::for_each_type<FullRow>([&results, &callback]<typename T0>(const T0&)
             {
