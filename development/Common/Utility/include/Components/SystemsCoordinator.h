@@ -15,8 +15,8 @@
 //! \file
 #pragma once
 
-#include "Components/CoordinatorSet.h"
 #include "App/Application.h"
+#include "Components/CoordinatorSet.h"
 #include "Meta/CompilerAlgo.h"
 
 
@@ -54,6 +54,7 @@ namespace yaget::comp::gs
         }
     }
 
+
     //-------------------------------------------------------------------------------------------------
     // Create coordinator for system and call each for update
     // T is GameCoordinatorSet and ...S are Systems (classes that follow yaget::comp::gs::GameSystem)
@@ -62,13 +63,13 @@ namespace yaget::comp::gs
     class SystemsCoordinator
     {
     public:
-        using CoordinatorSet = T;
+        using CoordinatorSet_t = T;
         using Messaging = M;
 
         using Systems = std::tuple<S...>;
         static constexpr size_t NumSystems = std::tuple_size_v<std::remove_reference_t<Systems>>;
         static_assert(NumSystems, "User must provide at least 1 GameSystem");
-        static_assert(internal::SystemsMatchCoordinator<Systems, CoordinatorSet>(), "CoordinatorSet does not support requested GameSystem component.");
+        static_assert(internal::SystemsMatchCoordinator<Systems, CoordinatorSet_t>(), "CoordinatorSet_t does not support requested GameSystem component.");
 
         SystemsCoordinator(M& messaging, A& app);
 
@@ -89,10 +90,10 @@ namespace yaget::comp::gs
         template <typename C>
         bool RemoveComponent(comp::Id_t id);
 
-        template <typename TT = typename CoordinatorSet::FullRow>
+        template <typename TT = typename CoordinatorSet_t::FullRow>
         TT LoadItem(comp::Id_t id);
 
-        template <typename TT = typename CoordinatorSet::FullRow>
+        template <typename TT = typename CoordinatorSet_t::FullRow>
         bool RemoveItem(comp::Id_t id);
 
         items::Director& Director() { return mApp.Director(); }
@@ -110,14 +111,17 @@ namespace yaget::comp::gs
         // Returns true of componentName does exist, otherwise false
         bool IsComponentTyped(const std::string& componentName) const;
 
+        CoordinatorSet_t& GetCoordinatorSet() { return mCoordinatorSet; }
+        const CoordinatorSet_t& GetCoordinatorSet() const { return mCoordinatorSet; }
+
     protected:
         Messaging& mMessaging;
+        A& mApp;
 
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
-        A& mApp;
-        CoordinatorSet mCoordinatorSet;
+        CoordinatorSet_t mCoordinatorSet;
         ManagedSystems mSystems;
 
         using CreationFunction = std::function<void(yaget::comp::Id_t id, const std::string& params)>;
@@ -176,10 +180,10 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
     , mApp(app)
     , mCoordinatorSet(&app.Director())
 {
-    meta::for_loop<CoordinatorSet::FullRow>([this]<std::size_t T0>()
+    meta::for_loop<CoordinatorSet_t::FullRow>([this]<std::size_t T0>()
     {
         constexpr std::size_t index = T0;
-        using ComponentType = meta::strip_qualifiers_t<std::tuple_element_t<index, typename CoordinatorSet::FullRow>>;
+        using ComponentType = meta::strip_qualifiers_t<std::tuple_element_t<index, typename CoordinatorSet_t::FullRow>>;
 
         if constexpr (is_component_persistent<ComponentType>)
         {

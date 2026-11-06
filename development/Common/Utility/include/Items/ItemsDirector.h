@@ -43,8 +43,11 @@ namespace yaget::items
 
         IdGameCache& IdCache() { return mIdGameCache; }
 
+        template <typename ComponentParams>
+        bool SaveComponentState(const std::string& componentName, const ComponentParams& inputParam);
+
         template <typename S>
-        bool SaveComponentState(comp::Id_t componentId, const std::string& componentName, const S& storage);
+        bool SaveComponentState(const std::string& componentName, comp::Id_t componentId, const S& storage);
 
         // save T::mDataStorage to DB
         template <typename T>
@@ -53,7 +56,7 @@ namespace yaget::items
         // load T::Types from DB. If load not valid, result [out] value will be set to false
         // and it will return default T::Types{}.
         template <typename T>
-        typename T::Types LoadComponentState(comp::Id_t id, bool* result) const;
+        typename comp::db::RowDescription_t<T>::Types LoadComponentState(comp::Id_t id, bool* result) const;
 
         // Return list of item id's that are marked for stageName. This does not load/create items.
         comp::ItemIds GetStageItems(const std::string& stageName) const;
@@ -144,11 +147,10 @@ namespace yaget::items
     // database file, thus destroying previous data
     using SetupBlankDirector = SetupDirector<comp::db::EmptySchema>;
 
-    template <typename S>
-    bool Director::SaveComponentState(comp::Id_t componentId, const std::string& componentName, const S& storage)
+    template <typename ComponentParams>
+    bool Director::SaveComponentState(const std::string& componentName, const ComponentParams& inputParam)
     {
         const SQLite::StatementId_t statementId = "statementId_" + componentName;
-        auto inputParam = std::tuple_cat(std::tuple(componentId), storage);
 
         const auto dbLock = LockDatabaseAccess();
         auto& database = dbLock->DB();
@@ -173,6 +175,13 @@ namespace yaget::items
         return result;
     }
 
+    template <typename S>
+    bool Director::SaveComponentState(const std::string& componentName, comp::Id_t componentId, const S& storage)
+    {
+        auto inputParam = std::tuple_cat(std::tuple(componentId), storage);
+        return SaveComponentState(componentName, inputParam);
+    }
+
     template <typename T>
     bool Director::SaveComponentState(const T* component)
     {
@@ -183,13 +192,13 @@ namespace yaget::items
         }
 
         const auto componentName = comp::db::ResolveName<T>();
-        return SaveComponentState(component->Id(), componentName, component->GetStorage());
+        return SaveComponentState(componentName, component->Id(), component->GetStorage());
     }
 
     template <typename T>
-    typename T::Types Director::LoadComponentState(comp::Id_t id, bool* result) const
+    typename comp::db::RowDescription_t<T>::Types Director::LoadComponentState(comp::Id_t id, bool* result) const
     {
-        using Parameters = typename T::Types;
+        using Parameters = typename comp::db::RowDescription_t<T>::Types;
         using ParameterNames = typename comp::db::RowDescription_t<T>::Row;
 
         const auto parameterNames = comp::db::GetPolicyRowNames<ParameterNames>();

@@ -15,8 +15,6 @@
 #include "Render/Pipeline/RenderSignatures.h"
 #include "Render/Pipeline/RenderTextures.h"
 #include "Render/Scene/RenderSceneItems.h"
-#include "Script/luacpp.h"
-#include "Streams/Populators.h"
 #include "Time/DeltaClock.h"
 #include "VTS/AssetCrcs.h"
 #include "VTS/DiagnosticVirtualTransportSystem.h"
@@ -24,7 +22,6 @@
 #include "VTS/ToolVirtualTransportSystem.h"
 
 #include "../resource.h"
-#include "Script/Executant.h"
 
 #if 0
 namespace yaget::app
@@ -115,24 +112,6 @@ namespace
         }
 
     private:
-        using CrcCaches = std::map<yaget::Guid, uint32_t>;
-
-        CrcCaches CalculateVTSCrcs(yaget::io::VirtualTransportSystem::CrcMode crcMode) const
-        {
-            using Section = yaget::io::VirtualTransportSystem::Section;
-
-            auto tags = mVTS.GetTags(Section("Caches"));
-            auto crcs = mVTS.GetCrcs(tags, crcMode);
-
-            CrcCaches crcCaches;
-            for (const auto& [tag, crcValue] : std::views::zip(tags, crcs))
-            {
-                crcCaches.insert({ tag.mGuid, crcValue });
-            }
-
-            return crcCaches;
-        }
-
         yaget::io::VirtualTransportSystem& mVTS;
         yaget::io::crc::AssetsData mCRCAssetsData;
     };
@@ -262,6 +241,7 @@ namespace
         std::mutex mInitCounterMutex;
     };
 
+
 }
 
 #include <set>
@@ -269,23 +249,6 @@ namespace
 int defensor::Run(const yaget::args::Options& options)
 {
     using namespace yaget;
-
-
-#if 0
-    lua_State* L = luaL_newstate(); // Create new Lua state
-    luaL_openlibs(L);               // Load Lua libraries
-
-    lua_pushcfunction(L, l_log);
-    lua_setglobal(L, "log");
-
-    // Execute Lua script
-    if (luaL_dostring(L, "log('Hello from Lua!')")) 
-    {
-        printf("Error: %s\n", lua_tostring(L, -1));
-    }
-
-    lua_close(L); // Close Lua state
-#endif
 
     if (options.find<bool>("vts_fix", false))
     {
@@ -302,7 +265,8 @@ int defensor::Run(const yaget::args::Options& options)
         { "PERS", io::ResolveAsset<io::StringsAsset> },
         { "GEOM", io::ResolveAsset<io::StringsAsset> },
         { "BIN", io::ResolveAsset<io::BinAsset> },
-        { "IMAGE", io::ResolveAsset<io::TextureAsset> }
+        { "IMAGE", io::ResolveAsset<io::TextureAsset> },
+        { "LUA", io::ResolveAsset<io::LuaAsset> }
     };
 
     const auto& configInitBlock = dev::CurrentConfiguration().mInit;
@@ -321,8 +285,6 @@ int defensor::Run(const yaget::args::Options& options)
 
     std::string splashBitmapName = "$(AppFolder)/Splash.bmp";
     SplashScreenUpdater splashScreenUpdater(messaging, app, splashBitmapName, COLORREF{ 0xCA000000 });
-
-    auto runResult = yaget::script::Run("log('Hello from Lua!')");
 
     auto returnResult = comp::gs::RunGame<game::DefensorSystemsCoordinator, render::DefensorSystemsCoordinator>(messaging, app, [&splashScreenUpdater]() { splashScreenUpdater.OnTick(); });
     return returnResult;

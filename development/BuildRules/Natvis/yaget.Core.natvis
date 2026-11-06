@@ -37,6 +37,22 @@
         <DisplayString>{{ Value={_bytes._Elems,[16]nvoHb} }}</DisplayString>
     </Type>
 
+    <Type Name="DirectX::SimpleMath::Vector2">
+        <DisplayString>{{ x={x} y={y} }}</DisplayString>
+    </Type>
+
+    <Type Name="DirectX::SimpleMath::Vector3">
+        <DisplayString>{{ x={x} y={y} z={z} }}</DisplayString>
+    </Type>
+
+    <Type Name="DirectX::SimpleMath::Vector4">
+        <DisplayString>{{ x={x} y={y} z={z} w={w} }}</DisplayString>
+    </Type>
+
+    <Type Name="DirectX::SimpleMath::Quaternion">
+        <DisplayString>{{ x={x} y={y} z={z} w={w} }}</DisplayString>
+    </Type>
+
 </AutoVisualizer>
 
 

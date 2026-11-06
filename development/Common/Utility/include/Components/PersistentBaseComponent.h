@@ -17,10 +17,8 @@
 //! \file
 #pragma once
 
-#include <utility>
-
-
 #include "Components/Component.h"
+#include <utility>
 
 
 namespace yaget::comp::db

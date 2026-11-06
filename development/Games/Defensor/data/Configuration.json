@@ -68,6 +68,15 @@
                     }
                 },
                 {
+                    "Scripts": {
+                        "Converters": "LUA",
+                        "Filters": [ "*.lua" ],
+                        "Path": [ "$(DataFolder)/Data/Scripts" ],
+                        "ReadOnly": true,
+                        "Recursive": true
+                    }
+                },
+                {
                     "Geometry": {
                         "Converters": "GEOM",
                         "Filters": [ "*.geom" ],
@@ -207,7 +216,7 @@
             "VSync": false,
             "DepthStencilFormat": 1,
             "StartingStage": "Boot",
-            "ItemsFile": ""
+            "ItemsFile": "Scripts@LoadItems"
         }
     }
 }

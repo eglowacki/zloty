@@ -41,13 +41,7 @@ namespace
 
         if (reset)
         {
-            std::error_code ec;
-            auto result = fs::remove(fs::path(fileName), ec);
-            if (!result)
-            {
-                const std::string message = std::format("DIRE", "Delete database file '{}' from disk failed with error: '{}: {}'.", fileName, ec.value(), ec.message());
-                yaget::error_handlers::Throw("DIRE", message);
-            }
+            yaget::io::file::RemoveFile(fileName);
         }
 
         return fileName;
@@ -138,6 +132,11 @@ void yaget::items::Director::AddStageItems(const std::string& stageName, const c
                 }
             }
         }
+    }
+    else
+    {
+        const auto& message = std::format("Stage Name '{}' not added, does not exist.", stageName);
+        YLOG_ERROR("DIRE", message.c_str());
     }
 }
 

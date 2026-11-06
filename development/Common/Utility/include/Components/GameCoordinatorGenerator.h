@@ -23,10 +23,10 @@
 //! \file
 #pragma once
 
-#include "HashUtilities.h"
-#include "Core/ErrorHandlers.h"
-#include "sqlite/SQLite.h"
 #include "Components/Component.h"
+#include "Components/ComponentMetaTypes.h"
+#include "HashUtilities.h"
+#include "sqlite/SQLite.h"
 #include "VTS/ResolvedAssets.h"
 
 
@@ -40,7 +40,26 @@ namespace yaget::comp::db
             {
                 text.erase(0, strlen(keyword));
             }
-            
+        }
+
+        // converets complex std types to simple ones.
+        // Returns true if it was able to convert, false otherwise
+        inline bool FixComplexTypeNames(std::string& text)
+        {
+            bool result = false;
+
+            if (text.starts_with("class std::basic_string"))
+            {
+                text = "std::string";
+                result = true;
+            }
+            else if (text.starts_with("class std::vector<class std::basic_string"))
+            {
+                text = "std::vector<std::string>";
+                result = true;
+            }
+
+            return result;
         }
 
         template <typename T>
@@ -49,16 +68,20 @@ namespace yaget::comp::db
             using BaseType = meta::strip_qualifiers_t<T>;
             std::string typeName = meta::type_name_v<BaseType>();
 
-            const auto result = typeName.find_last_of("::");
-            if (result != std::string::npos)
+            if (!FixComplexTypeNames(typeName))
             {
-                typeName.erase(0, result+1);
+                const auto result = typeName.find_last_of("::");
+                if (result != std::string::npos)
+                {
+                    typeName.erase(0, result + 1);
+                }
+
+                ClearKeyword(typeName, "struct ");
+                ClearKeyword(typeName, "class ");
+
+                conv::Trim(typeName, ": ");
             }
 
-            ClearKeyword(typeName, "struct ");
-            ClearKeyword(typeName, "class ");
-
-            conv::Trim(typeName, ": ");
             return typeName;
         }
 
@@ -80,9 +103,6 @@ namespace yaget::comp::db
 
         template<>
         inline std::string ResolveDatabaseType<double>() { return "REAL"; }
-
-        template<typename T>
-        concept has_coordinatorset = requires { typename T::CoordinatorSet; };
 
     }
 
@@ -131,9 +151,9 @@ namespace yaget::comp::db
         using namespace yaget;
 
         R results{};
-        if constexpr (internal::has_coordinatorset<T>)
+        if constexpr (comp::metatypes::has_coordinator_set<T>)
         {
-            using FullRow = typename T::CoordinatorSet::FullRow;
+            using FullRow = typename T::CoordinatorSet_t::FullRow;
 
             meta::for_each_type<FullRow>([&results, &callback]<typename T0>(const T0&)
             {

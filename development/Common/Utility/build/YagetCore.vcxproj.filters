@@ -377,6 +377,21 @@
     <ClCompile Include="..\source\Streams\Populators.cpp">
       <Filter>Stream Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Script\ScriptState.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\ComponentBinder.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\MathBinder.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Script\AppUtilitiesBinder.cpp">
+      <Filter>Script Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Components\ComponentMetaTypes.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -836,6 +851,21 @@
     <ClInclude Include="..\include\Streams\Populators.h">
       <Filter>Stream Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Script\ScriptState.h">
+      <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Script\ComponentBinder.h">
+      <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Script\MathBinder.h">
+      <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Script\AppUtilitiesBinder.h">
+      <Filter>Script Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\ComponentMetaTypes.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\source\Win32\CommandLineArgs.inl">
@@ -859,6 +889,15 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="..\..\..\BuildRules\Natvis\yaget.Core.natvis">
+      <Filter>Debugging Files</Filter>
+    </Natvis>
+    <Natvis Include="..\..\..\Dependencies\sol3\sol2.natvis">
+      <Filter>Debugging Files</Filter>
+    </Natvis>
+    <Natvis Include="..\..\..\Dependencies\D3D12MemoryAllocator\src\D3D12MemAlloc.natvis">
+      <Filter>Debugging Files</Filter>
+    </Natvis>
+    <Natvis Include="..\..\..\Dependencies\nlohmann-json-3.11\nlohmann_json.natvis">
       <Filter>Debugging Files</Filter>
     </Natvis>
   </ItemGroup>

@@ -139,7 +139,8 @@ namespace yaget::io
     template< typename T>
     Buffer CreateBuffer(const T& dataStruct) { return CreateBuffer(reinterpret_cast<const uint8_t*>(&dataStruct), sizeof(T)); }
     inline Buffer CreateBuffer(const char* data, size_t size) { return CreateBuffer(reinterpret_cast<const uint8_t*>(data), size); }
-    inline Buffer CreateBuffer(const std::string& message)
+    inline Buffer 
+    CreateBuffer(const std::string& message)
     {
         auto buffer = CreateBuffer(reinterpret_cast<const uint8_t*>(message.c_str()), message.size());
         return buffer;

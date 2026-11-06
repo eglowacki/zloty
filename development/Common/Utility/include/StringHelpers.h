@@ -443,12 +443,40 @@ namespace yaget
         {
             static std::vector<std::string> FromString(const char* value)
             {
-                return value ? conv::Split(value, ",", true) : std::vector<std::string>();
+                if (value)
+                {
+                    std::string strValue(value);
+                    std::erase(strValue, '[');
+                    std::erase(strValue, ']');
+
+                    return conv::Split(strValue, ",", true);
+                }
+
+                return {};
             }
 
             static std::string ToString(const std::vector<std::string>& value)
             {
-                return conv::Combine(value, ",");
+                if (!value.empty())
+                {
+                    return "[ " + conv::Combine(value, ", ") + " ]";
+                }
+
+                return {};
+            }
+        };
+
+        //----------------------------------------------------------------------------------------------------------------------------------
+        template<> 
+        struct Convertor<math3d::Vector4>
+        {
+            static math3d::Vector4 FromString(const char* value)
+            {
+                return conv::FromString<DirectX::XMFLOAT4>(value);
+            }
+            static std::string ToString(const math3d::Vector4& value)
+            {
+                return conv::ToString(static_cast<DirectX::XMFLOAT4>(value));
             }
         };
 
@@ -805,7 +833,8 @@ namespace yaget
         template<class TupType, size_t... I>
         void print_tuple(const TupType& _tup, std::index_sequence<I...>, std::string& message)
         {
-            (..., (message += (I == 0 ? "" : ", ") + conv::Convertor<std::tuple_element_t<I, TupType>>::ToString(std::get<I>(_tup))));
+            //(..., (message += (I == 0 ? "" : ", ") + conv::Convertor<std::tuple_element_t<I, TupType>>::ToString(std::get<I>(_tup))));
+            (..., (message += (I == 0 ? "" : ", ") + conv::ToString(std::get<I>(_tup))));
         }
 
     }

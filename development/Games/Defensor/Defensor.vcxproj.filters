@@ -47,6 +47,9 @@
     <Filter Include="Data Files\RenderPasses">
       <UniqueIdentifier>{aeb77277-cfea-4b13-8887-610c21492b3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data Files\Scripts">
+      <UniqueIdentifier>{b2ab37ba-7488-4e2a-b4b2-4f33a7ea7191}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -259,6 +262,9 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Images\Splash.bmp">
       <Filter>Data Files\Images</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\Scripts\LoadItems.lua">
+      <Filter>Data Files\Scripts</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>

@@ -25,6 +25,7 @@
 #pragma once
 
 #include "Components/Coordinator.h"
+#include "Components/ComponentMetaTypes.h"
 #include "Items/ItemsDirector.h"
 #include <functional>
 
@@ -111,9 +112,6 @@ namespace yaget::comp
             });
         }
 
-        template<typename T>
-        concept requires_global_coordinator = requires { typename T::Global; };
-
         template <typename Coordinators, size_t Num = std::tuple_size_v<Coordinators>>
         constexpr bool has_global_coordinator()
         {
@@ -121,7 +119,7 @@ namespace yaget::comp
             {
                 using CoordinatorRow = typename std::tuple_element_t<Num - 1, Coordinators>::Policy;
                 CoordinatorRow coordinatorRow{};
-                if constexpr (requires_global_coordinator<CoordinatorRow>)
+                if constexpr (comp::metatypes::requires_global_coordinator<CoordinatorRow>)
                 {
                     return true;
                 }
@@ -149,7 +147,7 @@ namespace yaget::comp
 
                 using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
 
-                if constexpr (internalc::requires_global_coordinator<CoordinatorPolicy>)
+                if constexpr (comp::metatypes::requires_global_coordinator<CoordinatorPolicy>)
                 {
                     using RequestedRow = comp::tuple_get_union_t<QueryRow, typename CoordinatorPolicy::Row>;
                     
@@ -189,6 +187,12 @@ namespace yaget::comp
 
     template<typename T>
     concept is_component_persistent = requires (T t) { {t.GetStorage()}; };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template<typename ComponentType, typename T>
+    auto& ResolveCoordinator(T& t);
+
 
     //template<char ...C>
     //requires (sizeof...(C)%2 == 0)
@@ -237,7 +241,7 @@ namespace yaget::comp
 
                     using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
 
-                    if constexpr (internalc::requires_global_coordinator<CoordinatorPolicy>)
+                    if constexpr (comp::metatypes::requires_global_coordinator<CoordinatorPolicy>)
                     {
                         using RequestedRow = tuple_get_union_t<QueryRow, typename CoordinatorPolicy::Row>;
                         using RequestedRowPolicy = comp::GlobalRowPolicy<RequestedRow>;
@@ -263,7 +267,7 @@ namespace yaget::comp
                 constexpr std::size_t coordinatorIndex = T0;
 
                 using CoordinatorPolicy = typename std::tuple_element_t<coordinatorIndex, Coordinators>::Policy;
-                if constexpr (!internalc::requires_global_coordinator<CoordinatorPolicy>)
+                if constexpr (!comp::metatypes::requires_global_coordinator<CoordinatorPolicy>)
                 {
                     using RequestedRow = tuple_get_union_t<QueryRow, typename CoordinatorPolicy::Row>;
 
@@ -351,33 +355,14 @@ namespace yaget::comp
         template <typename C, typename... Args>
         C* AddComponent(comp::Id_t id, Args&&... args)
         {
-            C* component{};
+            using CoordinatorSet_t = meta::strip_qualifiers_t<decltype(*this)>;
 
-            bool coordinatorFound = false;
-            meta::for_loop<NumCoordinators>([&]<std::size_t T0>()
+            C* component = nullptr;
+            if constexpr (metatypes::component_valid_v<C, CoordinatorSet_t>)
             {
-                constexpr std::size_t coordinatorIndex = T0;
-
-                if (!coordinatorFound)
-                {
-                    if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
-                    {
-                        auto& coordinator = GetCoordinator<coordinatorIndex>();
-                        component = coordinator.template AddComponent<C>(id, std::forward<Args>(args)...);
-
-                        coordinatorFound = true;
-                    }
-                }
-            });
-
-            // NOTE EG: 2/23/2025
-            // Could not get this code below working, so resorted to manual code above
-            //FindMatchCoordinator<C>([&](auto* coordinator)
-            //{
-            //    /*component =*/ coordinator->template AddComponent<C>(id, std::forward<Args>(args)...);
-            //    int z = 0;
-            //    z;
-            //});
+                auto& coordinator = comp::ResolveCoordinator<C>(*this);
+                component = coordinator.template AddComponent<C>(id, std::forward<Args>(args)...);
+            }
 
             return component;
         }
@@ -385,36 +370,36 @@ namespace yaget::comp
         //-------------------------------------------------------------------------------------------------
         // Load id component data (args...) from DB, create new component with that id
         // and initialize with args... parameters. If component already exist,
-        // then update the parameters of current one.
+        // then update the parameters of current one, otherwise create a new one
         template <typename C>
         C* LoadComponent(comp::Id_t id)
         {
-            error_handlers::ThrowOnCheck(mDirector, std::format("Can not load component, director is nullptr"));
+            C* component = nullptr;
 
-            C* component{};
-
-            if constexpr (is_component_persistent<C>)
+            using CoordinatorSet_t = meta::strip_qualifiers_t<decltype(*this)>;
+            if constexpr (metatypes::component_valid_v<C, CoordinatorSet_t>)
             {
                 bool result = false;
-                auto parameters = mDirector->LoadComponentState<C>(id, &result);;
+                auto parameters = Director().LoadComponentState<C>(id, &result);;
 
                 if (result)
                 {
-                    FindMatchCoordinator<C>([&parameters, &component, id](auto* coordinator)
+                    auto& coordinator = comp::ResolveCoordinator<C>(*this);
+                    if (component = coordinator.template FindComponent<C>(id); component)
                     {
-                        if (component = coordinator->template FindComponent<C>(id); component)
+                        if constexpr (is_component_persistent<C>)
                         {
                             component->SetStorage(parameters);
                         }
-                    });
-
-                    if (!component)
-                    {
-                        component = std::apply([this, id](auto &&... args)
-                        {
-                            return AddComponent<C>(id, args...);
-                        }, parameters);
                     }
+                }
+
+                if (!component)
+                {
+                    component = std::apply([this, id](auto &&... args)
+                    {
+                        return AddComponent<C>(id, args...);
+                    }, parameters);
                 }
             }
 
@@ -425,8 +410,7 @@ namespace yaget::comp
         template <typename C>
         bool SaveComponent(const C* component)
         {
-            error_handlers::ThrowOnCheck(mDirector, "Can not save component, director is nullptr");
-            const auto result = mDirector->SaveComponentState(component);
+            const auto result = Director().SaveComponentState(component);
             return result;
         }
 
@@ -434,12 +418,14 @@ namespace yaget::comp
         template <typename C>
         C* FindComponent(comp::Id_t id) const
         {
-            C* component{};
+            C* component = nullptr;
 
-            FindMatchCoordinator<C>([&component, id](auto* coordinator)
+            using CoordinatorSet_t = meta::strip_qualifiers_t<decltype(*this)>;
+            if constexpr (metatypes::component_valid_v<C, CoordinatorSet_t>)
             {
-                component = coordinator->template FindComponent<C>(id);
-            });
+                auto& coordinator = comp::ResolveCoordinator<C>(*this);
+                component = coordinator.template FindComponent<C>(id);
+            }
 
             return component;
         }
@@ -449,33 +435,16 @@ namespace yaget::comp
         bool RemoveComponent(comp::Id_t id)
         {
             bool result = false;
-            bool coordinatorFound = false;
 
-            meta::for_loop<NumCoordinators>([&]<std::size_t T0>()
+            using CoordinatorSet_t = meta::strip_qualifiers_t<decltype(*this)>;
+            if constexpr (metatypes::component_valid_v<C, CoordinatorSet_t>)
             {
-                constexpr std::size_t coordinatorIndex = T0;
-
-                if (!coordinatorFound)
+                auto& coordinator = comp::ResolveCoordinator<C>(*this);
+                if (auto component = coordinator.template FindComponent<C>(id))
                 {
-                    if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
-                    {
-                        auto& coordinator = GetCoordinator<coordinatorIndex>();
-
-                        if (auto component = coordinator.template FindComponent<C>(id))
-                        {
-                            result = coordinator.RemoveComponent(id, component);
-                        }
-
-                        coordinatorFound = true;
-                    }
+                    result = coordinator.RemoveComponent(id, component);
                 }
-            });
-            // NOTE EG: 2/23/2025
-            // Could not get this code below working, so resorted to manual code above
-            //FindMatchCoordinator<C>([&result, id](auto* coordinator)
-            //{
-            //    result = coordinator->template RemoveComponent<C>(id);
-            //});
+            }
 
             return result;
         }
@@ -510,30 +479,29 @@ namespace yaget::comp
         }
 
     private:
-        //-------------------------------------------------------------------------------------------------
-        template <typename C>
-        constexpr void FindMatchCoordinator(auto callback) const
+        items::Director& Director() const
         {
-            bool coordinatorFound = false;
-
-            meta::for_loop<NumCoordinators>([&]<std::size_t T0>()
-            {
-                constexpr std::size_t coordinatorIndex = T0;
-
-                if (!coordinatorFound)
-                {
-                    if constexpr (internalc::IsCoordinatorHasPolicy<C, Coordinators, coordinatorIndex>())
-                    {
-                        auto& coordinator = GetCoordinator<coordinatorIndex>();
-                        callback(&coordinator);
-
-                        coordinatorFound = true;
-                    }
-                }
-            });
+            error_handlers::ThrowOnCheck(mDirector, "Director is nullptr");
+            return *mDirector;
         }
         
         Coordinators mCoordinators;
-        items::Director* mDirector{};
+        items::Director* mDirector = nullptr;
     };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template <typename ComponentType, typename T>
+    auto& ResolveCoordinator(T& t)
+    {
+        if constexpr (metatypes::has_coordinator_set<T>)
+        {
+            return t.GetCoordinatorSet().GetCoordinator<metatypes::coordinator_index_v<ComponentType, T>>();
+        }
+        else if constexpr (metatypes::is_coordinator_set<T>)
+        {
+            return t.GetCoordinator<metatypes::coordinator_index_v<ComponentType, T>>();
+        }
+    }
+
 }

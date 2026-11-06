@@ -36,6 +36,10 @@ namespace yaget::comp
             {
                 return "P:" + std::to_string(StripQualifiers(mId));
             }
+            else if (mId == comp::GLOBAL_ID_MARKER)
+            {
+                return "G:" + std::to_string(mId);
+            }
 
             return "B:" + std::to_string(mId);
         }
