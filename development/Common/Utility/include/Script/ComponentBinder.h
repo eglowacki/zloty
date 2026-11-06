@@ -245,12 +245,12 @@ namespace yaget::script
                         Coordinators* coordinators = nullptr;
                         component; coordinators;
 
-                        constexpr size_t coorinatorIndex = comp::FindCoordinatorIndex<ComponentType, SystemsCoordinator>();
+                        constexpr size_t coorinatorIndex = comp::metatypes::FindCoordinatorIndex<ComponentType, SystemsCoordinator>();
                         coorinatorIndex;
 
-                        if constexpr (comp::IsComponentValid<ComponentType, SystemsCoordinator>())
+                        if constexpr (comp::metatypes::IsComponentValid<ComponentType, SystemsCoordinator>())
                         {
-                            if constexpr (comp::IsComponentGlobal<ComponentType, SystemsCoordinator>() == comp::ComponentQueryType::Global)
+                            if constexpr (comp::metatypes::component_global_v<ComponentType, SystemsCoordinator>)
                             {
                                 std::get<0>(fullParams) = comp::GLOBAL_ID_MARKER;
                                 int z = 0;
@@ -261,45 +261,52 @@ namespace yaget::script
 
 
                         // ====
-                        //auto coordinator = comp::GetCoordinator<ComponentType, SystemsCoordinator>(mSystemsCoordinator);
-                        //coordinator;
-
-                        //const auto& coordinatorCREF = comp::GetCoordinator<ComponentType, SystemsCoordinator>(std::cref(mSystemsCoordinator));
-                        //coordinatorCREF;
-
                         auto& tt = mSystemsCoordinator.GetCoordinatorSet();
-                        tt;
-                        using CS = meta::strip_qualifiers_t<decltype(tt)>;
-                        CS* cs = nullptr;
+                        using CoordSet = meta::strip_qualifiers_t<decltype(tt)>;
+                        CoordSet* cs = nullptr;
                         cs;
 
-                        //std::integral<CS>
-                        //auto coordinator2 = comp::GetCoordinator<ComponentType, CS>(tt);
-                        //coordinator2;
+                        constexpr bool isCoordSet1 = comp::metatypes::has_coordinator_set<CoordSet>;
+                        constexpr bool isCoordSet2 = comp::metatypes::is_coordinator_set<CoordSet>;
 
-                        //const auto& coordinator2CREF = comp::GetCoordinator<ComponentType, decltype(tt)>(std::cref(tt));
-                        //coordinator2CREF;
+                        using CoordinatSetT1 = comp::metatypes::coordinator_set_t<SystemsCoordinator>;
+                        using CoordinatSetT2 = comp::metatypes::coordinator_set_t<CoordSet>;
 
-                        //constexpr bool systemCoordinator = comp::is_systems_coordinator<SystemsCoordinator>;
-                        //constexpr bool coordinatorSet = comp::is_coordinator_set<SystemsCoordinator>;
+                        CoordinatSetT1* coordinatSetT1 = nullptr;
+                        CoordinatSetT2* coordinatSetT2 = nullptr;
+                        coordinatSetT1;
+                        coordinatSetT2;
 
-                        //using CoordSet = typename SystemsCoordinator::CoordinatorSet_t;
-                        ////CoordSet* coordSet = nullptr; coordSet;
-                        //constexpr bool systemCoordinator2 = comp::is_systems_coordinator<CoordSet>;
-                        //constexpr bool coordinatorSet2 = comp::is_coordinator_set<CoordSet>;
-                        //////constexpr bool coordinatorSet3 = comp::is_coordinator_set2<CoordSet>;
+                        constexpr size_t coordinatorIndex11 = comp::metatypes::coordinator_index_v<ComponentType, SystemsCoordinator>;
+                        constexpr size_t coordinatorIndex22 = comp::metatypes::coordinator_index_v<ComponentType, CoordSet>;
+                        constexpr size_t coordinatorIndex33 = comp::metatypes::coordinator_index_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
 
-                        //if constexpr (CoordSet::NumCoordinators == 0)
-                        //{
-                        //    int z = 0;
-                        //    z;
-                        //}
-                        
-                        
-                        
+                        constexpr bool compValid11 = comp::metatypes::component_valid_v<ComponentType, SystemsCoordinator>;
+                        constexpr bool compValid22 = comp::metatypes::component_valid_v<ComponentType, CoordSet>;
+                        constexpr bool compValid33 = comp::metatypes::component_valid_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
+                        constexpr bool compValid44 = comp::metatypes::component_valid_v<int, typename SystemsCoordinator::CoordinatorSet_t>;
+
+                        constexpr bool compGlobal1 = comp::metatypes::component_global_v<ComponentType, SystemsCoordinator>;
+                        constexpr bool compGlobal2 = comp::metatypes::component_global_v<ComponentType, CoordSet>;
+                        constexpr bool compGlobal3 = comp::metatypes::component_global_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
+
+                        constexpr bool compLocal11 = comp::metatypes::component_local_v<ComponentType, SystemsCoordinator>;
+                        constexpr bool compLocal22 = comp::metatypes::component_local_v<ComponentType, CoordSet>;
+                        constexpr bool compLocal33 = comp::metatypes::component_local_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
+
+                        using CST1 = comp::metatypes::coordinator_type_t<ComponentType, SystemsCoordinator>;
+                        using CST2 = comp::metatypes::coordinator_type_t<ComponentType, CoordSet>;
+                        using CST3 = comp::metatypes::coordinator_type_t<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
+                        CST1* cst1 = nullptr; cst1;
+                        CST2* cst2 = nullptr; cst2;
+                        CST3* cst3 = nullptr; cst3;
+
+
+                        auto& coordinator1 = comp::ResolveCoordinator<ComponentType>(mSystemsCoordinator);
+                        auto& coordinator2 = comp::ResolveCoordinator<ComponentType>(mSystemsCoordinator.GetCoordinatorSet());
+                        coordinator1;
+                        coordinator2;
                         // ====
-
-
 
 
                         auto& director = mSystemsCoordinator.Director();

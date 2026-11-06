@@ -56,7 +56,7 @@ namespace yaget::items
         // load T::Types from DB. If load not valid, result [out] value will be set to false
         // and it will return default T::Types{}.
         template <typename T>
-        typename T::Types LoadComponentState(comp::Id_t id, bool* result) const;
+        typename comp::db::RowDescription_t<T>::Types LoadComponentState(comp::Id_t id, bool* result) const;
 
         // Return list of item id's that are marked for stageName. This does not load/create items.
         comp::ItemIds GetStageItems(const std::string& stageName) const;
@@ -196,9 +196,9 @@ namespace yaget::items
     }
 
     template <typename T>
-    typename T::Types Director::LoadComponentState(comp::Id_t id, bool* result) const
+    typename comp::db::RowDescription_t<T>::Types Director::LoadComponentState(comp::Id_t id, bool* result) const
     {
-        using Parameters = typename T::Types;
+        using Parameters = typename comp::db::RowDescription_t<T>::Types;
         using ParameterNames = typename comp::db::RowDescription_t<T>::Row;
 
         const auto parameterNames = comp::db::GetPolicyRowNames<ParameterNames>();

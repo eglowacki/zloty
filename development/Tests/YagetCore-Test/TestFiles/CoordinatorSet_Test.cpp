@@ -283,14 +283,14 @@ TEST_F(CoordinatorSet, ComponentAccess)
 
     entitySystemsCoordinator.Tick(gameClock, channel);
 
-    //const auto& systemABCD = entitySystemsCoordinator.GetSystem<TestObjects::ABCD_EntitySystem>();
-    //EXPECT_EQ(2, systemABCD.mEntityCounter);
+    const auto& systemABCD = entitySystemsCoordinator.GetGameSystem<TestObjects::ABCD_EntitySystem>();
+    EXPECT_EQ(2, systemABCD.mEntityCounter);
 
-    //const auto& systemAC = entitySystemsCoordinator.GetSystem<TestObjects::AC_EntitySystem>();
-    //EXPECT_EQ(4, systemAC.mEntityCounter);
+    const auto& systemAC = entitySystemsCoordinator.GetGameSystem<TestObjects::AC_EntitySystem>();
+    EXPECT_EQ(4, systemAC.mEntityCounter);
 
-    //const auto& systemA = entitySystemsCoordinator.GetSystem<TestObjects::A_EntitySystem>();
-    //EXPECT_EQ(7, systemA.mEntityCounter);
+    const auto& systemA = entitySystemsCoordinator.GetGameSystem<TestObjects::A_EntitySystem>();
+    EXPECT_EQ(7, systemA.mEntityCounter);
 }
 
 
