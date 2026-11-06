@@ -240,26 +240,15 @@ namespace yaget::script
                     const auto& componentName = comp::db::ResolveName<ComponentType>();
                     if (mSystemsCoordinator.IsComponentTyped(componentName))
                     {
-                        ComponentType* component = nullptr;
-                        using Coordinators = typename SystemsCoordinator::CoordinatorSet_t::Coordinators;
-                        Coordinators* coordinators = nullptr;
-                        component; coordinators;
-
-                        constexpr size_t coorinatorIndex = comp::metatypes::FindCoordinatorIndex<ComponentType, SystemsCoordinator>();
-                        coorinatorIndex;
-
                         if constexpr (comp::metatypes::IsComponentValid<ComponentType, SystemsCoordinator>())
                         {
                             if constexpr (comp::metatypes::component_global_v<ComponentType, SystemsCoordinator>)
                             {
                                 std::get<0>(fullParams) = comp::GLOBAL_ID_MARKER;
-                                int z = 0;
-                                z;
                             }
                         }
 
-
-
+#if 0
                         // ====
                         auto& tt = mSystemsCoordinator.GetCoordinatorSet();
                         using CoordSet = meta::strip_qualifiers_t<decltype(tt)>;
@@ -307,7 +296,7 @@ namespace yaget::script
                         coordinator1;
                         coordinator2;
                         // ====
-
+#endif  
 
                         auto& director = mSystemsCoordinator.Director();
                         validCall = director.SaveComponentState(componentName, fullParams);
