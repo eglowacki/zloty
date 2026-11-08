@@ -123,7 +123,7 @@ bool yaget::SQLite::ExecuteStatement(const std::string& command, QueryCallback *
             }
             else
             {
-                mErrorMessage = std::format("Last command: {}. Error: {}", command.c_str(), errorTest ? errorTest : "");
+                mErrorMessage = std::format("Last command: '{}'. Error: '{}'", command.c_str(), errorTest ? errorTest : "");
                 sqlite3_free(errorTest);
                 result = false;
             }
@@ -136,7 +136,7 @@ bool yaget::SQLite::ExecuteStatement(const std::string& command, QueryCallback *
     }
     else
     {
-        mErrorMessage = std::format("Error executing command {}. There is no Database created.", command.c_str());
+        mErrorMessage = std::format("Error executing command '{}'. There is no Database created.", command.c_str());
         result = false;
     }
 

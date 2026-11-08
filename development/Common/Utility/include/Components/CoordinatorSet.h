@@ -371,6 +371,7 @@ namespace yaget::comp
         // Load id component data (args...) from DB, create new component with that id
         // and initialize with args... parameters. If component already exist,
         // then update the parameters of current one, otherwise create a new one
+        // The record in DB must exist.
         template <typename C>
         C* LoadComponent(comp::Id_t id)
         {
@@ -394,12 +395,16 @@ namespace yaget::comp
                     }
                 }
 
-                if (!component)
+                constexpr bool globalPolicy = metatypes::component_global_v<C, CoordinatorSet_t>;
+                if (result || globalPolicy)
                 {
-                    component = std::apply([this, id](auto &&... args)
+                    if (!component)
                     {
-                        return AddComponent<C>(id, args...);
-                    }, parameters);
+                        component = std::apply([this, id](auto &&... args)
+                        {
+                            return AddComponent<C>(id, args...);
+                        }, parameters);
+                    }
                 }
             }
 

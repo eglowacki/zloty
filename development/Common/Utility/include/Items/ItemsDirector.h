@@ -200,17 +200,34 @@ namespace yaget::items
     {
         using Parameters = typename comp::db::RowDescription_t<T>::Types;
         using ParameterNames = typename comp::db::RowDescription_t<T>::Row;
-
-        const auto parameterNames = comp::db::GetPolicyRowNames<ParameterNames>();
+        constexpr bool NoParameters = std::tuple_size_v<Parameters> == 0;
         const auto tableName = comp::db::ResolveName<T>();
-        Parameters parameters{};
+        auto parameterNames = comp::db::GetPolicyRowNames<ParameterNames>();
+
+        // if there are no parameters specified, we still want to generate a query to see if the record exists, 
+        // so we will use COUNT(*) to check and then disregard results and return default Parameters{}.
+        // This will not generate any errors, which is desired behavior, since we are just checking if record exists.
+        if constexpr (NoParameters)
+        {
+            parameterNames.push_back("COUNT(*)");
+        }
 
         const std::string command = std::format("SELECT {} FROM {} WHERE Id = '{}'", conv::Combine(parameterNames, ", "), tableName, static_cast<int64_t>(id));
 
         const auto dbLock = LockDatabaseAccess();
         const auto& database = dbLock->DB();
 
-        return database.GetRowTuple<Parameters>(command, result);
+        if constexpr (NoParameters)
+        {
+            using Parameters = std::tuple<comp::Id_t>;
+            auto queryResult = database.GetRowTuple<Parameters>(command, result);
+
+            return {};
+        }
+        else
+        {
+            return database.GetRowTuple<Parameters>(command, result);
+        }
     }
 
 } // namespace yaget::items

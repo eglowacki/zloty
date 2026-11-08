@@ -32,14 +32,14 @@ namespace TestObjects
     using Messaging = yaget::comp::gs::Messaging<std::shared_ptr<char>>;
 
     // components for testing
-    struct Acomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Acomponent"; };
-    struct Bcomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Bcomponent"; };
-    struct Ccomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Ccomponent"; };
-    struct Dcomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Dcomponent"; };
-    struct Ecomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Ecomponent"; };
-    struct Fcomponent { static constexpr int Capacity = 512; size_t mDummy = 0; std::string mText = "Fcomponent"; };
+    struct Acomponent { static constexpr int Capacity = 512; size_t mDummy = 0; size_t mCounter = 0; std::string mText = "Acomponent"; };
+    struct Bcomponent { static constexpr int Capacity = 512; size_t mDummy = 0; size_t mCounter = 0; std::string mText = "Bcomponent"; };
+    struct Ccomponent { static constexpr int Capacity = 512; size_t mDummy = 0; size_t mCounter = 0; std::string mText = "Ccomponent"; };
+    struct Dcomponent { static constexpr int Capacity = 512; size_t mDummy = 0; size_t mCounter = 0; std::string mText = "Dcomponent"; };
+    struct Ecomponent { static constexpr int Capacity = 512; size_t mDummy = 0; size_t mCounter = 0; std::string mText = "Ecomponent"; };
+    struct Fcomponent { static constexpr int Capacity = 512; size_t mDummy = 0; size_t mCounter = 0; std::string mText = "Fcomponent"; };
 
-    struct Gcomponent { static constexpr int Capacity = 1;  size_t mDummy = 0; std::string mText = "Gcomponent"; };
+    struct Gcomponent { static constexpr int Capacity = 1;  size_t mDummy = 0; size_t mCounter = 0; std::string mText = "Gcomponent"; };
 
     // coordinator setup
     using Entity = yaget::comp::RowPolicy<Acomponent*, Bcomponent*, Ccomponent*, Dcomponent*>;
@@ -161,11 +161,13 @@ namespace TestObjects
 } // namespace TestObjects
 
 
-#include <tuple>
+//#include <tuple>
 
 TEST_F(CoordinatorSet, CoordinatorSet2)
 {
     using namespace yaget;
+
+    platform::DisregardAttachedDebugger();
 
 	IdGameCache idGameCache(nullptr);
     TestObjects::KnightEntityCoordinatorSet knightEntities(nullptr);
@@ -175,9 +177,11 @@ TEST_F(CoordinatorSet, CoordinatorSet2)
     auto& coordinatorEF = knightEntities.GetCoordinator<TestObjects::BuffedEntity>();
     auto& coordinatorG = knightEntities.GetCoordinator<TestObjects::GlobalEntity>();
 
-    coordinatorG.AddComponent<TestObjects::Gcomponent>(itemId);
+    auto gComp = coordinatorG.AddComponent<TestObjects::Gcomponent>(comp::GLOBAL_ID_MARKER);
+    EXPECT_THROW(coordinatorG.AddComponent<TestObjects::Gcomponent>(itemId), ex::bad_init);
 
-    coordinatorABCD.AddComponent<TestObjects::Acomponent>(itemId);
+    EXPECT_THROW(coordinatorABCD.AddComponent<TestObjects::Acomponent>(comp::GLOBAL_ID_MARKER), ex::bad_init);
+    auto aComp1 = coordinatorABCD.AddComponent<TestObjects::Acomponent>(itemId);
     coordinatorABCD.AddComponent<TestObjects::Bcomponent>(itemId);
     coordinatorABCD.AddComponent<TestObjects::Ccomponent>(itemId);
     coordinatorABCD.AddComponent<TestObjects::Dcomponent>(itemId);
@@ -186,7 +190,7 @@ TEST_F(CoordinatorSet, CoordinatorSet2)
     coordinatorEF.AddComponent<TestObjects::Fcomponent>(itemId);
 
     itemId = idspace::get_burnable(idGameCache);
-    coordinatorABCD.AddComponent<TestObjects::Acomponent>(itemId);
+    auto aComp2 = coordinatorABCD.AddComponent<TestObjects::Acomponent>(itemId);
     coordinatorABCD.AddComponent<TestObjects::Bcomponent>(itemId);
     coordinatorABCD.AddComponent<TestObjects::Ccomponent>(itemId);
     coordinatorABCD.AddComponent<TestObjects::Dcomponent>(itemId);
@@ -199,10 +203,16 @@ TEST_F(CoordinatorSet, CoordinatorSet2)
 
     const auto numProcessed = knightEntities.ForEach<RequestedRow>([](comp::Id_t id, auto components)
     {
+        auto& [aComponent, gComponent] = components;
+
+        ++aComponent->mCounter;
+        ++gComponent->mCounter;
         return true;
     });
 
-
+    EXPECT_EQ(1, aComp1->mCounter);
+    EXPECT_EQ(1, aComp1->mCounter);
+    EXPECT_EQ(2, gComp->mCounter);
 }
 
 
@@ -374,7 +384,7 @@ TEST_F(CoordinatorSet, ComponentCapacity)
 
         for (size_t i = 0; i < TestObjects::kMaxItems; ++i)
         {
-            TestObjects::memory[i] = { i, "" };
+            TestObjects::memory[i] = { i, 0, "" };
         }
 
         metrics::Channel channel("ComponentCapacity.RawArray");
@@ -387,7 +397,7 @@ TEST_F(CoordinatorSet, ComponentCapacity)
             {
                 const auto& element = TestObjects::memory[i];
 
-                counter += element.mDummy;
+                counter += element.mCounter;
 
                 //metrics::Channel channelFor(std::format("Processing '{}' element", element.mDummy), YAGET_METRICS_CHANNEL_FILE_LINE);
             }

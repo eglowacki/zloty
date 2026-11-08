@@ -225,7 +225,7 @@ namespace yaget
 
             int operator()(int numValues, char **values, char** /*columnNames*/) override
             {
-                YAGET_ASSERT(numValues == std::tuple_size_v<std::remove_reference_t<Row>>);
+                YAGET_ASSERT(numValues == std::tuple_size_v<std::remove_reference_t<Row>>, "DB incoming num columns: '%d', does not match expected '%d' columns.", numValues, std::tuple_size_v<std::remove_reference_t<Row>>);
 
                 Row row{};
                 size_t index = 0;
@@ -310,6 +310,11 @@ namespace yaget
         if (result)
         {
             *result = executed && !row.mRowData.empty();
+
+            if (!executed)
+            {
+                YLOG_ERROR("DB", "%s", ParseErrors(*this).c_str());
+            }
         }
 
         return row.mRowData.empty() ? T{} : *row.mRowData.begin();

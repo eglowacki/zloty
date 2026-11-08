@@ -49,9 +49,14 @@ namespace yaget::items
                 , mStagerSystem(stagerSystem)
             {
 
+                // NOTE(eg) how do we constrain which component types we want to load per item.
+                // Currently, we are loading all components for each item,
+                // but we only need top load the one which got saved per item in db.
+
+                using LocalComponentsRow = comp::metatypes::local_components_row_t<typename StagerSystem::CoordinatorSet>;
                 for (const auto& id : mItemIds)
                 {
-                    mStagerSystem.GetCS().LoadItem(id);
+                    mStagerSystem.GetCS().template LoadItem<LocalComponentsRow>(id);
                 }
             }
 
@@ -99,16 +104,6 @@ namespace yaget::items
             const auto items = mDirector.GetStageItems(requestedStageName);
             if (!items.empty())
             {
-                for (const auto& id : items)
-                {
-                    auto item = comp::gs::GameSystem<CS, comp::gs::NoEndMarker, M, StageComponent*>::GetCS().LoadItem(id);
-                    item;
-                    int z = 0;
-                    z;
-
-
-                }
-
                 const auto blend = stageComponent->GetValue<db_stage::Blend>();
                 if (blend == db_stage::BlendOp::Replace)
                 {

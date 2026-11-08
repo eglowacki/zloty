@@ -8,7 +8,6 @@ defensor::render::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messagi
     : SystemsCoordinator(m, app)
     , mApplication(static_cast<yaget::render::DesktopApplication&>(app))
 {
-    AddComponent<SceneComponent>(comp::GLOBAL_ID_MARKER);
 }
 
 

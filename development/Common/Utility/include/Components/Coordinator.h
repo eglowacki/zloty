@@ -228,11 +228,40 @@ template<typename P>
 template<typename T, typename... Args>
 T* yaget::comp::Coordinator<P>::AddComponent(comp::Id_t id, Args&&... args)
 {
+    bool validComponentToAdd = false;
+    std::string coordinatorType;
+    std::string expectedId;
+
+    if constexpr (metatypes::requires_global_coordinator<Policy>)
+    {
+        validComponentToAdd = id == comp::GLOBAL_ID_MARKER;
+        coordinatorType = "global";
+        expectedId = comp::ItemId(comp::GLOBAL_ID_MARKER).ToString();
+
+    }
+    else
+    {
+        validComponentToAdd = id != comp::GLOBAL_ID_MARKER;
+        coordinatorType = "local";
+        expectedId = "any valid";
+    }
+
+    error_handlers::ThrowOnCheck(validComponentToAdd, std::format("Only {} components can be added to the {} coordinator. New component '{}' id is: '{}:{}', expected Id: '{}'",
+        coordinatorType,
+        coordinatorType,
+        typeid(T).name(),
+        comp::ItemId(id).ToString(),
+        id,
+        expectedId));
+
     FullRow row = FindItem(id);
     meta::bits_t currentBits = GetValidBits(row);
     const meta::bits_t newBit = MakeBit<T>();
 
-    error_handlers::ThrowOnCheck((currentBits & newBit) != newBit, std::format("Requested new component of type: '{}' for Item: '{}' already exist in Coordinator.", typeid(T).name(), id).c_str());
+    error_handlers::ThrowOnCheck((currentBits & newBit) != newBit, std::format("Requested new component of type: '{}' for Item: '{}:{}' already exist in Coordinator.", 
+        typeid(T).name(), 
+        comp::ItemId(id).ToString(),
+        id).c_str());
 
     if (currentBits)
     {

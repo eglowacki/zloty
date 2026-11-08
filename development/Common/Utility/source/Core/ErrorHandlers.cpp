@@ -1,5 +1,4 @@
 #include "Core/ErrorHandlers.h"
-
 #include "Exception/Exception.h"
 #include "Logger/YLog.h"
 #include "Platform/Support.h"
@@ -15,7 +14,10 @@ void yaget::error_handlers::Throw(const char* tag, const std::string& message, c
     {
         const char* logTag =  tag ? tag : "CORE";
         YLOG_PERROR(logTag, location.file_name(), location.line(), location.function_name(), textError.c_str());
-        platform::DebuggerBreak();
+        if (platform::IsDebuggerAttached())
+        {
+            platform::DebuggerBreak();
+        }
     }
 
     textError = std::format("{}\n{}({}) {}", textError, location.file_name(), location.line(), location.function_name());
