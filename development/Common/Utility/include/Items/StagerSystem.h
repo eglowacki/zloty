@@ -83,18 +83,10 @@ namespace yaget::items
     // --------------------------------------------------------------------
     // impl methods
     template <typename CS, typename M>
-    void StagerSystem<CS, M>::OnUpdate(comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& /*channel*/, const StageComponent* stageComponent)
+    void StagerSystem<CS, M>::OnUpdate(comp::Id_t /*id*/, const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/, const StageComponent* stageComponent)
     {
-        gameClock;
         const auto requestedStageName = stageComponent->GetValue<db_stage::Name>();
-
         const auto currentStage = mStagersStack.empty() ? "" : mStagersStack.top()->mCurrentStage;
-
-        bool isNameSet = !requestedStageName.empty();
-        bool isNameDifferent = requestedStageName != currentStage;
-
-        isNameSet;
-        isNameDifferent;
 
         if (!requestedStageName.empty() && requestedStageName != currentStage)
         {
@@ -113,6 +105,8 @@ namespace yaget::items
                     }
 
                     mStagersStack.push(std::make_unique<Stager>(requestedStageName, blend, items, *this));
+
+                    YLOG_INFO("GSYS", "Stage '%s' activated with blend: '%s'.", requestedStageName.c_str(), conv::ToString(blend).c_str());
                 }
 
                 // here we have choices on how to load requested stage

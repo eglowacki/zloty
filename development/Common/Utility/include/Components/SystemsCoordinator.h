@@ -71,6 +71,9 @@ namespace yaget::comp::gs
         static_assert(NumSystems, "User must provide at least 1 GameSystem");
         static_assert(internal::SystemsMatchCoordinator<Systems, CoordinatorSet_t>(), "CoordinatorSet_t does not support requested GameSystem component.");
 
+        struct GetItemPattern;
+        using PatternFunction = GetItemPattern;
+
         SystemsCoordinator(M& messaging, A& app);
 
         void Tick(const time::GameClock& gameClock, metrics::Channel& channel);

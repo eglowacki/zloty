@@ -103,6 +103,11 @@ namespace yaget::render
         const info::Adapter& GetSelectedAdapter() const { return mSelectedAdapter; }
         const app::WindowFrame& GetWindowFrame() const;
 
+        // Only used if there are no render passes setup yet. This will not render any geometry,
+        // but will only clear window to some color in ProcHandler class. 
+        // (set at window creation time: wc.hbrBackground = ...) 
+        void Present(const time::GameClock& gameClock, metrics::Channel& channel);
+
         // this allows us to register for device resizing, so dependent resource
         // cna be reset and recreated.
         enum class ResizeState

@@ -35,6 +35,11 @@ namespace yaget::comp::metatypes
 
 
     //----------------------------------------------------------------------------------------------------------------------------------
+    template <typename T>
+    concept has_pattern_function = requires { typename T::PatternFunction; };
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
     template<typename T>
     concept is_coordinator_set = requires
     {

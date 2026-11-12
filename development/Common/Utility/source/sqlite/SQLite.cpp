@@ -7,6 +7,7 @@
 
 namespace
 {
+    //--------------------------------------------------------------------------------------------------
     int SqlQueryCallback(void *userData, int argc, char **argv, char **columnNames)
     {
         if (userData)
@@ -22,6 +23,7 @@ namespace
     }
 
 } // namespace
+
 
 yaget::SQLite::SQLite()
     : mDatabase(nullptr)
@@ -201,6 +203,7 @@ void yaget::SQLite::Statement::ResetBindings()
 
 bool yaget::SQLite::ExecuteStatement(Statement* statement)
 {
+    mErrorMessage = "";
     int result = sqlite3_step(statement->mStm);
     if (result == SQLITE_OK || result == SQLITE_DONE)
     {
@@ -214,7 +217,7 @@ bool yaget::SQLite::ExecuteStatement(Statement* statement)
 std::vector<std::string> yaget::SQLite::GetErrors() const
 {
     std::vector<std::string> errors;
-    if (mErrorMessage.size())
+    if (!mErrorMessage.empty())
     {
         errors.push_back(mErrorMessage);
     }
@@ -240,6 +243,8 @@ bool yaget::SQLite::Backup(const char *fileName) const
     return false;
 }
 
+
+//------------------------------------------------------------------------------------------------------------------------------------
 void yaget::SQLite::Log(const std::string& messageType, const std::string& message)
 {
     using LogRecord = std::tuple<std::string /*Type*/, std::string /*Message*/, std::string /*SessionId*/>;
@@ -247,6 +252,89 @@ void yaget::SQLite::Log(const std::string& messageType, const std::string& messa
     LogRecord logRecord(messageType, message, util::ApplicationRuntimeId().str());
     ExecuteStatementTuple("MessageAdd", "Logs", logRecord,  { "Type", "Message", "SessionId" }, SQLite::Behaviour::Insert, SQLite::TimeStamp::Yes);
 }
+
+
+//--------------------------------------------------------------------------------------------------
+bool yaget::SQLite::RegisterUserFunction(const std::string& functionName, UserFunctionWrapper callback, size_t numParameters)
+{
+    mErrorMessage = "";
+    mUserFunctions.insert({functionName, callback});
+    auto* wrapperCallback = &mUserFunctions[functionName];
+
+    int result = sqlite3_create_function(mDatabase, functionName.c_str(), static_cast<int>(numParameters), SQLITE_UTF8 | SQLITE_DETERMINISTIC, wrapperCallback, &SQLUserFunctionCallback, nullptr, nullptr);
+    if (result != SQLITE_OK)
+    {
+        mErrorMessage = std::format("Create user function error: '{}'. Function: '{}', error: '{}'.", result, functionName, sqlite3_errmsg(mDatabase));
+        return false;
+    }
+
+    return true;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+void yaget::SQLite::SQLUserFunctionCallback(sqlite3_context* context, int argc, sqlite3_value** argv)
+{
+    auto userFunctionWrapper = static_cast<UserFunctionWrapper*>(sqlite3_user_data(context));
+
+    if (!userFunctionWrapper)
+    {
+        YAGET_ASSERT(userFunctionWrapper, "Invalid user function wrapper");
+        sqlite3_result_error(context, "Invalid user function wrapper", -1);
+        return;
+    }
+
+    yaget::Strings parameters;
+    for (int i = 0; i < argc; ++i)
+    {
+        std::string table = reinterpret_cast<const char*>(sqlite3_value_text(argv[i]));
+        parameters.push_back(table);
+    }
+
+    auto result = (*userFunctionWrapper)(parameters);
+    sqlite3_result_text(context, result.c_str(), static_cast<int>(result.size()), SQLITE_TRANSIENT);
+}
+
+
+
+////------------------------------------------------------------------------------------------------------------------------------------
+//bool yaget::SQLite::AddUserFunction(const std::string& functionName, UserFunction userFunction)
+//{
+//    userFunction;
+//
+//    int result = sqlite3_create_function(mDatabase, functionName.c_str(), 4, SQLITE_UTF8 | SQLITE_DETERMINISTIC, this, &SqUserFunction, nullptr, nullptr);
+//    if (result != SQLITE_OK)
+//    {
+//        mErrorMessage = std::format("Create user function error: '{}'. Function: '{}', error: '{}'.", result, functionName, sqlite3_errmsg(mDatabase));
+//        return false;
+//        
+//    }
+//
+//    return true;
+//
+//
+//  //sqlite3 *db,
+//  //const char *zFunctionName,
+//  //int nArg,
+//  //int eTextRep,
+//  //void *pApp,
+//  //void (*xFunc)(sqlite3_context*,int,sqlite3_value**),
+//  //void (*xStep)(sqlite3_context*,int,sqlite3_value**),
+//  //void (*xFinal)(sqlite3_context*)
+//
+////int rc = sqlite3_create_function(db, "increment", 1, SQLITE_UTF8, NULL, &increment, NULL, NULL);
+////static void changeNotify(sqlite_func* context, int argc, const char** argv)
+////const char *table, *action, *rowid;
+////
+////assert(argc == 3);
+////
+////table = argv[0];
+////action = argv[1];
+////rowid = argv[2];
+////
+////dprintf("Database changed: table = %s, action = %s, rowid = %s\n", table, action, rowid);
+//
+//}
 
 
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -274,4 +362,3 @@ yaget::db::Transaction::~Transaction()
         YAGET_ASSERT(result, "ROLLBACK TRANSCATION failed. %s", ParseErrors(mDatabase).c_str());
     }
 }
-

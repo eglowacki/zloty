@@ -24,6 +24,9 @@
 
 struct sqlite3;
 struct sqlite3_stmt;
+struct sqlite3_context;
+struct sqlite3_value;
+
 
 namespace yaget
 {
@@ -121,6 +124,15 @@ namespace yaget
 
         void Log(const std::string& messageType, const std::string& message);
 
+        // Function signature used in registering user defined functions in sqlite.
+        // R - return type
+        // P - parameter types (tuple of types)
+        template <typename R, typename P>
+        using UserFunction = std::function<R(const SQLite&, P)>;
+
+        template <typename R, typename P>
+        bool AddUserFunction(const std::string& functionName, UserFunction<R, P> userFunction);
+
     private:
         // this templates execute binding call to sqlite per specific type
         // NOTE: usage of fake is based on http://www.cplusplus.com/forum/general/193680/
@@ -183,6 +195,10 @@ namespace yaget
 
         bool ExecuteStatement(Statement* statement);
 
+        using UserFunctionWrapper = std::function<std::string(const Strings& parameters)>;
+        bool RegisterUserFunction(const std::string& functionName, UserFunctionWrapper callback, size_t numParameters);
+        static void SQLUserFunctionCallback(sqlite3_context* context, int argc, sqlite3_value** argv);
+
         sqlite3* mDatabase;
         mutable std::string mErrorMessage;
 
@@ -191,6 +207,9 @@ namespace yaget
         // NOTE EG: use something else for id rather then string
         using Statements = std::map<StatementId_t, Statement>;
         Statements mStatements;
+
+        using UserFunctionMap = std::map<std::string, UserFunctionWrapper>;
+        UserFunctionMap mUserFunctions;
     };
 
     inline std::string ParseErrors(const SQLite& database)
@@ -347,6 +366,31 @@ namespace yaget
 
         return container;
     }
+
+    //--------------------------------------------------------------------------------------------------
+    template <typename R, typename P>
+    bool SQLite::AddUserFunction(const std::string& functionName, UserFunction<R, P> userFunction)
+    {
+
+        auto sqUserFunction = [userFunction, this](const Strings& parameters) -> std::string
+        {
+            P requestedParameters{};
+
+            size_t index = 0;
+            meta::for_each(requestedParameters, [parameters, &index]<typename T0>(T0& element)
+            {
+                element = conv::FromString<T0>(parameters[index].c_str());
+                ++index;
+            });
+
+            auto result = userFunction(*this, requestedParameters);
+            return conv::ToString(result);
+        };
+
+        constexpr size_t NumParameters = std::tuple_size_v<std::remove_reference_t<P>>;
+        return RegisterUserFunction(functionName, sqUserFunction, NumParameters);
+    }
+
 
     namespace db
     {

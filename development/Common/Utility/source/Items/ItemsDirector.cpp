@@ -11,7 +11,7 @@
 
 namespace fs = std::filesystem;
 
-#define YAGET_DIRECTOR_VERSION 5
+#define YAGET_DIRECTOR_VERSION 6
 
 
 namespace
@@ -35,6 +35,7 @@ namespace
     };
 
 
+    //--------------------------------------------------------------------------------------------------
     std::string ResolveDatabaseName(const std::string& userFileName, bool reset)
     {
         std::string fileName = yaget::util::ExpendEnv(userFileName, nullptr);
@@ -47,6 +48,8 @@ namespace
         return fileName;
     }
 
+
+    //--------------------------------------------------------------------------------------------------
     template<typename... Args>
     yaget::Strings CombineSchemas(Args&&... args)
     {
@@ -68,6 +71,7 @@ namespace
 } // namespace
 
 
+//--------------------------------------------------------------------------------------------------
 yaget::items::Director::Director(const std::string& name, const Strings& additionalSchema, const Strings& /*loadout*/, int64_t expectedVersion, RuntimeMode runtimeMode)
     : mDatabase(ResolveDatabaseName(name, runtimeMode == RuntimeMode::Reset), CombineSchemas(additionalSchema, Strings{std::format("INSERT INTO VersionTables(Id) VALUES('{}');", expectedVersion)}, itemsSchema), YAGET_DIRECTOR_VERSION)
     , mIdGameCache([this]() { return GetNextBatch(); })
@@ -85,12 +89,14 @@ yaget::items::Director::Director(const std::string& name, const Strings& additio
 }
 
 
+//--------------------------------------------------------------------------------------------------
 yaget::items::Director::~Director()
 {
     YLOG_INFO("DIRE", "Items Director closed.");
 }
 
 
+//--------------------------------------------------------------------------------------------------
 yaget::comp::ItemIds yaget::items::Director::GetStageItems(const std::string& stageName) const
 {
     comp::ItemIds result;
@@ -113,6 +119,7 @@ yaget::comp::ItemIds yaget::items::Director::GetStageItems(const std::string& st
 }
 
 
+//--------------------------------------------------------------------------------------------------
 void yaget::items::Director::AddStageItems(const std::string& stageName, const comp::ItemIds& ids)
 {
     if (auto stageId =  GetStageId(stageName); stageId != Director::InvalidStageId)
@@ -141,6 +148,7 @@ void yaget::items::Director::AddStageItems(const std::string& stageName, const c
 }
 
 
+//--------------------------------------------------------------------------------------------------
 void yaget::items::Director::RemoveStageItems(const std::string& stageName, const comp::ItemIds& ids)
 {
     if (auto stageId =  GetStageId(stageName); stageId != Director::InvalidStageId)
@@ -164,6 +172,7 @@ void yaget::items::Director::RemoveStageItems(const std::string& stageName, cons
 }
 
 
+//--------------------------------------------------------------------------------------------------
 yaget::items::IdBatch yaget::items::Director::GetNextBatch()
 {
     if (DatabaseHandle databaseHandle = LockDatabaseAccess())
@@ -198,6 +207,7 @@ yaget::items::IdBatch yaget::items::Director::GetNextBatch()
 }
 
 
+//--------------------------------------------------------------------------------------------------
 void yaget::items::Director::CacheStageNames()
 {
     if (const DatabaseHandle databaseHandle = LockDatabaseAccess())
@@ -209,6 +219,7 @@ void yaget::items::Director::CacheStageNames()
 }
 
 
+//--------------------------------------------------------------------------------------------------
 int yaget::items::Director::AddStage(const std::string& stageName)
 {
     auto stageId = Director::InvalidStageId;
@@ -234,6 +245,7 @@ int yaget::items::Director::AddStage(const std::string& stageName)
 }
 
 
+//--------------------------------------------------------------------------------------------------
 int yaget::items::Director::GetStageId(const std::string& stageName) const
 {
     const auto it = std::ranges::find_if(mStageNames, [&stageName](auto elem)
@@ -249,5 +261,3 @@ int yaget::items::Director::GetStageId(const std::string& stageName) const
 
     return Director::InvalidStageId;
 }
-
-
