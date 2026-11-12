@@ -15,8 +15,6 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     //Bar(BindConstructor<comp::VelocityComponent>());
     //"Persistance@PlayerTest"
 
-    items::BindUserFunctions(*this);
-
     script::BindMath(mScriptState, "yaget");
     script::BindAppUtilities(mScriptState, "yaget", mApp);
 

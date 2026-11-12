@@ -59,7 +59,6 @@ namespace yaget::test
             , mSystemCoordinator(mMessaging, mApplication)
             , mTestName(std::string("Test.") + testName)
         {
-            items::BindUserFunctions(mSystemCoordinator);
             metrics::MarkAddMessage(mTestName + " Start", metrics::MessageScope::Global, 1);
         }
 
