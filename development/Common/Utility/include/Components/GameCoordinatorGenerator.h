@@ -262,7 +262,6 @@ namespace yaget::comp::db
         }
         if constexpr (F == GenerateCoordinator::Log)
         {
-
             auto lines = GenerateSystemsCoordinator2<T, Strings>([](auto results, auto tableName, auto columnNames, auto typeNames)
             {
                 std::string logLine = std::format("====: '{}'\n\t\t\t{} id", tableName, ResolveName<comp::Id_t>());
@@ -272,11 +271,6 @@ namespace yaget::comp::db
                 for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
                 {
                     logLine += std::format(",\n\t\t\t'{}' {}", *tn_it, *cn_it);
-                }
-
-                if (!columnNames.empty())
-                {
-                    //logLine += "\n";
                 }
             
                 results.emplace_back(logLine);
@@ -289,15 +283,6 @@ namespace yaget::comp::db
             systemNames += "\n\tOperating on components:\n\t\t" + conv::Combine(lines, "\n\t\t");
 
             return systemNames;
-
-
-            //lines.insert(lines.begin(), std::format("Root Coordinator: {}\n", ResolveName<T>()));
-            //auto systemNames = conv::Combine(GetPolicyRowNames<typename T::Systems>(), "\n");
-            //systemNames.insert(systemNames.begin(), std::format("Root Coordinator: {}\n", ResolveName<T>()));
-            //systemNames.insert(systemNames.end(), lines.begin(), lines.end());
-
-
-            //return conv::Combine(systemNames, nullptr);
         }
     }
 }

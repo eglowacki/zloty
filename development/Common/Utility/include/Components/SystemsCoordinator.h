@@ -18,9 +18,10 @@
 #include "App/Application.h"
 #include "Components/CoordinatorSet.h"
 #include "Meta/CompilerAlgo.h"
-
+#include "Script/ScriptState.h"
 
 namespace yaget::metrics { class Channel; }
+
 
 namespace yaget::comp::gs
 {
@@ -115,6 +116,7 @@ namespace yaget::comp::gs
     protected:
         Messaging& mMessaging;
         A& mApp;
+        sol::state mScriptState;
 
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
@@ -173,6 +175,7 @@ template <typename T, typename M, typename A, typename... S>
 yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messaging, A& app)
     : mMessaging(messaging)
     , mApp(app)
+    , mScriptState(script::GetState())
     , mCoordinatorSet(&app.Director())
 {
     meta::for_loop<ManagedSystems>([this]<std::size_t T0>()

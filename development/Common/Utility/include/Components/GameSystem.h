@@ -40,7 +40,7 @@ namespace yaget::comp::gs
     //  {
     //  public:
     //      ScoreSystem(Messaging& messaging, Application& app, GameCoordinatorSet& coordinatorSet)
-    //          : GameSystem("ScoreSystem", messaging, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet)
+    //          : GameSystem("ScoreSystem", messaging, [this](auto&&... params) {OnUpdate(params...); }, coordinatorSet, tickEnabled)
     //      {}
     //
     //  private:

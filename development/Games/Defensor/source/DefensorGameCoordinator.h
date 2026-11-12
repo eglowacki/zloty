@@ -16,7 +16,6 @@
 #pragma once
 
 #include "Components/SystemsCoordinator.h"
-
 #include "Squadron/BulletSystem.h"
 #include "Squadron/MenuSystem.h"
 #include "Squadron/PlayerSystem.h"
