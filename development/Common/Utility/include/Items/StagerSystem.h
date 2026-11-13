@@ -49,9 +49,14 @@ namespace yaget::items
                 , mStagerSystem(stagerSystem)
             {
 
+                // NOTE(eg) how do we constrain which component types we want to load per item.
+                // Currently, we are loading all components for each item,
+                // but we only need top load the one which got saved per item in db.
+
+                using LocalComponentsRow = comp::metatypes::local_components_row_t<typename StagerSystem::CoordinatorSet>;
                 for (const auto& id : mItemIds)
                 {
-                    mStagerSystem.GetCS().LoadItem(id);
+                    mStagerSystem.GetCS().template LoadItem<LocalComponentsRow>(id);
                 }
             }
 
@@ -78,18 +83,10 @@ namespace yaget::items
     // --------------------------------------------------------------------
     // impl methods
     template <typename CS, typename M>
-    void StagerSystem<CS, M>::OnUpdate(comp::Id_t /*id*/, const time::GameClock& gameClock, metrics::Channel& /*channel*/, const StageComponent* stageComponent)
+    void StagerSystem<CS, M>::OnUpdate(comp::Id_t /*id*/, const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/, const StageComponent* stageComponent)
     {
-        gameClock;
         const auto requestedStageName = stageComponent->GetValue<db_stage::Name>();
-
         const auto currentStage = mStagersStack.empty() ? "" : mStagersStack.top()->mCurrentStage;
-
-        bool isNameSet = !requestedStageName.empty();
-        bool isNameDifferent = requestedStageName != currentStage;
-
-        isNameSet;
-        isNameDifferent;
 
         if (!requestedStageName.empty() && requestedStageName != currentStage)
         {
@@ -99,16 +96,6 @@ namespace yaget::items
             const auto items = mDirector.GetStageItems(requestedStageName);
             if (!items.empty())
             {
-                for (const auto& id : items)
-                {
-                    auto item = comp::gs::GameSystem<CS, comp::gs::NoEndMarker, M, StageComponent*>::GetCS().LoadItem(id);
-                    item;
-                    int z = 0;
-                    z;
-
-
-                }
-
                 const auto blend = stageComponent->GetValue<db_stage::Blend>();
                 if (blend == db_stage::BlendOp::Replace)
                 {
@@ -118,6 +105,8 @@ namespace yaget::items
                     }
 
                     mStagersStack.push(std::make_unique<Stager>(requestedStageName, blend, items, *this));
+
+                    YLOG_INFO("GSYS", "Stage '%s' activated with blend: '%s'.", requestedStageName.c_str(), conv::ToString(blend).c_str());
                 }
 
                 // here we have choices on how to load requested stage

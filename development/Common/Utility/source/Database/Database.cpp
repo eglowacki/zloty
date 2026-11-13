@@ -81,11 +81,15 @@ namespace
 
 } // namespace
 
-yaget::Database::Database(const std::string& name, const std::vector<std::string>& schema, size_t excpectedVersion)
+
+//--------------------------------------------------------------------------------------------------
+yaget::Database::Database(const std::string& name, const std::vector<std::string>& schema, size_t expectedVersion)
 {
-    InitializeDatabase(mDatabase, schema, name, excpectedVersion);
+    InitializeDatabase(mDatabase, schema, name, expectedVersion);
 }
 
+
+//--------------------------------------------------------------------------------------------------
 void yaget::Database::Log(const std::string& type, const std::string& message)
 {
     mDatabase.Log(type, message);

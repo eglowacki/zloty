@@ -18,9 +18,10 @@
 #include "App/Application.h"
 #include "Components/CoordinatorSet.h"
 #include "Meta/CompilerAlgo.h"
-
+#include "Script/ScriptState.h"
 
 namespace yaget::metrics { class Channel; }
+
 
 namespace yaget::comp::gs
 {
@@ -71,6 +72,9 @@ namespace yaget::comp::gs
         static_assert(NumSystems, "User must provide at least 1 GameSystem");
         static_assert(internal::SystemsMatchCoordinator<Systems, CoordinatorSet_t>(), "CoordinatorSet_t does not support requested GameSystem component.");
 
+        struct GetItemPattern;
+        using PatternFunction = GetItemPattern;
+
         SystemsCoordinator(M& messaging, A& app);
 
         void Tick(const time::GameClock& gameClock, metrics::Channel& channel);
@@ -106,26 +110,19 @@ namespace yaget::comp::gs
         template <typename GS>
         GS& GetGameSystem() { return *std::get<std::shared_ptr<GS>>(mSystems); }
 
-        // Save component persistent data to DB
-        bool PersistComponent(yaget::comp::Id_t id, const std::string& componentType, const std::string& params);
-        // Returns true of componentName does exist, otherwise false
-        bool IsComponentTyped(const std::string& componentName) const;
-
         CoordinatorSet_t& GetCoordinatorSet() { return mCoordinatorSet; }
         const CoordinatorSet_t& GetCoordinatorSet() const { return mCoordinatorSet; }
 
     protected:
         Messaging& mMessaging;
         A& mApp;
+        sol::state mScriptState;
 
     private:
         using ManagedSystems = std::tuple<std::shared_ptr<S>...>;
 
         CoordinatorSet_t mCoordinatorSet;
         ManagedSystems mSystems;
-
-        using CreationFunction = std::function<void(yaget::comp::Id_t id, const std::string& params)>;
-        std::map<std::string, CreationFunction> mCreationFunctions;
     };
 
     namespace internal
@@ -178,58 +175,12 @@ template <typename T, typename M, typename A, typename... S>
 yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messaging, A& app)
     : mMessaging(messaging)
     , mApp(app)
+    , mScriptState(script::GetState())
     , mCoordinatorSet(&app.Director())
 {
-    meta::for_loop<CoordinatorSet_t::FullRow>([this]<std::size_t T0>()
-    {
-        constexpr std::size_t index = T0;
-        using ComponentType = meta::strip_qualifiers_t<std::tuple_element_t<index, typename CoordinatorSet_t::FullRow>>;
+    items::BindUserFunctions(*this);
 
-        if constexpr (is_component_persistent<ComponentType>)
-        {
-            const auto componentName = db::ResolveName<ComponentType>();
-            using ParamTypes = typename ComponentType::Types;
-
-            mCreationFunctions[componentName] = [this](Id_t id, [[maybe_unused]]const std::string& params)
-            {
-                auto componentParams = yaget::conv::Convertor<ParamTypes>::FromString(params.c_str());
-                ComponentType* component = std::apply([this, id, &componentParams](auto&&... params)
-                {
-                    return AddComponent<ComponentType>(id, params...);
-
-                }, componentParams);
-
-                if (component)
-                {
-                    SaveComponent(component);
-                    component = nullptr;
-                    // since we saved component data, component itself is no longer needed
-                    RemoveComponent<ComponentType>(id);
-                }
-            };
-        }
-        else
-        {
-            if constexpr (std::is_constructible_v<ComponentType, comp::Id_t>)
-            {
-                // let's add non-persistent component, only if we can be constructed with Id as parameter to ctor
-                const auto componentName = db::ResolveName<ComponentType>();
-                mCreationFunctions[componentName] = [this]([[maybe_unused]]Id_t id, [[maybe_unused]]const std::string&)
-                {
-                    if (ComponentType* component = AddComponent<ComponentType>(id))
-                    {
-                    //    SaveComponent(component);
-                    //    component = nullptr;
-                    //    // since we saved component data, component itself is no longer needed
-                    //    RemoveComponent<ComponentType>(id);
-                    }
-                };
-            }
-        }
-    });
-
-    auto This = this;
-    meta::for_loop<ManagedSystems>([This, this]<std::size_t T0>()
+    meta::for_loop<ManagedSystems>([this]<std::size_t T0>()
     {
         using BaseType = std::tuple_element_t<T0, ManagedSystems>;
         using SystemType = typename BaseType::element_type;
@@ -237,6 +188,14 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
         auto& system = std::get<T0>(mSystems);
         system = std::make_shared<SystemType>(mMessaging, mApp, mCoordinatorSet);
     });
+
+    constexpr bool autoCreateGlobalComponents = true;
+    if constexpr (autoCreateGlobalComponents)
+    {
+        using GlobalComponentsRow = metatypes::global_components_row_t<SystemsCoordinator>;
+
+        LoadItem<GlobalComponentsRow>(comp::GLOBAL_ID_MARKER);
+    }
 }
 
 
@@ -308,6 +267,7 @@ TT yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::LoadItem(comp::Id_t id)
     return mCoordinatorSet.template LoadItem<TT>(id);
 }
 
+
 //-------------------------------------------------------------------------------------------------
 template <typename T, typename M, typename A, typename ... S>
 template <typename TT>
@@ -316,28 +276,6 @@ bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::RemoveItem(comp::Id_t i
     return mCoordinatorSet.template RemoveItem<TT>(id);
 }
 
-//-------------------------------------------------------------------------------------------------
-template <typename T, typename M, typename A, typename ... S>
-bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::PersistComponent(yaget::comp::Id_t id, const std::string& componentType, const std::string& params)
-{
-    if (auto it = mCreationFunctions.find(componentType); it != mCreationFunctions.end())
-    {
-        auto& creationFunction = it->second;
-        creationFunction(id, params);
-
-        return true;
-    }
-
-    return false;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-template <typename T, typename M, typename A, typename ... S>
-bool yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::IsComponentTyped(const std::string& componentName) const
-{
-    return mCreationFunctions.contains(componentName);
-}
 
 //-------------------------------------------------------------------------------------------------
 // on the first call, we'll create system coordinator. This ensures it get's created on the same

@@ -183,12 +183,31 @@ namespace yaget::comp::db
         Log
     };
 
+
+    std::string CreateUserTriggerStatement(const std::string& tableName, const std::string& itemPatternFunctionName, const std::string& action);
+
+
     template <typename T, GenerateCoordinator F>
     auto GenerateSystemsCoordinator()
     {
         if constexpr (F == GenerateCoordinator::Schema)
         {
-            return GenerateSystemsCoordinator2<T, Strings>([](auto results, auto tableName, auto columnNames, auto typeNames)
+            Strings statementsResult;
+
+            std::string sqlCommand = std::format("CREATE TABLE 'ItemPattern' ('Id' CHECK(Id != 0) UNIQUE, 'Pattern' TEXT, PRIMARY KEY('Id'))");
+            statementsResult.emplace_back(sqlCommand);
+
+            sqlCommand = std::format("CREATE TABLE 'ComponentsOrder' ('Pattern' TEXT)");
+            statementsResult.emplace_back(sqlCommand);
+
+            if constexpr (comp::metatypes::has_coordinator_set<T>)
+            {
+                using FullRow = typename T::CoordinatorSet_t::FullRow;
+                sqlCommand = std::format("INSERT INTO ComponentsOrder (Pattern) VALUES ('{}')", conv::Combine(comp::db::GetPolicyRowNames<FullRow>(), ", "));
+                statementsResult.emplace_back(sqlCommand);
+            }
+
+            auto generatorResult = GenerateSystemsCoordinator2<T, Strings>([](auto results, auto tableName, auto columnNames, auto typeNames)
             {
                 std::string sqlCommand = std::format("CREATE TABLE '{}' ('Id' {} CHECK(Id != 0) UNIQUE", tableName, internal::ResolveDatabaseType<comp::Id_t>());
 
@@ -203,8 +222,28 @@ namespace yaget::comp::db
                 YLOG_DEBUG("GSYS", "[%s]", sqlCommand.c_str());
                 results.emplace_back(sqlCommand);
 
+                std::string itemPatternFunctionName;
+                if constexpr (comp::metatypes::has_pattern_function<T>)
+                {
+                    itemPatternFunctionName = ResolveName<typename T::PatternFunction>();
+                }
+                else
+                {
+                    itemPatternFunctionName = "GetItemPattern";
+                }
+
+                sqlCommand = CreateUserTriggerStatement(tableName, itemPatternFunctionName, "Add");
+                results.emplace_back(sqlCommand);
+
+                sqlCommand = CreateUserTriggerStatement(tableName, itemPatternFunctionName, "Remove");
+                results.emplace_back(sqlCommand);
+
                 return results;
             });
+
+            statementsResult.append_range(generatorResult);
+
+            return statementsResult;
         }
         if constexpr (F == GenerateCoordinator::Version)
         {
@@ -223,7 +262,6 @@ namespace yaget::comp::db
         }
         if constexpr (F == GenerateCoordinator::Log)
         {
-
             auto lines = GenerateSystemsCoordinator2<T, Strings>([](auto results, auto tableName, auto columnNames, auto typeNames)
             {
                 std::string logLine = std::format("====: '{}'\n\t\t\t{} id", tableName, ResolveName<comp::Id_t>());
@@ -233,11 +271,6 @@ namespace yaget::comp::db
                 for (; cn_it != columnNames.end(); ++cn_it, ++tn_it)
                 {
                     logLine += std::format(",\n\t\t\t'{}' {}", *tn_it, *cn_it);
-                }
-
-                if (!columnNames.empty())
-                {
-                    //logLine += "\n";
                 }
             
                 results.emplace_back(logLine);
@@ -250,15 +283,6 @@ namespace yaget::comp::db
             systemNames += "\n\tOperating on components:\n\t\t" + conv::Combine(lines, "\n\t\t");
 
             return systemNames;
-
-
-            //lines.insert(lines.begin(), std::format("Root Coordinator: {}\n", ResolveName<T>()));
-            //auto systemNames = conv::Combine(GetPolicyRowNames<typename T::Systems>(), "\n");
-            //systemNames.insert(systemNames.begin(), std::format("Root Coordinator: {}\n", ResolveName<T>()));
-            //systemNames.insert(systemNames.end(), lines.begin(), lines.end());
-
-
-            //return conv::Combine(systemNames, nullptr);
         }
     }
 }

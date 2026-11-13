@@ -18,8 +18,8 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
         if (auto payload = mMessaging.ConsumePayload())
         {
             auto& vts = mApp.VTS();
-            auto renderPassTag = vts.GetTag(io::VirtualTransportSystem::Section("RenderPasses@GameScene"));
-            sceneComponent->mRenderPassTag = renderPassTag;
+            //auto renderPassTag = vts.GetTag(io::VirtualTransportSystem::Section("RenderPasses@GameScene"));
+            //sceneComponent->mRenderPassTag = renderPassTag;
 
             auto entityState = io::cast_data<EntityState>(payload->mBuffer);
             for (auto i = 0; i < payload->mNumEntities; ++i)

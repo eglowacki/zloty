@@ -1,248 +1,12 @@
 ﻿#include "DefensorGameCoordinator.h"
-#include "Items/ItemsDirector.h"
 #include "Script/ComponentBinder.h"
 #include "StringHelpers.h"
 #include "Script/MathBinder.h"
-//#include "VTS/ToolVirtualTransportSystem.h"
-//#include "sol/sol.hpp"
 #include "Script/Executant.h"
 #include "Script/AppUtilitiesBinder.h"
-//#include "Script/ComponentBinder.h"
-
-#include <iostream>
-#include <ranges>
 
 
-namespace
-{
-    class PersistentReader
-    {
-    public:
-        PersistentReader(const yaget::Strings& stringData, yaget::IdGameCache& idCache)
-            : mVersion(FindValue<int>("Version", stringData))
-            , mStringData(PruneLines(stringData))
-            , mIdCache(idCache)
-
-        {
-            YAGET_ASSERT(mVersion && mVersion <= SUPPORTED_VERSION, "Version in persistent file: '%d' is not supported by this parser version: '%d'.", mVersion, SUPPORTED_VERSION);
-            YLOG_INFO("GSYS", "PersistentReader supported Version: %d, Valid Tokens: [%s]. Valid Keys: [%s].", SUPPORTED_VERSION, yaget::conv::Combine(mValidTokens, ", ").c_str(), yaget::conv::Combine(mValidKeys, ", ").c_str());
-
-            ParseKeys(mStringData);
-
-            yaget::error_handlers::ThrowOnCheck(Validate(), "Failed validation for persistent data");
-        }
-
-        void PersistData(defensor::game::DefensorSystemsCoordinator& systemsCoordinator) const
-        {
-            auto& director = systemsCoordinator.Director();
-            // add all stage names and generate id's for it
-            for (const auto& stageName : mStages)
-            {
-                director.AddStage(stageName);
-            }
-
-            // save all components for each item
-            for (const auto& [itemId, items] : mItems)
-            {
-                for (const auto& line : items)
-                {
-                    if (auto tokens = yaget::conv::Split(line, ":", true); tokens.size() == 2)
-                    {
-                        auto componentName = tokens[0];
-                        const auto& params = tokens[1];
-
-                        if (!systemsCoordinator.IsComponentTyped(componentName))
-                        {
-                            if (systemsCoordinator.IsComponentTyped(componentName + "Component"))
-                            {
-                                componentName = componentName + "Component";
-                            }
-                            else
-                            {
-                                componentName = "";
-                            }
-                        }
-
-                        if (!componentName.empty())
-                        {
-                            systemsCoordinator.PersistComponent(itemId, componentName, params);
-                        }
-                    }
-                }
-            }
-
-            // save items to Stages
-            for (const auto& [stageName, items] : mStageItems)
-            {
-                director.AddStageItems(stageName, items);
-            }
-        }
-
-    private:
-        const int SUPPORTED_VERSION = 1;
-
-        const yaget::Strings mValidTokens =
-        {
-            "//",
-            "Version"
-        };
-
-        const yaget::Strings mValidKeys =
-        {
-            "New Item",
-            "New Global Item",
-            "Stages"
-        };
-
-        void ParseKeys(const yaget::Strings& stringLines)
-        {
-            enum class ParserState : uint8_t
-            {
-                NoOp,
-                NewItem,
-                Stage
-            };
-
-            ParserState parserState = ParserState::NoOp;
-            yaget::comp::Id_t itemId = yaget::comp::INVALID_ID;
-
-            for (const auto& line : stringLines)
-            {
-                if (line.starts_with(mValidKeys[0]))
-                {
-                    itemId = yaget::idspace::get_persistent(mIdCache);
-                    parserState = ParserState::NewItem;
-                    continue;
-                }
-                else if (line.starts_with(mValidKeys[1]))
-                {
-                    itemId = yaget::comp::GLOBAL_ID_MARKER;
-                    parserState = ParserState::NewItem;
-                    continue;
-                }
-                else if (line.starts_with(mValidKeys[2]))
-                {
-                    itemId = yaget::comp::INVALID_ID;
-                    parserState = ParserState::Stage;
-                    continue;
-                }
-
-                if (parserState == ParserState::NewItem)
-                {
-                    if (line.starts_with("StageName"))
-                    {
-                        const auto& value = GetValue(line);
-                        const auto stageNames = GetStagesToBelong(value);
-
-                        for (auto stageName : stageNames)
-                        {
-                            mStageItems[stageName].insert(itemId);
-                        }
-                    }
-                    else
-                    {
-                        mItems[itemId].push_back(line);
-                    }
-                }
-                else if (parserState == ParserState::Stage)
-                {
-                    mStages.push_back(line);
-                }
-            }
-        }
-
-        bool Validate() const
-        {
-            // make sure that any usage of Stage Names by New Item (Components)
-            // is already 'registered' in Stages.
-            for (const auto& stageName : mStageItems | std::views::keys)
-            {
-                if (std::ranges::find(mStages, stageName) == mStages.end())
-                {
-                    YLOG_INFO("GSYS", "Stage '%s' requested by component does not exist in registered Stages: %s", stageName.c_str(), yaget::conv::Combine(mStages, ", ").c_str());
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        template <typename T>
-        T FindValue(const std::string& key, const yaget::Strings& stringData) const
-        {
-            auto result = FindValue(key, stringData);
-            return yaget::conv::Convertor<T>::FromString(result.c_str());
-        }
-
-        std::string FindValue(const std::string& key, const yaget::Strings& stringData) const
-        {
-            std::string result;
-
-            for (const auto& line : stringData)
-            {
-                if (line.starts_with(key))
-                {
-                    result = GetValue(line);
-                    break;
-                }
-            }
-
-            return result;
-        }
-
-        std::string GetValue(const std::string& line) const
-        {
-            std::string result;
-
-            if (auto tokens = yaget::conv::Split(line, ":", true); tokens.size() == 2)
-            {
-                const auto& value = tokens[1];
-
-                result = value;
-            }
-
-            return result;
-        }
-
-        yaget::Strings GetStagesToBelong(const std::string& line) const
-        {
-            return yaget::conv::Split(line, ",", true);
-        }
-
-        yaget::Strings PruneLines(const yaget::Strings& lines)
-        {
-            yaget::Strings results = lines;
-
-            auto it = std::ranges::remove_if(results, [this](const auto& line)
-            {
-                for (const auto& token : mValidTokens)
-                {
-                    if (line.starts_with(token))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }).begin();
-
-            results.erase(it, results.end());
-
-            return results;
-        }
-
-        int mVersion;
-        yaget::Strings mStringData;
-        yaget::IdGameCache& mIdCache;
-
-        yaget::Strings mStages;
-        std::map<std::string, yaget::comp::ItemIds> mStageItems;
-        std::map<yaget::comp::Id_t, yaget::Strings> mItems;
-    };
-
-}
-
-
+YAGET_COMPILE_SUPPRESS_START(4189, "local variable is initialized but not referenced")
 
 //-------------------------------------------------------------------------------------------------
 defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging& m, Application& app)
@@ -251,14 +15,8 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     //Bar(BindConstructor<comp::VelocityComponent>());
     //"Persistance@PlayerTest"
 
-    //constexpr size_t numC = GameCoordinatorSet::NumCoordinators;
-    //numC;
-    //constexpr bool coordinatorSet2 = comp::is_coordinator_set<GameCoordinatorSet>;
-
-    sol::state lua = script::GetState();
-    script::BindMath(lua, "yaget");
-    script::BindComponents<CoordinatorSet_t::FullRow, DefensorSystemsCoordinator>(lua, "yaget", *this);
-    script::BindAppUtilities(lua, "yaget", mApp);
+    script::BindMath(mScriptState, "yaget");
+    script::BindAppUtilities(mScriptState, "yaget", mApp);
 
     const auto& itemsFile = dev::CurrentConfiguration().mInit.mItemsFile;
     if (!itemsFile.empty())
@@ -267,7 +25,40 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
         if (auto asset = fileLoader.GetAsset(); asset)
         {
             const auto& source = asset->mSource;
-            script::Run(lua, source, asset->mTag, script::Execute::Safe);
+            script::Run(mScriptState, source, asset->mTag, script::Execute::Safe);
+
+#if 0
+            using SC = meta::strip_qualifiers_t<decltype(*this)>;
+
+            using GlobalComponentsRow1 = comp::metatypes::global_components_row_t<SC>;
+            auto globalItem = LoadItem<GlobalComponentsRow1>(4611686018427387903);
+
+            using LocalComponentsRow1 = comp::metatypes::local_components_row_t<SC>;
+
+            using GlobalComponentsRow2 = comp::metatypes::global_components_row_t<CoordinatorSet_t>;
+            using LocalComponentsRow2 = comp::metatypes::local_components_row_t<CoordinatorSet_t>;
+            
+            GlobalComponentsRow1* globalComponentsRow1 = nullptr;
+            LocalComponentsRow1* localComponentsRow1 = nullptr;
+            GlobalComponentsRow2* globalComponentsRow2 = nullptr;
+            LocalComponentsRow2* localComponentsRow2 = nullptr;
+
+            auto& director = Director();
+
+            auto* locationComponent3   = LoadComponent<comp::LocationComponent3>(4611686018427388904);
+            auto* inputComponent          = LoadComponent<comp::InputComponent>(4611686018427388904);
+            auto* unitComponent            = LoadComponent<comp::UnitComponent>(4611686018427388904);
+            auto* scriptComponent         = LoadComponent<comp::ScriptComponent>(4611686018427388904);
+            auto* nameComponent            = LoadComponent<comp::NameComponent>(4611686018427388904);
+            auto* velocityComponent     = LoadComponent<comp::VelocityComponent>(4611686018427388904);
+            auto* materialComponent     = LoadComponent<comp::MaterialComponent>(4611686018427388904);
+            auto* bulletComponent         = LoadComponent<comp::BulletComponent>(4611686018427388904);
+            auto* textComponent            = LoadComponent<comp::TextComponent>(4611686018427388904);
+            auto* menuScreenComponent = LoadComponent<comp::MenuScreenComponent>(4611686018427388904);
+
+            auto* menuComponent            = LoadComponent<comp::MenuComponent>(4611686018427387903);
+            auto* stageComponent          = LoadComponent<items::StageComponent>(4611686018427387903);
+#endif
 
             app.Input().PushContext("Edit");
         }
@@ -291,6 +82,8 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
         //}
     }
 }
+
+YAGET_COMPILE_SUPPRESS_END
 
 
 //-------------------------------------------------------------------------------------------------

@@ -191,6 +191,7 @@
 
 #include <string_view>
 #include <array>
+#include <functional>
 
 
 namespace yaget::meta
@@ -653,6 +654,11 @@ namespace yaget::meta
     // meta::tuple_is_unique_v<Test2>;  // <-- compile error 'error C2338: type appears more than once in tuple'
     template <typename T>
     inline constexpr auto tuple_is_unique_v = internal::tuple_is_unique<0, T>();
+
+
+    // NOTE: using ReturnType = return_type_of_t<UserFunctionWrapper>;
+    template<typename Callable>
+    using return_type_of_t = decltype(std::function{std::declval<Callable>()})::result_type;
 
     //-------------------------------------------------------------------------------------------------
     // used to create array of visitor objects

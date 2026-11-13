@@ -125,6 +125,13 @@ const yaget::app::WindowFrame &yaget::render::DeviceB::GetWindowFrame() const
 
 
 //-------------------------------------------------------------------------------------------------
+void yaget::render::DeviceB::Present(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/)
+{
+    mWaiter.Wait();
+}
+
+
+//-------------------------------------------------------------------------------------------------
 size_t yaget::render::DeviceB::RegisterResizeCallback(ResizeCallback callback)
 {
     std::scoped_lock lock(mResizeCallbackMutex);

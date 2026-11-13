@@ -238,76 +238,73 @@ namespace yaget::script
                     });
 
                     const auto& componentName = comp::db::ResolveName<ComponentType>();
-                    if (mSystemsCoordinator.IsComponentTyped(componentName))
+                    if constexpr (comp::metatypes::IsComponentValid<ComponentType, SystemsCoordinator>())
                     {
-                        if constexpr (comp::metatypes::IsComponentValid<ComponentType, SystemsCoordinator>())
+                        if constexpr (comp::metatypes::component_global_v<ComponentType, SystemsCoordinator>)
                         {
-                            if constexpr (comp::metatypes::component_global_v<ComponentType, SystemsCoordinator>)
-                            {
-                                std::get<0>(fullParams) = comp::GLOBAL_ID_MARKER;
-                            }
+                            std::get<0>(fullParams) = comp::GLOBAL_ID_MARKER;
                         }
+                    }
 
 #if 0
-                        // ====
-                        auto& tt = mSystemsCoordinator.GetCoordinatorSet();
-                        using CoordSet = meta::strip_qualifiers_t<decltype(tt)>;
-                        CoordSet* cs = nullptr;
-                        cs;
+                    // ====
+                    auto& tt = mSystemsCoordinator.GetCoordinatorSet();
+                    using CoordSet = meta::strip_qualifiers_t<decltype(tt)>;
+                    CoordSet* cs = nullptr;
+                    cs;
 
-                        constexpr bool isCoordSet1 = comp::metatypes::has_coordinator_set<CoordSet>;
-                        constexpr bool isCoordSet2 = comp::metatypes::is_coordinator_set<CoordSet>;
+                    constexpr bool isCoordSet1 = comp::metatypes::has_coordinator_set<CoordSet>;
+                    constexpr bool isCoordSet2 = comp::metatypes::is_coordinator_set<CoordSet>;
 
-                        using CoordinatSetT1 = comp::metatypes::coordinator_set_t<SystemsCoordinator>;
-                        using CoordinatSetT2 = comp::metatypes::coordinator_set_t<CoordSet>;
+                    using CoordinatSetT1 = comp::metatypes::coordinator_set_t<SystemsCoordinator>;
+                    using CoordinatSetT2 = comp::metatypes::coordinator_set_t<CoordSet>;
 
-                        CoordinatSetT1* coordinatSetT1 = nullptr;
-                        CoordinatSetT2* coordinatSetT2 = nullptr;
-                        coordinatSetT1;
-                        coordinatSetT2;
+                    CoordinatSetT1* coordinatSetT1 = nullptr;
+                    CoordinatSetT2* coordinatSetT2 = nullptr;
+                    coordinatSetT1;
+                    coordinatSetT2;
 
-                        constexpr size_t coordinatorIndex11 = comp::metatypes::coordinator_index_v<ComponentType, SystemsCoordinator>;
-                        constexpr size_t coordinatorIndex22 = comp::metatypes::coordinator_index_v<ComponentType, CoordSet>;
-                        constexpr size_t coordinatorIndex33 = comp::metatypes::coordinator_index_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
+                    constexpr size_t coordinatorIndex11 = comp::metatypes::coordinator_index_v<ComponentType, SystemsCoordinator>;
+                    constexpr size_t coordinatorIndex22 = comp::metatypes::coordinator_index_v<ComponentType, CoordSet>;
+                    constexpr size_t coordinatorIndex33 = comp::metatypes::coordinator_index_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
 
-                        constexpr bool compValid11 = comp::metatypes::component_valid_v<ComponentType, SystemsCoordinator>;
-                        constexpr bool compValid22 = comp::metatypes::component_valid_v<ComponentType, CoordSet>;
-                        constexpr bool compValid33 = comp::metatypes::component_valid_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
-                        constexpr bool compValid44 = comp::metatypes::component_valid_v<int, typename SystemsCoordinator::CoordinatorSet_t>;
+                    constexpr bool compValid11 = comp::metatypes::component_valid_v<ComponentType, SystemsCoordinator>;
+                    constexpr bool compValid22 = comp::metatypes::component_valid_v<ComponentType, CoordSet>;
+                    constexpr bool compValid33 = comp::metatypes::component_valid_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
+                    constexpr bool compValid44 = comp::metatypes::component_valid_v<int, typename SystemsCoordinator::CoordinatorSet_t>;
 
-                        constexpr bool compGlobal1 = comp::metatypes::component_global_v<ComponentType, SystemsCoordinator>;
-                        constexpr bool compGlobal2 = comp::metatypes::component_global_v<ComponentType, CoordSet>;
-                        constexpr bool compGlobal3 = comp::metatypes::component_global_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
+                    constexpr bool compGlobal1 = comp::metatypes::component_global_v<ComponentType, SystemsCoordinator>;
+                    constexpr bool compGlobal2 = comp::metatypes::component_global_v<ComponentType, CoordSet>;
+                    constexpr bool compGlobal3 = comp::metatypes::component_global_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
 
-                        constexpr bool compLocal11 = comp::metatypes::component_local_v<ComponentType, SystemsCoordinator>;
-                        constexpr bool compLocal22 = comp::metatypes::component_local_v<ComponentType, CoordSet>;
-                        constexpr bool compLocal33 = comp::metatypes::component_local_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
+                    constexpr bool compLocal11 = comp::metatypes::component_local_v<ComponentType, SystemsCoordinator>;
+                    constexpr bool compLocal22 = comp::metatypes::component_local_v<ComponentType, CoordSet>;
+                    constexpr bool compLocal33 = comp::metatypes::component_local_v<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
 
-                        using CST1 = comp::metatypes::coordinator_type_t<ComponentType, SystemsCoordinator>;
-                        using CST2 = comp::metatypes::coordinator_type_t<ComponentType, CoordSet>;
-                        using CST3 = comp::metatypes::coordinator_type_t<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
-                        CST1* cst1 = nullptr; cst1;
-                        CST2* cst2 = nullptr; cst2;
-                        CST3* cst3 = nullptr; cst3;
+                    using CST1 = comp::metatypes::coordinator_type_t<ComponentType, SystemsCoordinator>;
+                    using CST2 = comp::metatypes::coordinator_type_t<ComponentType, CoordSet>;
+                    using CST3 = comp::metatypes::coordinator_type_t<ComponentType, typename SystemsCoordinator::CoordinatorSet_t>;
+                    CST1* cst1 = nullptr; cst1;
+                    CST2* cst2 = nullptr; cst2;
+                    CST3* cst3 = nullptr; cst3;
 
 
-                        auto& coordinator1 = comp::ResolveCoordinator<ComponentType>(mSystemsCoordinator);
-                        auto& coordinator2 = comp::ResolveCoordinator<ComponentType>(mSystemsCoordinator.GetCoordinatorSet());
-                        coordinator1;
-                        coordinator2;
-                        // ====
+                    auto& coordinator1 = comp::ResolveCoordinator<ComponentType>(mSystemsCoordinator);
+                    auto& coordinator2 = comp::ResolveCoordinator<ComponentType>(mSystemsCoordinator.GetCoordinatorSet());
+                    coordinator1;
+                    coordinator2;
+                    // ====
 #endif  
 
-                        auto& director = mSystemsCoordinator.Director();
-                        validCall = director.SaveComponentState(componentName, fullParams);
+                    auto& director = mSystemsCoordinator.Director();
+                    validCall = director.SaveComponentState(componentName, fullParams);
 
-                        yaget::comp::ItemId itemId(std::get<0>(fullParams));
-                        YLOG_INFO("LUA", "Saved Component %s: '%s(%s). LuaParameters: '%s'.", 
-                            itemId.ToString().c_str(),
-                            componentName.c_str(), 
-                            print_tuple(fullParams).c_str(), 
-                            print_lua_arg_values(va).c_str());
-                    }
+                    yaget::comp::ItemId itemId(std::get<0>(fullParams));
+                    YLOG_INFO("LUA", "Saved Component %s: '%s(%s). LuaParameters: '%s'.",
+                        itemId.ToString().c_str(),
+                        componentName.c_str(),
+                        print_tuple(fullParams).c_str(),
+                        print_lua_arg_values(va).c_str());
                 }
             }
 
