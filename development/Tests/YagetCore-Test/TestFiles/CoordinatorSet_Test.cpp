@@ -431,4 +431,40 @@ TEST_F(CoordinatorSet, ComponentMetaTypes)
 
     validIndex = yaget::comp::metatypes::coordinator_index_for_components<MixGlobalLocalRow, TestObjects::KnightEntityCoordinatorSet>;
     EXPECT_EQ(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+
+    EXPECT_TRUE((yaget::comp::metatypes::is_coordinator_set<TestObjects::KnightEntityCoordinatorSet>));
+
+    auto coordinatorIndex = yaget::comp::metatypes::coordinator_index_v<TestObjects::Acomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_EQ(0, coordinatorIndex);
+
+    coordinatorIndex = yaget::comp::metatypes::coordinator_index_v<TestObjects::Ecomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_EQ(1, coordinatorIndex);
+
+    coordinatorIndex = yaget::comp::metatypes::coordinator_index_v<TestObjects::Gcomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_EQ(2, coordinatorIndex);
+
+    auto validComponent = yaget::comp::metatypes::component_global_v<TestObjects::Gcomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_TRUE(validComponent);
+
+    validComponent = yaget::comp::metatypes::component_global_v<TestObjects::Acomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_FALSE(validComponent);
+
+    validComponent = yaget::comp::metatypes::component_local_v<TestObjects::Gcomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_FALSE(validComponent);
+
+    validComponent = yaget::comp::metatypes::component_local_v<TestObjects::Acomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_TRUE(validComponent);
+
+    using GlobalRow = yaget::comp::metatypes::global_components_row_t<TestObjects::KnightEntityCoordinatorSet>;
+    auto compareResult = std::is_same_v<TestObjects::GlobalEntity::Row, GlobalRow>;
+    EXPECT_TRUE(compareResult);
+
+    using ExpectedLocalRow = yaget::meta::tuple_cat_t<TestObjects::BaseEntity::Row, TestObjects::BuffedEntity::Row>;
+    using LocalRow = yaget::comp::metatypes::local_components_row_t<TestObjects::KnightEntityCoordinatorSet>;
+
+    compareResult = std::is_same_v<ExpectedLocalRow, LocalRow>;
+    EXPECT_TRUE(compareResult);
+
+    compareResult = std::is_same_v<TestObjects::GlobalEntity::Row, LocalRow>;
+    EXPECT_FALSE(compareResult);
 }
