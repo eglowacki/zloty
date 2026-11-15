@@ -406,3 +406,29 @@ TEST_F(CoordinatorSet, ComponentCapacity)
 
     YLOG_INFO("TEST", "Counter is: '%d'", counter);
 }
+
+
+TEST_F(CoordinatorSet, ComponentMetaTypes)
+{
+    using BasedTestRow = std::tuple<TestObjects::Acomponent*, TestObjects::Ccomponent*>;
+    using BuffedTestRow = std::tuple<TestObjects::Ecomponent*, TestObjects::Fcomponent*>;
+    using GlobalTestRow = std::tuple<TestObjects::Gcomponent*>;
+
+    using MixLocalRow = std::tuple<TestObjects::Acomponent*, TestObjects::Ccomponent*, TestObjects::Ecomponent*, TestObjects::Fcomponent*>;
+    using MixGlobalLocalRow = std::tuple<TestObjects::Acomponent*, TestObjects::Ccomponent*, TestObjects::Gcomponent*>;
+
+    auto validIndex = yaget::comp::metatypes::coordinator_index_for_components<BasedTestRow, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_NE(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+
+    validIndex = yaget::comp::metatypes::coordinator_index_for_components<BuffedTestRow, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_NE(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+
+    validIndex = yaget::comp::metatypes::coordinator_index_for_components<GlobalTestRow, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_NE(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+
+    validIndex = yaget::comp::metatypes::coordinator_index_for_components<MixLocalRow, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_EQ(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+
+    validIndex = yaget::comp::metatypes::coordinator_index_for_components<MixGlobalLocalRow, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_EQ(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+}

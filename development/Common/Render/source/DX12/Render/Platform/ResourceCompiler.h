@@ -48,7 +48,7 @@ namespace yaget::render
             RootParameter(const RootParameter& other);
             RootParameter& operator=(const RootParameter& other);
 
-            D3D12_ROOT_PARAMETER1 mParameter;
+            D3D12_ROOT_PARAMETER1 mParameter = {};
             std::string mVariableName;
             std::string mVariableTypeName;
             std::vector<CD3DX12_DESCRIPTOR_RANGE1> mDescriptorRangesScratchPad;

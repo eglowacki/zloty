@@ -22,7 +22,7 @@
                 "AllowSocketConnection": false,
                 "SocketConnectionTimeout": 100,
                 "TraceFileName": "$(Temp)/Traces/$(AppName)_trace.json",
-                "TraceOn": true
+                "TraceOn": false
             }
         },
         "Graphics": {

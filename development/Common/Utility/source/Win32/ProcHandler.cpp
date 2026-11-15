@@ -556,7 +556,7 @@ void yaget::app::ProcHandler::ToggleBorderless()
         GetWindowPosition(mWindowHandle, windowAppearance.mLeft, windowAppearance.mTop, windowAppearance.mRight, windowAppearance.mBottom, windowAppearance.mResX, windowAppearance.mResY);
         
         const app::SysDisplays sysDisplays;
-        const auto primary = sysDisplays.FindNearest(mWindowHandle);
+        const auto& primary = sysDisplays.FindNearest(mWindowHandle);
         windowAppearance.mMonitorIndex = primary.mIndex;
 
         LONG lStyle = ::GetWindowLong(mWindowHandle, GWL_STYLE);

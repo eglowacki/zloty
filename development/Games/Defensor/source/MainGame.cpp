@@ -123,7 +123,7 @@ namespace
         auto surface = application.GetSurface();
         auto appWindowHandle = surface.Handle<HWND>();
         const yaget::app::SysDisplays sysDisplays;
-        const auto primary = sysDisplays.FindNearest(appWindowHandle);
+        const auto& primary = sysDisplays.FindNearest(appWindowHandle);
         auto primaryRect = *primary.GetRect();
         return primaryRect;
     }

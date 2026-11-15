@@ -392,6 +392,9 @@
     <ClCompile Include="..\source\Components\ComponentMetaTypes.cpp">
       <Filter>Component Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Components\RenderPassComponent.cpp">
+      <Filter>Component Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\LoggerCpp\Channel.h">
@@ -864,6 +867,9 @@
       <Filter>Script Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Components\ComponentMetaTypes.h">
+      <Filter>Component Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Components\RenderPassComponent.h">
       <Filter>Component Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -178,8 +178,6 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
     , mScriptState(script::GetState())
     , mCoordinatorSet(&app.Director())
 {
-    items::BindUserFunctions(*this);
-
     meta::for_loop<ManagedSystems>([this]<std::size_t T0>()
     {
         using BaseType = std::tuple_element_t<T0, ManagedSystems>;

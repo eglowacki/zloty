@@ -15,7 +15,9 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     //Bar(BindConstructor<comp::VelocityComponent>());
     //"Persistance@PlayerTest"
 
+    items::BindUserFunctions(*this);
     script::BindMath(mScriptState, "yaget");
+    script::BindComponents<CoordinatorSet_t::FullRow, DefensorSystemsCoordinator>(mScriptState, "yaget", *this);
     script::BindAppUtilities(mScriptState, "yaget", mApp);
 
     const auto& itemsFile = dev::CurrentConfiguration().mInit.mItemsFile;

@@ -25,10 +25,11 @@
 #include "Components/MenuScreenComponent.h"
 #include "Components/NameComponent.h"
 #include "Components/PayloadStager.h"
+#include "Components/RenderPassComponent.h"
 #include "Components/ScriptComponent.h"
 #include "Components/SystemsCoordinator.h"
-#include "Components/UnitComponent.h"
 #include "Components/TextComponent.h"
+#include "Components/UnitComponent.h"
 #include "Components/VelocityComponent.h"
 #include "Items/StageComponent.h"
 #include "Renders/RenderComponent.h"
@@ -58,7 +59,8 @@ namespace defensor::game
         comp::MaterialComponent*,
         comp::BulletComponent*,
         comp::TextComponent*,
-        comp::MenuScreenComponent*
+        comp::MenuScreenComponent*,
+        comp::RenderPassComponent*
     >;
 
     using GlobalCoordinator = comp::Coordinator<GlobalEntity>;

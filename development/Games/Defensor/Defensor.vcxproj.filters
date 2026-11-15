@@ -123,15 +123,15 @@
     <None Include="Defensor.deployment">
       <Filter>Data Files</Filter>
     </None>
+    <None Include="data\PlayerTest.pers">
+      <Filter>Data Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="data\Configuration.json">
       <Filter>Data Files</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\KeyBindings.json">
-      <Filter>Data Files</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="data\PlayerTest.pers">
       <Filter>Data Files</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Shaders\Pixel\Basic.ps">

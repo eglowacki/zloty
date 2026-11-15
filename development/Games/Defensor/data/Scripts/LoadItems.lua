@@ -1,8 +1,35 @@
 yaget.AddStages({ 'Main Menu', 'InGame Menu', 'Level 1', 'Level 2' })
 
--- testing all available components
 local itemId = yaget.NewItemId()
+yaget.NameComponent(itemId, 'Background')
+yaget.MaterialComponent(itemId, 'SceneItems@SpaceBackground')
+yaget.LocationComponent3(itemId, yaget.Vector3.Zero, yaget.Quaternion.Identity, yaget.Vector3.One)
+yaget.AddStageItems('Main Menu', { itemId })
 
+
+itemId = yaget.NewItemId()
+yaget.NameComponent(itemId, 'Render Pass')
+yaget.MaterialComponent(itemId, 'RenderPasses@GameScene')
+yaget.RenderPassComponent(itemId)
+yaget.AddStageItems('Main Menu', { itemId })
+
+
+yaget.ActivateStage('Main Menu', yaget.StageBlendOp.Replace)
+
+
+-- itemId = yaget.NewItemId()
+
+-- yaget.NameComponent(itemId, 'Menu Input')
+-- yaget.InputComponent(itemId, {'Next Menu Item', 'Previous Menu Item', 'Select Menu Item'})
+-- yaget.ScriptComponent(itemId, 'Main Menu', 'Scripts@MainMenu')
+-- yaget.MenuScreenComponent(itemId, {'New Game', 'Load Game', 'Options', 'Credits', 'Quit'})
+
+-- yaget.AddStageItems('Main Menu', { itemId })
+-- yaget.AddStageItems('InGame Menu', { itemId })
+
+
+--[[
+-- testing all available components
 yaget.InputComponent(itemId, {'Input1', 'Input2', 'Input3'})
 yaget.MenuComponent(itemId, 'Main Screen')
 yaget.UnitComponent(itemId, 42)
@@ -19,7 +46,6 @@ yaget.StageComponent(itemId, 'Boot', yaget.StageBlendOp.Replace)
 yaget.AddStageItems('Main Menu', { itemId })
 
 
---[[
 New Item
 Name: Background
 LocationComponent3: {1.00, 2.00, 3.00};{4.00, 5.00, 6.00, 7.00};{8.00, 9.00, 10.00}
