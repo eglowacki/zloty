@@ -49,14 +49,11 @@ namespace yaget::items
                 , mStagerSystem(stagerSystem)
             {
 
-                // NOTE(eg) how do we constrain which component types we want to load per item.
-                // Currently, we are loading all components for each item,
-                // but we only need top load the one which got saved per item in db.
-
                 using LocalComponentsRow = comp::metatypes::local_components_row_t<typename StagerSystem::CoordinatorSet>;
                 for (const auto& id : mItemIds)
                 {
-                    mStagerSystem.GetCS().template LoadItem<LocalComponentsRow>(id);
+                    auto iPattern = mStagerSystem.mDirector.GetItemPattern<typename StagerSystem::CoordinatorSet>(id);
+                    mStagerSystem.GetCS().PreLoadItem(id, iPattern);
                 }
             }
 

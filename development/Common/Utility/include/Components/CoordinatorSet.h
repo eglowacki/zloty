@@ -470,6 +470,23 @@ namespace yaget::comp
         }
 
         //-------------------------------------------------------------------------------------------------
+        template <typename TT = FullRow, typename IP>
+        void PreLoadItem(comp::Id_t id, const IP& iPattern)
+        {
+            meta::for_loop<TT>([this, id, &iPattern]<std::size_t T0>()
+            {
+                constexpr std::size_t Index = T0;
+                if (iPattern.test(Index))
+                {
+                    using ComponentType = std::tuple_element_t<Index, TT>;
+
+                    using BaseType = meta::strip_qualifiers_t<ComponentType>;
+                    LoadComponent<BaseType>(id);
+                }
+            });
+        }
+
+        //-------------------------------------------------------------------------------------------------
         template <typename TT = FullRow>
         bool RemoveItem(comp::Id_t id)
         {

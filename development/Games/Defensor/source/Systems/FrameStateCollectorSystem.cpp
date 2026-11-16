@@ -14,6 +14,8 @@ void defensor::game::FrameStateCollectorSystem::OnUpdate(comp::Id_t id, const ti
 {                                                         
     using RenderableEntity = comp::RowPolicy<comp::LocationComponent3*, comp::MaterialComponent*>;
     using MenuTextEntity = comp::RowPolicy<comp::LocationComponent3*, comp::TextComponent*>;
+    using RenderPassEntity = comp::RowPolicy<comp::RenderPassComponent*, comp::MaterialComponent*>;
+
     auto& coordinator = GetCS().GetCoordinator<defensor::game::Entity>();
 
     if (id == comp::END_ID_MARKER)
@@ -22,7 +24,8 @@ void defensor::game::FrameStateCollectorSystem::OnUpdate(comp::Id_t id, const ti
 
         comp::ItemIds renderableItemIds = coordinator.GetItemIds<RenderableEntity>();
         comp::ItemIds menuTextItemIds = coordinator.GetItemIds<MenuTextEntity>();
-        auto currentFrameState = mMessaging.CreatePayload((renderableItemIds.size() + menuTextItemIds.size()) * entitySize);
+        comp::ItemIds renderPassItemIds = coordinator.GetItemIds<RenderPassEntity>();
+        auto currentFrameState = mMessaging.CreatePayload((renderableItemIds.size() + menuTextItemIds.size() + renderPassItemIds.size()) * entitySize);
 
         coordinator.ForEach<RenderableEntity>(renderableItemIds, [&currentFrameState, this](comp::Id_t itemId, const auto& row)
         {
@@ -59,9 +62,31 @@ void defensor::game::FrameStateCollectorSystem::OnUpdate(comp::Id_t id, const ti
 
             const auto location = locationComponent->Matrix();
 
-            render::EntityState entityState{ .mId = comp::StripQualifiers(itemId) };
+            render::EntityState entityState{ .mId = comp::StripQualifiers(itemId), .mAssetType = render::EntityState::AssetType::Text };
             math3d::GetMatrixAsFloats(location, entityState.mMatrix);
 
+            currentFrameState->WriteDataChunk(&entityState, sizeof(entityState));
+
+            return true;
+        });
+
+        coordinator.ForEach<RenderPassEntity>(renderPassItemIds, [&currentFrameState, this](comp::Id_t itemId, const auto& row)
+        {
+            auto renderPassComponent = std::get<comp::RenderPassComponent*>(row);
+            renderPassComponent;
+            auto materialComponent = std::get<comp::MaterialComponent*>(row);
+
+            currentFrameState->mNumEntities++;
+            currentFrameState->AssureWriteSize(entitySize);
+
+            render::EntityState entityState{ .mId = comp::StripQualifiers(itemId), .mAssetType = render::EntityState::AssetType::RenderPass };
+            if (!materialComponent->mAssetTag.IsValid())
+            {
+                materialComponent->mAssetTag = mApp.VTS().GetTag(materialComponent->template GetValue<comp::db_material::Section>());
+            }
+
+            constexpr auto guidSize = sizeof(Guid::DataBuffer);
+            memcpy(entityState.mAssetGuid, materialComponent->mAssetTag.mGuid.bytes().data(), guidSize);
             currentFrameState->WriteDataChunk(&entityState, sizeof(entityState));
 
             return true;

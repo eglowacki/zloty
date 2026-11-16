@@ -26,6 +26,13 @@ namespace defensor::render
     // from game thread and consumed by render thread
     struct EntityState
     {
+        enum class AssetType
+        {
+            Default,
+            Text,
+            RenderPass
+        };
+
         enum class ValidFields : uint8_t
         {
             None        = 0,
@@ -34,6 +41,7 @@ namespace defensor::render
         };
 
         comp::Id_t mId;
+        AssetType mAssetType = AssetType::Default;
         float mMatrix[16];
         unsigned char mAssetGuid[16];
     };  
