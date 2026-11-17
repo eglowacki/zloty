@@ -432,6 +432,7 @@
     <ClInclude Include="source\DefensorGameTypes.h" />
     <ClInclude Include="source\DefensorRenderCoordinator.h" />
     <ClInclude Include="source\DefensorRenderTypes.h" />
+    <ClInclude Include="source\generated\ComponentsPatternFile.h" />
     <ClInclude Include="source\MainGame.h" />
     <ClInclude Include="source\Renders\FrameStateGatherSystem.h" />
     <ClInclude Include="source\Renders\RenderComponent.h" />

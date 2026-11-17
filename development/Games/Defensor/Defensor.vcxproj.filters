@@ -50,6 +50,9 @@
     <Filter Include="Data Files\Scripts">
       <UniqueIdentifier>{b2ab37ba-7488-4e2a-b4b2-4f33a7ea7191}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Generated Files">
+      <UniqueIdentifier>{e426b4bb-6a30-476e-9a18-cf2b3020ad09}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -337,6 +340,9 @@
     </ClInclude>
     <ClInclude Include="source\Squadron\BulletSystem.h">
       <Filter>Source Files\Squadron Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\generated\ComponentsPatternFile.h">
+      <Filter>Source Files\Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
