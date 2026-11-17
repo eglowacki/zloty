@@ -49,7 +49,6 @@ namespace yaget::items
                 , mStagerSystem(stagerSystem)
             {
 
-                using LocalComponentsRow = comp::metatypes::local_components_row_t<typename StagerSystem::CoordinatorSet>;
                 for (const auto& id : mItemIds)
                 {
                     auto iPattern = mStagerSystem.mDirector.GetItemPattern<typename StagerSystem::CoordinatorSet>(id);
