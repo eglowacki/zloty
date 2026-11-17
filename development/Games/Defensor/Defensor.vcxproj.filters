@@ -121,6 +121,9 @@
     <ClCompile Include="source\Squadron\BulletSystem.cpp">
       <Filter>Source Files\Squadron Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\generated\ComponentsPatternFile.cpp">
+      <Filter>Source Files\Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Defensor.deployment">
@@ -341,8 +344,9 @@
     <ClInclude Include="source\Squadron\BulletSystem.h">
       <Filter>Source Files\Squadron Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\generated\ComponentsPatternFile.h">
-      <Filter>Source Files\Generated Files</Filter>
+    <ClInclude Include="source\generated\ComponentsPatternFile.h" />
+    <ClInclude Include="source\Components\ComponentsPatternAccess.h">
+      <Filter>Source Files\Components Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

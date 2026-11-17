@@ -147,6 +147,7 @@
     <ClCompile Include="source\Components\UnitComponent.cpp" />
     <ClCompile Include="source\DefensorGameCoordinator.cpp" />
     <ClCompile Include="source\DefensorRenderCoordinator.cpp" />
+    <ClCompile Include="source\generated\ComponentsPatternFile.cpp" />
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\MainGame.cpp" />
     <ClCompile Include="source\Renders\FrameStateGatherSystem.cpp" />
@@ -423,6 +424,7 @@
   <ItemGroup>
     <ClInclude Include="resource.h" />
     <ClInclude Include="source\Components\BulletComponent.h" />
+    <ClInclude Include="source\Components\ComponentsPatternAccess.h" />
     <ClInclude Include="source\Components\InputComponent.h" />
     <ClInclude Include="source\Components\LocationComponent.h" />
     <ClInclude Include="source\Components\MenuComponent.h" />
