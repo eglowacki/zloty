@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\ComponentPatterns\FileGenerator.cpp" />
     <ClCompile Include="source\Components\BulletComponent.cpp" />
     <ClCompile Include="source\Components\InputComponent.cpp" />
     <ClCompile Include="source\Components\LocationComponent.cpp" />
@@ -147,7 +148,10 @@
     <ClCompile Include="source\Components\UnitComponent.cpp" />
     <ClCompile Include="source\DefensorGameCoordinator.cpp" />
     <ClCompile Include="source\DefensorRenderCoordinator.cpp" />
-    <ClCompile Include="source\generated\ComponentsPatternFile.cpp" />
+    <ClCompile Include="source\generated\ComponentsPatternFile.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\MainGame.cpp" />
     <ClCompile Include="source\Renders\FrameStateGatherSystem.cpp" />
@@ -423,6 +427,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="source\ComponentPatterns\FileGenerator.h" />
     <ClInclude Include="source\Components\BulletComponent.h" />
     <ClInclude Include="source\Components\ComponentsPatternAccess.h" />
     <ClInclude Include="source\Components\InputComponent.h" />
@@ -434,7 +439,6 @@
     <ClInclude Include="source\DefensorGameTypes.h" />
     <ClInclude Include="source\DefensorRenderCoordinator.h" />
     <ClInclude Include="source\DefensorRenderTypes.h" />
-    <ClInclude Include="source\generated\ComponentsPatternFile.h" />
     <ClInclude Include="source\MainGame.h" />
     <ClInclude Include="source\Renders\FrameStateGatherSystem.h" />
     <ClInclude Include="source\Renders\RenderComponent.h" />

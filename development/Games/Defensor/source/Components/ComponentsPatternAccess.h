@@ -16,14 +16,18 @@
 //! \file
 #pragma once
 
+#include "App/AppUtilities.h"
+#include "generated\ComponentsPatternFile.cpp"
 
 namespace yaget::comp::patterns
 {
+
     void ResolveValue(size_t index, auto callback)
     {
         index;
         callback;
 
+        FindValue(index, callback);
     }
     
 }

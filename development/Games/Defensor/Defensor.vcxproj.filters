@@ -53,6 +53,9 @@
     <Filter Include="Source Files\Generated Files">
       <UniqueIdentifier>{e426b4bb-6a30-476e-9a18-cf2b3020ad09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ComponentPatterns Files">
+      <UniqueIdentifier>{0e13a150-9677-41c8-9967-c266788c5023}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -123,6 +126,9 @@
     </ClCompile>
     <ClCompile Include="source\generated\ComponentsPatternFile.cpp">
       <Filter>Source Files\Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ComponentPatterns\FileGenerator.cpp">
+      <Filter>Source Files\ComponentPatterns Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -344,9 +350,11 @@
     <ClInclude Include="source\Squadron\BulletSystem.h">
       <Filter>Source Files\Squadron Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\generated\ComponentsPatternFile.h" />
     <ClInclude Include="source\Components\ComponentsPatternAccess.h">
       <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ComponentPatterns\FileGenerator.h">
+      <Filter>Source Files\ComponentPatterns Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

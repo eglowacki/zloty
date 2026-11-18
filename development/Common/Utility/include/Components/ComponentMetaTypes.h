@@ -17,9 +17,7 @@
 #pragma once
 
 #include "YagetCore.h"
-
 #include "App/AppHarness.h"
-
 #include "Meta/CompilerAlgo.h"
 
 namespace yaget::comp::metatypes

@@ -11,7 +11,6 @@
 
 
 YAGET_COMPILE_SUPPRESS_START(4189, "local variable is initialized but not referenced")
-YAGET_COMPILE_SUPPRESS_START(4996, "'asctime': This function or variable may be unsafe")
 
 template<class F>
 struct ArgType;
@@ -169,17 +168,6 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     }
 #endif
 
-    auto f = [this]<typename CompBits>()
-    {
-        CompBits cb{};
-        LoadItem<CompBits>(1000);
-        int z = 0;
-        z;
-    };
-
-    comp::patterns::ResolveValue(4, f);
-
-
     items::BindUserFunctions(*this);
     script::BindMath(mScriptState, "yaget");
     script::BindComponents<CoordinatorSet_t::FullRow, DefensorSystemsCoordinator>(mScriptState, "yaget", *this);
@@ -250,7 +238,6 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     }
 }
 
-YAGET_COMPILE_SUPPRESS_END
 YAGET_COMPILE_SUPPRESS_END
 
 

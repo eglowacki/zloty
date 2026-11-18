@@ -21,6 +21,8 @@
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 
+#include "ComponentPatterns/FileGenerator.h"
+
 #include "../resource.h"
 
 #if 0
@@ -249,6 +251,8 @@ namespace
 int defensor::Run(const yaget::args::Options& options)
 {
     using namespace yaget;
+
+    //comp::patterns::generator::GenerateFile<game::DefensorSystemsCoordinator>();
 
     if (options.find<bool>("vts_fix", false))
     {
