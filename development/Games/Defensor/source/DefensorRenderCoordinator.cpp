@@ -1,6 +1,5 @@
 ﻿#include "DefensorRenderCoordinator.h"
-#include "Render/AdapterInfo.h"
-#include "Debugging/Assert.h"
+#include "Script/MathBinder.h"
 
 
 //-------------------------------------------------------------------------------------------------
@@ -8,6 +7,7 @@ defensor::render::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messagi
     : SystemsCoordinator(m, app)
     , mApplication(static_cast<yaget::render::DesktopApplication&>(app))
 {
+    script::BindMath(mScriptState, "yaget");
 }
 
 

@@ -19,4 +19,10 @@ void yaget::script::BindAppUtilities(sol::state& luaState, const std::string& lu
         auto id = yaget::idspace::get_persistent(app.IdCache);;
         return id;
     });
+
+    yaget_lua_env.set_function("GetWindowSize", [&app]()
+    {
+        auto windowSize = app.GetSurface().Size();
+        return windowSize;
+    });
 }
