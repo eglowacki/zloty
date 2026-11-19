@@ -249,6 +249,11 @@ namespace yaget::meta
 
 
     //-------------------------------------------------------------------------------------------------
+    template<class... Args>
+    using decay_args_tuple_t = decay_args_tuple<Args...>::type;
+
+
+    //-------------------------------------------------------------------------------------------------
     template<typename T1, typename T2> struct tuple_cat_helper;
     template<typename... T1, typename...T2>
     struct tuple_cat_helper<std::tuple<T1...>, std::tuple<T2...>>
@@ -433,6 +438,38 @@ namespace yaget::meta
             tuple_copy<S, T, P, N - 1>(source, target);
         }
     }
+
+
+    //-------------------------------------------------------------------------------------------------
+    // check if E is in tuple T
+    template <typename E, typename T>
+    constexpr bool IsElementTypeInTuple()
+    {
+        using namespace yaget;
+
+        bool result = false;
+
+        using Tuple = meta::decay_args_tuple_t<T>;
+
+        meta::for_loop<Tuple>([&result]<std::size_t T0>()
+        {
+            if (!result)
+            {
+                constexpr std::size_t index = T0;
+                using ElementType = std::tuple_element_t<index, Tuple>;
+
+                using Elem = meta::strip_qualifiers_t<E>;
+                result = std::is_same_v<ElementType, Elem>;
+            }
+        });
+
+        return result;
+    }
+
+    //-------------------------------------------------------------------------------------------------
+    template <typename E, typename T>
+    constexpr bool element_type_in_tuple_v = IsElementTypeInTuple<E, T>();
+
 
     //-------------------------------------------------------------------------------------------------
     // return index of tuple based on type

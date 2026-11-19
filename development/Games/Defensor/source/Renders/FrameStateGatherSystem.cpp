@@ -24,7 +24,26 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
             auto entityState = io::cast_data<EntityState>(payload->mBuffer);
             for (auto i = 0; i < payload->mNumEntities; ++i)
             {
-                sceneComponent->mEntities.push_back(*entityState);
+                switch (entityState->mAssetType)
+                {
+                    case EntityState::AssetType::Default:
+                        sceneComponent->mEntities.push_back(*entityState);
+                        break;
+                    case EntityState::AssetType::Text:
+                        YAGET_ASSERT(false, "Need to implement text component handling!");
+                        break;
+                    case EntityState::AssetType::RenderPass:
+                    {
+                        Guid guid(entityState->mAssetGuid);
+                        auto renderPassTag = mApp.VTS().FindTag(guid);
+
+                        sceneComponent->mRenderPassTag = renderPassTag;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
                 entityState++;
             }
 

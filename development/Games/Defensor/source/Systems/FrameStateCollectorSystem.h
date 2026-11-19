@@ -44,6 +44,8 @@ namespace defensor::game
 
     private:
         void OnUpdate(comp::Id_t id, const time::GameClock& gameClock, metrics::Channel& channel);
+
+        size_t mUsedEntitiesNumber = 1;
     };
 
 }
