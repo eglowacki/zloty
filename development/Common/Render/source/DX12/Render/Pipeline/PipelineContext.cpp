@@ -1,5 +1,5 @@
-#include "Render/Pipeline/PipelineContext.h"
 #include "GameSystem/Messaging.h"
+#include "Render/Pipeline/PipelineContext.h"
 #include "Render/Platform/Adapter.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 
@@ -213,72 +213,6 @@ void yaget::render::PipelineContext::UpdateText(const io::Tag& tag, const ui::Te
 {
     mFontStorage.UpdateText(tag, textPrinters, commandType);
 }
-
-
-YAGET_COMPILE_SUPPRESS_START(4189, "local variable is initialized but not referenced")
-//-------------------------------------------------------------------------------------------------
-void yaget::render::PipelineContext::Render(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/)
-{
-#if 0
-    using RenderEntity = comp::RowPolicy<defensor::render::RenderComponent*>;
-
-    auto& renderPasses = mRenderPasses.GetPasses();
-    if (renderPasses.empty())
-    {
-        mDevice.Present(gameClock, channel);
-    }
-    else
-    {
-        commands::RenderPassState currentRenderPassState;
-
-        for (const auto& renderPass : renderPasses)
-        {
-            auto renderTarget = FindRenderTarget(renderPass.mRenderTargetTag);
-            auto colorClear = renderPass.GetColorClear(renderTarget);
-            auto depthClearValue = renderPass.GetDepthStencilClear(renderTarget);
-
-            auto frameCommands = mDevice.GetFrameCommands(*renderTarget, gameClock, channel);
-            //auto currentFrameIndex = frameCommands.GetFrameIndex();
-            auto commandList = frameCommands.BeginFrame(colorClear, depthClearValue);
-            auto viewMatrix = renderPass.GetViewMatrix();
-            auto orthoMatrix = renderPass.GetProjectionMatrix();
-            //auto commandType = commandList->GetType();
-
-            if (renderPass.mSceneItemTags.empty())
-            {
-                coordinator.ForEach<RenderEntity>([&itemsToRender, &viewMatrix, &orthoMatrix, &renderPass, this](comp::Id_t /*id*/, const auto& row)
-                {
-                    auto renderComponent = std::get<RenderComponent*>(row);
-                    if (mPipelineContext->RenderPasses().RenderThisPass(renderComponent->mSceneItemTag, renderPass))
-                    {
-                        auto sceneItem = mPipelineContext->GetSceneItem(renderComponent->mSceneItemTag);
-
-                        auto worldViewProj = (renderComponent->mMatrix * viewMatrix * orthoMatrix).Transpose();
-                        float timeData = 1.0f;
-
-                        itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = worldViewProj, .mTime = timeData });
-                    }
-
-                    return true;
-                });
-            }
-            else
-            {
-                for (const auto& sceneItemTag : renderPass.mSceneItemTags)
-                {
-                    auto sceneItem = mPipelineContext->GetSceneItem(sceneItemTag);
-
-                    auto worldViewProj = (viewMatrix * orthoMatrix).Transpose();
-                    float timeData = 1.0f;
-
-                    itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = worldViewProj, .mTime = timeData });
-                }
-            }
-        }
-    }
-#endif
-}
-YAGET_COMPILE_SUPPRESS_END
 
 
 //-------------------------------------------------------------------------------------------------

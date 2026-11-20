@@ -32,7 +32,7 @@
 #include "Components/UnitComponent.h"
 #include "Components/VelocityComponent.h"
 #include "Items/StageComponent.h"
-#include "Renders/RenderComponent.h"
+#include "Render/Components/RenderComponent.h"
 #include "Renders/SceneComponent.h"
 #include "Streams/Buffers.h"
 
@@ -76,7 +76,7 @@ namespace defensor::render
     using Messaging = game::Messaging;
             
     using GlobalEntity = comp::GlobalRowPolicy<SceneComponent*>;
-    using Entity = comp::RowPolicy<RenderComponent*>;
+    using Entity = comp::RowPolicy<yaget::render::RenderComponent*>;
 
     using GlobalCoordinator = comp::Coordinator<GlobalEntity>;
     using EntityCoordinator = comp::Coordinator<Entity>;

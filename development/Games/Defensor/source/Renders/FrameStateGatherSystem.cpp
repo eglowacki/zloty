@@ -47,7 +47,7 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
                 entityState++;
             }
 
-            using RenderEntity = comp::RowPolicy<RenderComponent*>;
+            using RenderEntity = comp::RowPolicy<yaget::render::RenderComponent*>;
 
             comp::ItemIds newFrameRenderIds = sceneComponent->mEntities | std::views::transform([](const auto& e)
             {
@@ -70,12 +70,12 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
                 auto assetTag = mApp.VTS().FindTag(guid);
                 YLOG_CERROR("REND", assetTag.IsValid(), "Render Asset '%s' does not exist.", conv::ToString(guid).c_str());
 
-                GetCS().AddComponent<RenderComponent>(id, math3d::Matrix(data->mMatrix), assetTag);
+                GetCS().AddComponent<yaget::render::RenderComponent>(id, math3d::Matrix(data->mMatrix), assetTag);
             });
 
             std::ranges::for_each(deletedIds, [this](const auto& id)
             {
-                GetCS().RemoveComponent<RenderComponent>(id);
+                GetCS().RemoveComponent<yaget::render::RenderComponent>(id);
             });
         }
     }

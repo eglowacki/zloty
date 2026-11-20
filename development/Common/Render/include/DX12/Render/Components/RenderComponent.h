@@ -8,7 +8,7 @@
 //  NOTES:
 //
 //
-//  #include "Renders/RenderComponent.h"
+//  #include "Render/Components/RenderComponent.h"
 //
 //////////////////////////////////////////////////////////////////////
 //! \file
@@ -17,10 +17,8 @@
 #include "Components/Component.h"
 
 
-namespace defensor::render
+namespace yaget::render
 {
-    using namespace yaget;
-
     //-------------------------------------------------------------------------------------------------
     class RenderComponent : public comp::BaseComponent<comp::DefaultPoolSize>
     {

@@ -155,7 +155,6 @@
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\MainGame.cpp" />
     <ClCompile Include="source\Renders\FrameStateGatherSystem.cpp" />
-    <ClCompile Include="source\Renders\RenderComponent.cpp" />
     <ClCompile Include="source\Renders\RenderMaterial.cpp" />
     <ClCompile Include="source\Renders\RenderSystem.cpp" />
     <ClCompile Include="source\Renders\SceneComponent.cpp" />
@@ -441,7 +440,6 @@
     <ClInclude Include="source\DefensorRenderTypes.h" />
     <ClInclude Include="source\MainGame.h" />
     <ClInclude Include="source\Renders\FrameStateGatherSystem.h" />
-    <ClInclude Include="source\Renders\RenderComponent.h" />
     <ClInclude Include="source\Renders\RenderMaterial.h" />
     <ClInclude Include="source\Renders\RenderSystem.h" />
     <ClInclude Include="source\Renders\SceneComponent.h" />
