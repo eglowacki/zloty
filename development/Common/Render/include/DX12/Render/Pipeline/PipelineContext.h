@@ -53,6 +53,9 @@ namespace yaget::render
         void UpdateText(const io::Tag& tag, const ui::TextPrinters& textPrinters, commands::Type commandType);
         commands::RenderPasses& RenderPasses() { return mRenderPasses; }
 
+        // this contains logic for rendering inside this class
+        void Render(const time::GameClock& gameClock, metrics::Channel& channel);
+
     private:
         using Section = io::VirtualTransportSystem::Section;
 

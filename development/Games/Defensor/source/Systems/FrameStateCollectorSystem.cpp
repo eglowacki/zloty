@@ -2,9 +2,6 @@
 #include "DefensorRenderTypes.h"
 
 
-YAGET_COMPILE_SUPPRESS_START(4189, "local variable is initialized but not referenced")
-YAGET_COMPILE_SUPPRESS_START(4100, "'variable': unreferenced parameter")
-
 //-------------------------------------------------------------------------------------------------
 namespace
 {
@@ -119,6 +116,3 @@ void defensor::game::FrameStateCollectorSystem::OnUpdate(comp::Id_t id, const ti
         mMessaging.SetPayload(currentFrameState);
     }
 }
-
-YAGET_COMPILE_SUPPRESS_END
-YAGET_COMPILE_SUPPRESS_END

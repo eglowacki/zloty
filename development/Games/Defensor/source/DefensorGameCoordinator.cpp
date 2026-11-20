@@ -6,8 +6,6 @@
 #include "Components/ComponentsPatternAccess.h"
 
 
-YAGET_COMPILE_SUPPRESS_START(4189, "local variable is initialized but not referenced")
-
 template<class F>
 struct ArgType;
 
@@ -59,24 +57,6 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
             script::Run(mScriptState, source, asset->mTag, script::Execute::Safe);
 
             auto yaget_lua_env = mScriptState["yaget"].get_or_create<sol::table>();
-
-            yaget_lua_env.for_each([](sol::object key, sol::object value)
-            {
-                if (key.is<std::string>())
-                {
-                    std::string keyName = key.as<std::string>();
-
-                    auto t = value.get_type();
-                    int z = 0;
-                    z;
-                }
-                else
-                {
-                    int z = 0;
-                    z;
-                }
-            });
-
 
 #if 0
             using SC = meta::strip_qualifiers_t<decltype(*this)>;
@@ -133,8 +113,6 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
         //}
     }
 }
-
-YAGET_COMPILE_SUPPRESS_END
 
 
 //-------------------------------------------------------------------------------------------------
