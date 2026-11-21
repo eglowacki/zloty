@@ -10,6 +10,8 @@
 //      to render each frame.
 //
 //      https://www.3dgep.com/learning-directx-12-1/
+//      https://petitl.fr/articles/creating-a-directx12-3d-engine-when-you-know-nothing
+//
 //
 //  #include "Render/Pipeline/PipelineContext.h"
 //
