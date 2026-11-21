@@ -55,9 +55,6 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
         {
             const auto& source = asset->mSource;
             script::Run(mScriptState, source, asset->mTag, script::Execute::Safe);
-
-            auto yaget_lua_env = mScriptState["yaget"].get_or_create<sol::table>();
-
 #if 0
             using SC = meta::strip_qualifiers_t<decltype(*this)>;
 

@@ -17,7 +17,6 @@ defensor::render::RenderSystem::RenderSystem(Messaging& messaging, Application& 
     : RenderSystemApp("RenderSystem", messaging, app, [this](auto&&... params) { OnUpdate(params...); }, coordinatorSet, false)
     , mColorInterpolator({ 0.4f, 0.6f, 0.9f, 1.0f }, { 0.6f, 0.9f, 0.4f, 1.0f })
     , mMatrixInterpolator(0.0f, 1.0f)
-    //, mResizeCallbackId{ GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
 {
     mAssetPreloader.AddTask([this]()
     {
@@ -108,7 +107,6 @@ void defensor::render::RenderSystem::PreloadAssets()
     //mPipelineContext.PreloadAssets("Boot");
     //mMessaging.Dispatch(items::StageEvent{ "Asset Load", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
 
-    GetDevice().UnregisterResizeCallback(mResizeCallbackId);
     mPipelineContext = nullptr;
     mPipelineContext = std::make_unique<yaget::render::PipelineContext>(GetDevice(), mApp.VTS(), "Boot", mApp.Director(), [this](const auto event){ mMessaging.Dispatch(event, Messaging::DispatcherType::Logic); } );
 
@@ -117,15 +115,4 @@ void defensor::render::RenderSystem::PreloadAssets()
     //mMessaging.Dispatch(items::StageEvent{ "Main Menu", items::db_stage::BlendOp::Replace }, Messaging::DispatcherType::Logic);
 
     SetTickEnabled(true);
-    mResizeCallbackId = { GetDevice().RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) };
-}
-
-
-//-------------------------------------------------------------------------------------------------
-void defensor::render::RenderSystem::OnResetDevice(const app::WindowFrame& windowFrame, yaget::render::DeviceB::ResizeState resizeState)
-{
-    if (mPipelineContext)
-    {
-        mPipelineContext->OnResetDevice(windowFrame, resizeState);
-    }
 }

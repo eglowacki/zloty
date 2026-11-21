@@ -125,8 +125,14 @@ const yaget::app::WindowFrame &yaget::render::DeviceB::GetWindowFrame() const
 
 
 //-------------------------------------------------------------------------------------------------
-void yaget::render::DeviceB::Present(const time::GameClock& /*gameClock*/, metrics::Channel& /*channel*/)
+void yaget::render::DeviceB::Present(const time::GameClock& gameClock, metrics::Channel& channel)
 {
+    mSwapChain->Present(gameClock, channel);
+
+    auto queue = mQueueStorage->GetQueue(commands::Type::Direct);
+    auto fenceValue = queue->Signal();
+    SetFrameFenceValue(fenceValue, mSwapChain->GetCurrentBackBufferIndex(), commands::Type::Direct);
+
     mWaiter.Wait();
 }
 

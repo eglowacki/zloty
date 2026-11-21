@@ -350,7 +350,7 @@ yaget::app::ProcHandler::ProcHandler(const yaget::dev::Configuration::Init& init
     wc.lpszClassName = WinName;
 
     // NOTE(eg) This needs to be config data driven
-    wc.hbrBackground = static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
+    wc.hbrBackground = static_cast<HBRUSH>(::GetStockObject(GRAY_BRUSH));
 
     wc.hIcon = LoadIcon(::GetModuleHandle(nullptr), MAKEINTRESOURCE(WindowApplication::IconId)); // Large icon
     wc.hIconSm = LoadIcon(::GetModuleHandle(nullptr), MAKEINTRESOURCE(WindowApplication::IconId)); // Small icon

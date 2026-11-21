@@ -6,6 +6,10 @@
 //  Maintained by: Edgar
 //
 //  NOTES:
+//      Provides convenient way to hold all resources and be able
+//      to render each frame.
+//
+//      https://www.3dgep.com/learning-directx-12-1/
 //
 //  #include "Render/Pipeline/PipelineContext.h"
 //
@@ -49,7 +53,6 @@ namespace yaget::render
         ~PipelineContext();
 
         void PreloadAssets(const std::string& stagePrefix);
-        void OnResetDevice(const app::WindowFrame& windowFrame, DeviceB::ResizeState resizeState);
 
         commands::RenderTarget* FindRenderTarget(const io::Tag& tag) const;
         scene::SceneItem* GetSceneItem(const io::Tag& tag);
@@ -62,6 +65,7 @@ namespace yaget::render
     private:
         using Section = io::VirtualTransportSystem::Section;
 
+        void OnResetDevice(const app::WindowFrame& windowFrame, DeviceB::ResizeState resizeState);
         void RebindMaterial(const io::Tag& tag, const MaterialPropertyTags& material);
         void HotRebindItemProperties(const Guid& guid);
 

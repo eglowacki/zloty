@@ -70,6 +70,7 @@ namespace
 //-------------------------------------------------------------------------------------------------
 yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTransportSystem& vts, const std::string& stagePrefix, const items::Director& /*director*/, ProgressCallback progressCallback)
     : mDevice(device)
+    , mResizeCallbackId{ mDevice.RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) }
     , mDependencyGraph(vts, Section("Manifest@RenderDependencies"), [this](auto guid) { HotRebindItemProperties(guid); })
     , mRenderSignatures{ GetDevice(mDevice), vts, GetSection("Signatures", stagePrefix), GetUserData(mDevice) }
     , mRenderPipelines{ GetDevice(mDevice), vts, GetSection("Pipelines", stagePrefix), GetUserData(mDevice), mDevice.GetSelectedAdapter().GetSelectedResolution().mDepthStencilFormat }
@@ -94,8 +95,6 @@ yaget::render::PipelineContext::PipelineContext(DeviceB& device, io::VirtualTran
     , mVTS{ vts }
     , mProgressCallback{ progressCallback }
 {
-    //mResizeCallbackId = { device.RegisterResizeCallback([this](auto&&... params) { OnResetDevice(params...); }) };
-
 }
 
 
@@ -153,7 +152,6 @@ void yaget::render::PipelineContext::PreloadAssets(const std::string& stagePrefi
         RebindMaterial(matTag, material);
         ++counter;
     }
-
 
     mProgressCallback(comp::gs::InitEvent{ .mNumItems = static_cast<int32_t>(numAssetsToLoad), .mItemsProcessed = &counter, .mText = std::format("Preloading {}{} Items...", sceneItemsTags.size(), formatedSuffix) });
     mSceneItemsStorage.Preload(sceneItemsTags, counter);
