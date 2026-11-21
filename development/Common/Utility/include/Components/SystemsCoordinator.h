@@ -18,6 +18,7 @@
 #include "App/Application.h"
 #include "Components/CoordinatorSet.h"
 #include "Meta/CompilerAlgo.h"
+#include "Script/AppUtilitiesBinder.h"
 #include "Script/ScriptState.h"
 
 namespace yaget::metrics { class Channel; }
@@ -178,8 +179,6 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
     , mScriptState(script::GetState())
     , mCoordinatorSet(&app.Director())
 {
-    items::BindUserFunctions(*this);
-
     meta::for_loop<ManagedSystems>([this]<std::size_t T0>()
     {
         using BaseType = std::tuple_element_t<T0, ManagedSystems>;
@@ -196,6 +195,8 @@ yaget::comp::gs::SystemsCoordinator<T, M, A, S...>::SystemsCoordinator(M& messag
 
         LoadItem<GlobalComponentsRow>(comp::GLOBAL_ID_MARKER);
     }
+
+    script::BindAppUtilities(mScriptState, "yaget", mApp);
 }
 
 

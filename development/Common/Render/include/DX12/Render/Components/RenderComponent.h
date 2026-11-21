@@ -8,35 +8,17 @@
 //  NOTES:
 //
 //
-//  #include "Renders/RenderComponent.h"
+//  #include "Render/Components/RenderComponent.h"
 //
 //////////////////////////////////////////////////////////////////////
 //! \file
 #pragma once
 
 #include "Components/Component.h"
-#include "DefensorRenderTypes.h"
-#include "Render/Polygons/RenderShape.h"
-#include "Renders/RenderMaterial.h"
-#include "Render/Pipeline/RenderGeometries.h"
 
-
-struct ID3D12GraphicsCommandList;
-namespace yaget::io
-{
-    class VirtualTransportSystem;
-}
 
 namespace yaget::render
 {
-    namespace platform { class Adapter; }
-}
-
-
-namespace defensor::render
-{
-    using namespace yaget;
-
     //-------------------------------------------------------------------------------------------------
     class RenderComponent : public comp::BaseComponent<comp::DefaultPoolSize>
     {

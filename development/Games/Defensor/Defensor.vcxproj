@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\ComponentPatterns\FileGenerator.cpp" />
     <ClCompile Include="source\Components\BulletComponent.cpp" />
     <ClCompile Include="source\Components\InputComponent.cpp" />
     <ClCompile Include="source\Components\LocationComponent.cpp" />
@@ -147,10 +148,13 @@
     <ClCompile Include="source\Components\UnitComponent.cpp" />
     <ClCompile Include="source\DefensorGameCoordinator.cpp" />
     <ClCompile Include="source\DefensorRenderCoordinator.cpp" />
+    <ClCompile Include="source\generated\ComponentsPatternFile.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\MainGame.cpp" />
     <ClCompile Include="source\Renders\FrameStateGatherSystem.cpp" />
-    <ClCompile Include="source\Renders\RenderComponent.cpp" />
     <ClCompile Include="source\Renders\RenderMaterial.cpp" />
     <ClCompile Include="source\Renders\RenderSystem.cpp" />
     <ClCompile Include="source\Renders\SceneComponent.cpp" />
@@ -173,11 +177,13 @@
       <FileType>Document</FileType>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="data\PlayerTest.pers">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    <None Include="data\PlayerTest.pers">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
       <FileType>Document</FileType>
-    </CopyFileToFolders>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
     <CopyFileToFolders Include="data\Shaders\Pixel\Basic.ps">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
       <FileType>Document</FileType>
@@ -420,7 +426,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="source\ComponentPatterns\FileGenerator.h" />
     <ClInclude Include="source\Components\BulletComponent.h" />
+    <ClInclude Include="source\Components\ComponentsPatternAccess.h" />
     <ClInclude Include="source\Components\InputComponent.h" />
     <ClInclude Include="source\Components\LocationComponent.h" />
     <ClInclude Include="source\Components\MenuComponent.h" />
@@ -432,7 +440,6 @@
     <ClInclude Include="source\DefensorRenderTypes.h" />
     <ClInclude Include="source\MainGame.h" />
     <ClInclude Include="source\Renders\FrameStateGatherSystem.h" />
-    <ClInclude Include="source\Renders\RenderComponent.h" />
     <ClInclude Include="source\Renders\RenderMaterial.h" />
     <ClInclude Include="source\Renders\RenderSystem.h" />
     <ClInclude Include="source\Renders\SceneComponent.h" />

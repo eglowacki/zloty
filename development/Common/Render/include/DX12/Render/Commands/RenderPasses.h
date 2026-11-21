@@ -62,7 +62,7 @@ namespace yaget::render::commands
 
         constexpr static inline size_t NumElementsInProjection = 6;
 
-        float mProjection[NumElementsInProjection];
+        float mProjection[NumElementsInProjection] = {};
 
         enum class ProjectionCalculationType { None, WindowSizeX, WindowSizeY };
         ProjectionCalculationType mProjectionCalculationType[NumElementsInProjection] = {};

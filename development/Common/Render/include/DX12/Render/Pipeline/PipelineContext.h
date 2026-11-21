@@ -6,12 +6,19 @@
 //  Maintained by: Edgar
 //
 //  NOTES:
+//      Provides convenient way to hold all resources and be able
+//      to render each frame.
+//
+//      https://www.3dgep.com/learning-directx-12-1/
+//      https://petitl.fr/articles/creating-a-directx12-3d-engine-when-you-know-nothing
+//
 //
 //  #include "Render/Pipeline/PipelineContext.h"
 //
 //////////////////////////////////////////////////////////////////////
 //! \file
 #pragma once
+
 
 #include "Parsers/DependencyGraph.h"
 #include "Render/Commands/RenderPasses.h"
@@ -27,6 +34,7 @@
 #include "Render/UI/FontRender.h"
 #include "Render/Scene/RenderSceneItems.h"
 #include "Render/Device.h"
+#include "Render/Components/RenderComponent.h"
 
 
 namespace yaget::items
@@ -37,6 +45,7 @@ namespace yaget::items
 
 namespace yaget::render
 {
+    //-------------------------------------------------------------------------------------------------
     class PipelineContext
     {
 
@@ -46,16 +55,19 @@ namespace yaget::render
         ~PipelineContext();
 
         void PreloadAssets(const std::string& stagePrefix);
-        void OnResetDevice(const app::WindowFrame& windowFrame, DeviceB::ResizeState resizeState);
 
         commands::RenderTarget* FindRenderTarget(const io::Tag& tag) const;
         scene::SceneItem* GetSceneItem(const io::Tag& tag);
         void UpdateText(const io::Tag& tag, const ui::TextPrinters& textPrinters, commands::Type commandType);
         commands::RenderPasses& RenderPasses() { return mRenderPasses; }
 
+        // this contains logic for rendering inside this class
+        void Render(const auto& coordinatorSet, const time::GameClock& gameClock, metrics::Channel& channel);
+
     private:
         using Section = io::VirtualTransportSystem::Section;
 
+        void OnResetDevice(const app::WindowFrame& windowFrame, DeviceB::ResizeState resizeState);
         void RebindMaterial(const io::Tag& tag, const MaterialPropertyTags& material);
         void HotRebindItemProperties(const Guid& guid);
 
@@ -80,4 +92,96 @@ namespace yaget::render
         io::VirtualTransportSystem& mVTS;
         ProgressCallback mProgressCallback;
     };
+
+
+    //-------------------------------------------------------------------------------------------------
+    namespace helpers
+    {
+        struct ItemToRender
+        {
+            yaget::render::scene::SceneItem* mItem{};
+            math3d::Matrix mWorldViewProj;
+            float mTime{};
+        };
+    }
+
+
+    //-------------------------------------------------------------------------------------------------
+    void PipelineContext::Render(const auto& coordinatorSet, const time::GameClock& gameClock, metrics::Channel& channel)
+    {
+        using RenderEntity = comp::RowPolicy<RenderComponent*>;
+
+        auto& renderPasses = mRenderPasses.GetPasses();
+        if (renderPasses.empty())
+        {
+            mDevice.Present(gameClock, channel);
+        }
+        else
+        {
+            auto& coordinator = coordinatorSet.template GetCoordinator<RenderEntity>();
+
+            for (const auto& renderPass : renderPasses)
+            {
+                std::vector<helpers::ItemToRender> itemsToRender;
+                commands::RenderPassState currentRenderPassState;
+
+                auto renderTarget = FindRenderTarget(renderPass.mRenderTargetTag);
+                auto colorClear = renderPass.GetColorClear(renderTarget);
+                auto depthClearValue = renderPass.GetDepthStencilClear(renderTarget);
+
+                auto frameCommands = mDevice.GetFrameCommands(*renderTarget, gameClock, channel);
+                auto commandList = frameCommands.BeginFrame(colorClear, depthClearValue);
+                auto viewMatrix = renderPass.GetViewMatrix();
+                auto orthoMatrix = renderPass.GetProjectionMatrix();
+
+                if (renderPass.mSceneItemTags.empty())
+                {
+                    coordinator.template ForEach<RenderEntity>([&itemsToRender, &viewMatrix, &orthoMatrix, &renderPass, this](comp::Id_t /*id*/, const auto& row)
+                    {
+                        auto renderComponent = std::get<RenderComponent*>(row);
+                        if (RenderPasses().RenderThisPass(renderComponent->mSceneItemTag, renderPass))
+                        {
+                            auto sceneItem = GetSceneItem(renderComponent->mSceneItemTag);
+
+                            auto worldViewProj = (renderComponent->mMatrix * viewMatrix * orthoMatrix).Transpose();
+                            float timeData = 1.0f;
+
+                            itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = worldViewProj, .mTime = timeData });
+                        }
+
+                        return true;
+                    });
+                }
+                else
+                {
+                    for (const auto& sceneItemTag : renderPass.mSceneItemTags)
+                    {
+                        auto sceneItem = GetSceneItem(sceneItemTag);
+
+                        auto worldViewProj = (viewMatrix * orthoMatrix).Transpose();
+                        float timeData = 1.0f;
+
+                        itemsToRender.push_back({ .mItem = sceneItem, .mWorldViewProj = worldViewProj, .mTime = timeData });
+                    }
+                }
+
+                std::ranges::sort(itemsToRender, [](const helpers::ItemToRender& item1, const helpers::ItemToRender& item2)
+                {
+                    return item1.mItem->GetRenderOrder() < item2.mItem->GetRenderOrder();
+                });
+
+                auto currentFrameIndex = frameCommands.GetFrameIndex();
+                auto commandType = commandList->GetType();
+
+                std::ranges::for_each(itemsToRender, [&currentRenderPassState, commandList, currentFrameIndex, commandType, this](const helpers::ItemToRender& item)
+                {
+                    item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::WorldViewProjection, item.mWorldViewProj, commandType);
+                    item.mItem->UpdateData(currentFrameIndex, constant_shader_types::ConstantTypes::Time, item.mTime, commandType);
+                    item.mItem->Render(currentFrameIndex, commandList, currentRenderPassState);
+                });
+
+                frameCommands.EndFrame();
+            }
+        }
+    }
 }

@@ -21,6 +21,8 @@
 #include "VTS/ResolvedAssets.h"
 #include "VTS/ToolVirtualTransportSystem.h"
 
+#include "ComponentPatterns/FileGenerator.h"
+
 #include "../resource.h"
 
 #if 0
@@ -123,7 +125,7 @@ namespace
         auto surface = application.GetSurface();
         auto appWindowHandle = surface.Handle<HWND>();
         const yaget::app::SysDisplays sysDisplays;
-        const auto primary = sysDisplays.FindNearest(appWindowHandle);
+        const auto& primary = sysDisplays.FindNearest(appWindowHandle);
         auto primaryRect = *primary.GetRect();
         return primaryRect;
     }
@@ -249,6 +251,8 @@ namespace
 int defensor::Run(const yaget::args::Options& options)
 {
     using namespace yaget;
+
+    //comp::patterns::generator::GenerateFile<game::DefensorSystemsCoordinator>();
 
     if (options.find<bool>("vts_fix", false))
     {

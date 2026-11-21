@@ -24,11 +24,30 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
             auto entityState = io::cast_data<EntityState>(payload->mBuffer);
             for (auto i = 0; i < payload->mNumEntities; ++i)
             {
-                sceneComponent->mEntities.push_back(*entityState);
+                switch (entityState->mAssetType)
+                {
+                    case EntityState::AssetType::Default:
+                        sceneComponent->mEntities.push_back(*entityState);
+                        break;
+                    case EntityState::AssetType::Text:
+                        YAGET_ASSERT(false, "Need to implement text component handling!");
+                        break;
+                    case EntityState::AssetType::RenderPass:
+                    {
+                        Guid guid(entityState->mAssetGuid);
+                        auto renderPassTag = mApp.VTS().FindTag(guid);
+
+                        sceneComponent->mRenderPassTag = renderPassTag;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
                 entityState++;
             }
 
-            using RenderEntity = comp::RowPolicy<RenderComponent*>;
+            using RenderEntity = comp::RowPolicy<yaget::render::RenderComponent*>;
 
             comp::ItemIds newFrameRenderIds = sceneComponent->mEntities | std::views::transform([](const auto& e)
             {
@@ -51,12 +70,12 @@ void defensor::render::FrameStateGatherSystem::OnUpdate(comp::Id_t id, const tim
                 auto assetTag = mApp.VTS().FindTag(guid);
                 YLOG_CERROR("REND", assetTag.IsValid(), "Render Asset '%s' does not exist.", conv::ToString(guid).c_str());
 
-                GetCS().AddComponent<RenderComponent>(id, math3d::Matrix(data->mMatrix), assetTag);
+                GetCS().AddComponent<yaget::render::RenderComponent>(id, math3d::Matrix(data->mMatrix), assetTag);
             });
 
             std::ranges::for_each(deletedIds, [this](const auto& id)
             {
-                GetCS().RemoveComponent<RenderComponent>(id);
+                GetCS().RemoveComponent<yaget::render::RenderComponent>(id);
             });
         }
     }

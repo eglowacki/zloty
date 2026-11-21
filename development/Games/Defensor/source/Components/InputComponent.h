@@ -34,10 +34,10 @@ namespace yaget::comp
         struct ActionInput
         {
             std::string mName;
-            uint64_t mTimeStamp;
-            int32_t mMouseX;
-            int32_t mMouseY;
-            uint32_t mFlags;
+            uint64_t mTimeStamp = {};
+            int32_t mMouseX = {};
+            int32_t mMouseY = {};
+            uint32_t mFlags = {};
         };
 
         InputComponent(Id_t id, const db_input::ActionNames::Types& event = {})

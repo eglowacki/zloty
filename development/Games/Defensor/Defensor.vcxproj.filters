@@ -50,6 +50,12 @@
     <Filter Include="Data Files\Scripts">
       <UniqueIdentifier>{b2ab37ba-7488-4e2a-b4b2-4f33a7ea7191}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Generated Files">
+      <UniqueIdentifier>{e426b4bb-6a30-476e-9a18-cf2b3020ad09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ComponentPatterns Files">
+      <UniqueIdentifier>{0e13a150-9677-41c8-9967-c266788c5023}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Main.cpp">
@@ -106,9 +112,6 @@
     <ClCompile Include="source\Renders\SceneComponent.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\Renders\RenderComponent.cpp">
-      <Filter>Source Files\Renders Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\Renders\RenderMaterial.cpp">
       <Filter>Source Files\Renders Files</Filter>
     </ClCompile>
@@ -118,9 +121,18 @@
     <ClCompile Include="source\Squadron\BulletSystem.cpp">
       <Filter>Source Files\Squadron Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\generated\ComponentsPatternFile.cpp">
+      <Filter>Source Files\Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ComponentPatterns\FileGenerator.cpp">
+      <Filter>Source Files\ComponentPatterns Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Defensor.deployment">
+      <Filter>Data Files</Filter>
+    </None>
+    <None Include="data\PlayerTest.pers">
       <Filter>Data Files</Filter>
     </None>
   </ItemGroup>
@@ -129,9 +141,6 @@
       <Filter>Data Files</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\KeyBindings.json">
-      <Filter>Data Files</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="data\PlayerTest.pers">
       <Filter>Data Files</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="data\Shaders\Pixel\Basic.ps">
@@ -325,9 +334,6 @@
     <ClInclude Include="source\Renders\SceneComponent.h">
       <Filter>Source Files\Renders Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Renders\RenderComponent.h">
-      <Filter>Source Files\Renders Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="source\Renders\RenderMaterial.h">
       <Filter>Source Files\Renders Files</Filter>
@@ -337,6 +343,12 @@
     </ClInclude>
     <ClInclude Include="source\Squadron\BulletSystem.h">
       <Filter>Source Files\Squadron Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\ComponentsPatternAccess.h">
+      <Filter>Source Files\Components Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ComponentPatterns\FileGenerator.h">
+      <Filter>Source Files\ComponentPatterns Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

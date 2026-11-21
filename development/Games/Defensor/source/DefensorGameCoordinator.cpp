@@ -3,10 +3,38 @@
 #include "StringHelpers.h"
 #include "Script/MathBinder.h"
 #include "Script/Executant.h"
-#include "Script/AppUtilitiesBinder.h"
+#include "Components/ComponentsPatternAccess.h"
 
 
-YAGET_COMPILE_SUPPRESS_START(4189, "local variable is initialized but not referenced")
+template<class F>
+struct ArgType;
+
+template<class T>
+struct ArgType<std::function<void(T)>> 
+{
+    using type = T;
+};
+
+auto any_match(std::any a) 
+{
+    throw std::runtime_error("no handler for any_match");
+}
+
+template<class T, class... Ts>
+auto any_match(std::any a, T&& handler, Ts&&... handlers) 
+{
+    using arg_type = typename ArgType<decltype(std::function(handler))>::type;
+
+    if (auto ptr = std::any_cast<arg_type>(&a); ptr)
+    {
+        return handler(*ptr);
+    }
+    else
+    {
+        return any_match(a, std::forward<Ts>(handlers)...);
+    }
+}
+
 
 //-------------------------------------------------------------------------------------------------
 defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging& m, Application& app)
@@ -15,8 +43,9 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
     //Bar(BindConstructor<comp::VelocityComponent>());
     //"Persistance@PlayerTest"
 
+    items::BindUserFunctions(*this);
+    script::BindComponents<CoordinatorSet_t::FullRow, DefensorSystemsCoordinator>(mScriptState, "yaget", *this);
     script::BindMath(mScriptState, "yaget");
-    script::BindAppUtilities(mScriptState, "yaget", mApp);
 
     const auto& itemsFile = dev::CurrentConfiguration().mInit.mItemsFile;
     if (!itemsFile.empty())
@@ -26,7 +55,6 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
         {
             const auto& source = asset->mSource;
             script::Run(mScriptState, source, asset->mTag, script::Execute::Safe);
-
 #if 0
             using SC = meta::strip_qualifiers_t<decltype(*this)>;
 
@@ -82,8 +110,6 @@ defensor::game::DefensorSystemsCoordinator::DefensorSystemsCoordinator(Messaging
         //}
     }
 }
-
-YAGET_COMPILE_SUPPRESS_END
 
 
 //-------------------------------------------------------------------------------------------------

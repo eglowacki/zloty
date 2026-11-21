@@ -53,6 +53,9 @@
     <Filter Include="Source Files\Scene Files">
       <UniqueIdentifier>{48f245ce-5fb6-4adb-a231-5beea006a2e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Component Files">
+      <UniqueIdentifier>{9f7c3d35-19a1-4c1e-856c-7198438a327f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DX12\Render\Device.h">
@@ -199,6 +202,9 @@
     <ClInclude Include="..\include\DX12\Render\Pipeline\PipelineContext.h">
       <Filter>Source Files\Pipeline Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\DX12\Render\Components\RenderComponent.h">
+      <Filter>Source Files\Component Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\DX12\Render\Device.cpp">
@@ -338,6 +344,9 @@
     </ClCompile>
     <ClCompile Include="..\source\DX12\Render\Pipeline\PipelineContext.cpp">
       <Filter>Source Files\Pipeline Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\DX12\Render\Components\RenderComponent.cpp">
+      <Filter>Source Files\Component Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

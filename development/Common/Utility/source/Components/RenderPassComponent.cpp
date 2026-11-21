@@ -1,0 +1,3 @@
+#include "Components/RenderPassComponent.h"
+
+DISREGARD_LINKER_4221(COMPILER_VERIFICATION_RenderPassComponent_h)

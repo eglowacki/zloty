@@ -400,6 +400,16 @@ namespace yaget::script
             auto& director = systemCoordinator.Director();
             director.AddStageItems(stageName, itemIds);
         });
+
+        yaget_lua_env.set_function("ActivateStage", [&systemCoordinator](const std::string stageName, items::db_stage::BlendOp stageBlend)
+        {
+            constexpr auto stageId = comp::GLOBAL_ID_MARKER;
+            if (auto stageComponent = systemCoordinator.template FindComponent<items::StageComponent>(stageId))
+            {
+                stageComponent->template SetValue<items::db_stage::Name>(stageName);
+                stageComponent->template SetValue<items::db_stage::Blend>(stageBlend);
+            }
+        });
     }
 
 }

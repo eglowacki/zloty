@@ -68,6 +68,9 @@ namespace yaget::items
 
         int AddStage(const std::string& stageName);
 
+        template <typename CS>
+        auto GetItemPattern(comp::Id_t id) const;
+
         template <typename R, typename P>
         bool AddUserFunction(const std::string& functionName, SQLite::UserFunction<R, P> userFunction);
 
@@ -236,8 +239,12 @@ namespace yaget::items
 
         if constexpr (NoParameters)
         {
-            using Parameters = std::tuple<comp::Id_t>;
-            auto queryResult = database.GetRowTuple<Parameters>(command, result);
+            //using Parameters = std::tuple<comp::Id_t>;
+            auto queryResult = GetCell<comp::Id_t>(database, command);
+            if (result)
+            {
+                *result = queryResult != 0;
+            }   
 
             return {};
         }
@@ -254,6 +261,22 @@ namespace yaget::items
     {
         DatabaseHandle databaseHandle = LockDatabaseAccess();
         return databaseHandle->DB().AddUserFunction(functionName, userFunction);
+    }
+
+
+    //--------------------------------------------------------------------------------------------------
+    template <typename SC>
+    auto Director::GetItemPattern(comp::Id_t id) const
+    {
+        using FullRow = comp::metatypes::coordinator_set_t<SC>::FullRow;
+        using ItemPattern = std::bitset<std::tuple_size_v<FullRow>>;
+
+        const std::string command = std::format("SELECT Pattern FROM ItemPattern WHERE Id = {}", id);
+        DatabaseHandle databaseHandle = LockDatabaseAccess();
+        auto itemPattern = yaget::GetCell(databaseHandle->DB(), command, std::string{});
+        ItemPattern iPattern{ itemPattern };
+
+        return iPattern;
     }
 
 

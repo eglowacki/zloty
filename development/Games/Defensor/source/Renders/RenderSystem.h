@@ -47,7 +47,6 @@ namespace defensor::render
         io::Tag mSwapChainRenderTargetTag{ .mName = "SwapChainRenderTarget", .mGuid = NewGuid() };
         io::Tag mSceneRenderTargetTag{ .mName = "SceneRenderTarget", .mGuid = NewGuid() };
 
-        size_t mResizeCallbackId{};
         mt::JobPool mAssetPreloader{ "AssetPreloader", 1, mt::JobPool::Behaviour::StartAsRun, true };
 
         yaget::render::commands::RenderPassState mCurrentRenderPassState;

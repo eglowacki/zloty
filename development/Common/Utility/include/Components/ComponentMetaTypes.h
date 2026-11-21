@@ -17,9 +17,7 @@
 #pragma once
 
 #include "YagetCore.h"
-
 #include "App/AppHarness.h"
-
 #include "Meta/CompilerAlgo.h"
 
 namespace yaget::comp::metatypes
@@ -113,7 +111,7 @@ namespace yaget::comp::metatypes
     //----------------------------------------------------------------------------------------------------------------------------------
     template <typename ComponentType, typename T>
     constexpr size_t coordinator_index_v = FindCoordinatorIndex<ComponentType, T>();
-    
+
 
     //----------------------------------------------------------------------------------------------------------------------------------
     // Checks if component type is valid for this coordinator set
@@ -128,6 +126,54 @@ namespace yaget::comp::metatypes
     //----------------------------------------------------------------------------------------------------------------------------------
     template <typename ComponentType, typename T>
     constexpr bool component_valid_v = IsComponentValid<ComponentType, T>();
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    // Return valid Coordinator index for Components Row when all those Components belong to that Coordinator
+    // otherwise return InvalidCoordinatorIndex
+    template <typename ComponentsRow, typename T>
+    constexpr size_t FindCoordinatorIndexForComponents()
+    {
+        using DecayedRow = meta::decay_args_tuple<ComponentsRow>::type;
+        bool sameCoordinator = true;
+        size_t indexResult = InvalidCoordinatorIndex;
+        constexpr size_t NumComponents = std::tuple_size_v<DecayedRow>;
+
+        meta::for_loop<NumComponents>([&indexResult, &sameCoordinator]<std::size_t T0>()
+        {
+            constexpr std::size_t componentIndex = T0;
+            using ComponentType = std::tuple_element_t<componentIndex, DecayedRow>;
+
+            if (sameCoordinator)
+            {
+                constexpr size_t coordinatorIndex = coordinator_index_v<ComponentType, T>;
+                if (!component_valid_v<ComponentType, T>)
+                {
+                    sameCoordinator = false;
+                    indexResult = InvalidCoordinatorIndex;
+                }
+                else
+                {
+                    if (indexResult == InvalidCoordinatorIndex || indexResult == coordinatorIndex)
+                    {
+                        indexResult = coordinatorIndex;
+                    }
+                    else
+                    {
+                        sameCoordinator = false;
+                        indexResult = InvalidCoordinatorIndex;
+                    }
+                }
+            }
+        });
+
+        return indexResult;
+    }
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------
+    template <typename ComponentRow, typename T>
+    constexpr size_t coordinator_index_for_components = FindCoordinatorIndexForComponents<ComponentRow, T>();
 
 
     //----------------------------------------------------------------------------------------------------------------------------------

@@ -1,9 +1,9 @@
-﻿#include "Renders/RenderComponent.h"
+﻿#include "Render/Components/RenderComponent.h"
 #include "Render/Platform/Adapter.h"
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderComponent::RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& sceneItemTag)
+yaget::render::RenderComponent::RenderComponent(comp::Id_t id, const math3d::Matrix& matrix, const io::Tag& sceneItemTag)
     : BaseComponent(id)
     , mMatrix(matrix)
     , mMatrixT(matrix.Transpose())  
@@ -13,11 +13,11 @@ defensor::render::RenderComponent::RenderComponent(comp::Id_t id, const math3d::
 
 
 //-------------------------------------------------------------------------------------------------
-defensor::render::RenderComponent::~RenderComponent() = default;
+yaget::render::RenderComponent::~RenderComponent() = default;
 
 
 //-------------------------------------------------------------------------------------------------
-void defensor::render::RenderComponent::UpdateMatrix(const math3d::Matrix& matrix)
+void yaget::render::RenderComponent::UpdateMatrix(const math3d::Matrix& matrix)
 {
     mMatrix = matrix;
     mMatrixT = matrix.Transpose();

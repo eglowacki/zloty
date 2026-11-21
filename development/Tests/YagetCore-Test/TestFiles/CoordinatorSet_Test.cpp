@@ -406,3 +406,65 @@ TEST_F(CoordinatorSet, ComponentCapacity)
 
     YLOG_INFO("TEST", "Counter is: '%d'", counter);
 }
+
+
+TEST_F(CoordinatorSet, ComponentMetaTypes)
+{
+    using BasedTestRow = std::tuple<TestObjects::Acomponent*, TestObjects::Ccomponent*>;
+    using BuffedTestRow = std::tuple<TestObjects::Ecomponent*, TestObjects::Fcomponent*>;
+    using GlobalTestRow = std::tuple<TestObjects::Gcomponent*>;
+
+    using MixLocalRow = std::tuple<TestObjects::Acomponent*, TestObjects::Ccomponent*, TestObjects::Ecomponent*, TestObjects::Fcomponent*>;
+    using MixGlobalLocalRow = std::tuple<TestObjects::Acomponent*, TestObjects::Ccomponent*, TestObjects::Gcomponent*>;
+
+    auto validIndex = yaget::comp::metatypes::coordinator_index_for_components<BasedTestRow, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_NE(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+
+    validIndex = yaget::comp::metatypes::coordinator_index_for_components<BuffedTestRow, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_NE(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+
+    validIndex = yaget::comp::metatypes::coordinator_index_for_components<GlobalTestRow, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_NE(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+
+    validIndex = yaget::comp::metatypes::coordinator_index_for_components<MixLocalRow, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_EQ(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+
+    validIndex = yaget::comp::metatypes::coordinator_index_for_components<MixGlobalLocalRow, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_EQ(yaget::comp::metatypes::InvalidCoordinatorIndex, validIndex);
+
+    EXPECT_TRUE((yaget::comp::metatypes::is_coordinator_set<TestObjects::KnightEntityCoordinatorSet>));
+
+    auto coordinatorIndex = yaget::comp::metatypes::coordinator_index_v<TestObjects::Acomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_EQ(0, coordinatorIndex);
+
+    coordinatorIndex = yaget::comp::metatypes::coordinator_index_v<TestObjects::Ecomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_EQ(1, coordinatorIndex);
+
+    coordinatorIndex = yaget::comp::metatypes::coordinator_index_v<TestObjects::Gcomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_EQ(2, coordinatorIndex);
+
+    auto validComponent = yaget::comp::metatypes::component_global_v<TestObjects::Gcomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_TRUE(validComponent);
+
+    validComponent = yaget::comp::metatypes::component_global_v<TestObjects::Acomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_FALSE(validComponent);
+
+    validComponent = yaget::comp::metatypes::component_local_v<TestObjects::Gcomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_FALSE(validComponent);
+
+    validComponent = yaget::comp::metatypes::component_local_v<TestObjects::Acomponent, TestObjects::KnightEntityCoordinatorSet>;
+    EXPECT_TRUE(validComponent);
+
+    using GlobalRow = yaget::comp::metatypes::global_components_row_t<TestObjects::KnightEntityCoordinatorSet>;
+    auto compareResult = std::is_same_v<TestObjects::GlobalEntity::Row, GlobalRow>;
+    EXPECT_TRUE(compareResult);
+
+    using ExpectedLocalRow = yaget::meta::tuple_cat_t<TestObjects::BaseEntity::Row, TestObjects::BuffedEntity::Row>;
+    using LocalRow = yaget::comp::metatypes::local_components_row_t<TestObjects::KnightEntityCoordinatorSet>;
+
+    compareResult = std::is_same_v<ExpectedLocalRow, LocalRow>;
+    EXPECT_TRUE(compareResult);
+
+    compareResult = std::is_same_v<TestObjects::GlobalEntity::Row, LocalRow>;
+    EXPECT_FALSE(compareResult);
+}
